@@ -1,0 +1,30 @@
+<!ENTITY % segment_type "(REVOLUTE_LINK | PRISMATIC_LINK | TOOL | MATERIAL_HOLDER)">
+
+<!ELEMENT kinematic_chain (tool_part, material_holder_part)>
+<!ATTLIST kinematic_chain
+	name CDATA #REQUIRED
+>
+<!ELEMENT tool_part (segment+)>
+<!ELEMENT material_holder_part (segment+)>
+<!ELEMENT segment (initial_translation, initial_rotation)>
+<!ATTLIST segment
+	type %segment_type;  #REQUIRED
+	name CDATA #REQUIRED
+	parameter_value_offset CDATA #REQUIRED
+	default_parameter_value CDATA #REQUIRED
+	parameter_value_minimum CDATA #IMPLIED
+	parameter_value_maximum CDATA #IMPLIED
+>
+<!ELEMENT initial_translation EMPTY>
+<!ATTLIST initial_translation
+	x CDATA #REQUIRED
+	y CDATA #REQUIRED
+	z CDATA #REQUIRED
+>
+<!ELEMENT initial_rotation EMPTY>
+<!ATTLIST initial_rotation
+	x CDATA #REQUIRED
+	y CDATA #REQUIRED
+	z CDATA #REQUIRED
+	alpha CDATA #REQUIRED
+>

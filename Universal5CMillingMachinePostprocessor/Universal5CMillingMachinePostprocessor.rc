@@ -1,0 +1,1114 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Polish resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_PLK)
+#ifdef _WIN32
+LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
+#pragma code_page(1250)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#include ""res\\Universal5CMillingMachinePostprocessor.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+ID_KINEMATIC_CHAIN_PROPERTIES_DIALOG DIALOGEX 0, 0, 190, 319
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Kinematic chain properties"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Add &segment",ID_BTN_ADD_SEGMENT,6,103,87,14
+    PUSHBUTTON      "Delete s&egment",ID_BTN_DELETE_SEGMENT,6,121,87,14
+    GROUPBOX        "Segment t&ype",IDC_STATIC,6,168,86,27,WS_GROUP
+    COMBOBOX        IDC_COMBO_SEGMENT_TYPE,12,177,74,107,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Initial &translation ",IDC_STATIC,98,3,85,59
+    EDITTEXT        IDC_EDIT_TR_X,133,13,31,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "0",ID_BTN_ZERO_TR_X,166,13,12,12
+    EDITTEXT        IDC_EDIT_TR_Y,133,29,31,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "0",ID_BTN_ZERO_TR_Y,166,29,12,12
+    EDITTEXT        IDC_EDIT_TR_Z,133,45,31,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "0",ID_BTN_ZERO_TR_Z,166,45,12,12
+    PUSHBUTTON      "0",ID_BTN_ZERO_TR,104,29,12,12
+    GROUPBOX        "Initial &rotation axis",IDC_STATIC,98,65,85,56
+    COMBOBOX        IDC_COMBO_PREDEFINED_AXIS,147,75,31,75,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_EDIT_AXIS_X,103,103,22,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_AXIS_Y,129,103,22,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_AXIS_Z,156,103,22,12,ES_AUTOHSCROLL
+    GROUPBOX        "Initial rotation &angle",IDC_STATIC,98,124,85,42
+    COMBOBOX        IDC_COMBO_PREDEFINED_ANGLES,142,134,36,102,
+                    CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_EDIT_ANGLE,142,150,36,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "Close",IDOK,135,300,47,14
+    LTEXT           "x",IDC_STATIC,125,15,8,14
+    LTEXT           "y",IDC_STATIC,125,31,8,14
+    LTEXT           "z",IDC_STATIC,125,47,8,14
+    LTEXT           "x",IDC_STATIC,103,93,8,8
+    LTEXT           "y",IDC_STATIC,129,93,8,8
+    LTEXT           "z",IDC_STATIC,156,93,8,8
+    LTEXT           "free [deg.]",IDC_STATIC,104,151,36,8
+    LTEXT           "predefined",IDC_STATIC,104,136,36,8
+    LTEXT           "prede&fined",IDC_STATIC,108,76,36,8
+    GROUPBOX        "Para&meter",IDC_STATIC,98,168,85,126
+    EDITTEXT        IDC_EDIT_PARAMETER_MINIMUM,146,238,31,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_PARAMETER_MAXIMUM,146,256,31,12,ES_AUTOHSCROLL
+    LTEXT           "mi&nimum",IDC_STATIC,116,241,28,8
+    LTEXT           "&maximum",IDC_STATIC,114,258,30,8
+    CONTROL         "c&onstraint",IDC_CHECK_CONSTRAINT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,117,227,48,10
+    EDITTEXT        IDC_EDIT_SEGMENT_NAME,12,148,74,12,ES_AUTOHSCROLL
+    GROUPBOX        "Segment name",IDC_STATIC,6,138,86,28,WS_GROUP
+    CONTROL         "",IDC_PARAMETER_SLIDER,"msctls_trackbar32",WS_TABSTOP,
+                    101,191,79,19
+    EDITTEXT        IDC_EDIT_PARAMETER_VALUE,130,178,25,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_PARAMETER_START,101,213,18,12,ES_CENTER | 
+                    ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
+    EDITTEXT        IDC_EDIT_PARAMETER_END,163,213,18,12,ES_CENTER | 
+                    ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
+    PUSHBUTTON      ">|<",ID_BTN_ZERO_PARAMETER,134,210,18,11
+    CONTROL         "",IDC_SEGMENT_TREE,"SysTreeView32",TVS_HASBUTTONS | 
+                    TVS_HASLINES | TVS_LINESATROOT | TVS_DISABLEDRAGDROP | 
+                    TVS_SHOWSELALWAYS | TVS_NOSCROLL | WS_BORDER | 
+                    WS_TABSTOP | 0x800,6,7,87,92,WS_EX_LEFTSCROLLBAR
+    PUSHBUTTON      "Reset a&ll params",ID_BTN_RESET_ALL_PARAMS,106,274,70,
+                    14
+    LISTBOX         IDC_LIST_PARTS,12,210,74,58,LBS_NOINTEGRALHEIGHT | 
+                    WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Segment &parts",IDC_STATIC,6,199,86,95,WS_GROUP
+    PUSHBUTTON      "&Add",IDC_BUTTON_ADD_PART,12,273,28,14
+    PUSHBUTTON      "&Delete",IDC_BUTTON_DELETE_PART,48,273,38,14
+END
+
+ID_SINGLE_INPUT_DIALOG DIALOGEX 0, 0, 191, 329
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Single input solver"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Close",IDOK,135,308,50,14
+    EDITTEXT        IDC_EDIT_X,25,21,30,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_Y,76,21,30,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_Z,126,21,30,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_I,25,50,30,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_J,76,50,30,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_K,126,50,30,12,ES_AUTOHSCROLL
+    GROUPBOX        "Position",IDC_STATIC,11,11,167,28
+    GROUPBOX        "Orientation",IDC_STATIC,11,40,167,28
+    GROUPBOX        "Input",IDC_STATIC,6,3,179,91
+    RTEXT           "x",IDC_STATIC,15,23,8,8
+    RTEXT           "y",IDC_STATIC,65,23,8,8
+    RTEXT           "z",IDC_STATIC,115,23,8,8
+    RTEXT           "i",IDC_STATIC,15,53,8,8
+    RTEXT           "k",IDC_STATIC,115,53,8,8
+    RTEXT           "j",IDC_STATIC,65,52,8,8
+    DEFPUSHBUTTON   "Solve",ID_BTN_SOLVE,128,73,50,14
+    LISTBOX         IDC_LIST_SOLUTIONS,11,108,167,40,LBS_HASSTRINGS | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Solutions",IDC_STATIC,6,97,179,205
+    EDITTEXT        IDC_EDIT_X_COMPUTED,16,187,49,12,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    EDITTEXT        IDC_EDIT_Y_COMPUTED,70,187,49,12,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    EDITTEXT        IDC_EDIT_Z_COMPUTED,124,187,49,12,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    EDITTEXT        IDC_EDIT_I_COMPUTED,16,227,49,12,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    EDITTEXT        IDC_EDIT_J_COMPUTED,71,227,49,12,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    EDITTEXT        IDC_EDIT_K_COMPUTED,125,227,49,12,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    GROUPBOX        "Computed position",IDC_STATIC,12,167,167,38
+    GROUPBOX        "Computed orientation",IDC_STATIC,12,208,167,38
+    RTEXT           "y",IDC_STATIC,72,176,8,8
+    RTEXT           "z",IDC_STATIC,126,176,8,8
+    RTEXT           "i",IDC_STATIC,15,216,8,8
+    RTEXT           "k",IDC_STATIC,127,216,8,8
+    RTEXT           "j",IDC_STATIC,71,216,8,8
+    RTEXT           "x",IDC_STATIC,18,176,8,8
+    EDITTEXT        IDC_EDIT_POSITION_ERROR,64,259,93,12,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    EDITTEXT        IDC_EDIT_ORIENTATION_ERROR,58,276,93,12,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    GROUPBOX        "Errors",IDC_STATIC,12,249,167,46
+    RTEXT           "position",IDC_STATIC,36,261,26,8
+    RTEXT           "orientation ",IDC_STATIC,18,278,38,8
+    PUSHBUTTON      "Zero parameterss",ID_BTN_SOLVE2,107,152,71,14
+    LTEXT           "[deg.]",IDC_STATIC,154,278,21,8
+END
+
+ID_MATERIAL_DEFINITION_DIALOG DIALOGEX 0, 0, 193, 151
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Generating initial material block"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Generate",IDOK,43,123,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,104,123,50,14
+    EDITTEXT        IDC_EDIT_SIZE_X,54,21,33,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_SIZE_Y,54,39,33,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_SIZE_Z,54,57,33,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_VOXEL_SIZE,36,94,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_X,137,21,33,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_Y,137,39,33,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_Z,137,57,33,14,ES_AUTOHSCROLL
+    LTEXT           "width (x)",IDC_STATIC,21,24,30,8
+    GROUPBOX        "Approximate size",IDC_STATIC,13,11,81,67
+    GROUPBOX        "Postion",IDC_STATIC,100,11,78,67
+    LTEXT           "depth (y)",IDC_STATIC,20,42,31,8
+    LTEXT           "height (z)",IDC_STATIC,19,60,32,8
+    LTEXT           "left (x)",IDC_STATIC,111,24,23,8
+    LTEXT           "near (y)",IDC_STATIC,107,42,27,8
+    LTEXT           "low (z)",IDC_STATIC,112,60,22,8
+    GROUPBOX        "Voxel size",IDC_STATIC,13,84,165,31
+    LTEXT           "size",IDC_STATIC,20,96,13,8
+    EDITTEXT        IDC_EDIT_MEMORY_USAGE,127,94,31,14,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    LTEXT           "memory usage",IDC_STATIC,97,92,28,17
+    LTEXT           "MB",IDC_STATIC,163,96,10,8
+    GROUPBOX        "",IDC_STATIC,6,3,180,142
+END
+
+ID_MILLING_TOOL_DIALOG DIALOGEX 0, 0, 286, 239
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Milling tool properties"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Apply",IDC_BUTTON_APPLY,225,210,47,14
+    PUSHBUTTON      "Cancel",IDCANCEL,170,210,45,14
+    COMBOBOX        IDC_COMBO_SHAPE,178,23,40,105,CBS_DROPDOWN | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Shape && sizes",IDC_STATIC,170,10,102,51
+    EDITTEXT        IDC_EDIT_RZ,188,40,30,14,ES_AUTOHSCROLL
+    RTEXT           "Rz",IDC_STATIC,177,42,9,8
+    EDITTEXT        IDC_EDIT_R,235,40,30,14,ES_AUTOHSCROLL
+    RTEXT           "R",IDC_STATIC,224,42,8,8
+    EDITTEXT        IDC_EDIT_CUTTING_PART_HEIGHT,235,74,30,14,ES_AUTOHSCROLL
+    RTEXT           "cutting part end",IDC_STATIC,179,76,53,8
+    EDITTEXT        IDC_EDIT_REFERENCE_POINT_HEIGHT,235,93,30,14,
+                    ES_AUTOHSCROLL
+    RTEXT           "reference point",IDC_STATIC,182,96,50,8
+    EDITTEXT        IDC_EDIT_H,235,21,30,14,ES_AUTOHSCROLL | WS_DISABLED
+    RTEXT           "h",IDC_STATIC,224,23,8,8
+    GROUPBOX        "Z-coordinate of",IDC_STATIC,170,63,102,51
+    CONTROL         "",IDC_PICTURE_TOOL_PREVIEW,"Static",SS_OWNERDRAW | 
+                    WS_BORDER,13,14,150,210,WS_EX_STATICEDGE
+    GROUPBOX        "",IDC_STATIC,6,3,274,229
+END
+
+ID_SETTINGS_DIALOG DIALOGEX 0, 0, 209, 130
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Settings"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,156,110,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,95,110,50,14
+    CONTROL         "independently",IDC_RADIO_CALCULATION_ORDER_1,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP,18,20,61,10
+    CONTROL         "alpha1 then alpha2",IDC_RADIO_CALCULATION_ORDER_2,
+                    "Button",BS_AUTORADIOBUTTON,18,32,77,10
+    CONTROL         "alpha2 then alpha1",IDC_RADIO_CALCULATION_ORDER_3,
+                    "Button",BS_AUTORADIOBUTTON,18,44,77,10
+    CONTROL         "axis multiplication",IDC_RADIO_ALPHA2_METHOD_1,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP,115,65,71,10
+    CONTROL         "quaternion method",IDC_RADIO_ALPHA2_METHOD_2,"Button",
+                    BS_AUTORADIOBUTTON,115,78,77,10
+    CONTROL         "axis multiplication",IDC_RADIO_ALPHA1_METHOD_1,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP,115,22,71,10
+    CONTROL         "conic method",IDC_RADIO_ALPHA1_METHOD_2,"Button",
+                    BS_AUTORADIOBUTTON,115,35,58,10
+    EDITTEXT        IDC_EDIT_INTERNAL_PRECISION,36,74,57,14,ES_AUTOHSCROLL
+    RTEXT           "E = ",IDC_STATIC,21,77,14,8
+    GROUPBOX        "Angles calculation &order",IDC_STATIC,11,9,90,51
+    GROUPBOX        "Alpha&2 method",IDC_STATIC,108,53,90,42
+    GROUPBOX        "Alpha&1 method",IDC_STATIC,108,9,90,41
+    GROUPBOX        "Calculation precision",IDC_STATIC,11,63,90,32
+    GROUPBOX        "",IDC_STATIC,4,1,201,102
+END
+
+ID_CLDATA_FILE_DIALOG DIALOGEX 0, 0, 220, 431
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "CL Data file processing"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    PUSHBUTTON      "&Choose file ",IDC_BUTTON_CHOOSE_FILE,14,18,58,13
+    PUSHBUTTON      "&Reload",IDC_BUTTON_RELOAD,14,36,58,13
+    GROUPBOX        "Position bounding box ( p/p' ) ",IDC_STATIC,86,7,127,91
+    EDITTEXT        IDC_EDIT_X_MIN,93,19,43,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_Y_MIN,93,38,43,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_Z_MIN,93,57,43,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_X_MAX,162,19,43,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_Y_MAX,162,38,43,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_Z_MAX,162,57,43,14,ES_AUTOHSCROLL | ES_READONLY
+    DEFPUSHBUTTON   "&Process...",IDC_BUTTON_PROCESS,90,411,57,14
+    GROUPBOX        "&Move  ( p'=Tp )",IDC_STATIC,14,274,71,72
+    EDITTEXT        IDC_EDIT_X_OFFSET,38,285,40,14,ES_AUTOHSCROLL
+    RTEXT           "x+=",IDC_STATIC,20,288,16,8
+    EDITTEXT        IDC_EDIT_Y_OFFSET,38,305,40,14,ES_AUTOHSCROLL
+    RTEXT           "y+=",IDC_STATIC,20,308,16,8
+    EDITTEXT        IDC_EDIT_Z_OFFSET,38,325,40,14,ES_AUTOHSCROLL
+    RTEXT           "z+=",IDC_STATIC,20,329,15,8
+    GROUPBOX        "&Turn ( v'=Rv )",IDC_STATIC,91,274,114,83
+    EDITTEXT        IDC_EDIT_TURN_AXIS_X,112,292,17,14,ES_AUTOHSCROLL
+    RTEXT           "x",IDC_STATIC,101,295,8,8
+    EDITTEXT        IDC_EDIT_TURN_AXIS_Y,147,292,17,14,ES_AUTOHSCROLL
+    RTEXT           "y",IDC_STATIC,135,294,8,8
+    EDITTEXT        IDC_EDIT_TURN_AXIS_Z,179,292,17,14,ES_AUTOHSCROLL
+    RTEXT           "z",IDC_STATIC,168,295,8,8
+    LTEXT           "angle [degrees]",IDC_STATIC,107,315,52,8
+    EDITTEXT        IDC_EDIT_TURN_ANGLE,161,312,36,14,ES_AUTOHSCROLL
+    CONTROL         "turn also position (p'=RTp)",
+                    IDC_CHECK_TURN_ALSO_POSITION,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,97,331,98,10
+    LTEXT           "axis",IDC_STATIC,98,283,14,8
+    EDITTEXT        IDC_EDIT_LINES_COUNT,30,55,42,14,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    LTEXT           "lines",IDC_STATIC,13,59,14,8
+    EDITTEXT        IDC_EDIT_ERRORS_COUNT,39,76,33,14,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    LTEXT           "errors",IDC_STATIC,16,80,20,8
+    GROUPBOX        "File",IDC_STATIC,7,7,72,91
+    LISTBOX         IDC_LIST_FILE_CONTENTS,15,112,190,84,
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_EDIT_P,99,216,106,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_V,99,235,106,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_EDIT_LINE_NUMBER,39,216,50,14,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    EDITTEXT        IDC_EDIT_LINE_STATUS,48,236,41,14,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    RTEXT           "p",IDC_STATIC,89,219,8,8,0,WS_EX_RIGHT
+    RTEXT           "v",IDC_STATIC,89,238,8,8,0,WS_EX_RIGHT
+    LTEXT           "line no.",IDC_STATIC,15,219,24,8
+    LTEXT           "line status",IDC_STATIC,13,239,33,8
+    CONTROL         "show all lines",IDC_RADIO_SHOW_ALL_LINES,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP,19,201,57,10
+    CONTROL         "show only lines with errors",
+                    IDC_RADIO_SHOW_LINES_WITH_ERROR,"Button",
+                    BS_AUTORADIOBUTTON,99,202,101,10
+    EDITTEXT        IDC_EDIT_P_PRIM,99,363,106,14,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    EDITTEXT        IDC_EDIT_V_PRIM,99,383,106,14,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    RTEXT           "p'",IDC_STATIC,89,366,8,8
+    RTEXT           "v'",IDC_STATIC,89,386,8,8
+    GROUPBOX        "File contents",IDC_STATIC,7,102,206,157
+    GROUPBOX        "Pre-transformation",IDC_STATIC,7,263,206,143
+    EDITTEXT        IDC_EDIT_SCALE,38,363,40,14,ES_AUTOHSCROLL
+    RTEXT           "S",IDC_STATIC,25,366,8,8
+    GROUPBOX        "Scale (p'=RSTp)",IDC_STATIC,14,348,71,37
+    LTEXT           "< x <",IDC_STATIC,140,20,20,8
+    LTEXT           "< y <",IDC_STATIC,140,42,20,8
+    LTEXT           "< z <",IDC_STATIC,140,61,19,8
+    CONTROL         "p",IDC_RADIO_P,"Button",BS_AUTORADIOBUTTON | WS_GROUP,
+                    97,78,20,10
+    CONTROL         "p'=RSTp",IDC_RADIO_P_PRIM,"Button",BS_AUTORADIOBUTTON,
+                    131,78,43,10
+    PUSHBUTTON      "&Close",IDOK,156,411,57,14
+    CONTROL         "invert orientation (v'=-Rv)",
+                    IDC_CHECK_INVERT_ORIENTATION,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,97,343,98,10
+END
+
+ID_POSTPROCESSING_DIALOG DIALOGEX 0, 0, 302, 415
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Postprocessing CL-data"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "&Start",IDC_BUTTON_START,14,95,44,14
+    PUSHBUTTON      "&Close",IDCANCEL,253,396,42,14
+    PUSHBUTTON      "&Program settingss",IDC_BUTTON_PROGRAM_SETTINGS,170,396,
+                    75,14
+    EDITTEXT        IDC_EDIT_POSITION_DIFFERENCE,87,18,40,14,ES_AUTOHSCROLL
+    RTEXT           "max  position difference",IDC_STATIC,39,16,45,17
+    GROUPBOX        "Linear interpolation",IDC_STATIC,7,7,127,53
+    EDITTEXT        IDC_EDIT_ORIENTATION_DIFFERENCE,87,38,40,14,
+                    ES_AUTOHSCROLL
+    RTEXT           "max orientation difference (degrees)",IDC_STATIC,13,36,
+                    71,17
+    CONTROL         "",IDC_PROGRESS_POSTPROCESSING,"msctls_progress32",
+                    WS_BORDER | 0x1,14,75,113,14
+    EDITTEXT        IDC_EDIT_LOCATIONS_COUNT,238,18,49,14,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    RTEXT           "input locations count",IDC_STATIC,167,21,67,8
+    GROUPBOX        "Input",IDC_STATIC,142,7,153,97
+    EDITTEXT        IDC_EDIT_TRAJECTORY_LENGTH,238,39,49,14,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    RTEXT           "total trajectory length",IDC_STATIC,162,42,72,8
+    EDITTEXT        IDC_EDIT_NUMBER_OF_PROBLEMS,238,81,49,14,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    RTEXT           "approximate number of inverse problems",IDC_STATIC,153,
+                    80,81,16
+    EDITTEXT        IDC_EDIT_ORIENTATION_CHANGE,238,60,49,14,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    RTEXT           "total orientation change (degrees)",IDC_STATIC,160,58,
+                    74,17
+    GROUPBOX        "Process",IDC_STATIC,7,62,128,55
+    EDITTEXT        IDC_EDIT_REPORT,15,208,271,98,ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_READONLY | 
+                    WS_VSCROLL | WS_HSCROLL
+    GROUPBOX        "Brief postprocessing report",IDC_STATIC,7,193,288,121
+    GROUPBOX        "G-code format",IDC_STATIC,7,121,288,66
+    RTEXT           "X",IDC_STATIC,10,153,8,8
+    RTEXT           "Y",IDC_STATIC,56,153,8,8
+    RTEXT           "Z",IDC_STATIC,100,153,8,9
+    COMBOBOX        IDC_COMBO_ANGLE2_CHAR,225,150,23,78,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_ANGLE1_NAME,181,150,35,78,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_ANGLE2_NAME,251,150,35,78,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_ANGLE1_CHAR,155,150,23,78,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_X_NAME,19,150,35,78,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_Y_NAME,65,150,35,78,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_Z_NAME,109,150,35,78,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Save G-code",IDC_BUTTON_SAVE_GCODE,68,95,59,14,
+                    WS_DISABLED
+    CTEXT           "link name",IDC_STATIC,116,133,18,16
+    CTEXT           "link name",IDC_STATIC,190,133,18,16
+    CTEXT           "link name",IDC_STATIC,260,133,18,16
+    CTEXT           "link name",IDC_STATIC,73,133,18,16
+    CTEXT           "link name",IDC_STATIC,27,133,18,16
+    CTEXT           "G-code name",IDC_STATIC,153,133,28,16
+    CTEXT           "G-code name",IDC_STATIC,223,133,28,16
+    CONTROL         "degrees",IDC_RADIO_ANGLE_UNIT_RADIANS1,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP,95,171,42,10
+    CONTROL         "radians",IDC_RADIO_ANGLE_UNIT_RADIANS2,"Button",
+                    BS_AUTORADIOBUTTON,140,171,39,10
+    LTEXT           "Output angles measure",IDC_STATIC,14,171,76,8
+    CONTROL         "log every problem",IDC_RADIO_DETAILED_REPORT_CONTENTS0,
+                    "Button",BS_AUTORADIOBUTTON | WS_DISABLED | WS_GROUP,22,
+                    345,73,10
+    CONTROL         "log problems having 1 or 0 solution",
+                    IDC_RADIO_DETAILED_REPORT_CONTENTS1,"Button",
+                    BS_AUTORADIOBUTTON | WS_DISABLED,22,358,127,10
+    CONTROL         "log problems without solution only",
+                    IDC_RADIO_DETAILED_REPORT_CONTENTS2,"Button",
+                    BS_AUTORADIOBUTTON | WS_DISABLED,22,371,124,10
+    GROUPBOX        "Detailed report",IDC_STATIC,7,318,288,71
+    CONTROL         "detailed report",IDC_CHECK_DETAILED_REPORT,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,23,333,63,10
+    EDITTEXT        IDC_EDIT_DETAILED_REPORT_FILE_NAME,95,330,167,14,
+                    ES_AUTOHSCROLL | ES_READONLY | WS_DISABLED
+    PUSHBUTTON      "...",IDC_BUTTON_BROWSE_FOR_DETAILED_REPORT_FILE_NAME,
+                    266,330,15,14,WS_DISABLED
+END
+
+ID_SIMULATION_DIALOG DIALOGEX 0, 0, 350, 25
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | WS_POPUP | 
+    WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW | WS_EX_APPWINDOW
+CAPTION "Milling simulation"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    PUSHBUTTON      ">",IDC_BUTTON_PLAY_PAUSE,6,5,16,13
+    EDITTEXT        IDC_EDIT_REFRESH_PERIOD,136,5,33,12,ES_AUTOHSCROLL | 
+                    WS_GROUP
+    CONTROL         "",IDC_SPIN_REFRESH_PERIOD,"msctls_updown32",
+                    UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | 
+                    UDS_ARROWKEYS,158,5,11,12
+    LTEXT           "Refresh period [frames]",IDC_STATIC,57,6,78,8
+    PUSHBUTTON      "[ ]",IDC_BUTTON_STOP,28,5,16,13
+    PUSHBUTTON      "Refresh now",IDC_BUTTON_REFRESH_NOW,288,4,55,14
+    LTEXT           "interval [ms]",IDC_STATIC,185,6,41,8
+    EDITTEXT        IDC_EDIT_INTERVAL,229,5,33,12,ES_AUTOHSCROLL | WS_GROUP
+END
+
+ID_BOX_DIALOG DIALOGEX 0, 0, 130, 221
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Segment part - box"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "&OK",IDOK,72,203,46,14
+    PUSHBUTTON      "&Cancel",IDCANCEL,12,203,46,14
+    EDITTEXT        IDC_EDIT_X1,12,18,45,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_X2,72,18,46,14,ES_AUTOHSCROLL
+    LTEXT           "X",IDC_STATIC,63,21,8,8
+    EDITTEXT        IDC_EDIT_Y1,12,36,45,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_Y2,72,36,46,14,ES_AUTOHSCROLL
+    LTEXT           "Y",IDC_STATIC,63,40,8,8
+    EDITTEXT        IDC_EDIT_Z1,12,54,45,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_Z2,72,54,46,14,ES_AUTOHSCROLL
+    LTEXT           "Z",IDC_STATIC,63,57,8,8
+    EDITTEXT        IDC_EDIT_D,45,114,42,14,ES_AUTOHSCROLL
+    GROUPBOX        "&Coordinates",IDC_STATIC,6,6,120,72
+    PUSHBUTTON      "X+",IDC_BUTTON_X_PLUS,93,114,18,14
+    PUSHBUTTON      "X-",IDC_BUTTON_X_MINUS,20,114,18,14
+    PUSHBUTTON      "Z-",IDC_BUTTON_Z_MINUS,81,96,18,14
+    PUSHBUTTON      "Y+",IDC_BUTTON_Y_PLUS,57,96,18,14
+    PUSHBUTTON      "Z+",IDC_BUTTON_Z_PLUS,33,132,18,14
+    PUSHBUTTON      "Y-",IDC_BUTTON_Y_MINUS,57,132,18,14
+    GROUPBOX        "Modify box",IDC_STATIC,5,84,120,114
+    PUSHBUTTON      "+X+",IDC_BUTTON_X_ENLARGE,16,156,20,14
+    PUSHBUTTON      "+Y+",IDC_BUTTON_Y_ENLARGE,40,156,20,14
+    PUSHBUTTON      "-X-",IDC_BUTTON_X_SHRINK,16,174,20,14
+    PUSHBUTTON      "-Y-",IDC_BUTTON_Y_SHRINK,40,174,20,14
+    PUSHBUTTON      "-Z-",IDC_BUTTON_Z_SHRINK,64,174,20,14
+    PUSHBUTTON      "+Z+",IDC_BUTTON_Z_ENLARGE,64,156,20,14
+    PUSHBUTTON      "-XYZ-",IDC_BUTTON_SHRINK,89,174,26,14
+    PUSHBUTTON      "+XYZ+",IDC_BUTTON_ENLARGE,89,156,26,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    ID_KINEMATIC_CHAIN_PROPERTIES_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 6
+        RIGHTMARGIN, 183
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 312
+    END
+
+    ID_SINGLE_INPUT_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 184
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 322
+    END
+
+    ID_MATERIAL_DEFINITION_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 186
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 144
+    END
+
+    ID_MILLING_TOOL_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 279
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 232
+    END
+
+    ID_SETTINGS_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 202
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 123
+    END
+
+    ID_CLDATA_FILE_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 213
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 424
+    END
+
+    ID_POSTPROCESSING_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 295
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 408
+    END
+
+    ID_SIMULATION_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 343
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 18
+    END
+
+    ID_BOX_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 123
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 214
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+ID_KINEMATIC_CHAIN_PROPERTIES_DIALOG DLGINIT
+BEGIN
+    IDC_COMBO_SEGMENT_TYPE, 0x403, 9, 0
+0x6572, 0x6f76, 0x756c, 0x6574, "\000" 
+    IDC_COMBO_SEGMENT_TYPE, 0x403, 10, 0
+0x7270, 0x7369, 0x616d, 0x6974, 0x0063, 
+    IDC_COMBO_PREDEFINED_AXIS, 0x403, 5, 0
+0x7266, 0x6565, "\000" 
+    IDC_COMBO_PREDEFINED_AXIS, 0x403, 3, 0
+0x584f, "\000" 
+    IDC_COMBO_PREDEFINED_AXIS, 0x403, 3, 0
+0x594f, "\000" 
+    IDC_COMBO_PREDEFINED_AXIS, 0x403, 3, 0
+0x5a4f, "\000" 
+    IDC_COMBO_PREDEFINED_ANGLES, 0x403, 5, 0
+0x7266, 0x6565, "\000" 
+    IDC_COMBO_PREDEFINED_ANGLES, 0x403, 3, 0
+0xb030, "\000" 
+    IDC_COMBO_PREDEFINED_ANGLES, 0x403, 4, 0
+0x3531, 0x00b0, 
+    IDC_COMBO_PREDEFINED_ANGLES, 0x403, 4, 0
+0x3033, 0x00b0, 
+    IDC_COMBO_PREDEFINED_ANGLES, 0x403, 4, 0
+0x3534, 0x00b0, 
+    IDC_COMBO_PREDEFINED_ANGLES, 0x403, 4, 0
+0x3036, 0x00b0, 
+    IDC_COMBO_PREDEFINED_ANGLES, 0x403, 4, 0
+0x3537, 0x00b0, 
+    IDC_COMBO_PREDEFINED_ANGLES, 0x403, 4, 0
+0x3039, 0x00b0, 
+    IDC_COMBO_PREDEFINED_ANGLES, 0x403, 5, 0
+0x3331, 0xb035, "\000" 
+    IDC_COMBO_PREDEFINED_ANGLES, 0x403, 5, 0
+0x3831, 0xb030, "\000" 
+    IDC_COMBO_PREDEFINED_ANGLES, 0x403, 5, 0
+0x3732, 0xb030, "\000" 
+    0
+END
+
+ID_MILLING_TOOL_DIALOG DLGINIT
+BEGIN
+    IDC_COMBO_SHAPE, 0x403, 5, 0
+0x6162, 0x6c6c, "\000" 
+    IDC_COMBO_SHAPE, 0x403, 9, 0
+0x7963, 0x696c, 0x646e, 0x7265, "\000" 
+    0
+END
+
+ID_POSTPROCESSING_DIALOG DLGINIT
+BEGIN
+    IDC_COMBO_ANGLE2_CHAR, 0x403, 2, 0
+0x0041, 
+    IDC_COMBO_ANGLE2_CHAR, 0x403, 2, 0
+0x0042, 
+    IDC_COMBO_ANGLE2_CHAR, 0x403, 2, 0
+0x0043, 
+    IDC_COMBO_ANGLE2_CHAR, 0x403, 2, 0
+0x0044, 
+    IDC_COMBO_ANGLE2_CHAR, 0x403, 2, 0
+0x0045, 
+    IDC_COMBO_ANGLE1_CHAR, 0x403, 2, 0
+0x0041, 
+    IDC_COMBO_ANGLE1_CHAR, 0x403, 2, 0
+0x0042, 
+    IDC_COMBO_ANGLE1_CHAR, 0x403, 2, 0
+0x0043, 
+    IDC_COMBO_ANGLE1_CHAR, 0x403, 2, 0
+0x0044, 
+    IDC_COMBO_ANGLE1_CHAR, 0x403, 2, 0
+0x0045, 
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// HTML
+//
+
+IDR_HTML_KINEMATICCHANINPROPERTIESDIALOG HTML                    "KinematicChaninPropertiesDialog.htm"
+#endif    // Polish resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOGEX 0, 0, 188, 90
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "About"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    LTEXT           "Universal 5C Milling Machine Postprocessor ver. 1.0\n\nby Przemyslaw Zdroik <zdroyer@go2.pl>\nWarsaw University of Technology\nFaculty of Mathematics and Information Sciences\n",
+                    IDC_STATIC,11,10,167,40,SS_NOPREFIX
+    LTEXT           "Copyright (C) 2004",IDC_STATIC,11,70,66,8
+    DEFPUSHBUTTON   "OK",IDOK,131,66,50,16,WS_GROUP
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 181
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 83
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "res\\Universal5CMillingMachinePostprocessor.ico"
+IDR_PostprocessDocTYPE  ICON                    "res\\Universal5CMillingMachinePostprocessorDoc.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Toolbar
+//
+
+IDR_MAINFRAME TOOLBAR  16, 15
+BEGIN
+    BUTTON      ID_FILE_NEW
+    BUTTON      ID_FILE_OPEN
+    BUTTON      ID_FILE_SAVE
+    SEPARATOR
+    BUTTON      ID_SHOW_BASE
+    BUTTON      ID_SHOW_BASE_FRAME
+    SEPARATOR
+    BUTTON      ID_SHOW_MATERIAL
+    BUTTON      ID_SHOW_MATERIAL_CONTOUR
+    BUTTON      ID_SHOW_MATERIAL_FRAME
+    BUTTON      ID_SHOW_MATERIAL_HOLDER
+    SEPARATOR
+    BUTTON      ID_SHOW_TOOL
+    BUTTON      ID_SHOW_TOOL_FRAME
+    BUTTON      ID_SHOW_TOOL_BOUNDING_BOX
+    BUTTON      ID_SHOW_TOOL_TRAJECTORY
+    SEPARATOR
+    BUTTON      ID_SHOW_LINKS
+    BUTTON      ID_SHOW_LINKS_FRAMES
+    BUTTON      ID_SHOW_LINKS_PARTS
+    SEPARATOR
+    BUTTON      ID_3DVIEW_ZOOM_IN
+    BUTTON      ID_3DVIEW_ORIGINAL_SCALE
+    BUTTON      ID_3DVIEW_ZOOM_OUT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAINFRAME MENU 
+BEGIN
+    POPUP "&Program"
+    BEGIN
+        MENUITEM "&Program settings",           ID_SETTINGS_PROGRAMSETTINGS
+        MENUITEM "E&xit",                       ID_APP_EXIT
+    END
+    POPUP "&Chain"
+    BEGIN
+        MENUITEM "&New\tCtrl+N",                ID_FILE_NEW
+        MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
+        MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
+        MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
+        MENUITEM SEPARATOR
+        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "&Properties\tCtrl+P",         ID_CHAIN_PROPERTIES
+    END
+    POPUP "&3DView"
+    BEGIN
+        POPUP "Show/Hide"
+        BEGIN
+            MENUITEM "Material",                    ID_SHOW_MATERIAL
+            MENUITEM "Material contour",            ID_SHOW_MATERIAL_CONTOUR
+            MENUITEM "Material frame",              ID_SHOW_MATERIAL_FRAME
+            MENUITEM "Material holder",             ID_SHOW_MATERIAL_HOLDER
+            MENUITEM "Tool",                        ID_SHOW_TOOL
+            MENUITEM "Tool bounding box",           ID_SHOW_TOOL_BOUNDING_BOX
+
+            MENUITEM "Tool frame",                  ID_SHOW_TOOL_FRAME
+            MENUITEM "Tool trajectory",             ID_SHOW_TOOL_TRAJECTORY
+            MENUITEM "Links",                       ID_SHOW_LINKS
+            MENUITEM "Links frames",                ID_SHOW_LINKS_FRAMES
+            MENUITEM "Links parts",                 ID_SHOW_LINKS_PARTS
+            MENUITEM "Base",                        ID_SHOW_BASE
+            MENUITEM "Base frame",                  ID_SHOW_BASE_FRAME
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "&Fixed material frame",       ID_3DVIEW_FIXED_MATERIAL_FRAME
+
+        MENUITEM SEPARATOR
+        MENUITEM "Zoom &In\tCtrl +",            ID_3DVIEW_ZOOM_IN
+        MENUITEM "Zoom O&ut\tCtrl -",           ID_3DVIEW_ZOOM_OUT
+        MENUITEM "Ori&ginal Size\tCtrl /",      ID_3DVIEW_ORIGINAL_SCALE
+        MENUITEM "Optimal &size",               ID_3DVIEW_OPTIMAL_SIZE
+        MENUITEM SEPARATOR
+        MENUITEM "Initial &Position\tCtrl+Shift+R", 
+                                                ID_3DVIEW_ORIGINAL_POSITION
+        MENUITEM "Initial &Orienation\tCtrl+Altt+R", 
+                                                ID_3DVIEW_ORIGINAL_ORIENATION
+
+        MENUITEM "Reset &View\tCtrl+R",         ID_3DVIEW_ORIGINAL_VIEW
+        MENUITEM SEPARATOR
+        MENUITEM "Orthogonal projection",       ID_3DVIEW_ORTHOGONAL_PROJECTION
+
+        MENUITEM "Perspective projection",      ID_3DVIEW_PERSPECTIVE_PROJECTION
+
+    END
+    POPUP "P&ostprocessor"
+    BEGIN
+        MENUITEM "&Single input",               ID_POSTPROCESSOR_SINGLEINPUT
+        MENUITEM "&CL Data file",               ID_POSTPROCESSOR_CLDATAFILE
+    END
+    POPUP "&Simulation"
+    BEGIN
+        MENUITEM "&Material block",             ID_MATERIALBLOCK_GENERATEINITIALBLOCK
+
+        MENUITEM "Milling &tool",               ID_SIMULATION_SETUPMILLINGTOOL
+
+        MENUITEM "Simulation &dialog",          ID_SIMULATION_DIALOG
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About Universal5CMillingMachinePostprocessor...", 
+                                                ID_APP_ABOUT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MAINFRAME ACCELERATORS 
+BEGIN
+    "R",            ID_3DVIEW_ORIGINAL_ORIENATION, VIRTKEY, CONTROL, ALT, 
+                                                    NOINVERT
+    "R",            ID_3DVIEW_ORIGINAL_POSITION, VIRTKEY, SHIFT, CONTROL, 
+                                                    NOINVERT
+    VK_DIVIDE,      ID_3DVIEW_ORIGINAL_SCALE, VIRTKEY, CONTROL, NOINVERT
+    "R",            ID_3DVIEW_ORIGINAL_VIEW, VIRTKEY, CONTROL, NOINVERT
+    VK_ADD,         ID_3DVIEW_ZOOM_IN,      VIRTKEY, CONTROL, NOINVERT
+    VK_SUBTRACT,    ID_3DVIEW_ZOOM_OUT,     VIRTKEY, CONTROL, NOINVERT
+    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
+    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL, NOINVERT
+    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT, NOINVERT
+    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT, NOINVERT
+    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
+    "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
+    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
+    VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
+    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
+    "P",            ID_CHAIN_PROPERTIES,    VIRTKEY, CONTROL, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904e4"
+        BEGIN
+            VALUE "CompanyName", "TODO: <Company name>"
+            VALUE "FileDescription", "TODO: <File description>"
+            VALUE "FileVersion", "1.0.0.1"
+            VALUE "InternalName", "Universal5CMillingMachinePostprocessor.exe"
+            VALUE "LegalCopyright", "TODO: (c) <Company name>.  All rights reserved."
+            VALUE "OriginalFilename", "Universal5CMillingMachinePostprocessor.exe"
+            VALUE "ProductName", "TODO: <Product name>"
+            VALUE "ProductVersion", "1.0.0.1"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDR_MAINFRAME           "Universal 5C Milling Machine Postprocessor\n\nKinamaticChain\nKinematic Chain Files (*.kc)\n.kc\nUniversal5CMillingMachinePostprocessor.Document\nKinamatic chain definition file"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_APP_TITLE       "Universal5CMillingMachinePostprocessor"
+    AFX_IDS_IDLEMESSAGE     "Ready"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_INDICATOR_EXT        "EXT"
+    ID_INDICATOR_CAPS       "CAP"
+    ID_INDICATOR_NUM        "NUM"
+    ID_INDICATOR_SCRL       "SCRL"
+    ID_INDICATOR_OVR        "OVR"
+    ID_INDICATOR_REC        "REC"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_FILE_NEW             "Create a new document\nNew"
+    ID_FILE_OPEN            "Open an existing document\nOpen"
+    ID_FILE_CLOSE           "Close the active document\nClose"
+    ID_FILE_SAVE            "Save the active document\nSave"
+    ID_FILE_SAVE_AS         "Save the active document with a new name\nSave As"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_APP_ABOUT            "Display program information, version number and copyright\nAbout"
+    ID_APP_EXIT             "Quit the application; prompts to save documents\nExit"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_FILE_MRU_FILE1       "Open this document"
+    ID_FILE_MRU_FILE2       "Open this document"
+    ID_FILE_MRU_FILE3       "Open this document"
+    ID_FILE_MRU_FILE4       "Open this document"
+    ID_FILE_MRU_FILE5       "Open this document"
+    ID_FILE_MRU_FILE6       "Open this document"
+    ID_FILE_MRU_FILE7       "Open this document"
+    ID_FILE_MRU_FILE8       "Open this document"
+    ID_FILE_MRU_FILE9       "Open this document"
+    ID_FILE_MRU_FILE10      "Open this document"
+    ID_FILE_MRU_FILE11      "Open this document"
+    ID_FILE_MRU_FILE12      "Open this document"
+    ID_FILE_MRU_FILE13      "Open this document"
+    ID_FILE_MRU_FILE14      "Open this document"
+    ID_FILE_MRU_FILE15      "Open this document"
+    ID_FILE_MRU_FILE16      "Open this document"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_NEXT_PANE            "Switch to the next window pane\nNext Pane"
+    ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_WINDOW_SPLIT         "Split the active window into panes\nSplit"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_EDIT_CLEAR           "Erase the selection\nErase"
+    ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
+    ID_EDIT_COPY            "Original size"
+    ID_EDIT_CUT             "Cut the selection and put it on the Clipboard\nCut"
+    ID_EDIT_FIND            "Find the specified text\nFind"
+    ID_EDIT_PASTE           "Insert Clipboard contents\nPaste"
+    ID_EDIT_REPEAT          "Repeat the last action\nRepeat"
+    ID_EDIT_REPLACE         "Replace specific text with different text\nReplace"
+    ID_EDIT_SELECT_ALL      "Select the entire document\nSelect All"
+    ID_EDIT_UNDO            "Undo the last action\nUndo"
+    ID_EDIT_REDO            "Redo the previously undone action\nRedo"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_VIEW_TOOLBAR         "Show or hide the toolbar\nToggle ToolBar"
+    ID_VIEW_STATUS_BAR      "Show or hide the status bar\nToggle StatusBar"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_SCSIZE          "Change the window size"
+    AFX_IDS_SCMOVE          "Change the window position"
+    AFX_IDS_SCMINIMIZE      "Reduce the window to an icon"
+    AFX_IDS_SCMAXIMIZE      "Enlarge the window to full size"
+    AFX_IDS_SCNEXTWINDOW    "Switch to the next document window"
+    AFX_IDS_SCPREVWINDOW    "Switch to the previous document window"
+    AFX_IDS_SCCLOSE         "Close the active window and prompts to save the documents"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_SCRESTORE       "Restore the window to normal size"
+    AFX_IDS_SCTASKLIST      "Activate Task List"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_3DVIEW_ORTHOGONAL_PROJECTION 
+                            "Switches to orthogonal projection of scene"
+    ID_3DVIEW_PERSPECTIVE_PROJECTION 
+                            "Switches to perspective projection of scene"
+    ID_SHOW_MATERIAL        "Show / hide material block"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_SHOW_LINKS           "Show/hide links"
+    ID_SHOW_MATERIAL_CONTOUR "Show/ hide material block contour"
+    ID_SHOW_TOOL            "Show/hide milling tool"
+    ID_SHOW_TOOL_FRAME      "Show/hide milling tool frame"
+    ID_SHOW_LINKS_FRAMES    "Show/hide small links frames"
+    ID_SHOW_MATERIAL_HOLDER "Show/hide material block holder"
+    ID_SHOW_TOOL_TRAJECTORY "Show/hide milling tool trajectory"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_BUTTON32821          "Show/hide material frame"
+    ID_3DVIEW_FOLLOWMATERIALFRAME "On/off "
+END
+
+STRINGTABLE 
+BEGIN
+    ID_SHOW_BASE            "Show/hide base desktop"
+    ID_SHOW_BASE_FRAME      "Show/hide base (reference) frame"
+    ID_SHOW_LINKS_PARTS     "Show/hide links parts"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_3DVIEW_ZOOM_IN       "Zoom in"
+    ID_3DVIEW_ZOOM_OUT      "Zoom out"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_SHOW_TOOL_BOUNDING_BOX "Show/hide milling tool bounding box"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#include "res\Universal5CMillingMachinePostprocessor.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"         // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

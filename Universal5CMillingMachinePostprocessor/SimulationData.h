@@ -1,0 +1,37 @@
+#pragma once
+
+#include "ChainConfiguration.h"
+
+
+class CSimulationData
+{
+
+public:
+	CSimulationData(size_t n=10000);
+	~CSimulationData(void);
+	int ExportToGCode(	FILE *pFile,
+						size_t nXIndex, 
+						size_t nYIndex,
+						size_t nZIndex,
+						char cAngle1Char,
+						size_t nAngle1Index,
+						char cAngle2Char,
+						size_t nAngle2Index,
+						BOOL bRadians) const;
+	const CChainConfiguration &operator[](size_t n) const;
+	size_t GetSize() const;
+	void ReserveMemory(size_t n);
+	void AddConfigurationSet(const tChainConfigurationVector &vConfigurations);
+	void FindShortestPath(CProgressCtrl &oProgresBar);
+	void DeleteContents();
+	bool NextConfiguration(CChainConfiguration &oChainConfiguration);
+	void ResetConfigurationsIterator();
+protected:
+	vector<tChainConfigurationVector> m_vSolutions; 
+	vector<size_t> m_vIndexes;
+	size_t m_nEmptySolutionsCount;
+	size_t m_nActualSolution;
+public:
+	tChainConfigurationVector GetLastNonemptyConfigutationSet() const;
+	size_t GetEmptySolutionsCount(void);
+};
