@@ -1,6 +1,5 @@
 #include "StdAfx.h"
 #include ".\millingtoolcylinder.h"
-#include ".\MyRect.h"
 #include "argsmyexception.h"
 
 
@@ -21,7 +20,7 @@ CMillingToolCylinder::CMillingToolCylinder
 
 void CMillingToolCylinder::Render2D(CPaintDC &dc) const
 {
-	static CMyRect rt;
+	static CRect rt;
 	dc.GetWindow()->GetClientRect(rt);
 	rt.NormalizeRect();
 	rt.MoveToXY(0,0);

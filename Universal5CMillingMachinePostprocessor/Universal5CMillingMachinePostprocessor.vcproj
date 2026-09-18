@@ -259,10 +259,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\MyRect.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\PostprocessingDialog.cpp"
 				>
 			</File>
@@ -794,10 +790,6 @@
 			</File>
 			<File
 				RelativePath=".\MillingToolPropertiesDialog.h"
-				>
-			</File>
-			<File
-				RelativePath=".\MyRect.h"
 				>
 			</File>
 			<File
