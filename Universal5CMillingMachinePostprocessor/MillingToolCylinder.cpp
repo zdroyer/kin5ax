@@ -36,8 +36,8 @@ void CMillingToolCylinder::Render2D(CPaintDC &dc) const
 	else 
 		dScale = ( (double)(rt.Height()-2*margin))/m_dCuttingHeight;
 	
-	int nRz = round(m_dRz * dScale);
-	int nH = round(m_dCuttingHeight*dScale);
+	int nRz = round_to_int(m_dRz * dScale);
+	int nH = round_to_int(m_dCuttingHeight*dScale);
 
 
 	dc.Rectangle(x0-nRz,z0,x0+nRz,margin);
@@ -52,7 +52,7 @@ void CMillingToolCylinder::Render2D(CPaintDC &dc) const
 	dc.LineTo(rt.Width(),z0);
 	dc.TextOut(10,z0-8,"z=0");
 
-	int nRef = round(m_dReferencePointZ*dScale);
+	int nRef = round_to_int(m_dReferencePointZ*dScale);
 
 	dc.MoveTo(x0,(z0-nRef));
 	dc.LineTo(x0-4,(z0-nRef)-4);

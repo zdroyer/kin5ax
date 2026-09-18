@@ -1,0 +1,336 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\3DGeometry">
+      <UniqueIdentifier>{c6f175a5-5ca3-4b06-a67f-51d33725f08d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Chain">
+      <UniqueIdentifier>{d88427bc-374b-468c-aeb6-830e53457dc9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Exceptions">
+      <UniqueIdentifier>{71d8f975-4eef-4c78-b919-f26b423f18ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Postprocessor">
+      <UniqueIdentifier>{19f8ebea-6adf-4ba6-ab4d-ff7edda0c7cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="3DViewManipulator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ApplicationConfiguration.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BoxDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CLDataFileDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CutterLocationData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GLTools.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="KinematicChainPropertiesDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MainFrm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MaterialBlockDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MillingTool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MillingToolBall.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MillingToolCylinder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MillingToolPreview.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MillingToolPropertiesDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PostprocessingDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="3DGeometry\R3CaughtVector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SettingsDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SimulationData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SimulationDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SingleInputSolverDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="string_tools.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Universal5CMillingMachinePostprocessor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Universal5CMillingMachinePostprocessorDoc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Universal5CMillingMachinePostprocessorView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="3DGeometry\M4x4.cpp">
+      <Filter>Source Files\3DGeometry</Filter>
+    </ClCompile>
+    <ClCompile Include="3DGeometry\Quaternion.cpp">
+      <Filter>Source Files\3DGeometry</Filter>
+    </ClCompile>
+    <ClCompile Include="3DGeometry\R3Box.cpp">
+      <Filter>Source Files\3DGeometry</Filter>
+    </ClCompile>
+    <ClCompile Include="3DGeometry\R3Point.cpp">
+      <Filter>Source Files\3DGeometry</Filter>
+    </ClCompile>
+    <ClCompile Include="3DGeometry\R3Vector.cpp">
+      <Filter>Source Files\3DGeometry</Filter>
+    </ClCompile>
+    <ClCompile Include="3DGeometry\Rotation.cpp">
+      <Filter>Source Files\3DGeometry</Filter>
+    </ClCompile>
+    <ClCompile Include="3DGeometry\Scale.cpp">
+      <Filter>Source Files\3DGeometry</Filter>
+    </ClCompile>
+    <ClCompile Include="3DGeometry\Transformation.cpp">
+      <Filter>Source Files\3DGeometry</Filter>
+    </ClCompile>
+    <ClCompile Include="3DGeometry\Translation.cpp">
+      <Filter>Source Files\3DGeometry</Filter>
+    </ClCompile>
+    <ClCompile Include="Chain\Chain.cpp">
+      <Filter>Source Files\Chain</Filter>
+    </ClCompile>
+    <ClCompile Include="Chain\ChainConfiguration.cpp">
+      <Filter>Source Files\Chain</Filter>
+    </ClCompile>
+    <ClCompile Include="Chain\ChainSegment.cpp">
+      <Filter>Source Files\Chain</Filter>
+    </ClCompile>
+    <ClCompile Include="Exceptions\GeneratorException.cpp">
+      <Filter>Source Files\Exceptions</Filter>
+    </ClCompile>
+    <ClCompile Include="Postprocessor\5CPostprocessor.cpp">
+      <Filter>Source Files\Postprocessor</Filter>
+    </ClCompile>
+    <ClCompile Include="Postprocessor\OrientationPostprocessor.cpp">
+      <Filter>Source Files\Postprocessor</Filter>
+    </ClCompile>
+    <ClCompile Include="Postprocessor\PositionPostprocessor.cpp">
+      <Filter>Source Files\Postprocessor</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="string_tools.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3DGeometry\double_tools.h">
+      <Filter>Source Files\3DGeometry</Filter>
+    </ClInclude>
+    <ClInclude Include="3DGeometry\M4x4.h">
+      <Filter>Source Files\3DGeometry</Filter>
+    </ClInclude>
+    <ClInclude Include="3DGeometry\Quaternion.h">
+      <Filter>Source Files\3DGeometry</Filter>
+    </ClInclude>
+    <ClInclude Include="3DGeometry\R3Box.h">
+      <Filter>Source Files\3DGeometry</Filter>
+    </ClInclude>
+    <ClInclude Include="3DGeometry\R3Point.h">
+      <Filter>Source Files\3DGeometry</Filter>
+    </ClInclude>
+    <ClInclude Include="3DGeometry\R3Vector.h">
+      <Filter>Source Files\3DGeometry</Filter>
+    </ClInclude>
+    <ClInclude Include="3DGeometry\Rotation.h">
+      <Filter>Source Files\3DGeometry</Filter>
+    </ClInclude>
+    <ClInclude Include="3DGeometry\Scale.h">
+      <Filter>Source Files\3DGeometry</Filter>
+    </ClInclude>
+    <ClInclude Include="3DGeometry\Transformation.h">
+      <Filter>Source Files\3DGeometry</Filter>
+    </ClInclude>
+    <ClInclude Include="3DGeometry\Translation.h">
+      <Filter>Source Files\3DGeometry</Filter>
+    </ClInclude>
+    <ClInclude Include="Chain\Chain.h">
+      <Filter>Source Files\Chain</Filter>
+    </ClInclude>
+    <ClInclude Include="Chain\ChainConfiguration.h">
+      <Filter>Source Files\Chain</Filter>
+    </ClInclude>
+    <ClInclude Include="Chain\ChainParameter.h">
+      <Filter>Source Files\Chain</Filter>
+    </ClInclude>
+    <ClInclude Include="Chain\ChainSegment.h">
+      <Filter>Source Files\Chain</Filter>
+    </ClInclude>
+    <ClInclude Include="Exceptions\ArgsMyException.h">
+      <Filter>Source Files\Exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="Exceptions\DivByZeroMyException.h">
+      <Filter>Source Files\Exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="Exceptions\GeneratorException.h">
+      <Filter>Source Files\Exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="Exceptions\InputMyException.h">
+      <Filter>Source Files\Exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="Exceptions\MemoryMyException.h">
+      <Filter>Source Files\Exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="Postprocessor\5CPostprocessor.h">
+      <Filter>Source Files\Postprocessor</Filter>
+    </ClInclude>
+    <ClInclude Include="Postprocessor\OrientationPostprocessor.h">
+      <Filter>Source Files\Postprocessor</Filter>
+    </ClInclude>
+    <ClInclude Include="3DViewManipulator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ApplicationConfiguration.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BoxDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CLDataFileDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CutterLocationData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GLTools.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="KinematicChainPropertiesDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MainFrm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialBlockDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MillingTool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MillingToolBall.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MillingToolCylinder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MillingToolPreview.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MillingToolPropertiesDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Postprocessor\PositionPostprocessor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PostprocessingDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3DGeometry\R3CaughtVector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SettingsDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SimulationData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SimulationDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SingleInputSolverDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Universal5CMillingMachinePostprocessor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Universal5CMillingMachinePostprocessorDoc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Universal5CMillingMachinePostprocessorView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\Toolbar.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Universal5CMillingMachinePostprocessor.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Universal5CMillingMachinePostprocessorDoc.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Universal5CMillingMachinePostprocessor.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\Universal5CMillingMachinePostprocessor.rc2">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="kc.dtd" />
+    <None Include="KinematicChaninPropertiesDialog.htm" />
+    <None Include="Universal5CMillingMachinePostprocessor.reg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="res\Universal5CMillingMachinePostprocessor.manifest" />
+  </ItemGroup>
+</Project>

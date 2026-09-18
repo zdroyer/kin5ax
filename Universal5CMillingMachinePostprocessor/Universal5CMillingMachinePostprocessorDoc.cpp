@@ -103,7 +103,7 @@ BOOL CUniversal5CMillingMachinePostprocessorDoc::OnOpenDocument(LPCTSTR lpszPath
 //		return FALSE;
 	MSXML2::IXMLDOMDocument2Ptr pDOMDoc;
 	
-	HRESULT hr = pDOMDoc.CreateInstance(__uuidof(DOMDocument40));
+	HRESULT hr = pDOMDoc.CreateInstance(__uuidof(DOMDocument60));
 	MSXML2::IXMLDOMDocument2 * pXMLDoc = pDOMDoc;
 	if (FAILED(hr))
 	{
@@ -113,6 +113,8 @@ BOOL CUniversal5CMillingMachinePostprocessorDoc::OnOpenDocument(LPCTSTR lpszPath
 	}
 	pDOMDoc->put_async(VARIANT_FALSE);
 	pDOMDoc->put_validateOnParse(VARIANT_TRUE);
+	// MSXML 6 prohibits DTDs by default; .kc files carry an inline DTD
+	pDOMDoc->setProperty(_bstr_t("ProhibitDTD"), _variant_t(false));
 	_bstr_t bstrURL = lpszPathName;
 	VARIANT_BOOL varResult = pDOMDoc->load(_variant_t(bstrURL));
 	if (VARIANT_FALSE == varResult)

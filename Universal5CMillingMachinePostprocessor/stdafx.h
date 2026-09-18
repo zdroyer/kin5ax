@@ -67,5 +67,5 @@ using namespace std;
 #include "ApplicationConfiguration.h"
 
 
-#import <msxml4.dll>
+#import <msxml6.dll>
 using namespace MSXML2;

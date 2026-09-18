@@ -1,0 +1,13 @@
+# Visual Studio IDE state
+.vs/
+*.vcxproj.user
+
+# Leftovers from the upgrade to the VS2022 project format
+Backup*/
+UpgradeLog*.htm
+
+# Build output and intermediates
+Debug/
+Release/
+x64/
+Universa.*/

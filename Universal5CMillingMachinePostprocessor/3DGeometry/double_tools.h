@@ -58,7 +58,7 @@ inline double radians_to_degrees(double radians){
 	return degrees;
 }
 
-inline int round(double d){
+inline int round_to_int(double d){
 	int n = (int)d;
 	double e = d - (double)n;
 	if(e>=0.5)
