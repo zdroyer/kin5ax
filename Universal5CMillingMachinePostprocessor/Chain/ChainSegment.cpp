@@ -93,7 +93,7 @@ CChainSegment::CChainSegment(MSXML2::IXMLDOMNodePtr & pNode)
 		&& doubleValue(pAttributesMap,"parameter_value_maximum",m_dParameterValueMaximum)){
 	
 		m_bParameterIsConstrained = true;
-		if(m_type=CHAIN_SEGMENT_REVOLUTE_LINK){
+		if(m_type==CHAIN_SEGMENT_REVOLUTE_LINK){
 			m_dParameterValueMaximum = degrees_to_radians(m_dParameterValueMaximum);
 			m_dParameterValueMinimum = degrees_to_radians(m_dParameterValueMinimum);
 		}
