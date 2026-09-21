@@ -25,7 +25,7 @@ void CCutterLocationData::LoadFile(const string & sFileName, const string &sFile
 	long nFileLength = _filelength(nFileHandle);
 	if(nFileLength==-1)
 		MY_THROW(CArgsMyException,"Problem with obtaining size of file: "+sFileName+"\n"+strerror(errno)); 
-	if( nFileLength> (long)m_vLines.max_size() ){
+	if( (size_t)nFileLength > m_vLines.max_size() ){
 		_close(nFileHandle);
 		MY_THROW(CArgsMyException,"Size of file: "+sFileName+" is too big"); 
 	}
