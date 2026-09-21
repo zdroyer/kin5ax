@@ -89,25 +89,23 @@ CRotation::CRotation(const CR3Vector &v, double angle):CTransformation(1)
 
 CRotation::CRotation(const CR3Vector &r3vV0, const CR3Vector &r3vV1)
 {
-
-	CR3Vector axis = r3vV0.GetVersor().vectorProduct(r3vV1.GetVersor());
-	double x=axis.GetX(), y=axis.GetY(), z=axis.GetZ();
+	CR3Vector v0 = r3vV0.GetVersor();
+	CR3Vector v1 = r3vV1.GetVersor();
+	//the vector product of two versors is the rotation axis, but its length is the sinus
+	//of their angle, not 1: the (axis, angle) constructor normalises it
+	CR3Vector axis = v0.vectorProduct(v1);
 	double s=axis.GetLength();
-	double c=r3vV0.GetVersor().scalarProduct(r3vV1.GetVersor());
-	double t=1-c;
-
-	M[0][0]=t*x*x+c;
-	M[0][1]=t*x*y+s*z;
-	M[0][2]=t*x*z-s*y;
-
-	M[1][0]=t*x*y-s*z;
-	M[1][1]=t*y*y+c;
-	M[1][2]=t*y*z+s*x;
-
-	M[2][0]=t*x*z+s*y;
-	M[2][1]=t*y*z-s*x;
-	M[2][2]=t*z*z+c;
-	
+	double c=v0.scalarProduct(v1);
+	if(is_zero(s,1E-12)){
+		if(c>0.0)
+			return;	//the same direction: identity
+		//opposite directions: half a turn about any axis perpendicular to v0
+		axis = v0.vectorProduct(CR3Vector(1.0,0.0,0.0));
+		if(is_zero(axis.GetLength(),1E-6))
+			axis = v0.vectorProduct(CR3Vector(0.0,1.0,0.0));
+	}
+	CRotation r(axis,atan2(s,c));
+	memcpy(M,r.M,16*sizeof(double));
 }
 
 CR3Vector CRotation::GetAxis() const 
