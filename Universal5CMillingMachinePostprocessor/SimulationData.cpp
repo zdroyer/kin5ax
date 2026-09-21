@@ -24,7 +24,7 @@ int CSimulationData::ExportToGCode(
 						size_t nAngle1Index,
 						char cAngle2Char,
 						size_t nAngle2Index,
-						BOOL bRadians) const
+						bool bRadians) const
 {
 	static char sLine[255];
 	sLine[254]=0;
@@ -105,16 +105,19 @@ tChainConfigurationVector CSimulationData::GetLastNonemptyConfigutationSet() con
 
 typedef vector<size_t> tSizeTVector;
 
-void CSimulationData::FindShortestPath(CProgressCtrl &oProgresBar)
+static void ReportProgress(CProgressCallback *pProgress, double dFraction)
 {
-	int nLower,nUpper;
-	oProgresBar.GetRange(nLower,nUpper);
-	double dProgresRange = double(nUpper-nLower);
-	oProgresBar.SetPos(nLower);
+	if(pProgress)
+		pProgress->SetProgress(dFraction);
+}
+
+void CSimulationData::FindShortestPath(CProgressCallback *pProgress)
+{
+	ReportProgress(pProgress,0.0);
 	for(size_t k =0; k< m_vIndexes.size();k++)
 		m_vIndexes[k]=0;
 	if(m_vIndexes.size()<3){
-		oProgresBar.SetPos(nUpper);			
+		ReportProgress(pProgress,1.0);
 		return;
 	}
 	vector<tSizeTVector> vvClosestNeighbourIndexes(m_vSolutions.size(),tSizeTVector());
@@ -161,7 +164,7 @@ void CSimulationData::FindShortestPath(CProgressCtrl &oProgresBar)
 	double dProgressCoef = 0.9;
 
 	while(j<m_vSolutions.size()){
-		oProgresBar.SetPos(nLower+(int)((double)j*dProgresRange*dProgressCoef/(double)m_vSolutions.size()));
+		ReportProgress(pProgress,(double)j*dProgressCoef/(double)m_vSolutions.size());
 		vDistances1 = vDistances2;
 		vDistances2.erase(vDistances2.begin(),vDistances2.end());
 		vDistances2.reserve(m_vSolutions[j].size());
@@ -211,7 +214,7 @@ void CSimulationData::FindShortestPath(CProgressCtrl &oProgresBar)
 	m_vIndexes[m_vIndexes.size()-1]=nInd;
 	size_t l=1;
 	for( size_t m = vvClosestNeighbourIndexes.size()-2 ; m>0&&m<vvClosestNeighbourIndexes.size() ; m-- ){
-		oProgresBar.SetPos(nLower+(int)(dProgresRange*dProgressCoef+((double)j*dProgresRange*(1.0-dProgressCoef)/(double)m_vSolutions.size())));
+		ReportProgress(pProgress,dProgressCoef+((double)j*(1.0-dProgressCoef)/(double)m_vSolutions.size()));
 		if(m_vSolutions[m].size()){
 			size_t nn = m_vIndexes[m+l];
 			m_vIndexes[m]=vvClosestNeighbourIndexes[m+l][nn];
@@ -222,8 +225,7 @@ void CSimulationData::FindShortestPath(CProgressCtrl &oProgresBar)
 			m_vIndexes[m]=0;
 		}
 	}
-	oProgresBar.SetPos(nUpper);
-	oProgresBar.GetParent()->SetWindowText("4/4 deallocating memory in progress...");
+	ReportProgress(pProgress,1.0);
 }		
 
 void CSimulationData::DeleteContents()

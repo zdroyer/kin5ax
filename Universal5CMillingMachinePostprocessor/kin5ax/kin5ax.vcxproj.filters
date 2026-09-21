@@ -158,6 +158,7 @@
       <Filter>Postprocessor</Filter>
     </ClInclude>
     <ClInclude Include="PostprocessorSettings.h" />
+    <ClInclude Include="ProgressCallback.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="string_tools.h" />
   </ItemGroup>

@@ -255,6 +255,7 @@
     <ClInclude Include="CutterLocationData.h" />
     <ClInclude Include="MillingToolRendererGDI.h" />
     <ClInclude Include="MillingToolRendererGL.h" />
+    <ClInclude Include="ProgressCtrlCallback.h" />
     <ClInclude Include="R3BoxRendererGL.h" />
     <ClInclude Include="GLTools.h" />
     <ClInclude Include="KinematicChainPropertiesDialog.h" />

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ChainConfiguration.h"
+#include "ProgressCallback.h"
 
 
 class CSimulationData
@@ -17,12 +18,13 @@ public:
 						size_t nAngle1Index,
 						char cAngle2Char,
 						size_t nAngle2Index,
-						BOOL bRadians) const;
+						bool bRadians) const;
 	const CChainConfiguration &operator[](size_t n) const;
 	size_t GetSize() const;
 	void ReserveMemory(size_t n);
 	void AddConfigurationSet(const tChainConfigurationVector &vConfigurations);
-	void FindShortestPath(CProgressCtrl &oProgresBar);
+	//pProgress may be NULL
+	void FindShortestPath(CProgressCallback *pProgress);
 	void DeleteContents();
 	bool NextConfiguration(CChainConfiguration &oChainConfiguration);
 	void ResetConfigurationsIterator();

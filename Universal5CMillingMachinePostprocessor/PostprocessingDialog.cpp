@@ -6,6 +6,7 @@
 #include "postprocessingdialog.h"
 #include "settingsdialog.h"
 #include "string_tools.h"
+#include "ProgressCtrlCallback.h"
 #include ".\postprocessingdialog.h"
 // CPostprocessingDialog dialog
 
@@ -317,7 +318,8 @@ void CPostprocessingDialog::OnBnClickedStart()
 	}
 	m_progressPostprocessing.SetPos(100);
 	SetWindowText("2/4 finding shortest path in progres...");
-	m_pDoc->m_oSimulationData.FindShortestPath(m_progressPostprocessing);
+	CProgressCtrlCallback oProgress(m_progressPostprocessing);
+	m_pDoc->m_oSimulationData.FindShortestPath(&oProgress);
 	m_progressPostprocessing.SetPos(100);
 	m_buttonStart.EnableWindow(TRUE);
 	m_buttonSaveGCode.EnableWindow(TRUE);
@@ -567,7 +569,7 @@ void CPostprocessingDialog::OnBnClickedButtonSaveGcode()
 			,m_vRotationsIndexes[m_nAngle1NameIndex]
 			,m_sAngle2GCodeName[0]
 			,m_vRotationsIndexes[m_nAngle2NameIndex]
-			,m_bRadians);
+			,m_bRadians!=FALSE);
 		if(res<0)
 			MessageBox("Cannot write to file: "+dlg.GetPathName()+"\nNC-file not saved (or partially saved)");
 		fclose(pFile);			
