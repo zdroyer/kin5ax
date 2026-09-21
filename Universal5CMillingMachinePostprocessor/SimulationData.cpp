@@ -2,6 +2,8 @@
 #include ".\simulationdata.h"
 #include "string_tools.h"
 
+extern CPostprocessorSettings oPostprocessorSettings;
+
 CSimulationData::CSimulationData(size_t n)
 :m_nEmptySolutionsCount(0)
 ,m_nActualSolution(0)
@@ -172,11 +174,11 @@ void CSimulationData::FindShortestPath(CProgressCtrl &oProgresBar)
 		vDistances2 = vector<double>(m_vSolutions[j].size(),dMinD);
 		for(size_t l=0;l<m_vSolutions[j].size();l++){
 			double d0 = vDistances1[0];
-			dMinD = m_vSolutions[i][0].Distance(m_vSolutions[j][l])+d0;
+			dMinD = m_vSolutions[i][0].Distance(m_vSolutions[j][l],oPostprocessorSettings)+d0;
 			nMinII=0;
 			for(size_t k=1; k<m_vSolutions[i].size ();k++){
 				double dd0 = vDistances1[k];
-				double d = m_vSolutions[i][k].Distance(m_vSolutions[j][l]) + dd0;
+				double d = m_vSolutions[i][k].Distance(m_vSolutions[j][l],oPostprocessorSettings) + dd0;
 				if(d<dMinD){
 					dMinD=d;
 					nMinII = k;

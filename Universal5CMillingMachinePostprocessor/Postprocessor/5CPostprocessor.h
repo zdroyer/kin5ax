@@ -2,6 +2,7 @@
 #include "../Chain/Chain.h"
 #include "orientationpostprocessor.h"
 #include "positionpostprocessor.h"
+#include "PostprocessorSettings.h"
 #include "../millingtool.h"
 
 
@@ -13,7 +14,7 @@ class C5CPostprocessor
 protected:
 	
 public:
-	C5CPostprocessor(const CChain &oChain);
+	C5CPostprocessor(const CChain &oChain, const CPostprocessorSettings &oSettings);
 	~C5CPostprocessor(void);
 	vector<tChainConfigurationWithResult> SolveWithLocations(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,CMillingTool &oMillingTool,string &sLog);
 	tChainConfigurationVector Solve(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,CMillingTool &oMillingTool,string &sLog);
@@ -30,6 +31,11 @@ protected:
 	void CreateSigns(const CChain &oChain);
 	void CreateOrientationPostprocessor(const CChain &oChain);
 	void CreatePositionPostprocessor(const CChain &oChain);
+
+	//Copy of the settings, taken when the postprocessor is created: the postprocessor does not depend
+	//on any global object and later changes of the settings do not affect an existing postprocessor
+	//(create a new one to apply them).
+	CPostprocessorSettings m_oSettings;
 
 	COrientationPostprocessor m_oOrientationPostprocessor;
 	CPositionPostprocessor m_oPositionPostprocessor;

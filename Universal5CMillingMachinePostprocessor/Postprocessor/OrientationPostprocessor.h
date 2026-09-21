@@ -2,6 +2,7 @@
 #include "r3vector.h"
 #include "chainconfiguration.h"
 #include "rotation.h"
+#include "PostprocessorSettings.h"
 
 
 class COrientationPostprocessor
@@ -12,6 +13,7 @@ public:
 	~COrientationPostprocessor(void);
 	void CheckAxes() const;
 	void SetAxes(const CTransformation &m4x4F2, const CR3Vector& r3vV3);
+	void SetSettings(const CPostprocessorSettings &oSettings);
 	vector<CChainConfiguration> Solve(const CR3Vector& r3vV0) const;
 	size_t SolutionsNumber(const CR3Vector& r3vV0) const;
 
@@ -22,6 +24,9 @@ protected:
 	vector<CChainConfiguration> SolveAlpha2ThenAlpha1(const CR3Vector& r3vV0) const;
 
 	bool m_bAxesSet;
+
+	//copy of the solver settings (methods of the angles computation)
+	CPostprocessorSettings m_oSettings;
 
 	//const: PI value
 	double m_dPiValue;

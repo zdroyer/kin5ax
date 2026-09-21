@@ -1,5 +1,6 @@
 #pragma once
 #include "chainparameter.h"
+#include "PostprocessorSettings.h"
 #include "string_tools.h"
 
 
@@ -24,7 +25,7 @@ public:
 	void SetAmbiguousParameter(double dVal);
 	bool IsAmbiguous() const;
 	vector<CChainConfiguration> GetEquivalents()const;
-	double Distance(const CChainConfiguration &c2) const; 
+	double Distance(const CChainConfiguration &c2, const CPostprocessorSettings &oSettings) const; 
 	void ZeroAll();
 	string toString(bool bTwoLines = false,string sEndLine=sNL) const;
 	CChainParameter & operator[](size_t i);

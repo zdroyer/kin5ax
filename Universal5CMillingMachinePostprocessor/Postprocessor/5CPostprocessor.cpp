@@ -4,11 +4,13 @@
 
 extern CR3Vector r3vOZ;
 
-C5CPostprocessor::C5CPostprocessor(const CChain &oChain)
-:m_vSigns(5,1.0)
+C5CPostprocessor::C5CPostprocessor(const CChain &oChain, const CPostprocessorSettings &oSettings)
+:m_oSettings(oSettings)
+,m_vSigns(5,1.0)
 ,m_m4x4InitialOrientationTransformation(1.0)
 ,m_m4x4InitialPositionTransformation(1.0)									
 {
+	m_oOrientationPostprocessor.SetSettings(m_oSettings);
 	CreateSigns(oChain);
 	CreateOrientationPostprocessor(oChain);
 	CreatePositionPostprocessor(oChain);

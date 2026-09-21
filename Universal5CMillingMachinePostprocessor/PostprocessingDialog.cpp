@@ -192,7 +192,7 @@ void CPostprocessingDialog::OnBnClickedStart()
 	}
 	
 	m_vsProblemsLogs.erase(m_vsProblemsLogs.begin(),m_vsProblemsLogs.end());
-	C5CPostprocessor oPostporcessor(m_pDoc->m_oChain);
+	C5CPostprocessor oPostporcessor(m_pDoc->m_oChain,oPostprocessorSettings);
 	CCutterLocationData &data = m_pDoc->m_oCutterLocationData;
 	CR3Point p1,p2,pi;
 	CR3Vector v1,v2,vi;

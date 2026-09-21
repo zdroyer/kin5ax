@@ -17,6 +17,7 @@
 
 
 extern CApplicationConfiguration oConfiguration;
+extern CPostprocessorSettings oPostprocessorSettings;
 extern CGLTools oGLTools;
 // CUniversal5CMillingMachinePostprocessorDoc
 
@@ -165,7 +166,7 @@ C5CPostprocessor * CUniversal5CMillingMachinePostprocessorDoc::GetPostprocessor(
 	if(m_pPostprocessor!=0)
 		delete m_pPostprocessor;
 	if(m_oChain.Is5CChain()){
-		m_pPostprocessor = new C5CPostprocessor(m_oChain);
+		m_pPostprocessor = new C5CPostprocessor(m_oChain,oPostprocessorSettings);
 		return m_pPostprocessor;
 	} else {
 		MY_THROW(CGeneratorException,"Attempt to create postprocessor for non-5C chain ");

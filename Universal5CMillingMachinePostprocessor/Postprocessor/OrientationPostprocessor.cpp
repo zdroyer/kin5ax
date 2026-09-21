@@ -2,7 +2,6 @@
 #include "OrientationPostprocessor.h"
 
 extern CR3Vector r3vOZ;
-extern CPostprocessorSettings oPostprocessorSettings;
 
 COrientationPostprocessor::COrientationPostprocessor(const CTransformation &m4x4F2, const CR3Vector &r3vV3)
 {
@@ -18,6 +17,10 @@ COrientationPostprocessor::COrientationPostprocessor(void)
 :m_bAxesSet(false)
 {
 	m_dPiValue = acos(-1.0);
+}
+void COrientationPostprocessor::SetSettings(const CPostprocessorSettings &oSettings)
+{
+	m_oSettings = oSettings;
 }
 void COrientationPostprocessor::SetAxes(const CTransformation &m4x4F2, const CR3Vector &r3vV3)
 {
@@ -99,11 +102,11 @@ vector<CChainConfiguration> COrientationPostprocessor::SolveIndependently(const 
 {
 	vector<CChainParameter> vAlpha1; 
 	vector<CChainParameter> vAlpha2;
-	if(oPostprocessorSettings.m_nAlpha1Method==ALPHA1_AXIS_MULTIPLICATION)
+	if(m_oSettings.m_nAlpha1Method==ALPHA1_AXIS_MULTIPLICATION)
         vAlpha1 = getAlpha1AxisMethod(V0);
 	else 
 		vAlpha1 = getAlpha1ConeMethod(V0);
-	if(oPostprocessorSettings.m_nAlpha2Method==ALPHA2_AXIS_MULTIPLICATION)
+	if(m_oSettings.m_nAlpha2Method==ALPHA2_AXIS_MULTIPLICATION)
         vAlpha2 = getAlpha2AxisMethod(V0);
 	else
 		vAlpha2 = getAlpha2SquareEquation(V0);
@@ -134,7 +137,7 @@ vector<CChainConfiguration> COrientationPostprocessor::SolveIndependently(const 
 vector<CChainConfiguration> COrientationPostprocessor::SolveAlpha1ThenAlpha2(const CR3Vector& V0) const
 {
 	vector<CChainParameter> vAlpha1; 
-	if(oPostprocessorSettings.m_nAlpha1Method==ALPHA1_AXIS_MULTIPLICATION)
+	if(m_oSettings.m_nAlpha1Method==ALPHA1_AXIS_MULTIPLICATION)
         vAlpha1 = getAlpha1AxisMethod(V0);
 	else 
 		vAlpha1 = getAlpha1ConeMethod(V0);
@@ -155,7 +158,7 @@ vector<CChainConfiguration> COrientationPostprocessor::SolveAlpha1ThenAlpha2(con
 vector<CChainConfiguration> COrientationPostprocessor::SolveAlpha2ThenAlpha1(const CR3Vector& V0) const
 {
 	vector<CChainParameter> vAlpha2;
-	if(oPostprocessorSettings.m_nAlpha2Method==ALPHA2_AXIS_MULTIPLICATION)
+	if(m_oSettings.m_nAlpha2Method==ALPHA2_AXIS_MULTIPLICATION)
         vAlpha2 = getAlpha2AxisMethod(V0);
 	else
 		vAlpha2 = getAlpha2SquareEquation(V0);
@@ -185,7 +188,7 @@ vector<CChainConfiguration> COrientationPostprocessor::Solve(const CR3Vector& r3
 	CR3Vector V0 = r3vV0.GetVersor();
 
 	size_t nResultNumber = SolutionsNumber(V0);
-	switch(oPostprocessorSettings.m_nAnglesSolvingMethod){
+	switch(m_oSettings.m_nAnglesSolvingMethod){
 		case ANGLES_SOLVING_INDEPENDENTLY:
 			return SolveIndependently(V0);
 		case ANGLES_SOLVING_ALPHA1_THEN_ALPHA2:
