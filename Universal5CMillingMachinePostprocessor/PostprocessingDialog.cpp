@@ -7,6 +7,7 @@
 #include "settingsdialog.h"
 #include "string_tools.h"
 #include "ProgressCtrlCallback.h"
+#include "CLDataPostprocessor.h"
 #include ".\postprocessingdialog.h"
 // CPostprocessingDialog dialog
 
@@ -193,115 +194,28 @@ void CPostprocessingDialog::OnBnClickedStart()
 	}
 	
 	m_vsProblemsLogs.erase(m_vsProblemsLogs.begin(),m_vsProblemsLogs.end());
-	C5CPostprocessor oPostporcessor(m_pDoc->m_oChain,oPostprocessorSettings);
-	CCutterLocationData &data = m_pDoc->m_oCutterLocationData;
-	CR3Point p1,p2,pi;
-	CR3Vector v1,v2,vi;
 	m_editReport.SetWindowText("");
 	m_vSolutions.erase(m_vSolutions.begin(),m_vSolutions.end());
-
-	size_t n = max(1,data.GetLocationsCount()/300);
-	vector<pair<double,CR3CaughtVector> > vIntermediateLocations;
-
-	data.ResetLocationIterator();
-	data.GetNextLocation(p1,v1);
-	data.ResetLocationIterator();
-	m_pDoc->m_oSimulationData.DeleteContents();
 	SetWindowText("1/4 postprocessing in progress...");
-	string sLog;
-	bool bCollectingAmbiguousSollutions=false;
-	vector<CR3CaughtVector> vAmbiguousCollection;
-	vAmbiguousCollection.reserve(50);
-	CR3CaughtVector lastInput(CR3Vector(0.0),CR3Point(0.0));
 	m_timeBegin = m_timeBegin.GetCurrentTime();
-	for(int i=0; data.GetNextLocation(p2,v2);i++){
-		InterpolateLoaction(p1,v1,p2,v2,vIntermediateLocations);
-		for(size_t j=0;j<vIntermediateLocations.size();j++){
-			sLog="";
-			tChainConfigurationVector vSolutions = oPostporcessor.Solve
-				(vIntermediateLocations[j].second.m_p
-				,vIntermediateLocations[j].second.m_v
-				,m_pDoc->m_oChain
-				,*m_pDoc->m_pMillingTool
-				,sLog);
-			if(vSolutions.size() && vSolutions[0].IsAmbiguous()){
-				if(!bCollectingAmbiguousSollutions){
-					vAmbiguousCollection.erase(vAmbiguousCollection.begin(),vAmbiguousCollection.end());
-					vAmbiguousCollection.push_back(lastInput);
-					bCollectingAmbiguousSollutions=true;
-				}
-				vAmbiguousCollection.push_back(vIntermediateLocations[j].second);
-				if(j+1>=vIntermediateLocations.size() && !data.HasMoreLocations()){
-					string sSingularSolutionLog="";
-					vector<tChainConfigurationVector> vUnambiguous = oPostporcessor.SolveSingularOrientation(vAmbiguousCollection,m_pDoc->m_oChain,*m_pDoc->m_pMillingTool,sSingularSolutionLog);
-					for(size_t q=0;q<vUnambiguous.size();q++)
-						m_pDoc->m_oSimulationData.AddConfigurationSet(vUnambiguous[q]);
-					if(m_bDetailedReport)
-						fprintf(pFile,"%s\n",sSingularSolutionLog.c_str());
-					bCollectingAmbiguousSollutions=false;
-				}
-			} else {
-				if(bCollectingAmbiguousSollutions){
-					vAmbiguousCollection.push_back(vIntermediateLocations[j].second);
-					string sSingularSolutionLog="";
-					vector<tChainConfigurationVector> vUnambiguous = oPostporcessor.SolveSingularOrientation(vAmbiguousCollection,m_pDoc->m_oChain,*m_pDoc->m_pMillingTool,sSingularSolutionLog);
-					for(size_t q=0;q<vUnambiguous.size();q++)
-						m_pDoc->m_oSimulationData.AddConfigurationSet(vUnambiguous[q]);
-					if(m_bDetailedReport)
-						fprintf(pFile,"%s\n",sSingularSolutionLog.c_str());
-					bCollectingAmbiguousSollutions=false;
-				} 
-                m_pDoc->m_oSimulationData.AddConfigurationSet(vSolutions);
-			}
-			lastInput.m_p = vIntermediateLocations[j].second.m_p;
-			lastInput.m_v = vIntermediateLocations[j].second.m_v;
-			m_nTotalProblemsCount++;
-
-			for(size_t k=0;k<vSolutions.size();k++){
-				m_pDoc->m_oChain.ComputeAndSetError(vSolutions[k],lastInput);
-				if(m_dMaxOrientationErrorVectorLength<vSolutions[k].GetOrientationErrorInDistanceUnit()){
-					m_dMaxOrientationErrorVectorLength = vSolutions[k].GetOrientationErrorInDistanceUnit();
-					m_oMaxOrientationErrorSolution = vSolutions[k];
-					m_cvMaxOrientationErrorInput = lastInput;
-				}
-				if(m_dMaxPositionError < vSolutions[k].GetPositionError()){
-					m_dMaxPositionError = vSolutions[k].GetPositionError();
-					m_oMaxPositionErrorSolution = vSolutions[k];
-					m_cvMaxPositionErrorInput = lastInput;
-				}
-			}
-			
-			if(m_bDetailedReport){
-				string s = "XYZ:"+vIntermediateLocations[j].second.m_p.toString()+", IJK:"+vIntermediateLocations[j].second.m_v.toString()+", location no. "+size_to_string(i+1);
-				string s2="";
-
-				for(size_t k=0;k<vSolutions.size();k++){
-					s2+=(""+vSolutions[k].toString()+"\n; ");
-				}
-				if(vSolutions.size()){
-					s2+=sNL;
-				}
-				switch(m_nDetailedReportContents){
-					case 0:
-						fprintf(pFile,"%s\n%s%s\n",s.c_str(),sLog.c_str(),s2.c_str());
-						break;
-					case 1:
-						if(vSolutions.size()<2)
-							fprintf(pFile,"%s\n%s%s\n",s.c_str(),sLog.c_str(),s2.c_str());
-						break;
-					default:
-						if(vSolutions.size()<2)
-							fprintf(pFile,"%s\n%s",s.c_str(),sLog.c_str());
-				}				
-
-			}
-		}
-		if(i%n==0){
-			m_progressPostprocessing.SetPos((int)(100*i/data.GetLocationsCount()));
-		}
-		p1=p2;
-		v1=v2;
-	}
+	//the postprocessing itself is done by the kin5ax library
+	CProgressCtrlCallback oPostprocessingProgress(m_progressPostprocessing);
+	CCLDataPostprocessor oCLDataPostprocessor(oPostprocessorSettings);
+	CCLDataPostprocessingResult oResult = oCLDataPostprocessor.Process
+		(m_pDoc->m_oChain
+		,*m_pDoc->m_pMillingTool
+		,m_pDoc->m_oCutterLocationData
+		,m_pDoc->m_oSimulationData
+		,pFile
+		,m_nDetailedReportContents
+		,&oPostprocessingProgress);
+	m_nTotalProblemsCount = oResult.m_nTotalProblemsCount;
+	m_dMaxPositionError = oResult.m_dMaxPositionError;
+	m_oMaxPositionErrorSolution = oResult.m_oMaxPositionErrorSolution;
+	m_cvMaxPositionErrorInput = oResult.m_cvMaxPositionErrorInput;
+	m_dMaxOrientationErrorVectorLength = oResult.m_dMaxOrientationErrorVectorLength;
+	m_oMaxOrientationErrorSolution = oResult.m_oMaxOrientationErrorSolution;
+	m_cvMaxOrientationErrorInput = oResult.m_cvMaxOrientationErrorInput;
 	m_timeEnd = CTime::GetCurrentTime();
 
 	if(pFile){
@@ -336,33 +250,6 @@ void CPostprocessingDialog::OnBnClickedStart()
 	}
 }
 
-void CPostprocessingDialog::InterpolateLoaction
-	( const CR3Point &p1
-	, const CR3Vector &v1
-	, const CR3Point &p2
-	, const CR3Vector &v2
-	, vector<pair<double,CR3CaughtVector> > & result)
-{
-	result.erase(result.begin(),result.end());
-	if(p1==p2 && v1==v2){
-		result.push_back(pair<double,CR3CaughtVector>(1.0,CR3CaughtVector(v2,p2)));	
-		return;
-	}
-	double dAngle = (v1.UndirectedVersorsAngle(v2)/oPostprocessorSettings.m_dMaxOrientationDifferenceRadians);
-	double dDistance = (d_E(p1,p2)/oPostprocessorSettings.m_dMaxPositionDifference);
-	double dInv = ceil(max(dAngle,dDistance));
-	if(dInv<=1.0){
-		result.push_back(pair<double,CR3CaughtVector>(1.0,CR3CaughtVector(v2,p2)));
-		return;
-	} 
-	double t;
-	result.reserve((size_t)fabs(dInv));
-	for(double i=1.0;i<dInv-0.001; i++){
-		t = i/dInv;
-		result.push_back(pair<double,CR3CaughtVector>(t,CR3CaughtVector(((v2*t)+(v1*(1.0-t))).GetVersor(),(p2*t)+(p1*(1.0-t)))));
-	}
-	result.push_back(pair<double,CR3CaughtVector>(1.0,CR3CaughtVector(v2,p2)));
-}
 string CPostprocessingDialog::GenerateReportHead() const
 {
 	assert(m_pDoc);

@@ -25,12 +25,6 @@ protected:
 	string GenerateReportHead() const;
 	vector<string> m_vsProblemsLogs;
 	vector<tChainConfigurationVector> m_vSolutions; 
-	void InterpolateLoaction
-		( const CR3Point &p1
-		, const CR3Vector &v1
-		, const CR3Point &p2
-		, const CR3Vector &v2
-		, vector<pair<double,CR3CaughtVector> > & result);
 
 	CTime m_timeBegin, m_timeEnd;
 	void UpdateProblemsCountControl();

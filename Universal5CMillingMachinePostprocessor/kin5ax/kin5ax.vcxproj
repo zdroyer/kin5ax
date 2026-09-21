@@ -154,6 +154,7 @@
     <ClCompile Include="Postprocessor\5CPostprocessor.cpp" />
     <ClCompile Include="Postprocessor\OrientationPostprocessor.cpp" />
     <ClCompile Include="Postprocessor\PositionPostprocessor.cpp" />
+    <ClCompile Include="CLDataPostprocessor.cpp" />
     <ClCompile Include="CutterLocationData.cpp" />
     <ClCompile Include="PostprocessorSettings.cpp" />
     <ClCompile Include="SimulationData.cpp" />
@@ -185,6 +186,7 @@
     <ClInclude Include="Postprocessor\5CPostprocessor.h" />
     <ClInclude Include="Postprocessor\OrientationPostprocessor.h" />
     <ClInclude Include="Postprocessor\PositionPostprocessor.h" />
+    <ClInclude Include="CLDataPostprocessor.h" />
     <ClInclude Include="CutterLocationData.h" />
     <ClInclude Include="PostprocessorSettings.h" />
     <ClInclude Include="ProgressCallback.h" />

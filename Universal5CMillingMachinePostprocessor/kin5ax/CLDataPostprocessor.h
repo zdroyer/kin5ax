@@ -1,0 +1,66 @@
+#pragma once
+
+#include "Chain.h"
+#include "MillingTool.h"
+#include "CutterLocationData.h"
+#include "SimulationData.h"
+#include "PostprocessorSettings.h"
+#include "ProgressCallback.h"
+
+//Statistics of one CCLDataPostprocessor::Process run
+class CCLDataPostprocessingResult
+{
+public:
+	CCLDataPostprocessingResult(void)
+		:m_nTotalProblemsCount(0)
+		,m_dMaxPositionError(-1.0)
+		,m_dMaxOrientationErrorVectorLength(-1.0)
+	{}
+	//solved problems: the cutter locations of the file and the interpolated ones
+	size_t m_nTotalProblemsCount;
+
+	//the biggest errors of the returned solutions (-1.0: no solution at all) with their inputs
+	double m_dMaxPositionError;
+	CChainConfiguration m_oMaxPositionErrorSolution;
+	CR3CaughtVector m_cvMaxPositionErrorInput;
+	double m_dMaxOrientationErrorVectorLength;
+	CChainConfiguration m_oMaxOrientationErrorSolution;
+	CR3CaughtVector m_cvMaxOrientationErrorInput;
+};
+
+//Batch postprocessing of CL-data: every cutter location (and the locations interpolated
+//between two of them) is solved for the given kinematic chain; the solution sets go to
+//a CSimulationData (the shortest path through them is found later by CSimulationData).
+class CCLDataPostprocessor
+{
+public:
+	//a copy of the settings is kept (see C5CPostprocessor)
+	CCLDataPostprocessor(const CPostprocessorSettings &oSettings);
+	~CCLDataPostprocessor(void);
+
+	//oChain, oTool: their actual parameters/position are changed during solving
+	//oSimulationData: its contents are replaced
+	//pDetailedReport: NULL or an open text file for the log of the problems
+	//nDetailedReportContents: 0 - all problems, 1 - those with less than 2 solutions (with the solutions),
+	//                         2 - those with less than 2 solutions (the solver log only)
+	//pProgress: NULL or the receiver of the progress
+	CCLDataPostprocessingResult Process
+		(CChain &oChain
+		,CMillingTool &oTool
+		,CCutterLocationData &oData
+		,CSimulationData &oSimulationData
+		,FILE *pDetailedReport
+		,int nDetailedReportContents
+		,CProgressCallback *pProgress);
+
+	//linear interpolation between two cutter locations, as dense as the settings demand;
+	//result: pairs of (0..1 parameter, location), the last one is always (1.0, second location)
+	void InterpolateLocation
+		( const CR3Point &p1
+		, const CR3Vector &v1
+		, const CR3Point &p2
+		, const CR3Vector &v2
+		, vector<pair<double,CR3CaughtVector> > & result) const;
+protected:
+	CPostprocessorSettings m_oSettings;
+};
