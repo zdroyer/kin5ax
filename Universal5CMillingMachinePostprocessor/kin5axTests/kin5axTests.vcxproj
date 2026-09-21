@@ -165,6 +165,7 @@
     <ClInclude Include="TestData.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="build_and_test.ps1" />
     <None Include="packages.config" />
     <None Include="TestChains\3CWithSphericalWrist_withBaseBox.kc" />
     <None Include="TestChains\3CWithSphericalWrist_withBoxes.kc" />
