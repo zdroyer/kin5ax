@@ -76,7 +76,11 @@ void CMillingTool::SetPositionAndOrientation(const CR3Point &r3pNewPosition, con
 	m_r3vOrientation = r3vNewOrientation.GetUnitVector();
 	m_dSineAxisOZAngle = m_r3vOrientation.vectorProduct(r3vOZ).GetLength();
 	m_dAxisOZAngle = atan2(m_dSineAxisOZAngle, m_r3vOrientation.scalarProduct(r3vOZ));
-	m_m4x4ToOZ = CTransformation( CRotation(m_r3vOrientation,r3vOZ) )* CTransformation (CTranslation(-m_r3pPosition.toR3Vector()+(r3vOZ*m_dReferencePointZ) ));
+	//to the frame of IsInOZCuttingSpace (tool axis = OZ, tip = origin): the reference point goes to the origin,
+	//the tool axis is turned to OZ, and only then the tool is lifted by the height of the reference point
+	m_m4x4ToOZ = CTransformation( CTranslation(r3vOZ*m_dReferencePointZ) )
+		* CTransformation( CRotation(m_r3vOrientation,r3vOZ) )
+		* CTransformation( CTranslation(-m_r3pPosition.toR3Vector()) );
 }
 
 
