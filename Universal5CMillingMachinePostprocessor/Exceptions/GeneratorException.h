@@ -15,7 +15,7 @@ public:
 						);
 
 	// Komunikat opisuj¹cy przyczyny wyst¹pienia wyj¹tku
-	const string & GetMessage(void) const ;
+	const string & Message(void) const ;
 
 	/* Modu³ programu, z którego zosta³ wyrzucony wyj¹tek
 	const string & GetThrowingModule(void) const;

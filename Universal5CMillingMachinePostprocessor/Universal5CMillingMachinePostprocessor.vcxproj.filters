@@ -42,6 +42,9 @@
     <ClCompile Include="CutterLocationData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GLRendererR3Box.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="GLTools.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -234,6 +237,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CutterLocationData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GLRendererR3Box.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GLTools.h">

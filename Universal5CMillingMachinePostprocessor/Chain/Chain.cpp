@@ -1,6 +1,7 @@
 #include "../StdAfx.h"
 #include "chain.h"
 #include "../gltools.h"
+#include "../glrendererr3box.h"
 #include "../string_tools.h"
 
 #define CHAIN_XML_ROOT_NODE_TYPE_NAME "kinematic_chain"
@@ -581,11 +582,11 @@ void CChain::Render3D(bool bFastRendering
 		pTool->SetPositionAndOrientation(GetActualToolPositionAndOrientation());
 		if(oConfiguration.m_bShowToolBoundingBox){
 			glColor3d(0.9,0.9,0.9);
-			pTool->GetCuttingPartBoundingBox().Render3DWire();
+			CGLRendererR3Box::RenderWire(pTool->GetCuttingPartBoundingBox());
 		}
 		if(!bFastRendering){
 			glColor3d(0.2,0.7,0.4);
-//			pTool->GetCuttingPartBoundingBox().Render3DSolid();
+//			CGLRendererR3Box::RenderSolid(pTool->GetCuttingPartBoundingBox());
 		}
 	}
 		

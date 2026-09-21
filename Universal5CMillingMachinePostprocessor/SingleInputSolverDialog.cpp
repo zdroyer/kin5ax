@@ -100,7 +100,7 @@ void CSingleInputSolverDialog::OnBnClickedBtnSolve()
 		m_pDoc->UpdateAllViews(NULL);
 		MessageBox(sLog.c_str(),"Solver log");
 	} catch (CGeneratorException e){
-		AfxMessageBox(e.GetMessage().c_str());
+		AfxMessageBox(e.Message().c_str());
 	}
 	
 }

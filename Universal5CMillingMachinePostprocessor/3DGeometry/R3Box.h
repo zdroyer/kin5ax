@@ -123,8 +123,6 @@ public:
 		return Max(Max(fabs(m_dMaxX-m_dMinX),fabs(m_dMaxY-m_dMinY)),fabs(m_dMaxZ-m_dMinZ));
 	}
 	
-	void Render3DWire(double dR=1.0, double dG=1.0, double dB=1.0) const;
-	void Render3DSolid() const;
 
 	string toXML() const;
 	

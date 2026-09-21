@@ -131,13 +131,13 @@ void CCLDataFileDialog::LoadCLFile(const CString &sFilePath,const CString &sFile
 			m_pDoc->m_oCutterLocationData.LoadFile(m_sOpenedFilePath.GetBuffer(m_sOpenedFilePath.GetLength()),m_sOpenedFileTitle.GetBuffer(m_sOpenedFileTitle.GetLength()));				
 			m_pDoc->m_oCutterLocationData.FillListBox(m_listboxFileContents,m_bShowOnlyErrors);
 		} catch (CGeneratorException e){
-			MessageBox(e.GetMessage().c_str());
+			MessageBox(e.Message().c_str());
 		}
 
 		CString s;
-		s.Format("%d",m_pDoc->m_oCutterLocationData.GetErrorsCount());
+		s.Format("%zu",m_pDoc->m_oCutterLocationData.GetErrorsCount());
 		m_editErrorsCount.SetWindowText(s.GetBuffer(s.GetLength()));
-		s.Format("%d",m_pDoc->m_oCutterLocationData.GetLinesCount());
+		s.Format("%zu",m_pDoc->m_oCutterLocationData.GetLinesCount());
 		m_editLinesCount.SetWindowText(s.GetBuffer(s.GetLength()));
 		UpdateBoundingBoxControls();
 		m_pDoc->UpdateAllViews(NULL);

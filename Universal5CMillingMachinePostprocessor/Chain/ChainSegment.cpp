@@ -1,6 +1,7 @@
 #include "../StdAfx.h"
 #include "chainsegment.h"
 #include "../gltools.h"
+#include "../glrendererr3box.h"
 #include "../string_tools.h"
 #include "rotation.h"
 #include "translation.h"
@@ -239,20 +240,20 @@ void CChainSegment::RenderParts()
 		if(i==m_nHighlightedPart){
 			if(m_vCollisions[i]){
 				glColor3d(1.0,0.0,0.0);
-				m_vParts[i].Render3DSolid();
+				CGLRendererR3Box::RenderSolid(m_vParts[i]);
 				glColor3d(0.3,0.3,0.3);
 			} else {
 				glColor3d(0.6,0.6,0.6);	
-				m_vParts[i].Render3DSolid();
+				CGLRendererR3Box::RenderSolid(m_vParts[i]);
 				glColor3d(0.3,0.3,0.3);
 			}
 		} else {
 			if(m_vCollisions[i]){
 				glColor3d(0.5,0.0,0.0);
-				m_vParts[i].Render3DSolid();
+				CGLRendererR3Box::RenderSolid(m_vParts[i]);
 				glColor3d(0.3,0.3,0.3);
 			} else {
-				m_vParts[i].Render3DSolid();
+				CGLRendererR3Box::RenderSolid(m_vParts[i]);
 			}
 		}
 
@@ -415,10 +416,10 @@ glRotated((m_dConstRevoluteAngle)
 void CChainSegment::OZBox(double dXDiv2, double dYDiv2, double dZ)
 {
 	CR3Box box = CR3Box::BoxFromOZBox(dXDiv2*2.0,dYDiv2*2.0,dZ);
-	box.Render3DSolid();
+	CGLRendererR3Box::RenderSolid(box);
 	static double d = 1E-5;
 	box.ExpandXYZ(d,d,d);
-	box.Render3DWire();	
+	CGLRendererR3Box::RenderWire(box);	
 	return;
 	if(is_zero(dZ)){
 		static double d = 1E-5;

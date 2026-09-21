@@ -134,7 +134,7 @@ bool CMillingToolBall::CauseCollision(const CR3Box &box, const CTransformation t
 {
  /*
 	glColor3d(1.0,1.0,0.0);
-	box.Render3DWire();
+	CGLRendererR3Box::RenderWire(box);
 	glPushMatrix();
 	glMultMatrixd(CTransformation(trToBoxFrame).toGLMatrix());
 	GLUquadricObj *pQ = gluNewQuadric();

@@ -295,6 +295,7 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../stdafx.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="GLRendererR3Box.cpp" />
     <ClCompile Include="GLTools.cpp" />
     <ClCompile Include="KinematicChainPropertiesDialog.cpp" />
     <ClCompile Include="MainFrm.cpp" />
@@ -360,6 +361,7 @@
     <ClInclude Include="Exceptions\GeneratorException.h" />
     <ClInclude Include="Exceptions\InputMyException.h" />
     <ClInclude Include="Exceptions\MemoryMyException.h" />
+    <ClInclude Include="GLRendererR3Box.h" />
     <ClInclude Include="GLTools.h" />
     <ClInclude Include="KinematicChainPropertiesDialog.h" />
     <ClInclude Include="MainFrm.h" />

@@ -31,7 +31,7 @@ CGeneratorException::CGeneratorException(const string & message // komunikat wyj
 }
 
 // komunikat opisuj¹cy przyczyny wyst¹pienia wyj¹tku
-const string & CGeneratorException::GetMessage(void) const
+const string & CGeneratorException::Message(void) const
 {
 	return m_sMessage;
 }

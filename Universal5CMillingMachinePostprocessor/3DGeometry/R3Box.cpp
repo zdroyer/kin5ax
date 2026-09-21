@@ -53,86 +53,6 @@ string CR3Box::toXML() const
 	return sResult;
 }
 
-void CR3Box::Render3DSolid() const
-{
-	GLboolean bWasLighting = glIsEnabled(GL_LIGHTING);
-	glEnable(GL_LIGHTING);
-	glShadeModel(GL_SMOOTH);
-	glBegin(GL_QUADS);{
-		//X-planes
-		glNormal3d(1.0,0.0,0.0);
-		glVertex3d(m_dMaxX,m_dMaxY,m_dMaxZ);
-		glVertex3d(m_dMaxX,m_dMaxY,m_dMinZ);
-		glVertex3d(m_dMaxX,m_dMinY,m_dMinZ);
-		glVertex3d(m_dMaxX,m_dMinY,m_dMaxZ);
-
-		glNormal3d(-1.0,0.0,0.0);
-		glVertex3d(m_dMinX,m_dMaxY,m_dMaxZ);
-		glVertex3d(m_dMinX,m_dMaxY,m_dMinZ);
-		glVertex3d(m_dMinX,m_dMinY,m_dMinZ);
-		glVertex3d(m_dMinX,m_dMinY,m_dMaxZ);
-
-		//Y-planes
-		glNormal3d(0.0,1.0,0.0);
-		glVertex3d(m_dMaxX,m_dMaxY,m_dMaxZ);
-		glVertex3d(m_dMaxX,m_dMaxY,m_dMinZ);
-		glVertex3d(m_dMinX,m_dMaxY,m_dMinZ);
-		glVertex3d(m_dMinX,m_dMaxY,m_dMaxZ);
-
-		glNormal3d(0.0,-1.0,0.0);
-		glVertex3d(m_dMaxX,m_dMinY,m_dMaxZ);
-		glVertex3d(m_dMaxX,m_dMinY,m_dMinZ);
-		glVertex3d(m_dMinX,m_dMinY,m_dMinZ);
-		glVertex3d(m_dMinX,m_dMinY,m_dMaxZ);
-
-		//Z-planes
-		glNormal3d(0.0,0.0,1.0);
-		glVertex3d(m_dMaxX,m_dMaxY,m_dMaxZ);
-		glVertex3d(m_dMinX,m_dMaxY,m_dMaxZ);
-		glVertex3d(m_dMinX,m_dMinY,m_dMaxZ);
-		glVertex3d(m_dMaxX,m_dMinY,m_dMaxZ);
-
-		glNormal3d(0.0,0.0,-1.0);
-		glVertex3d(m_dMaxX,m_dMaxY,m_dMinZ);
-		glVertex3d(m_dMinX,m_dMaxY,m_dMinZ);
-		glVertex3d(m_dMinX,m_dMinY,m_dMinZ);
-		glVertex3d(m_dMaxX,m_dMinY,m_dMinZ);
-	}glEnd();
-	if(!bWasLighting)
-		glDisable(GL_LIGHTING);
-}
-
-void CR3Box::Render3DWire(double dR, double dG, double dB) const
-{
-	GLboolean bWasLighting = glIsEnabled(GL_LIGHTING);
-	glDisable(GL_LIGHTING);
-	glColor3d(dR,dG,dB);
-	glBegin(GL_LINE_LOOP);{
-		glVertex3d(m_dMaxX,m_dMaxY,m_dMaxZ);
-		glVertex3d(m_dMaxX,m_dMaxY,m_dMinZ);
-		glVertex3d(m_dMaxX,m_dMinY,m_dMinZ);
-		glVertex3d(m_dMaxX,m_dMinY,m_dMaxZ);
-	} glEnd();
-	glBegin(GL_LINE_LOOP);{
-		glVertex3d(m_dMinX,m_dMaxY,m_dMaxZ);
-		glVertex3d(m_dMinX,m_dMaxY,m_dMinZ);
-		glVertex3d(m_dMinX,m_dMinY,m_dMinZ);
-		glVertex3d(m_dMinX,m_dMinY,m_dMaxZ);
-	} glEnd();
-	glBegin(GL_LINES);{
-		glVertex3d(m_dMinX,m_dMaxY,m_dMaxZ);
-		glVertex3d(m_dMaxX,m_dMaxY,m_dMaxZ);
-		glVertex3d(m_dMinX,m_dMaxY,m_dMinZ);
-		glVertex3d(m_dMaxX,m_dMaxY,m_dMinZ);
-		glVertex3d(m_dMinX,m_dMinY,m_dMinZ);
-		glVertex3d(m_dMaxX,m_dMinY,m_dMinZ);
-		glVertex3d(m_dMinX,m_dMinY,m_dMaxZ);
-		glVertex3d(m_dMaxX,m_dMinY,m_dMaxZ);	
-	}glEnd();
-	if(bWasLighting)
-		glEnable(GL_LIGHTING);
-}
-
 
 CR3Box CR3Box::OuterBoxFromOZCylinder(double dRadius, double dZ1, double dZ2)
 {
@@ -168,7 +88,7 @@ CR3Box CR3Box::BoxFromCylinder(const CR3Point &p1, const CR3Point &p2,double dR 
 		else{
 			double dZ = fabs(dR * sin(acos(dCosAlpha)));
 			double dXY = dR * dCosAlpha;
-			double dY = sqrt(max(0,(v.GetX()*v.GetX()*dR*dR-v.GetX()*v.GetX()*dZ*dZ)/(v.GetX()*v.GetX()+v.GetY()*v.GetY())));
+			double dY = sqrt(max(0.0,(v.GetX()*v.GetX()*dR*dR-v.GetX()*v.GetX()*dZ*dZ)/(v.GetX()*v.GetX()+v.GetY()*v.GetY())));
 			double dX =dR;
 			if(is_not_zero(v.GetX())){
 				dX = v.GetY()*dY/v.GetX();
@@ -336,19 +256,19 @@ bool CR3Box::HasIntersectionWithBox(const CR3Box &box, const CTransformation &tr
 {
 /*
 	glColor3d(0.7,0.7,0.0);
-	this->Render3DSolid();
+	CGLRendererR3Box::RenderSolid(*this);
 	glColor3d(1.0,1.0,0.0);
 	glPushMatrix();
 	glMultMatrixd(CTransformation(tr).toGLMatrix());
-	box.Render3DWire();
+	CGLRendererR3Box::RenderWire(box);
 	glPopMatrix();
 	glPushMatrix();
 	glColor3d(0.0,0.7,0.7);
-	box.Render3DSolid();
+	CGLRendererR3Box::RenderSolid(box);
 	glColor3d(1.0,1.0,0.0);
 	glPushMatrix();
 	glMultMatrixd(CTransformation(tr_inv).toGLMatrix());
-	this->Render3DWire();
+	CGLRendererR3Box::RenderWire(*this);
 	glPopMatrix();
 //*/
 	if(IsEmpty() || box.IsEmpty())
@@ -412,7 +332,7 @@ bool CR3Box::HasIntersectionWithOZCylinder(const double &dZ,const double &dR, co
 	gluCylinder(pQ,dR,dR,dZ,20,20);
 	glPushMatrix();
 	glMultMatrixd(CTransformation(trToCylinder).toGLMatrix());
-	this->Render3DWire();
+	CGLRendererR3Box::RenderWire(*this);
 	glPopMatrix();
 	//*/
 

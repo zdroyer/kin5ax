@@ -118,7 +118,7 @@ int CUniversal5CMillingMachinePostprocessorView::OnCreate(LPCREATESTRUCT lpCreat
 		InitGL();
 		return 0;
 	} catch (CGeneratorException e){
-		this->GetParent()->MessageBox(e.GetMessage().c_str());
+		this->GetParent()->MessageBox(e.Message().c_str());
 	}
 	return -1;
 }
