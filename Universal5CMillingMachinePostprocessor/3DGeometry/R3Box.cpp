@@ -256,19 +256,19 @@ bool CR3Box::HasIntersectionWithBox(const CR3Box &box, const CTransformation &tr
 {
 /*
 	glColor3d(0.7,0.7,0.0);
-	CGLRendererR3Box::RenderSolid(*this);
+	CR3BoxRendererGL::RenderSolid(*this);
 	glColor3d(1.0,1.0,0.0);
 	glPushMatrix();
 	glMultMatrixd(CTransformation(tr).toGLMatrix());
-	CGLRendererR3Box::RenderWire(box);
+	CR3BoxRendererGL::RenderWire(box);
 	glPopMatrix();
 	glPushMatrix();
 	glColor3d(0.0,0.7,0.7);
-	CGLRendererR3Box::RenderSolid(box);
+	CR3BoxRendererGL::RenderSolid(box);
 	glColor3d(1.0,1.0,0.0);
 	glPushMatrix();
 	glMultMatrixd(CTransformation(tr_inv).toGLMatrix());
-	CGLRendererR3Box::RenderWire(*this);
+	CR3BoxRendererGL::RenderWire(*this);
 	glPopMatrix();
 //*/
 	if(IsEmpty() || box.IsEmpty())
@@ -332,7 +332,7 @@ bool CR3Box::HasIntersectionWithOZCylinder(const double &dZ,const double &dR, co
 	gluCylinder(pQ,dR,dR,dZ,20,20);
 	glPushMatrix();
 	glMultMatrixd(CTransformation(trToCylinder).toGLMatrix());
-	CGLRendererR3Box::RenderWire(*this);
+	CR3BoxRendererGL::RenderWire(*this);
 	glPopMatrix();
 	//*/
 

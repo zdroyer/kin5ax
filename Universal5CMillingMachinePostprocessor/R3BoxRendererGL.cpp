@@ -1,7 +1,7 @@
 #include "StdAfx.h"
-#include "glrendererr3box.h"
+#include "R3BoxRendererGL.h"
 
-void CGLRendererR3Box::RenderSolid(const CR3Box &box)
+void CR3BoxRendererGL::RenderSolid(const CR3Box &box)
 {
 	double dMinX = box.GetMinPoint().GetX(), dMaxX = box.GetMaxPoint().GetX();
 	double dMinY = box.GetMinPoint().GetY(), dMaxY = box.GetMaxPoint().GetY();
@@ -53,7 +53,7 @@ void CGLRendererR3Box::RenderSolid(const CR3Box &box)
 		glDisable(GL_LIGHTING);
 }
 
-void CGLRendererR3Box::RenderWire(const CR3Box &box, double dR, double dG, double dB)
+void CR3BoxRendererGL::RenderWire(const CR3Box &box, double dR, double dG, double dB)
 {
 	double dMinX = box.GetMinPoint().GetX(), dMaxX = box.GetMaxPoint().GetX();
 	double dMinY = box.GetMinPoint().GetY(), dMaxY = box.GetMaxPoint().GetY();

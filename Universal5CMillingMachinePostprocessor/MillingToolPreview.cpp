@@ -5,6 +5,7 @@
 #include "Universal5CMillingMachinePostprocessor.h"
 #include "MillingToolPreview.h"
 #include ".\millingtoolpreview.h"
+#include "MillingToolRendererGDI.h"
 
 
 // CMillingToolPreview
@@ -37,7 +38,7 @@ void CMillingToolPreview::OnPaint()
 {
 	CPaintDC dc(this); 
 	if(m_pMillingTool)
-		m_pMillingTool->Render2D(dc);
+		CMillingToolRendererGDI::Render(dc,*m_pMillingTool);
 	else
 		dc.TextOut(0,0,"No tool defined");
 

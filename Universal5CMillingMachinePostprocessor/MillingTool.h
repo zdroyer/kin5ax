@@ -101,8 +101,6 @@ public:
 		,double dCuttingHeight
 		,double dReferencePointZ);
 
-	virtual void Render3D(void) const = 0;
-	virtual void Render2D(CPaintDC &dc) const = 0 ;
 //	virtual void GetBoundingBox(CR3Point &r3pP1, CR3Point &r3pP2) const = 0;
 	~CMillingTool(void);
 };

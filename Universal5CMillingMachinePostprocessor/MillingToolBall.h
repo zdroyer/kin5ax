@@ -12,8 +12,6 @@ public:
 		,double dR
 		,double dCuttingHeight
 		,double dReferencePointZ);
-	virtual void Render3D(void) const ;
-	virtual void Render2D(CPaintDC &dc) const;	
 	virtual CR3Box GetCuttingPartBoundingBox() const;
 	virtual bool CauseCollision(const CR3Box &box, const CTransformation trToBoxFrame, const CTransformation trToToolFrame) const;
 

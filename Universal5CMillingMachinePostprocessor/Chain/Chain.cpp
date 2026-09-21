@@ -1,7 +1,8 @@
 #include "../StdAfx.h"
 #include "chain.h"
 #include "../gltools.h"
-#include "../glrendererr3box.h"
+#include "../R3BoxRendererGL.h"
+#include "../MillingToolRendererGL.h"
 #include "../string_tools.h"
 
 #define CHAIN_XML_ROOT_NODE_TYPE_NAME "kinematic_chain"
@@ -582,11 +583,11 @@ void CChain::Render3D(bool bFastRendering
 		pTool->SetPositionAndOrientation(GetActualToolPositionAndOrientation());
 		if(oConfiguration.m_bShowToolBoundingBox){
 			glColor3d(0.9,0.9,0.9);
-			CGLRendererR3Box::RenderWire(pTool->GetCuttingPartBoundingBox());
+			CR3BoxRendererGL::RenderWire(pTool->GetCuttingPartBoundingBox());
 		}
 		if(!bFastRendering){
 			glColor3d(0.2,0.7,0.4);
-//			CGLRendererR3Box::RenderSolid(pTool->GetCuttingPartBoundingBox());
+//			CR3BoxRendererGL::RenderSolid(pTool->GetCuttingPartBoundingBox());
 		}
 	}
 		
@@ -603,7 +604,7 @@ void CChain::Render3D(bool bFastRendering
 		m_vToolPart[i].Render3D(m_bIsToolPartActive && i==m_nActiveSegmentIndex);
 	}
 	if(pTool && oConfiguration.m_bShowTool){
-		pTool->Render3D();
+		CMillingToolRendererGL::Render(*pTool);
 	}
 
 	glPopMatrix();	
