@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Application">
+      <UniqueIdentifier>{BEE0001E-AEA2-5B12-AF0E-5F898A647DC4}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ChainTests.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="SolverRoundTrip.cpp" />
+    <ClCompile Include="TestData.cpp" />
+    <ClCompile Include="..\ChainXmlReader.cpp">
+      <Filter>Application</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="SolverRoundTrip.h" />
+    <ClInclude Include="TestData.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+</Project>

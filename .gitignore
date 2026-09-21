@@ -11,3 +11,6 @@ Debug/
 Release/
 x64/
 Universa.*/
+
+# NuGet packages, restored on build
+packages/
