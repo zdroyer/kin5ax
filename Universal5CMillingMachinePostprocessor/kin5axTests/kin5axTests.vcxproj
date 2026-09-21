@@ -163,6 +163,14 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="TestChains\3CWithSphericalWrist_withBaseBox.kc" />
+    <None Include="TestChains\3CWithSphericalWrist_withBoxes.kc" />
+    <None Include="TestChains\AC45_NutatingTable.kc" />
+    <None Include="TestChains\AC_TiltRotaryTable.kc" />
+    <None Include="TestChains\BC_TiltRotaryTable.kc" />
+    <None Include="TestChains\BC_TiltRotaryTable_XYonTable.kc" />
+    <None Include="TestChains\WM308S2_BC_SwivelHead_RotaryTable.kc" />
+    <None Include="TestChains\WM508MT2_AB_MillTurn.kc" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\kin5ax\kin5ax.vcxproj">
@@ -173,6 +181,13 @@
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.8\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets" Condition="Exists('..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.1.8\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets')" />
   </ImportGroup>
+  <!-- the test data is read from TestChains next to the test exe -->
+  <Target Name="CopyTestChains" AfterTargets="Build">
+    <ItemGroup>
+      <_TestChain Include="@(None)" Condition="'%(Extension)'=='.kc'" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_TestChain)" DestinationFolder="$(OutDir)TestChains" SkipUnchangedFiles="true" />
+  </Target>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them. The missing file is {0}.</ErrorText>

@@ -1,12 +1,13 @@
 #pragma once
-// Test data of kin5axTests: the kinematic chain (.kc) files of the repository.
+// Test data of kin5axTests: the kinematic chain (.kc) files of the test project
+// (kin5axTests/TestChains, copied next to the test exe by the build).
 
 #include "Chain.h"
 
-//folder of the solution file (with the trailing backslash); found by walking up from the test exe
-string GetSolutionDir();
+//folder with the .kc files (with the trailing backslash): TestChains next to the test exe
+string GetTestChainsDir();
 
-//full paths of all .kc files: the solution folder and its TestChains subfolder
+//full paths of all .kc files of GetTestChainsDir()
 vector<string> GetChainFiles();
 
 //file name without folder and extension, reduced to [A-Za-z0-9_] (GoogleTest parameter names)

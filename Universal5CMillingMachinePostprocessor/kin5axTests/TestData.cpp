@@ -4,16 +4,6 @@
 
 static const char cSEPARATOR = 92;	//backslash
 
-static bool FileExists(const string &sPattern)
-{
-	WIN32_FIND_DATA oData;
-	HANDLE hFind = FindFirstFile(sPattern.c_str(),&oData);
-	if(hFind==INVALID_HANDLE_VALUE)
-		return false;
-	FindClose(hFind);
-	return true;
-}
-
 static void AppendFiles(const string &sFolder, const string &sPattern, vector<string> &vFiles)
 {
 	WIN32_FIND_DATA oData;
@@ -27,29 +17,20 @@ static void AppendFiles(const string &sFolder, const string &sPattern, vector<st
 	FindClose(hFind);
 }
 
-string GetSolutionDir()
+string GetTestChainsDir()
 {
 	char szPath[MAX_PATH];
 	GetModuleFileName(NULL,szPath,MAX_PATH);
 	string sFolder(szPath);
-	//the exe is in <solution>/x64/Debug or in <solution>/Debug
-	for(int i=0;i<4;i++){
-		size_t n = sFolder.find_last_of(cSEPARATOR);
-		if(n==string::npos)
-			break;
-		sFolder = sFolder.substr(0,n);
-		if(FileExists(sFolder+cSEPARATOR+"*.sln"))
-			return sFolder+cSEPARATOR;
-	}
-	return "";
+	size_t n = sFolder.find_last_of(cSEPARATOR);
+	sFolder = (n==string::npos) ? string("") : sFolder.substr(0,n+1);
+	return sFolder+"TestChains"+cSEPARATOR;
 }
 
 vector<string> GetChainFiles()
 {
 	vector<string> vFiles;
-	string sSolutionDir = GetSolutionDir();
-	AppendFiles(sSolutionDir,"*.kc",vFiles);
-	AppendFiles(sSolutionDir+"TestChains"+cSEPARATOR,"*.kc",vFiles);
+	AppendFiles(GetTestChainsDir(),"*.kc",vFiles);
 	sort(vFiles.begin(),vFiles.end());
 	return vFiles;
 }

@@ -1,4 +1,4 @@
-// Tests run once for every kinematic chain (.kc) file of the repository.
+// Tests run once for every kinematic chain (.kc) file of kin5axTests/TestChains.
 #include "../stdafx.h"
 #include "gtest/gtest.h"
 #include "TestData.h"
@@ -30,8 +30,7 @@ struct ChainFileTestName
 
 TEST(ChainFiles, AreFound)
 {
-	ASSERT_FALSE(GetSolutionDir().empty())<<"the solution folder was not found above the test exe";
-	EXPECT_GE(GetChainFiles().size(),(size_t)1)<<"no .kc file in "<<GetSolutionDir();
+	EXPECT_GE(GetChainFiles().size(),(size_t)1)<<"no .kc file in "<<GetTestChainsDir()<<" (the build copies kin5axTests/TestChains there)";
 }
 
 TEST_P(ChainFileTest, LoadsAsValid5CChain)

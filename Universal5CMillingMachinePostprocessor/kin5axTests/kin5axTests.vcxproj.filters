@@ -1,6 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <Filter Include="TestChains">
+      <UniqueIdentifier>{7A0C1B52-3D0E-4C56-9A51-6B5F0E2D9C11}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Application">
       <UniqueIdentifier>{BEE0001E-AEA2-5B12-AF0E-5F898A647DC4}</UniqueIdentifier>
     </Filter>
@@ -23,5 +26,29 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="TestChains\3CWithSphericalWrist_withBaseBox.kc">
+      <Filter>TestChains</Filter>
+    </None>
+    <None Include="TestChains\3CWithSphericalWrist_withBoxes.kc">
+      <Filter>TestChains</Filter>
+    </None>
+    <None Include="TestChains\AC45_NutatingTable.kc">
+      <Filter>TestChains</Filter>
+    </None>
+    <None Include="TestChains\AC_TiltRotaryTable.kc">
+      <Filter>TestChains</Filter>
+    </None>
+    <None Include="TestChains\BC_TiltRotaryTable.kc">
+      <Filter>TestChains</Filter>
+    </None>
+    <None Include="TestChains\BC_TiltRotaryTable_XYonTable.kc">
+      <Filter>TestChains</Filter>
+    </None>
+    <None Include="TestChains\WM308S2_BC_SwivelHead_RotaryTable.kc">
+      <Filter>TestChains</Filter>
+    </None>
+    <None Include="TestChains\WM508MT2_AB_MillTurn.kc">
+      <Filter>TestChains</Filter>
+    </None>
   </ItemGroup>
 </Project>
