@@ -81,7 +81,7 @@ CChainSegment CChainXmlReader::ReadSegment(MSXML2::IXMLDOMNodePtr pNode)
 		pTempNode = pTempNode->nextSibling;
 	}
 	if(pTranslationNode == NULL || pRotationNode == NULL)
-		MY_THROW(CGeneratorException,"Cannot obtain initial transforamtion of segment");
+		MY_THROW(CGeneratorException,"Cannot obtain initial transformation of segment");
 	pAttributesMap = pTranslationNode->Getattributes();
 	oSegment.m_r3vConstTranslation.SetX(getDoubleValue(pAttributesMap,"x"));
 	oSegment.m_r3vConstTranslation.SetY(getDoubleValue(pAttributesMap,"y"));

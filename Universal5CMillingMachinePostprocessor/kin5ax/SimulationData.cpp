@@ -91,7 +91,7 @@ void CSimulationData::AddConfigurationSet(const tChainConfigurationVector &vConf
 		m_nEmptySolutionsCount++;
 }
 
-tChainConfigurationVector CSimulationData::GetLastNonemptyConfigutationSet() const
+tChainConfigurationVector CSimulationData::GetLastNonemptyConfigurationSet() const
 {
 	for(size_t i=m_vSolutions.size(); i>0; i--){
 		if(m_vSolutions[i-1].size())

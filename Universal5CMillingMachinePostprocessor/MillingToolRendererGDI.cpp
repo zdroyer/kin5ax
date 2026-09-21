@@ -31,9 +31,9 @@ void CMillingToolRendererGDI::RenderBall(CDC &dc, const CMillingTool &oTool)
 	int margin = 10;
 	int x0 = rt.CenterPoint().x;
 	int z0 = rt.bottom-margin;
-	double dAspectRation = (double)rt.Width()/(double)rt.Height();
+	double dAspectRatio = (double)rt.Width()/(double)rt.Height();
 	double dScale;
-	if(dAspectRation<0.33)
+	if(dAspectRatio<0.33)
 		dScale  = (0.5 * (double)(rt.Width()-margin))/oTool.m_dR;
 	else 
 		dScale = (0.25 * (double)(rt.Height()-margin))/oTool.m_dR;
@@ -104,9 +104,9 @@ void CMillingToolRendererGDI::RenderCylinder(CDC &dc, const CMillingTool &oTool)
 	int margin = 10;
 	int x0 = rt.CenterPoint().x;
 	int z0 = rt.bottom-margin;
-	double dAspectRation = (double)rt.Width()/(double)rt.Height();
+	double dAspectRatio = (double)rt.Width()/(double)rt.Height();
 	double dScale;
-	if(dAspectRation<(2.0*oTool.m_dRz/oTool.m_dCuttingHeight))
+	if(dAspectRatio<(2.0*oTool.m_dRz/oTool.m_dCuttingHeight))
 		dScale  = (0.5 * (double)(rt.Width()-margin))/oTool.m_dRz;
 	else 
 		dScale = ( (double)(rt.Height()-2*margin))/oTool.m_dCuttingHeight;

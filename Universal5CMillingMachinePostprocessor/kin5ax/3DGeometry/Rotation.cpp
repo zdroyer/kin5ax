@@ -91,7 +91,7 @@ CRotation::CRotation(const CR3Vector &r3vV0, const CR3Vector &r3vV1)
 {
 	CR3Vector v0 = r3vV0.GetUnitVector();
 	CR3Vector v1 = r3vV1.GetUnitVector();
-	//the vector product of two unit vectors is the rotation axis, but its length is the sinus
+	//the vector product of two unit vectors is the rotation axis, but its length is the sine
 	//of their angle, not 1: the (axis, angle) constructor normalises it
 	CR3Vector axis = v0.vectorProduct(v1);
 	double s=axis.GetLength();

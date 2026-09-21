@@ -43,7 +43,7 @@ public:
 					,const double & dConstRevoluteAngle
 					,const CR3Vector &r3vConstTranslation
 					,bool bParameterIsConstrained = false
-					,double dParamtererMinimum=0.0
+					,double dParameterMinimum=0.0
 					,double dParameterMaximum=0.0
 					);
 	~CChainSegment(void);

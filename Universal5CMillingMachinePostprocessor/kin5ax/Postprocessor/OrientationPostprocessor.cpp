@@ -212,7 +212,7 @@ vector<CChainParameter> COrientationPostprocessor::getAlpha1AxisMethod(const CR3
 	if(is_zero(dDenominator)){
 		//dwie pokrywaj¹ce siê osie obrotów (nx=ny=0) - wyeliminowane w konstruktorze
 		if(is_zero(m_r3vN1.GetX()*m_r3vN1.GetX()) && is_zero(m_r3vN1.GetY()*m_r3vN1.GetY()))
-			MY_THROW(CArgsMyException ,"This is not valid 5C kinematic chain:\nparalel rotations axes");
+			MY_THROW(CArgsMyException ,"This is not valid 5C kinematic chain:\nparallel rotation axes");
 		//pionowe po³o¿enie fraza (i=j=0)				
 		vResult.push_back(CChainParameter(RADIAN,0.0,CHAIN_PARAMETER_ANY_NUMBER));
 		return vResult;

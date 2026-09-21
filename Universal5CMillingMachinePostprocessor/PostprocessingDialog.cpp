@@ -119,7 +119,7 @@ void CPostprocessingDialog::OnShowWindow(BOOL bShow, UINT nStatus)
 	if(m_pDoc){
 		SetText(m_editLocationsCount,m_pDoc->m_oCutterLocationData.GetLocationsCount());
 		SetText(m_editTotalOrientationChange,radians_to_degrees( m_pDoc->m_oCutterLocationData.GetTotalOrientationChangeRadians()));
-		SetText(m_editTrajectoryLength,m_pDoc->m_oCutterLocationData.GetTrajectoryLenght());
+		SetText(m_editTrajectoryLength,m_pDoc->m_oCutterLocationData.GetTrajectoryLength());
 		UpdateProblemsCountControl();
 		m_vSolutions.reserve(m_pDoc->m_oCutterLocationData.GetLocationsCount());
 		m_pDoc->m_oSimulationData.ReserveMemory(m_pDoc->m_oCutterLocationData.GetLocationsCount());
@@ -146,7 +146,7 @@ void CPostprocessingDialog::UpdateProblemsCountControl()
 	assert(m_pDoc);
 	if(m_pDoc){
 		double dLocationsCount = (double) m_pDoc->m_oCutterLocationData.GetLocationsCount();
-		double dAvgDistance = m_pDoc->m_oCutterLocationData.GetTrajectoryLenght()/dLocationsCount;
+		double dAvgDistance = m_pDoc->m_oCutterLocationData.GetTrajectoryLength()/dLocationsCount;
 		double dProblemsForPosition = dLocationsCount*max(1.0,dAvgDistance/oPostprocessorSettings.m_dMaxPositionDifference);
 
 		double dAvgAngle = radians_to_degrees( m_pDoc->m_oCutterLocationData.GetTotalOrientationChangeRadians())/dLocationsCount;
@@ -175,7 +175,7 @@ void CPostprocessingDialog::OnBnClickedStart()
 	m_progressPostprocessing.SetRange(0,100);
 	m_progressPostprocessing.SetPos(0);
 
-	m_dActualMaxOrientationDiferenceDegrees = oPostprocessorSettings.m_dMaxOrientationDifferenceDegrees;
+	m_dActualMaxOrientationDifferenceDegrees = oPostprocessorSettings.m_dMaxOrientationDifferenceDegrees;
 	m_dActualMaxPositionDifference = oPostprocessorSettings.m_dMaxPositionDifference;
 	m_nTotalProblemsCount=0;
 
@@ -231,7 +231,7 @@ void CPostprocessingDialog::OnBnClickedStart()
 		fclose(pFile);
 	}
 	m_progressPostprocessing.SetPos(100);
-	SetWindowText("2/4 finding shortest path in progres...");
+	SetWindowText("2/4 finding shortest path in progress...");
 	CProgressCtrlCallback oProgress(m_progressPostprocessing);
 	m_pDoc->m_oSimulationData.FindShortestPath(oPostprocessorSettings,&oProgress);
 	m_progressPostprocessing.SetPos(100);
@@ -270,7 +270,7 @@ string CPostprocessingDialog::GenerateReportHead() const
 		sReportHead+=("\tempty lines: "+size_to_string(oCLData.GetLinesCount()-oCLData.GetLocationsCount()-oCLData.GetErrorsCount())+sNL);
 
 		sReportHead+=("\nPostprocessing started at "+string(m_timeBegin.Format("%c").GetBuffer(0))+sNL);
-		sReportHead+=("Postoprocessing finished at "+string(m_timeEnd.Format("%c").GetBuffer(0))+sNL);
+		sReportHead+=("Postprocessing finished at "+string(m_timeEnd.Format("%c").GetBuffer(0))+sNL);
 		CTimeSpan interval(m_timeEnd-m_timeBegin);
 		sReportHead+=("Consumed time: "
 			+double_to_string((double)interval.GetDays())+"days, "
@@ -287,7 +287,7 @@ string CPostprocessingDialog::GenerateReportHead() const
 
 		sReportHead+=(sNL+"Linear interpolation settings"+sNL);
 		sReportHead+=("\tmax position difference: "+double_to_string(m_dActualMaxPositionDifference)+sNL);
-		sReportHead+=("\tmax orientation diference: "+double_to_string(m_dActualMaxOrientationDiferenceDegrees)+" degrees\n"+sNL);
+		sReportHead+=("\tmax orientation difference: "+double_to_string(m_dActualMaxOrientationDifferenceDegrees)+" degrees\n"+sNL);
 		switch(m_nDetailedReportContents){
 			case 0:
 				sReportHead+=("Logs of processed problems:\n");
@@ -323,7 +323,7 @@ void CPostprocessingDialog::GenerateAndShowReport(void)
 		m_sReport+=("\tempty lines: "+size_to_string(oCLData.GetLinesCount()-oCLData.GetLocationsCount()-oCLData.GetErrorsCount(),true));
 
 		m_sReport+=(sRNL+"Postprocessing started at "+m_timeBegin.Format("%c").GetBuffer(0)+sRNL);
-		m_sReport+=(string("Postoprocessing finished at ")+m_timeEnd.Format("%c").GetBuffer(0)+sRNL);
+		m_sReport+=(string("Postprocessing finished at ")+m_timeEnd.Format("%c").GetBuffer(0)+sRNL);
 		CTimeSpan interval(m_timeEnd-m_timeBegin);
 		m_sReport+=("Consumed time: "
 			+double_to_string((double)interval.GetDays())+"days, "
@@ -341,14 +341,14 @@ void CPostprocessingDialog::GenerateAndShowReport(void)
 	
 		m_sReport+=(sRNL+"Linear interpolation settings"+sRNL);
 		m_sReport+=("\tmax position difference: "+double_to_string(m_dActualMaxPositionDifference,true));
-		m_sReport+=("\tmax orientation diference: "+double_to_string(m_dActualMaxOrientationDiferenceDegrees)+" degrees"+sRNL);
+		m_sReport+=("\tmax orientation difference: "+double_to_string(m_dActualMaxOrientationDifferenceDegrees)+" degrees"+sRNL);
 
 
 		m_sReport+=(sRNL+"Interpolation results"+sRNL);
 		m_sReport+=("\ttotal problems number: "+size_to_string(m_nTotalProblemsCount)+sRNL);
 		m_sReport+=("\tintermediate locations number: "+size_to_string(m_nTotalProblemsCount-oCLData.GetLocationsCount())+sRNL);
-		m_sReport+=("\taverage position difference: "+double_to_string(oCLData.GetTrajectoryLenght()/(double)m_nTotalProblemsCount,true));
-		m_sReport+=("\taverage orientation diference: "+double_to_string(radians_to_degrees( oCLData.GetTotalOrientationChangeRadians())/(double)m_nTotalProblemsCount)+" degrees"+sRNL);
+		m_sReport+=("\taverage position difference: "+double_to_string(oCLData.GetTrajectoryLength()/(double)m_nTotalProblemsCount,true));
+		m_sReport+=("\taverage orientation difference: "+double_to_string(radians_to_degrees( oCLData.GetTotalOrientationChangeRadians())/(double)m_nTotalProblemsCount)+" degrees"+sRNL);
 
 		m_sReport+=(sRNL+"Computation errors"+sRNL);
 		m_sReport+=("\tMaximum position error: "+sRNL);

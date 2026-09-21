@@ -74,7 +74,7 @@ TEST(SphereCLData, IsReadBackByCutterLocationData)
 		//the last location is the pole
 		EXPECT_NEAR(dSPHERE_RADIUS,p.GetZ(),1E-6);
 		EXPECT_NEAR(1.0,v.GetZ(),1E-6);
-		EXPECT_GT(oData.GetTrajectoryLenght(),0.0);
+		EXPECT_GT(oData.GetTrajectoryLength(),0.0);
 	} catch (CGeneratorException &e){
 		FAIL()<<"exception: "<<e.Message()<<" ("<<e.GetThrowingPlace()<<")";
 	}

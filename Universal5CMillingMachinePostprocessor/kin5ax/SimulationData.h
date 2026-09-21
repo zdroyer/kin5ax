@@ -34,6 +34,6 @@ protected:
 	size_t m_nEmptySolutionsCount;
 	size_t m_nActualSolution;
 public:
-	tChainConfigurationVector GetLastNonemptyConfigutationSet() const;
+	tChainConfigurationVector GetLastNonemptyConfigurationSet() const;
 	size_t GetEmptySolutionsCount(void);
 };

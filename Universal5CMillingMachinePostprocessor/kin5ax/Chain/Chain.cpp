@@ -467,7 +467,7 @@ CChainConfiguration	CChain::GetParameters() const
 }	
 void CChain::SetParameters(const CChainConfiguration & oConfig){
 	if(oConfig.GetParametersCount()!= (m_vMaterialHolderPart.size()+m_vToolPart.size()-2))
-		MY_THROW(CArgsMyException,"Invlaid count of parameters in ChainConfiguration object");
+		MY_THROW(CArgsMyException,"Invalid count of parameters in ChainConfiguration object");
 	m_oActualParameters = oConfig;
 	size_t k=0;
 	for(size_t i=m_vMaterialHolderPart.size()-1; i>0; i--,k++){
@@ -601,13 +601,13 @@ CHAIN_CONSTRAINTS_RESULT CChain::MeetsParametersConstraints(const CChainConfigur
 			continue;
 		}else{
 			if((*this)[i].GetType()==CHAIN_SEGMENT_PRISMATIC_LINK){
-				if(result==CHAIN_CONSTRAINTS_ROTATIONS_EXCEEDED || result == CHAIN_CONSTRAINTS_SHIFTS_AND_ROTATION_EXCIDED)
-					result = CHAIN_CONSTRAINTS_SHIFTS_AND_ROTATION_EXCIDED;
+				if(result==CHAIN_CONSTRAINTS_ROTATIONS_EXCEEDED || result == CHAIN_CONSTRAINTS_SHIFTS_AND_ROTATION_EXCEEDED)
+					result = CHAIN_CONSTRAINTS_SHIFTS_AND_ROTATION_EXCEEDED;
 				else
 					result = CHAIN_CONSTRAINTS_SHIFTS_EXCEEDED;
 			} else {
-				if(result == CHAIN_CONSTRAINTS_SHIFTS_EXCEEDED || result == CHAIN_CONSTRAINTS_SHIFTS_AND_ROTATION_EXCIDED)
-					result = CHAIN_CONSTRAINTS_SHIFTS_AND_ROTATION_EXCIDED;
+				if(result == CHAIN_CONSTRAINTS_SHIFTS_EXCEEDED || result == CHAIN_CONSTRAINTS_SHIFTS_AND_ROTATION_EXCEEDED)
+					result = CHAIN_CONSTRAINTS_SHIFTS_AND_ROTATION_EXCEEDED;
 				else
 					result = CHAIN_CONSTRAINTS_ROTATIONS_EXCEEDED;
 			}

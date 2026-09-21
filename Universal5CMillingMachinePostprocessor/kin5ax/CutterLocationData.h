@@ -90,7 +90,7 @@ public:
 	//text of the line of the loaded file (index as in GetLine)
 	const char *GetLineText(size_t index) const;
 
-	double GetTrajectoryLenght() const
+	double GetTrajectoryLength() const
 	{ return m_dTrajectoryLength; }
 	
 	double GetTotalOrientationChangeRadians() const

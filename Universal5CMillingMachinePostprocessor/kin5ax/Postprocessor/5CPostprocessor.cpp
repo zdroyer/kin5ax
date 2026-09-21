@@ -157,7 +157,7 @@ tChainConfigurationVector C5CPostprocessor::SolveWithKnownAlpha1(const CR3Point 
 			vShifts = m_oPositionPostprocessor.Solve(r3pPosition);
 
 		} catch (CGeneratorException e){
-			sLog+=(" Error occured during position solving for rotation no."+size_to_string(i+1)+":"+vSolutions2[i].toString()+"\n");
+			sLog+=(" Error occurred during position solving for rotation no."+size_to_string(i+1)+":"+vSolutions2[i].toString()+"\n");
 			sLog+=("  "+e.Message());
 			continue;
 		}
@@ -193,7 +193,7 @@ tChainConfigurationVector C5CPostprocessor::SolveTheoretically(const CR3Point  r
 			vRotations.back()[m_nSecondRotationIndex].ApplySign(m_vSigns[m_nSecondRotationIndex]);	
 		}
 	} catch (CGeneratorException e){
-		sLog+=("Error occured during orientation solving:\n"+e.Message());
+		sLog+=("Error occurred during orientation solving:\n"+e.Message());
 		return vector<CChainConfiguration>(0);
 	}
 
@@ -209,7 +209,7 @@ tChainConfigurationVector C5CPostprocessor::SolveTheoretically(const CR3Point  r
 			vShifts = m_oPositionPostprocessor.Solve(r3pPosition);
 
 		} catch (CGeneratorException e){
-			sLog+=(" Error occured during position solving for rotation no."+size_to_string(i+1)+":"+vRotations[i].toString()+"\n");
+			sLog+=(" Error occurred during position solving for rotation no."+size_to_string(i+1)+":"+vRotations[i].toString()+"\n");
 			sLog+=("  "+e.Message());
 			continue;
 		}
@@ -235,7 +235,7 @@ vector<tChainConfigurationVector> C5CPostprocessor::SolveSingularOrientation(con
 	if(vInput.size()==0)
 		return vResult; 
 	if(vInput.size()==1){
-		sLog+="Only one cutter location for hipothetical singular solution:\n";
+		sLog+="Only one cutter location for hypothetical singular solution:\n";
 		tChainConfigurationVector v = Solve(vInput[0].m_p,vInput[0].m_v,oChain,oMillingTool,sLog);
 		for(size_t i=0;i<v.size();i++){
 			if(v[i].IsAmbiguous())

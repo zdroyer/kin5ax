@@ -71,7 +71,7 @@ protected:
 	string m_sCollisionLog;
 	//in radians
 	double m_dAxisOZAngle;
-	double m_dSinusAxisOZAngle;
+	double m_dSineAxisOZAngle;
 
 	CR3Box AxialCylinderBoundingBox(double dRadius,double dBegin, double dEnd) const;
 

@@ -58,7 +58,7 @@ public:
 	CEdit m_editReport;
 	BOOL m_bDetailedReport;
 	double m_dActualMaxPositionDifference;
-	double m_dActualMaxOrientationDiferenceDegrees;
+	double m_dActualMaxOrientationDifferenceDegrees;
 	size_t m_nTotalProblemsCount;
 	string m_sReportFile;
     

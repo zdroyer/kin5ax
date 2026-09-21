@@ -23,7 +23,7 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 {
 	CCLDataPostprocessingResult oResult;
 	FILE *pFile = pDetailedReport;
-	C5CPostprocessor oPostporcessor(oChain,m_oSettings);
+	C5CPostprocessor oPostprocessor(oChain,m_oSettings);
 	CCutterLocationData &data = oData;
 	CR3Point p1,p2,pi;
 	CR3Vector v1,v2,vi;
@@ -36,7 +36,7 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 	data.ResetLocationIterator();
 	oSimulationData.DeleteContents();
 	string sLog;
-	bool bCollectingAmbiguousSollutions=false;
+	bool bCollectingAmbiguousSolutions=false;
 	vector<CR3CaughtVector> vAmbiguousCollection;
 	vAmbiguousCollection.reserve(50);
 	CR3CaughtVector lastInput(CR3Vector(0.0),CR3Point(0.0));
@@ -44,38 +44,38 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 		InterpolateLocation(p1,v1,p2,v2,vIntermediateLocations);
 		for(size_t j=0;j<vIntermediateLocations.size();j++){
 			sLog="";
-			tChainConfigurationVector vSolutions = oPostporcessor.Solve
+			tChainConfigurationVector vSolutions = oPostprocessor.Solve
 				(vIntermediateLocations[j].second.m_p
 				,vIntermediateLocations[j].second.m_v
 				,oChain
 				,oTool
 				,sLog);
 			if(vSolutions.size() && vSolutions[0].IsAmbiguous()){
-				if(!bCollectingAmbiguousSollutions){
+				if(!bCollectingAmbiguousSolutions){
 					vAmbiguousCollection.erase(vAmbiguousCollection.begin(),vAmbiguousCollection.end());
 					vAmbiguousCollection.push_back(lastInput);
-					bCollectingAmbiguousSollutions=true;
+					bCollectingAmbiguousSolutions=true;
 				}
 				vAmbiguousCollection.push_back(vIntermediateLocations[j].second);
 				if(j+1>=vIntermediateLocations.size() && !data.HasMoreLocations()){
 					string sSingularSolutionLog="";
-					vector<tChainConfigurationVector> vUnambiguous = oPostporcessor.SolveSingularOrientation(vAmbiguousCollection,oChain,oTool,sSingularSolutionLog);
+					vector<tChainConfigurationVector> vUnambiguous = oPostprocessor.SolveSingularOrientation(vAmbiguousCollection,oChain,oTool,sSingularSolutionLog);
 					for(size_t q=0;q<vUnambiguous.size();q++)
 						oSimulationData.AddConfigurationSet(vUnambiguous[q]);
 					if(pFile)
 						fprintf(pFile,"%s\n",sSingularSolutionLog.c_str());
-					bCollectingAmbiguousSollutions=false;
+					bCollectingAmbiguousSolutions=false;
 				}
 			} else {
-				if(bCollectingAmbiguousSollutions){
+				if(bCollectingAmbiguousSolutions){
 					vAmbiguousCollection.push_back(vIntermediateLocations[j].second);
 					string sSingularSolutionLog="";
-					vector<tChainConfigurationVector> vUnambiguous = oPostporcessor.SolveSingularOrientation(vAmbiguousCollection,oChain,oTool,sSingularSolutionLog);
+					vector<tChainConfigurationVector> vUnambiguous = oPostprocessor.SolveSingularOrientation(vAmbiguousCollection,oChain,oTool,sSingularSolutionLog);
 					for(size_t q=0;q<vUnambiguous.size();q++)
 						oSimulationData.AddConfigurationSet(vUnambiguous[q]);
 					if(pFile)
 						fprintf(pFile,"%s\n",sSingularSolutionLog.c_str());
-					bCollectingAmbiguousSollutions=false;
+					bCollectingAmbiguousSolutions=false;
 				} 
                 oSimulationData.AddConfigurationSet(vSolutions);
 			}

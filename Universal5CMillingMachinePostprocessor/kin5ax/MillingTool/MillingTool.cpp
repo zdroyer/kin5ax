@@ -15,7 +15,7 @@ CMillingTool::CMillingTool
 ,m_r3pPosition(0.0)
 ,m_r3vOrientation(r3vOZ)
 ,m_dAxisOZAngle(0.0)
-,m_dSinusAxisOZAngle(0.0)
+,m_dSineAxisOZAngle(0.0)
 ,m_m4x4ToOZ(CTransformation(1.0))
 ,m_dReferencePointZ(dReferencePointZ)
 ,m_r3vMoveVector(0.0)
@@ -74,8 +74,8 @@ void CMillingTool::SetPositionAndOrientation(const CR3Point &r3pNewPosition, con
 		m_r3vMoveVector = r3pNewPosition-m_r3pPosition;
 	m_r3pPosition.SetPoint(r3pNewPosition);
 	m_r3vOrientation = r3vNewOrientation.GetUnitVector();
-	m_dSinusAxisOZAngle = m_r3vOrientation.vectorProduct(r3vOZ).GetLength();
-	m_dAxisOZAngle = atan2(m_dSinusAxisOZAngle, m_r3vOrientation.scalarProduct(r3vOZ));
+	m_dSineAxisOZAngle = m_r3vOrientation.vectorProduct(r3vOZ).GetLength();
+	m_dAxisOZAngle = atan2(m_dSineAxisOZAngle, m_r3vOrientation.scalarProduct(r3vOZ));
 	m_m4x4ToOZ = CTransformation( CRotation(m_r3vOrientation,r3vOZ) )* CTransformation (CTranslation(-m_r3pPosition.toR3Vector()+(r3vOZ*m_dReferencePointZ) ));
 }
 
@@ -89,7 +89,7 @@ CR3Box CMillingTool::AxialCylinderBoundingBox(double dRadius,double dBegin, doub
 	CR3Box box(m_r3pPosition + ( m_r3vOrientation * dBegin )
 		,m_r3pPosition + ( m_r3vOrientation * (dEnd)));
 
-	double dDeltaZ = dRadius * m_dSinusAxisOZAngle;
+	double dDeltaZ = dRadius * m_dSineAxisOZAngle;
 	box.ExpandXYZ(dRadius,dRadius,dDeltaZ);
 	return box;
 }
