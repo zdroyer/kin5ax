@@ -308,7 +308,7 @@ void CChainSegment::ClearAllPartCollision()
 {
 	m_vCollisions = vector<bool>(m_vCollisions.size(),false);
 }
-CR3Box *CChainSegment::GetAvtivePartPointer()
+CR3Box *CChainSegment::GetActivePartPointer()
 {
 	if(m_nHighlightedPart<0 || m_nHighlightedPart>=(int)m_vParts.size())
 		return 0;

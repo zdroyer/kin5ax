@@ -273,10 +273,10 @@ bool CR3Box::HasIntersectionWithBox(const CR3Box &box, const CTransformation &tr
 //*/
 	if(IsEmpty() || box.IsEmpty())
 		return false;
-	return AsimetricIntersection(box,tr) || box.AsimetricIntersection((*this),tr_inv);
+	return AsymmetricIntersection(box,tr) || box.AsymmetricIntersection((*this),tr_inv);
 
 }
-bool CR3Box::AsimetricIntersection(const CR3Box &box, const CTransformation &tr) const
+bool CR3Box::AsymmetricIntersection(const CR3Box &box, const CTransformation &tr) const
 {
 	vector<CR3Point> vV;
 	vV.reserve(8);

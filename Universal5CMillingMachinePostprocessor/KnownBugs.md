@@ -18,7 +18,7 @@ Nothing here was observed at run time unless a test is named.
 | # | Where | Defect | Check | Status |
 |---|---|---|---|---|
 | 4 | `R3Box.cpp` `InnerBoxFromOZCylinder` | Half side `R*sqrt(2)` instead of `R/sqrt(2)`: the "inner" box is bigger than the outer one, the tool shank collides like a square prism. | verified | open |
-| 5 | `R3Box.cpp` `AsimetricIntersection` | The top face tests the diagonal (1,3) instead of the edge (0,3): one edge of the box is never tested. | verified | open |
+| 5 | `R3Box.cpp` `AsymmetricIntersection` | The top face tests the diagonal (1,3) instead of the edge (0,3): one edge of the box is never tested. | verified | open |
 | 6 | `R3Box.cpp` `HasIntersectionWithLineSegment` | The clipping assumes increasing coordinates; a segment running in the negative direction can be missed. | reported | open |
 | 7 | `R3Box.cpp` `LineSegmentAndOZCylinderIntersection` | `+` instead of `*` in `dB`, `/2.0*dA` instead of `/(2.0*dA)`; hits on the extrapolated line. | reported | open |
 | 8 | `MillingToolBall.cpp`, `MillingToolCylinder.cpp` | Ball: only the sphere is tested between R and 2R, the collision cylinder overlaps the ball and misses the top R; cylinder tool subtracts the reference point twice. | reported | open |

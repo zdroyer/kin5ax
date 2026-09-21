@@ -32,7 +32,7 @@ public:
 	const vector<CR3Box> &GetPartVector()const;
 	void HighlightPart(int n);
 	int GetHighlightedPartIndex() const;
-	CR3Box *GetAvtivePartPointer();
+	CR3Box *GetActivePartPointer();
 
 	bool MeetsConstraints(double dParam) const;
 

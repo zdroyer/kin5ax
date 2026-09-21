@@ -26,7 +26,7 @@ protected:
 	}
 
 
-	bool AsimetricIntersection(const CR3Box &box, const CTransformation &tr) const;
+	bool AsymmetricIntersection(const CR3Box &box, const CTransformation &tr) const;
 	bool LineSegmentAndOZCylinderIntersection(const CR3Point &p1, const CR3Point &p2, const double &dZ, const double &dR) const;
 
 public:

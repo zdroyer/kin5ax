@@ -783,7 +783,7 @@ void CKinematicChainPropertiesDialog::OnLbnDblclkListParts()
 	if(m_pActiveSegment){
 		CBoxDialog dlg;
 		dlg.SetBox(m_vBoxes[m_nActivePart]);
-		dlg.SetWindowAndBoxForUpdates(GetParent(),m_pActiveSegment->GetAvtivePartPointer());
+		dlg.SetWindowAndBoxForUpdates(GetParent(),m_pActiveSegment->GetActivePartPointer());
 		if(dlg.DoModal()==IDOK){
 			m_vBoxes[m_nActivePart] = dlg.GetBox();
 		}
@@ -799,7 +799,7 @@ void CKinematicChainPropertiesDialog::OnBnClickedButtonAddPart()
 		m_pActiveSegment->SetPartVector(m_vBoxes);
 		m_pActiveSegment->HighlightPart((int)m_vBoxes.size()-1);
 		CBoxDialog dlg;
-		dlg.SetWindowAndBoxForUpdates(GetParent(),m_pActiveSegment->GetAvtivePartPointer());
+		dlg.SetWindowAndBoxForUpdates(GetParent(),m_pActiveSegment->GetActivePartPointer());
 		if(dlg.DoModal()==IDOK){
 			m_nActivePart = m_vBoxes.size()-1;
 			m_vBoxes = m_pActiveSegment->GetPartVector();
