@@ -62,8 +62,8 @@ protected:
 	vector<CChainParameter> getAlpha2SquareEquation(const CR3Vector & r3vV0) const ;
 	vector<CChainParameter> getAlpha2AxisMethod(const CR3Vector & r3vV0) const;
 
-	bool getAlpha1(double dAlpha2, const CR3Vector & V0versor, CChainParameter &) const ; 
-	bool getAlpha2(double dAlpha1, const CR3Vector & V0versor,CChainParameter &)const;
+	bool getAlpha1(double dAlpha2, const CR3Vector & V0unit, CChainParameter &) const ; 
+	bool getAlpha2(double dAlpha1, const CR3Vector & V0unit,CChainParameter &)const;
 	bool ComputeOZRotationAngle(const CR3Vector & input,const CR3Vector & result,CChainParameter &)const;
 
 

@@ -73,7 +73,7 @@ void CMillingTool::SetPositionAndOrientation(const CR3Point &r3pNewPosition, con
 	else 
 		m_r3vMoveVector = r3pNewPosition-m_r3pPosition;
 	m_r3pPosition.SetPoint(r3pNewPosition);
-	m_r3vOrientation = r3vNewOrientation.GetVersor();
+	m_r3vOrientation = r3vNewOrientation.GetUnitVector();
 	m_dSinusAxisOZAngle = m_r3vOrientation.vectorProduct(r3vOZ).GetLength();
 	m_dAxisOZAngle = atan2(m_dSinusAxisOZAngle, m_r3vOrientation.scalarProduct(r3vOZ));
 	m_m4x4ToOZ = CTransformation( CRotation(m_r3vOrientation,r3vOZ) )* CTransformation (CTranslation(-m_r3pPosition.toR3Vector()+(r3vOZ*m_dReferencePointZ) ));

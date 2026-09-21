@@ -60,7 +60,7 @@ public:
 		if(d<1E-12)
 			return r3vV;
 		CQuaternion v(0,r3vV.GetX()/d,r3vV.GetY()/d,r3vV.GetZ()/d);	
-		return (((*this)*v*(this->Opposite())).AxisOfRotation()).GetVersor()*d;
+		return (((*this)*v*(this->Opposite())).AxisOfRotation()).GetUnitVector()*d;
 	}
 
 };

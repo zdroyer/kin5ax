@@ -36,9 +36,9 @@ void CPositionPostprocessor::SetAxesAndOffset(
 {
 	if(r3vT1.IsZero() || r3vT2.IsZero() || r3vT3.IsZero() )
 		MY_THROW(CArgsMyException,"At least one translation axis i zero length");
-	m_r3vT1 = r3vT1.GetVersor();
-	m_r3vT2 = r3vT2.GetVersor();
-	m_r3vT3 = r3vT3.GetVersor();
+	m_r3vT1 = r3vT1.GetUnitVector();
+	m_r3vT2 = r3vT2.GetUnitVector();
+	m_r3vT3 = r3vT3.GetUnitVector();
     m_r3pP1 = r3pP1;
 
 }

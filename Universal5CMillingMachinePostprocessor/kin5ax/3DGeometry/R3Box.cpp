@@ -79,7 +79,7 @@ CR3Box CR3Box::BoxFromCylinder(const CR3Point &p1, const CR3Point &p2,double dR 
 	if(v.IsZero())
 		return CR3Box(p1,dR);
 	CR3Box box(p1,p2);	
-	double dCosAlpha = v.GetVersor().scalarProduct(r3vOZ);
+	double dCosAlpha = v.GetUnitVector().scalarProduct(r3vOZ);
 	if(is_zero(dCosAlpha)){
 		box.ExpandXYZ(0.0,0.0,dR);
 	} else {
@@ -204,7 +204,7 @@ bool CR3Box::HasIntersectionWithLineSegment(const CR3Point &p1, const CR3Point &
 	if(p1.GetZ()<m_dMinZ-dEPSILON && p2.GetZ()<m_dMinZ-dEPSILON)
 		return false;
 	CR3Point pp1(p1), pp2(p2);
-//	CR3Vector v = (p2-p1).GetVersor();
+//	CR3Vector v = (p2-p1).GetUnitVector();
 	
 	double dTMin,dTMax;
 	//x plane

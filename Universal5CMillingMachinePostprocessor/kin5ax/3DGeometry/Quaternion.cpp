@@ -27,7 +27,7 @@ CQuaternion::CQuaternion(const CR3Vector &v, const double angle)
 	double s=sin(angle/2.0);
 	CR3Vector vn(1.0,0.0,0.0);
 	if(v.GetLength()>1E-12)
-			vn = v.GetVersor();
+			vn = v.GetUnitVector();
 	q[1]=s*vn.GetX();
 	q[2]=s*vn.GetY();
 	q[3]=s*vn.GetZ();
@@ -36,15 +36,15 @@ CQuaternion::CQuaternion(const CR3Vector &v, const double angle)
 
 CQuaternion::CQuaternion(const CR3Vector &first, const CR3Vector &second)
 {
-	double cosa = first.GetVersor() * second.GetVersor();
-	CR3Vector v = first.GetVersor().vectorProduct(second.GetVersor());
+	double cosa = first.GetUnitVector() * second.GetUnitVector();
+	CR3Vector v = first.GetUnitVector().vectorProduct(second.GetUnitVector());
 	double sina = v.GetLength();
 	double angle = atan2(sina,cosa);
 	q[0]=cos(angle/2.0);
 	double s=sin(angle/2.0);
 	CR3Vector vn(1.0,0.0,0.0);
 	if(v.GetLength()>1E-12)
-			vn = v.GetVersor();
+			vn = v.GetUnitVector();
 	q[1]=s * vn.GetX();
 	q[2]=s * vn.GetY();
 	q[3]=s * vn.GetZ();

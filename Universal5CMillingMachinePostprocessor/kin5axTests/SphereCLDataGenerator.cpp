@@ -29,7 +29,7 @@ size_t WriteSphereCLData(const string &sFileName, double dR, double dD)
 		for(size_t j=0; j<=nSlices; j++){
 			rZ = CRotation::OZRotation(4.0*dPiDiv2*(double)j/(double)nSlices);
 			CR3Point p = rZ*rX*CR3Point(0.0,dR,0.0);
-			CR3Vector v = (p-CR3Point()).GetVersor();
+			CR3Vector v = (p-CR3Point()).GetUnitVector();
 			fprintf(pFile,"GOTO/%lf,%lf,%lf,%lf,%lf,%lf\n",p.GetX(),p.GetY(),p.GetZ(),v.GetX(),v.GetY(),v.GetZ());
 			nLocations++;
 		}

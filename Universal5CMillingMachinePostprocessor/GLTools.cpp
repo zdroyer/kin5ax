@@ -117,7 +117,7 @@ void CGLTools::Arrow(const CR3Point &tail,const CR3Point &head, double dR, doubl
 	CR3Vector v = (tail-head)* 0.04;
 	double dv=v.GetLength();
 	CR3Point h1 = head + v;
-	CR3Vector vVers = v.GetVersor();
+	CR3Vector vVers = v.GetUnitVector();
 
 	CR3Vector t = h1-CR3Point(0.0);
 	CR3Vector axis =CR3Vector(0.0,0.0,1).vectorProduct(vVers*(-1.0));

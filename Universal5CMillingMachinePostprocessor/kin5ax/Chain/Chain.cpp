@@ -163,7 +163,7 @@ void CChain::SetVirtualToolPosition(const CR3Vector &r3v, const CR3Point &r3p)
 {
 	if( r3v.IsZero() )
 		return;
-	m_toolPosition.m_v =  (r3v.GetVersor()) * 0.5;
+	m_toolPosition.m_v =  (r3v.GetUnitVector()) * 0.5;
 	m_toolPosition.m_p = r3p;
 
 }
@@ -755,6 +755,6 @@ void CChain::ComputeAndSetError(CChainConfiguration &oConfig, const CR3CaughtVec
 	CChainConfiguration old = m_oActualParameters;
 	SetParameters(oConfig);
 	CR3CaughtVector cvComputed = GetActualToolPositionAndOrientation();
-	oConfig.SetErrors(d_E(cv.m_p,cvComputed.m_p),(cv.m_v.GetVersor()-cvComputed.m_v).GetLength());
+	oConfig.SetErrors(d_E(cv.m_p,cvComputed.m_p),(cv.m_v.GetUnitVector()-cvComputed.m_v).GetLength());
 	SetParameters(old);    
 }

@@ -31,10 +31,10 @@ void COrientationPostprocessor::SetAxes(const CTransformation &m4x4F2, const CR3
 	m_r3vM = CR3Vector(-m_r3vN1.GetX(),-m_r3vN1.GetY(),m_r3vN1.GetZ());
 
 	CheckAxes();
-	m_r3vV2 = m_r3vV2.GetVersor();
-	m_r3vV3 = m_r3vV3.GetVersor();
-	m_r3vN1 = m_r3vN1.GetVersor();
-	m_r3vM = m_r3vM.GetVersor();
+	m_r3vV2 = m_r3vV2.GetUnitVector();
+	m_r3vV3 = m_r3vV3.GetUnitVector();
+	m_r3vN1 = m_r3vN1.GetUnitVector();
+	m_r3vM = m_r3vM.GetUnitVector();
 
 	m_dPhi = m_r3vN1.UndirectedAngle(r3vOZ);
 	m_dCosPhi = m_r3vN1.scalarProduct(r3vOZ);
@@ -185,7 +185,7 @@ vector<CChainConfiguration> COrientationPostprocessor::Solve(const CR3Vector& r3
 		MY_THROW(CGeneratorException,"Orientation postprocessor not initialized");
 	if(r3vV0.IsZero())
 		MY_THROW(CArgsMyException,"COrientationPostprocessor: Zero length tool orientation vector V0");
-	CR3Vector V0 = r3vV0.GetVersor();
+	CR3Vector V0 = r3vV0.GetUnitVector();
 
 	size_t nResultNumber = SolutionsNumber(V0);
 	switch(m_oSettings.m_nAnglesSolvingMethod){
@@ -357,7 +357,7 @@ vector<CChainParameter> COrientationPostprocessor::getAlpha2AxisMethod(const CR3
 	double dMi = atan2(m_r3vM.GetY(),m_r3vM.GetX());
 	double dDenominator = m_r3vV3.GetXYLength()*m_r3vM.GetXYLength();
 	if(is_zero(dDenominator))
-		MY_THROW(CArgsMyException,"Alpha2 axis multiplication method error\n Difference between alpha2 axis and tool versor is too small for actual\n floating point number precision - probably improper chain structure");
+		MY_THROW(CArgsMyException,"Alpha2 axis multiplication method error\n Difference between alpha2 axis and tool unit vector is too small for actual\n floating point number precision - probably improper chain structure");
 	double dNumerator = r3vV0.GetZ()-m_r3vM.GetZ()*m_r3vV3.GetZ();
 	double d = dNumerator/dDenominator;
 	if(are_equal(d,1.0))
@@ -398,17 +398,17 @@ vector<CChainParameter> COrientationPostprocessor::getAlpha2AxisMethod(const CR3
 
 
 
-bool COrientationPostprocessor::getAlpha1(double dAlpha2, const CR3Vector & V0versor, CChainParameter &oParam) const 
+bool COrientationPostprocessor::getAlpha1(double dAlpha2, const CR3Vector & V0unit, CChainParameter &oParam) const 
 {
 	CR3Vector a = m_m4x4F2 * CRotation::OZRotation(dAlpha2) * m_r3vV3;
-	const CR3Vector &b = V0versor;
+	const CR3Vector &b = V0unit;
 	return ComputeOZRotationAngle(a,b,oParam);
 
 }
-bool COrientationPostprocessor::getAlpha2(double dAlpha1, const CR3Vector & V0versor,CChainParameter &oParam )const
+bool COrientationPostprocessor::getAlpha2(double dAlpha1, const CR3Vector & V0unit,CChainParameter &oParam )const
 {
 	const CR3Vector &a = m_r3vV3;
-	CR3Vector b = m_m4x4F2.T() * CRotation::OZRotation(-dAlpha1) * V0versor;
+	CR3Vector b = m_m4x4F2.T() * CRotation::OZRotation(-dAlpha1) * V0unit;
 	return ComputeOZRotationAngle(a,b,oParam);
 }
 bool COrientationPostprocessor::ComputeOZRotationAngle(const CR3Vector & input,const CR3Vector & result,CChainParameter  &oParam)const

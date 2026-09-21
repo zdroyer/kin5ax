@@ -147,7 +147,7 @@ CCutterLocationData::CCLLine CCutterLocationData::ParseLine(int nLineBeginIndex,
 		,nLineNumber
 		,nLineBeginIndex
 		,p
-		,v.GetVersor());
+		,v.GetUnitVector());
 	} else {
 		return CCutterLocationData::CCLLine(CL_LINE_ERROR,nLineNumber,nLineBeginIndex);
 	}

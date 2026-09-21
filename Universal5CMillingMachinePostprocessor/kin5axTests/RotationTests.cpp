@@ -63,7 +63,7 @@ TEST(Rotation, AxisAngleIsRightHanded)
 TEST(Rotation, AxisAngleNormalisesTheAxis)
 {
 	EXPECT_LT(Difference(CRotation(CR3Vector(0.0,0.0,5.0),0.7),CRotation(r3vZ,0.7)),dTOLERANCE);
-	EXPECT_LT(Difference(CRotation(CR3Vector(3.0,-4.0,12.0),1.1),CRotation(CR3Vector(3.0,-4.0,12.0).GetVersor(),1.1)),dTOLERANCE);
+	EXPECT_LT(Difference(CRotation(CR3Vector(3.0,-4.0,12.0),1.1),CRotation(CR3Vector(3.0,-4.0,12.0).GetUnitVector(),1.1)),dTOLERANCE);
 }
 
 TEST(Rotation, ZeroAxisGivesIdentity)
@@ -78,7 +78,7 @@ TEST(Rotation, IsARotationMatrixForAnyAxisAndAngle)
 		for(double dAngle=-3.0;dAngle<=3.0;dAngle+=0.37){
 			CRotation r(vAxes[a],dAngle);
 			ExpectIsRotation(r,"axis "+vAxes[a].toString());
-			ExpectVectorsNear(vAxes[a].GetVersor(),r*vAxes[a].GetVersor(),"the axis stays");
+			ExpectVectorsNear(vAxes[a].GetUnitVector(),r*vAxes[a].GetUnitVector(),"the axis stays");
 		}
 }
 
@@ -112,10 +112,10 @@ TEST(Rotation, InvertedIsTheTranspose)
 
 TEST(Rotation, GetAngleAndGetAxisGiveTheConstructorArguments)
 {
-	CR3Vector axis = CR3Vector(2.0,-1.0,0.5).GetVersor();
+	CR3Vector axis = CR3Vector(2.0,-1.0,0.5).GetUnitVector();
 	CRotation r(axis,degrees_to_radians(50.0));
 	EXPECT_NEAR(50.0,r.GetAngle(),1E-9)<<"GetAngle returns degrees";
-	ExpectVectorsNear(axis,r.GetAxis().GetVersor(),"GetAxis is parallel to the axis");
+	ExpectVectorsNear(axis,r.GetAxis().GetUnitVector(),"GetAxis is parallel to the axis");
 }
 
 TEST(Rotation, EulerAnglesRoundTrip)
@@ -136,7 +136,7 @@ class RotationFromTwoVectorsTest : public ::testing::TestWithParam<double>
 TEST_P(RotationFromTwoVectorsTest, TurnsTheFirstVectorIntoTheSecond)
 {
 	double dAngle = degrees_to_radians(GetParam());
-	//a general pair of versors with the given angle between them
+	//a general pair of unit vectors with the given angle between them
 	CRotation rGeneral(CR3Vector(1.0,-2.0,0.7),0.9);
 	CR3Vector v0 = rGeneral*r3vZ;
 	CR3Vector v1 = rGeneral*CR3Vector(sin(dAngle),0.0,cos(dAngle));
@@ -154,7 +154,7 @@ TEST_P(RotationFromTwoVectorsTest, AcceptsVectorsOfAnyLength)
 	CR3Vector v1(0.25*sin(dAngle),0.0,0.25*cos(dAngle));
 	CRotation r(v0,v1);
 	ExpectIsRotation(r,AngleText(GetParam()));
-	ExpectVectorsNear(v1.GetVersor(),r*v0.GetVersor(),"v0 must become v1");
+	ExpectVectorsNear(v1.GetUnitVector(),r*v0.GetUnitVector(),"v0 must become v1");
 }
 
 //0 and 180 deg are the degenerate cases (the vector product is zero)

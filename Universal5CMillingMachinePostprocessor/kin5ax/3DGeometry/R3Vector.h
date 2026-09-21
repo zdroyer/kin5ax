@@ -22,7 +22,7 @@ public:
 			return 1;
 		if(is_zero(v.GetLengthSquare()))
 			return 1;
-		double dCos = this->GetVersor().scalarProduct(v.GetVersor());
+		double dCos = this->GetUnitVector().scalarProduct(v.GetUnitVector());
 		if(dCos>1.0-dEPSILON)
 			return 1;
 		if(dCos<-1.0+dEPSILON)
@@ -114,7 +114,7 @@ public:
 	{	return (m_dX*m_dX+m_dY*m_dY+m_dZ*m_dZ); }
 
 
-	CR3Vector GetVersor() const 
+	CR3Vector GetUnitVector() const 
 	{
 		double d=GetLength();
 		if(d==0)
@@ -177,10 +177,10 @@ public:
 	double UndirectedAngle(const CR3Vector &v2) const{
 		if(IsZero() || v2.IsZero())
 			return 0.0;//acos(0.0);
-		return GetVersor().UndirectedVersorsAngle(v2.GetVersor());
+		return GetUnitVector().UndirectedUnitVectorsAngle(v2.GetUnitVector());
 	}
 
-	double UndirectedVersorsAngle(const CR3Vector &v2) const{
+	double UndirectedUnitVectorsAngle(const CR3Vector &v2) const{
 		double dCos = scalarProduct(v2);
 		if(dCos>1.0)
 			dCos=1.0;

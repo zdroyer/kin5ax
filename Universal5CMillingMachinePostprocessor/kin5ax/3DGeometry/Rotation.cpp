@@ -71,7 +71,7 @@ CRotation::CRotation(const CR3Vector &v, double angle):CTransformation(1)
 		return;
 	}
 	double s=sin(angle), c=cos(angle), t=1-c;
-	CR3Vector v1=v.GetVersor();
+	CR3Vector v1=v.GetUnitVector();
 	double x=v1.GetX(), y=v1.GetY(), z=v1.GetZ();
 
 	M[0][0]=t*x*x+c;
@@ -89,9 +89,9 @@ CRotation::CRotation(const CR3Vector &v, double angle):CTransformation(1)
 
 CRotation::CRotation(const CR3Vector &r3vV0, const CR3Vector &r3vV1)
 {
-	CR3Vector v0 = r3vV0.GetVersor();
-	CR3Vector v1 = r3vV1.GetVersor();
-	//the vector product of two versors is the rotation axis, but its length is the sinus
+	CR3Vector v0 = r3vV0.GetUnitVector();
+	CR3Vector v1 = r3vV1.GetUnitVector();
+	//the vector product of two unit vectors is the rotation axis, but its length is the sinus
 	//of their angle, not 1: the (axis, angle) constructor normalises it
 	CR3Vector axis = v0.vectorProduct(v1);
 	double s=axis.GetLength();

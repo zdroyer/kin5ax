@@ -144,7 +144,7 @@ void CCLDataPostprocessor::InterpolateLocation
 		result.push_back(pair<double,CR3CaughtVector>(1.0,CR3CaughtVector(v2,p2)));	
 		return;
 	}
-	double dAngle = (v1.UndirectedVersorsAngle(v2)/m_oSettings.m_dMaxOrientationDifferenceRadians);
+	double dAngle = (v1.UndirectedUnitVectorsAngle(v2)/m_oSettings.m_dMaxOrientationDifferenceRadians);
 	double dDistance = (d_E(p1,p2)/m_oSettings.m_dMaxPositionDifference);
 	double dInv = ceil(max(dAngle,dDistance));
 	if(dInv<=1.0){
@@ -155,7 +155,7 @@ void CCLDataPostprocessor::InterpolateLocation
 	result.reserve((size_t)fabs(dInv));
 	for(double i=1.0;i<dInv-0.001; i++){
 		t = i/dInv;
-		result.push_back(pair<double,CR3CaughtVector>(t,CR3CaughtVector(((v2*t)+(v1*(1.0-t))).GetVersor(),(p2*t)+(p1*(1.0-t)))));
+		result.push_back(pair<double,CR3CaughtVector>(t,CR3CaughtVector(((v2*t)+(v1*(1.0-t))).GetUnitVector(),(p2*t)+(p1*(1.0-t)))));
 	}
 	result.push_back(pair<double,CR3CaughtVector>(1.0,CR3CaughtVector(v2,p2)));
 }
