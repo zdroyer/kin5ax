@@ -5,6 +5,7 @@
 #include "Universal5CMillingMachinePostprocessor.h"
 #include ".\postprocessingdialog.h"
 #include "cutterlocationdata.h"
+#include "memorymyexception.h"
 #include ".\cldatafiledialog.h"
 
 
@@ -129,7 +130,7 @@ void CCLDataFileDialog::LoadCLFile(const CString &sFilePath,const CString &sFile
 		UpdateDialogTitle();
 		try{
 			m_pDoc->m_oCutterLocationData.LoadFile(m_sOpenedFilePath.GetBuffer(m_sOpenedFilePath.GetLength()),m_sOpenedFileTitle.GetBuffer(m_sOpenedFileTitle.GetLength()));				
-			m_pDoc->m_oCutterLocationData.FillListBox(m_listboxFileContents,m_bShowOnlyErrors);
+			FillListBox(m_bShowOnlyErrors);
 		} catch (CGeneratorException e){
 			MessageBox(e.Message().c_str());
 		}
@@ -145,6 +146,23 @@ void CCLDataFileDialog::LoadCLFile(const CString &sFilePath,const CString &sFile
 }
 
 
+void CCLDataFileDialog::FillListBox(BOOL bOnlyErrorLines)
+{
+	const CCutterLocationData &oData = m_pDoc->m_oCutterLocationData;
+	m_listboxFileContents.ResetContent();
+	for(size_t i = 0; i<oData.GetLinesCount(); i++){
+		const CCutterLocationData::CCLLine &line = oData.GetLine(i);
+		if(!bOnlyErrorLines || CL_LINE_ERROR == line.m_status ){
+			int index = m_listboxFileContents.AddString(oData.GetLineText(i));
+			if(index>=0){
+				m_listboxFileContents.SetItemData(index,(DWORD_PTR)line.m_nLineNumber);
+			} else {
+				MY_THROW(CMemoryMyException,"Insufficient memory space in ListBox for whole CLData file");
+			}
+		}
+	}
+}
+
 void CCLDataFileDialog::UpdateCutterLocationDataObject()
 {
 	assert(m_pDoc);
@@ -154,7 +172,7 @@ void CCLDataFileDialog::UpdateCutterLocationDataObject()
 		CTransformation trV = (CRotation(CR3Vector(m_dAxisX,m_dAxisY,m_dAxisZ),m_dAngleDegrees,0.0));
 		if(m_bTurnAlsoPosition)
 			trP= trV * trP;
-		m_pDoc->m_oCutterLocationData.SetTransformation(trP,trV,m_bInvertOrientation);
+		m_pDoc->m_oCutterLocationData.SetTransformation(trP,trV,m_bInvertOrientation!=FALSE);
 		UpdateBoundingBoxControls();
 		OnLbnSelchangeListFileContents();
 		m_pDoc->UpdateAllViews(NULL);
@@ -166,7 +184,7 @@ void CCLDataFileDialog::OnBnClickedRadioShowAllLines()
 	assert(m_pDoc);
 	if(m_pDoc){
 		UpdateData();
-		m_pDoc->m_oCutterLocationData.FillListBox(m_listboxFileContents,m_bShowOnlyErrors);
+		FillListBox(m_bShowOnlyErrors);
 		m_listboxFileContents.Invalidate();
 	}
 }
@@ -176,7 +194,7 @@ void CCLDataFileDialog::OnBnClickedRadioShowLinesWithError()
 	assert(m_pDoc);
 	if(m_pDoc){
 		UpdateData();
-		m_pDoc->m_oCutterLocationData.FillListBox(m_listboxFileContents,m_bShowOnlyErrors);
+		FillListBox(m_bShowOnlyErrors);
 		m_listboxFileContents.Invalidate();
 	}
 }
@@ -273,7 +291,7 @@ void CCLDataFileDialog::OnEnChangeEditScale()
 void CCLDataFileDialog::UpdateBoundingBoxControls(void)
 {
 	UpdateData();
-	CR3Box box = m_pDoc->m_oCutterLocationData.GetBoundingBox(m_bBoxTransformed);
+	CR3Box box = m_pDoc->m_oCutterLocationData.GetBoundingBox(m_bBoxTransformed!=FALSE);
 	SetText(m_editXMax,box.GetMaxPoint().GetX());
 	SetText(m_editYMax,box.GetMaxPoint().GetY());
 	SetText(m_editZMax,box.GetMaxPoint().GetZ());

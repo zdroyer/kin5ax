@@ -1,10 +1,6 @@
 #include "StdAfx.h"
 #include ".\cutterlocationdata.h"
-#include "gltools.h"
-#include "memorymyexception.h"
 
-
-extern CApplicationConfiguration oConfiguration;
 
 CCutterLocationData::CCutterLocationData(void)
 :m_pData(0)
@@ -86,7 +82,7 @@ void CCutterLocationData::LoadFile(const string & sFileName, const string &sFile
 	}
 //	m_dTotalOrientationChange = m_dTotalOrientationChange);
 	setlocale(LC_NUMERIC,sOldLocale.c_str());
-	SetTransformation(m_m4x4P,m_m4x4V,FALSE);
+	SetTransformation(m_m4x4P,m_m4x4V,false);
 }
 
 
@@ -157,7 +153,7 @@ CCutterLocationData::CCLLine CCutterLocationData::ParseLine(int nLineBeginIndex,
 	}
 }
 
-void CCutterLocationData::SetTransformation(const CTransformation &trP, const CTransformation &trV,BOOL bInvertedOrientation)
+void CCutterLocationData::SetTransformation(const CTransformation &trP, const CTransformation &trV,bool bInvertedOrientation)
 {
 	m_m4x4P = trP;
 	m_m4x4V = trV;
@@ -225,42 +221,9 @@ bool CCutterLocationData::GetLocation(CR3Point & p, CR3Vector & v, size_t nLineN
 	return false;
 }
 
-
-void CCutterLocationData::Render3D(bool bFastRendering) const
+const char *CCutterLocationData::GetLineText(size_t index) const
 {
-		
-	glDisable(GL_LIGHTING);
-	if(!bFastRendering){
-		glColor3d(0.6,0.0,0.6);
-		for(size_t i = 0; i<m_vLines.size(); i++){
-			const CCutterLocationData::CCLLine &line = m_vLines[i];
-			const char * lineConstents = &m_pData[line.m_nIndexOfString];
-			if(m_vLines[i].m_status==CL_LINE_OK)
-				CGLTools::LineArrow
-					(m_m4x4P * m_vLines[i].m_p
-					,( m_m4x4V * m_vLines[i].m_v)*(oConfiguration.m_dUnit*0.2));
-		}
-	}
-	glColor3d(0.8,0.8,0.8);
-	glBegin(GL_LINE_STRIP);
-	for(size_t i = 0; i<m_vLines.size(); i++)
-		if(m_vLines[i].m_status==CL_LINE_OK)
-			glVertex3dv( (m_m4x4P * m_vLines[i].m_p).toGL3dv());
-	glEnd();
-}
-
-void CCutterLocationData::FillListBox(CListBox &listBox, BOOL bOnlyErrorLines)const
-{
-	listBox.ResetContent();
-	for(size_t i = 0; i<m_vLines.size(); i++){
-		const CCutterLocationData::CCLLine &line = m_vLines[i];
-		if(!bOnlyErrorLines || CL_LINE_ERROR == line.m_status ){
-			int index = listBox.AddString(&(m_pData[line.m_nIndexOfString]));
-			if(index>=0){
-				listBox.SetItemData(index,(DWORD_PTR)line.m_nLineNumber);
-			} else {
-				MY_THROW(CMemoryMyException,"Insufficient memory space in ListBox for whole CLData file");
-			}
-		}
-	}
+	if(index>=m_vLines.size() || m_pData==0)
+		MY_THROW(CArgsMyException,"Invalid line number");
+	return &(m_pData[m_vLines[index].m_nIndexOfString]);
 }

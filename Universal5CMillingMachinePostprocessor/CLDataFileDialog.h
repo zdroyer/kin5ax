@@ -24,6 +24,8 @@ protected:
 	CString m_sOriginalDialogTitle;
 	void UpdateDialogTitle();
 	void UpdateCutterLocationDataObject();
+	//lines of the loaded CL-data file (all of them or those with an error)
+	void FillListBox(BOOL bOnlyErrorLines);
 	void LoadCLFile(const CString &sFileName,const CString &sFilePath);
 	CUniversal5CMillingMachinePostprocessorDoc *m_pDoc;
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support

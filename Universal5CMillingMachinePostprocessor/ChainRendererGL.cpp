@@ -4,6 +4,7 @@
 #include "R3BoxRendererGL.h"
 #include "ChainSegmentRendererGL.h"
 #include "MillingToolRendererGL.h"
+#include "CutterLocationDataRendererGL.h"
 
 extern CApplicationConfiguration oConfiguration;
 
@@ -66,7 +67,7 @@ void CChainRendererGL::Render(const CChain &oChain
 	if(oConfiguration.m_bShowMaterialContour)
 		oMaterial.RenderContour();
 	if(oConfiguration.m_bShowToolTrajectory)
-		oData.Render3D(bFastRendering);
+		CCutterLocationDataRendererGL::Render(oData,bFastRendering);
 	glPopMatrix();
 	glPushMatrix();
 	for(size_t i=0;i<oChain.m_vToolPart.size();i++){

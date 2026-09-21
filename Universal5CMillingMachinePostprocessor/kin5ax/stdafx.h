@@ -11,6 +11,12 @@
 #include <string.h>
 #include <math.h>
 #include <limits.h>
+#include <errno.h>
+#include <locale.h>
+#include <io.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include <iostream>
 #include <string>

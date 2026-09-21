@@ -77,7 +77,7 @@ protected:
 
 public:
 	bool HasMoreLocations() const;
-	CR3Box GetBoundingBox(BOOL bTransformed) const
+	CR3Box GetBoundingBox(bool bTransformed) const
 	{
 		if(bTransformed)
 			return m_oBoxTransformed;
@@ -85,10 +85,10 @@ public:
 	}
 	void SetChars(char cX,char cY,char cZ,char cI,char cJ,char cK);
 	void GetChars(char &cX,char &cY,char &cZ,char &cI,char &cJ,char &cK) const;
-	void SetTransformation(const CTransformation &trP, const CTransformation &trV,BOOL bInvertedOrientation);
+	void SetTransformation(const CTransformation &trP, const CTransformation &trV,bool bInvertedOrientation);
 	bool GetLocation(CR3Point & p, CR3Vector & v, size_t nLineNumber) const;
-	void Render3D(bool bFastRendering) const;
-	void FillListBox(CListBox &listBox,BOOL bOnlyErrorLines)const;
+	//text of the line of the loaded file (index as in GetLine)
+	const char *GetLineText(size_t index) const;
 
 	double GetTrajectoryLenght() const
 	{ return m_dTrajectoryLength; }

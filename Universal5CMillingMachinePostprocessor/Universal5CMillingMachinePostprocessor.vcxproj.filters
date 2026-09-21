@@ -36,9 +36,6 @@
     <ClCompile Include="CLDataFileDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CutterLocationData.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="MillingToolRendererGDI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -46,6 +43,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="R3BoxRendererGL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CutterLocationDataRendererGL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GLTools.cpp">
@@ -116,9 +116,6 @@
     <ClInclude Include="CLDataFileDialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CutterLocationData.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="MillingToolRendererGDI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -129,6 +126,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="R3BoxRendererGL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CutterLocationDataRendererGL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GLTools.h">

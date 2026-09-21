@@ -218,10 +218,10 @@
     <ClCompile Include="ChainSegmentRendererGL.cpp" />
     <ClCompile Include="ChainXmlReader.cpp" />
     <ClCompile Include="CLDataFileDialog.cpp" />
-    <ClCompile Include="CutterLocationData.cpp" />
     <ClCompile Include="MillingToolRendererGDI.cpp" />
     <ClCompile Include="MillingToolRendererGL.cpp" />
     <ClCompile Include="R3BoxRendererGL.cpp" />
+    <ClCompile Include="CutterLocationDataRendererGL.cpp" />
     <ClCompile Include="GLTools.cpp" />
     <ClCompile Include="KinematicChainPropertiesDialog.cpp" />
     <ClCompile Include="MainFrm.cpp" />
@@ -251,11 +251,11 @@
     <ClInclude Include="ChainSegmentRendererGL.h" />
     <ClInclude Include="ChainXmlReader.h" />
     <ClInclude Include="CLDataFileDialog.h" />
-    <ClInclude Include="CutterLocationData.h" />
     <ClInclude Include="MillingToolRendererGDI.h" />
     <ClInclude Include="MillingToolRendererGL.h" />
     <ClInclude Include="ProgressCtrlCallback.h" />
     <ClInclude Include="R3BoxRendererGL.h" />
+    <ClInclude Include="CutterLocationDataRendererGL.h" />
     <ClInclude Include="GLTools.h" />
     <ClInclude Include="KinematicChainPropertiesDialog.h" />
     <ClInclude Include="MainFrm.h" />
