@@ -10,8 +10,8 @@ Nothing here was observed at run time unless a test is named.
 | # | Where | Defect | Check | Status |
 |---|---|---|---|---|
 | 1 | `kin5ax/3DGeometry/Rotation.cpp` `CRotation(v0,v1)` | The vector product of two unit vectors has the length sin(angle), not 1, but it is used as a unit axis: the matrix is a rotation only for 0 and 90 deg (and -I for 180 deg). Only user: `CMillingTool::SetPositionAndOrientation` (voxel simulation). Tests: `RotationTests.cpp` (before the fix it passed only for 0 and 90 deg; at 45 deg det = 0.64 and v0 landed 0.21 away from v1). | verified | **fixed** b263fa5 |
-| 2 | `kin5ax/MillingTool/MillingTool.cpp` `SetPositionAndOrientation` | The reference point offset is applied before the rotation: `R*(p - pos + ref*OZ)` instead of `R*(p - pos) + ref*OZ`; the cut volume of a tilted tool is displaced. | verified | open |
-| 3 | `KinematicChainPropertiesDialog.cpp:439` | `m_dParameterValue` is in degrees but is converted with `radians_to_degrees`; a revolute joint set to 30 deg jumps after any other field is edited. | verified | open |
+| 2 | `kin5ax/MillingTool/MillingTool.cpp` `SetPositionAndOrientation` | The reference point offset is applied before the rotation: `R*(p - pos + ref*OZ)` instead of `R*(p - pos) + ref*OZ`; the cut volume of a tilted tool is displaced. Tests: `MillingToolTests.cpp` (before the fix it passed only for a vertical tool or a reference point on the tip). | verified | **fixed** 1756023 |
+| 3 | `KinematicChainPropertiesDialog.cpp:439` | `m_dParameterValue` is in degrees but is converted with `radians_to_degrees`; a revolute joint set to 30 deg jumps after any other field is edited. No automated test (MFC dialog). | verified | **fixed** ba593a1 |
 
 ## Collision geometry
 
