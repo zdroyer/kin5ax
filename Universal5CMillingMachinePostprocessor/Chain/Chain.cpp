@@ -2,6 +2,7 @@
 #include "chain.h"
 #include "../gltools.h"
 #include "../R3BoxRendererGL.h"
+#include "../ChainSegmentRendererGL.h"
 #include "../MillingToolRendererGL.h"
 #include "string_tools.h"
 
@@ -568,7 +569,7 @@ void CChain::Render3D(bool bFastRendering
 		CGLTools::DrawAxes(1.0,2.2*oConfiguration.m_dUnit);
 
 	for(size_t i=0;i<m_vMaterialHolderPart.size();i++){	
-		m_vMaterialHolderPart[i].Render3D(!m_bIsToolPartActive && i==m_nActiveSegmentIndex);
+		CChainSegmentRendererGL::Render(m_vMaterialHolderPart[i],!m_bIsToolPartActive && i==m_nActiveSegmentIndex);
 	}
 	
 	if(!m_toolPosition.m_v.IsZero()){
@@ -601,7 +602,7 @@ void CChain::Render3D(bool bFastRendering
 	glPopMatrix();
 	glPushMatrix();
 	for(size_t i=0;i<m_vToolPart.size();i++){
-		m_vToolPart[i].Render3D(m_bIsToolPartActive && i==m_nActiveSegmentIndex);
+		CChainSegmentRendererGL::Render(m_vToolPart[i],m_bIsToolPartActive && i==m_nActiveSegmentIndex);
 	}
 	if(pTool && oConfiguration.m_bShowTool){
 		CMillingToolRendererGL::Render(*pTool);

@@ -18,27 +18,16 @@ class CChainSegment
 {
 
 protected:
-	void RenderParts();
-
-	void RenderRevolute();
-	void RenderPrismatic();
-	void RenderToolHolder();
-	void RenderMaterialHolder();
-
-	void DrawArm(const CR3Vector &r3pEndOfArm);
-	void OZBox(double dXDiv2, double dYDiv2, double dZ);
-
-	bool m_bDrawBigFrame;
 	vector<CR3Box> m_vParts;
 	vector<bool> m_vCollisions;
 	int m_nHighlightedPart;
-	void ApplyConstantTransformation();
 
 public:
 	bool HasPartInCollision(string &sLog) const;
 	void ClearAllPartCollision();
 
 	void SetPartCollision(size_t n);
+	bool IsPartInCollision(size_t n) const;
 	void SetPartVector(vector<CR3Box> vNewParts);
 	const vector<CR3Box> &GetPartVector()const;
 	void HighlightPart(int n);
@@ -59,7 +48,6 @@ public:
 					);
 	CChainSegment(MSXML2::IXMLDOMNodePtr & pNode);
 	~CChainSegment(void);
-	void Render3D(bool bDrawFrame);
 	CTransformation GetConstantTransformation() const;
 	CTransformation GetInvertedConstantTransformation() const;
 	CRotation GetConstantRotation() const;

@@ -1,7 +1,5 @@
 #include "../StdAfx.h"
 #include "chainsegment.h"
-#include "../gltools.h"
-#include "../R3BoxRendererGL.h"
 #include "string_tools.h"
 #include "rotation.h"
 #include "translation.h"
@@ -9,7 +7,6 @@
 #include "Atlconv.h"
 
 extern CR3Vector r3vOZ;
-extern CApplicationConfiguration oConfiguration;
 
 CChainSegment::CChainSegment(CHAIN_SEGMENT_TYPE type
 					,const CR3Vector &r3vConstRevoluteAxis
@@ -26,7 +23,6 @@ CChainSegment::CChainSegment(CHAIN_SEGMENT_TYPE type
 		,m_bParameterIsConstrained(bParameterIsConstrained)
 		,m_dParameterValueMaximum(dParameterMaximum)
 		,m_dParameterValueMinimum(dParameterMinimum)
-		,m_bDrawBigFrame(false)
 		,m_nHighlightedPart(-1)
 {
 	SetType(type);
@@ -80,7 +76,6 @@ bool doubleValue(MSXML2::IXMLDOMNamedNodeMapPtr &pMap, const string &sAttrName, 
 
 
 CChainSegment::CChainSegment(MSXML2::IXMLDOMNodePtr & pNode)
-:m_bDrawBigFrame(false)
 	{	
 	assert(pNode!=NULL);
 	_bstr_t sNodeName = pNode->GetnodeName();
@@ -233,247 +228,6 @@ CTransformation CChainSegment::GetInvertedParametrizedTransformation(double dPar
 
 }
 
-void CChainSegment::RenderParts()
-{
-	glColor3d(0.3,0.3,0.3);
-	for(size_t i = 0 ; i<m_vParts.size();i++)
-		if(i==m_nHighlightedPart){
-			if(m_vCollisions[i]){
-				glColor3d(1.0,0.0,0.0);
-				CR3BoxRendererGL::RenderSolid(m_vParts[i]);
-				glColor3d(0.3,0.3,0.3);
-			} else {
-				glColor3d(0.6,0.6,0.6);	
-				CR3BoxRendererGL::RenderSolid(m_vParts[i]);
-				glColor3d(0.3,0.3,0.3);
-			}
-		} else {
-			if(m_vCollisions[i]){
-				glColor3d(0.5,0.0,0.0);
-				CR3BoxRendererGL::RenderSolid(m_vParts[i]);
-				glColor3d(0.3,0.3,0.3);
-			} else {
-				CR3BoxRendererGL::RenderSolid(m_vParts[i]);
-			}
-		}
-
-
-	
-
-}
-void CChainSegment::Render3D(bool bDrawFrame)
-{
-	m_bDrawBigFrame = bDrawFrame;
-	DrawArm(m_r3vConstTranslation);
-	ApplyConstantTransformation();
-	if(oConfiguration.m_bShowParts)
-		RenderParts();
-	glEnable(GL_LIGHTING);
-	switch(m_type){
-		case CHAIN_SEGMENT_REVOLUTE_LINK:
-			RenderRevolute();
-			break;
-		case CHAIN_SEGMENT_PRISMATIC_LINK:
-			RenderPrismatic();
-			break;
-		case CHAIN_SEGMENT_MATERIAL_HOLDER:
-			RenderMaterialHolder();
-			break;
-		case CHAIN_SEGMENT_TOOL:
-			RenderToolHolder();
-			break;
-		default:
-			return;
-	}
-}
-
-void CChainSegment:: RenderRevolute()
-{
-	if(m_bDrawBigFrame)
-		CGLTools::DrawAxes(oConfiguration.m_dUnit,oConfiguration.m_dUnit);
-	else{
-		if(oConfiguration.m_bShowLinksFrames)
-			CGLTools::DrawAxes(0.3,0.3*oConfiguration.m_dUnit);
-	}
-	if(oConfiguration.m_bShowLinks){
-		static double *pdU = &oConfiguration.m_dUnit;
-		static GLUquadricObj *pQObj = gluNewQuadric();
-		glColor3d(0.0,0.5,0.5);
-		glNormal3d(0.0,0.0,1.0);
-		glTranslated(0.0,0.0,-0.001*(*pdU));
-		gluDisk(pQObj,0.01*(*pdU),0.1*(*pdU),40,6);
-		glTranslated(0.0,0.0,0.002*(*pdU));
-		glNormal3d(0.0,0.0,-1.0);
-
-		gluDisk(pQObj,0.01*(*pdU),0.1*(*pdU),40,6);
-		glTranslated(0.0,0.0,-0.001*(*pdU));
-
-		glColor3d(0.3,0.3,0.3);
-		glTranslated(0.0,0.0,-0.002*(*pdU));
-		glNormal3d(0.0,0.0,1.0);
-
-		gluPartialDisk(pQObj,0.03*(*pdU),0.09*(*pdU),20,4,0.0,radians_to_degrees(-m_dActualParameterValue));
-		glTranslated(0.0,0.0,0.004*(*pdU));
-		glNormal3d(0.0,0.0,-1.0);
-
-		gluPartialDisk(pQObj,0.03*(*pdU),0.09*(*pdU),20,4,0.0,radians_to_degrees(-m_dActualParameterValue));
-		glTranslated(0.0,0.0,-0.002*(*pdU));
-	}	
-	glRotated(radians_to_degrees( m_dActualParameterValue),0.0,0.0,1.0);
-}
-void CChainSegment::RenderPrismatic()
-{
-	if(m_bDrawBigFrame)
-		CGLTools::DrawAxes(oConfiguration.m_dUnit,oConfiguration.m_dUnit);
-	else{
-		if(oConfiguration.m_bShowLinksFrames)
-			CGLTools::DrawAxes(0.3,0.3*oConfiguration.m_dUnit);
-	}
-	if(oConfiguration.m_bShowLinks){
-		static double *pdU = &oConfiguration.m_dUnit;
-		glColor3d(0.0,0.5,0.5);
-		double dArmThicknessDiv2 = 0.05*(*pdU); 
-		glDisable(GL_LIGHTING);
-		glBegin(GL_LINE_LOOP);
-			glVertex3d(-dArmThicknessDiv2,-dArmThicknessDiv2,0);
-			glVertex3d(-dArmThicknessDiv2,dArmThicknessDiv2,0);
-			glVertex3d(dArmThicknessDiv2,dArmThicknessDiv2,0);
-			glVertex3d(dArmThicknessDiv2,-dArmThicknessDiv2,0);
-		glEnd();
-		glEnable(GL_LIGHTING);
-		OZBox(dArmThicknessDiv2,dArmThicknessDiv2,m_dActualParameterValue);
-	}
-	glTranslated(0.0,0.0,m_dActualParameterValue);
-	
-
-}
-void CChainSegment::RenderToolHolder()
-{
-	if(m_bDrawBigFrame || oConfiguration.m_bShowToolFrame)
-		CGLTools::DrawAxes(oConfiguration.m_dUnit,oConfiguration.m_dUnit);
-	else
-		if(oConfiguration.m_bShowLinksFrames)
-			CGLTools::DrawAxes(0.3,0.3*oConfiguration.m_dUnit);
-	
-	return;
-	static double *pdU = &oConfiguration.m_dUnit;
-	static GLUquadricObj *pQObj = gluNewQuadric();
-	//glTranslated(0.0,0.0,-m_dActualParameterValue-m_dParameterValueOffset);
-	//gluSphere(pQObj,0.01,10,10);
-	glColor3d(1.0,0.0,1.0);
-	//static GLUquadricObj *pQObj2 = gluNewQuadric();
-	glTranslated(0.0,0.0,-0.2*(*pdU));
-	gluCylinder(pQObj,0.02*(*pdU),0.02*(*pdU),0.2*(*pdU),20,10);
-	glTranslated(0.0,0.0,0.2*(*pdU));
-
-}
-void CChainSegment::RenderMaterialHolder()
-{
-	if(m_bDrawBigFrame || oConfiguration.m_bShowMaterialFrame){
-		CGLTools::DrawAxes(oConfiguration.m_dUnit,oConfiguration.m_dUnit);
-	} else {
-		if(oConfiguration.m_bShowLinksFrames)
-			CGLTools::DrawAxes(0.3,0.3*oConfiguration.m_dUnit);
-	}
-	glColor3d(0.15,0.15,0.3);
-	if(!oConfiguration.m_bShowMaterialHolder)
-		return;
-	static double *pdU = &oConfiguration.m_dUnit;
-	glBegin(GL_POLYGON);
-		glNormal3d(0.0,0.0,1.0*(*pdU));
-		glVertex3d(-0.5*(*pdU),-0.5*(*pdU),0.0);
-		glVertex3d(-0.5*(*pdU),0.5*(*pdU),0.0);
-		glVertex3d(0.5*(*pdU),0.5*(*pdU),0.0);
-		glNormal3d(0.0,0.0,1.0);
-		glVertex3d(0.5*(*pdU),-0.5*(*pdU),0.0);
-	glEnd();
-	
-}
-void CChainSegment::DrawArm(const CR3Vector &r3vEndOfArm)
-{
-	if(oConfiguration.m_bShowLinks){
-		glColor3d(1.0,1.0,0.0);
-		glBegin(GL_LINES);
-			glVertex3dv(CR3Vector(0.0).toGL3dv());
-			glVertex3d(r3vEndOfArm.GetX(),r3vEndOfArm.GetY(),r3vEndOfArm.GetZ());
-		glEnd();
-	}
-
-}
-void CChainSegment::ApplyConstantTransformation()
-{
-glTranslated(m_r3vConstTranslation.GetX()
-							,m_r3vConstTranslation.GetY()
-							,m_r3vConstTranslation.GetZ());
-
-glRotated((m_dConstRevoluteAngle)
-					,m_r3vConstRevoluteAxis.GetX()
-					,m_r3vConstRevoluteAxis.GetY()
-					,m_r3vConstRevoluteAxis.GetZ());
-	
-}
-
-void CChainSegment::OZBox(double dXDiv2, double dYDiv2, double dZ)
-{
-	CR3Box box = CR3Box::BoxFromOZBox(dXDiv2*2.0,dYDiv2*2.0,dZ);
-	CR3BoxRendererGL::RenderSolid(box);
-	static double d = 1E-5;
-	box.ExpandXYZ(d,d,d);
-	CR3BoxRendererGL::RenderWire(box);	
-	return;
-	if(is_zero(dZ)){
-		static double d = 1E-5;
-		glShadeModel(GL_FLAT);
-		glBegin(GL_QUADS);
-			glNormal3d(0.0,0.0,-1.0);						
-			glVertex3d(-dXDiv2,-dYDiv2,-d);
-			glVertex3d(dXDiv2,-dYDiv2,-d);
-			glVertex3d(dXDiv2,dYDiv2,-d);
-			glVertex3d(-dXDiv2,dYDiv2,-d);
-			glNormal3d(0.0,0.0,1.0);						
-			glVertex3d(-dXDiv2,-dYDiv2,d);
-			glVertex3d(dXDiv2,-dYDiv2,d);
-			glVertex3d(dXDiv2,dYDiv2,d);
-			glVertex3d(-dXDiv2,dYDiv2,d);
-		glEnd();
-		glShadeModel(GL_SMOOTH);
-		return;
-	}
-
-	double dSign = 1.0;
-	if(dZ<0.0)
-		dSign=-1.0;
-	glShadeModel(GL_FLAT);
-	glBegin(GL_TRIANGLE_FAN);
-		glNormal3d(-dSign,0.0,0.0);						
-		glVertex3d(-dXDiv2,-dYDiv2,0.0);
-		glVertex3d(-dXDiv2,-dYDiv2,dZ);
-		glVertex3d(-dXDiv2,dYDiv2,dZ);
-		glVertex3d(-dXDiv2,dYDiv2,0.0);
-        glNormal3d(0.0,0.0,-dSign);
-		glVertex3d(dXDiv2,dYDiv2,0.0);
-		glVertex3d(dXDiv2,-dYDiv2,0.0);
-		glNormal3d(0.0,-dSign,0.0);
-		glVertex3d(dXDiv2,-dYDiv2,dZ);
-		glVertex3d(-dXDiv2,-dYDiv2,dZ);			
-	glEnd();
-	glBegin(GL_TRIANGLE_FAN);
-		glNormal3d(1.0,0.0,0.0);						
-		glVertex3d(dXDiv2,dYDiv2,dZ);
-		glVertex3d(dXDiv2,dYDiv2,0.0);
-		glVertex3d(dXDiv2,-dYDiv2,0.0);
-		glVertex3d(dXDiv2,-dYDiv2,dZ);
-        glNormal3d(0.0,0.0,dSign);
-		glVertex3d(-dXDiv2,-dYDiv2,dZ);
-		glVertex3d(-dXDiv2,dYDiv2,dZ);
-		glNormal3d(0.0,1.0,0.0);
-		glVertex3d(-dXDiv2,dYDiv2,0.0);
-		glVertex3d(dXDiv2,dYDiv2,0.0);			
-	glEnd();
-	glShadeModel(GL_SMOOTH);
-	return;
-	
-}
 bool CChainSegment::IsParameterConstrained() const
 {
 	return m_bParameterIsConstrained;
@@ -669,6 +423,12 @@ CR3Box *CChainSegment::GetAvtivePartPointer()
 	if(m_nHighlightedPart<0 || m_nHighlightedPart>=(int)m_vParts.size())
 		return 0;
 	return &m_vParts[m_nHighlightedPart];
+}
+bool CChainSegment::IsPartInCollision(size_t n) const
+{
+	if(n>=m_vCollisions.size())
+		return false;
+	return m_vCollisions[n];
 }
 int CChainSegment::GetHighlightedPartIndex() const
 {
