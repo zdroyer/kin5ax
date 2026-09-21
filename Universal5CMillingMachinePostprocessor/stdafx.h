@@ -67,5 +67,5 @@ using namespace std;
 #include "ApplicationConfiguration.h"
 
 
-#import <msxml6.dll>
+#import <msxml6.dll> exclude("ISequentialStream","_FILETIME")
 using namespace MSXML2;

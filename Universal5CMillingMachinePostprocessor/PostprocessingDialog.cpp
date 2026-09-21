@@ -143,7 +143,7 @@ void CPostprocessingDialog::UpdateProblemsCountControl()
 {
 	assert(m_pDoc);
 	if(m_pDoc){
-		double dLocationsCount = m_pDoc->m_oCutterLocationData.GetLocationsCount();
+		double dLocationsCount = (double) m_pDoc->m_oCutterLocationData.GetLocationsCount();
 		double dAvgDistance = m_pDoc->m_oCutterLocationData.GetTrajectoryLenght()/dLocationsCount;
 		double dProblemsForPosition = dLocationsCount*max(1.0,dAvgDistance/oConfiguration.m_dMaxPositionDifference);
 

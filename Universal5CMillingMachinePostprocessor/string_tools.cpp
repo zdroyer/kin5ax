@@ -10,9 +10,9 @@ string size_to_string(size_t n, bool bEndWithNewLineAndR){
 	static char s[25];
 	s[24]=0;
 	if(bEndWithNewLineAndR)
-		sprintf(s,"%d\r\n",n);
+		sprintf(s,"%zu\r\n",n);
 	else
-		sprintf(s,"%d",n);
+		sprintf(s,"%zu",n);
 	return string(s);
 }
 string double_to_string(double d, bool bEndWithNewLineAndR){

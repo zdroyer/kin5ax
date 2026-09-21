@@ -191,7 +191,7 @@ tChainConfigurationVector C5CPostprocessor::SolveTheoretically(const CR3Point  r
 			vRotations.back()[m_nSecondRotationIndex].ApplySign(m_vSigns[m_nSecondRotationIndex]);	
 		}
 	} catch (CGeneratorException e){
-		sLog+("Error occured during orientation solving:\n"+e.GetMessage());
+		sLog+=("Error occured during orientation solving:\n"+e.GetMessage());
 		return vector<CChainConfiguration>(0);
 	}
 
@@ -285,7 +285,7 @@ vector<tChainConfigurationVector> C5CPostprocessor::SolveSingularOrientation(con
 	}
 	double dActD = 0;
 	double t=0.0;
-	double n = nEnd-nBegin+2;
+	double n = (double)nEnd-nBegin+2;
 	p = vInput[nBegin].m_p;
 	vector<double> vAlpha1;
 	vAlpha1.reserve(4);

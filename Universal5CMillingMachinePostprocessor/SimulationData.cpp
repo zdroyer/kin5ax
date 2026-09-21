@@ -36,7 +36,7 @@ int CSimulationData::ExportToGCode(
 				a1=radians_to_degrees(a1);
 				a2=radians_to_degrees(a2);
 			}
-			int res = fprintf(pFile,"N%d G1 X%lf Y%lf Z%lf %c%lf %c%lf\n"
+			int res = fprintf(pFile,"N%zu G1 X%lf Y%lf Z%lf %c%lf %c%lf\n"
 							,10*n
 							,oConfig[nXIndex].GetValue()
 							,oConfig[nYIndex].GetValue()
