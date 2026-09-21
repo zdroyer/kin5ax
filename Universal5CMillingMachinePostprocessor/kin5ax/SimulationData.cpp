@@ -209,18 +209,17 @@ void CSimulationData::FindShortestPath(const CPostprocessorSettings &oSettings, 
 		if(vDistances2[m]<vDistances2[nInd])
 			nInd = m;
 	}
-	m_vIndexes[m_vIndexes.size()-1]=nInd;
-	size_t l=1;
-	for( size_t m = vvClosestNeighbourIndexes.size()-2 ; m>0&&m<vvClosestNeighbourIndexes.size() ; m-- ){
-		ReportProgress(pProgress,dProgressCoef+((double)j*(1.0-dProgressCoef)/(double)m_vSolutions.size()));
-		if(m_vSolutions[m].size()){
-			size_t nn = m_vIndexes[m+l];
-			m_vIndexes[m]=vvClosestNeighbourIndexes[m+l][nn];
-			l=1;
-		}
-		else{
-			l++;
-			m_vIndexes[m]=0;
+	//backtracking from the last non-empty set (i) down to the first one;
+	//vDistances2 is empty when less than two non-empty sets exist: nothing to choose then
+	if(vDistances2.size()){
+		m_vIndexes[i]=nInd;
+		size_t nNext = i;	//the nearest non-empty set after m
+		for(size_t m=i; m-->0; ){
+			ReportProgress(pProgress,dProgressCoef+(1.0-dProgressCoef)*(double)(i-m)/(double)(i+1));
+			if(m_vSolutions[m].empty())
+				continue;	//the index of an empty set stays 0, such sets are skipped everywhere
+			m_vIndexes[m]=vvClosestNeighbourIndexes[nNext][m_vIndexes[nNext]];
+			nNext = m;
 		}
 	}
 	ReportProgress(pProgress,1.0);
