@@ -436,7 +436,7 @@ CChainSegment CKinematicChainPropertiesDialog::GetChainSegmentFromDialogData(voi
 	segment.SetPartVector(m_vBoxes);
 	segment.HighlightPart((int)m_nActivePart);
 	if(segment.GetType()==CHAIN_SEGMENT_REVOLUTE_LINK)
-		segment.SetParameterValue(radians_to_degrees( m_dParameterValue));
+		segment.SetParameterValue(degrees_to_radians( m_dParameterValue));	//the dialog holds degrees, the segment radians
 	else
 		segment.SetParameterValue(m_dParameterValue);
 	segment.SetName(m_sSegmentName.GetBuffer(0));
