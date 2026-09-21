@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../millingtool.h"
+#include "millingtool.h"
 #include "chainsegment.h"
 #include "chainconfiguration.h"
 #include "r3caughtvector.h"

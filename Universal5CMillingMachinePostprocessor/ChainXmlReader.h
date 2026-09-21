@@ -1,6 +1,6 @@
 #pragma once
 
-#include "chain\chain.h"
+#include "chain.h"
 
 //Reads a kinematic chain from its XML (.kc) representation with MSXML.
 //CChain and CChainSegment themselves do not depend on MSXML/COM; writing is CChain::toXML.

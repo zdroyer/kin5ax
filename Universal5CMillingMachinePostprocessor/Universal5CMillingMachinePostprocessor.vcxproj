@@ -96,7 +96,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\Postprocessor;.\Chain;.\kin5ax;.\kin5ax\Exceptions;.\kin5ax\3DGeometry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\kin5ax;.\kin5ax\Exceptions;.\kin5ax\3DGeometry;.\kin5ax\Chain;.\kin5ax\Postprocessor;.\kin5ax\MillingTool;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -125,7 +125,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\Postprocessor;.\Chain;.\kin5ax;.\kin5ax\Exceptions;.\kin5ax\3DGeometry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\kin5ax;.\kin5ax\Exceptions;.\kin5ax\3DGeometry;.\kin5ax\Chain;.\kin5ax\Postprocessor;.\kin5ax\MillingTool;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -154,7 +154,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>.\Postprocessor;.\Chain;.\kin5ax;.\kin5ax\Exceptions;.\kin5ax\3DGeometry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\kin5ax;.\kin5ax\Exceptions;.\kin5ax\3DGeometry;.\kin5ax\Chain;.\kin5ax\Postprocessor;.\kin5ax\MillingTool;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -187,7 +187,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>.\Postprocessor;.\Chain;.\kin5ax;.\kin5ax\Exceptions;.\kin5ax\3DGeometry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\kin5ax;.\kin5ax\Exceptions;.\kin5ax\3DGeometry;.\kin5ax\Chain;.\kin5ax\Postprocessor;.\kin5ax\MillingTool;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -214,24 +214,6 @@
     <ClCompile Include="3DViewManipulator.cpp" />
     <ClCompile Include="ApplicationConfiguration.cpp" />
     <ClCompile Include="BoxDialog.cpp" />
-    <ClCompile Include="Chain\Chain.cpp">
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../StdAfx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../StdAfx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../StdAfx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../StdAfx.h</PrecompiledHeaderFile>
-    </ClCompile>
-    <ClCompile Include="Chain\ChainConfiguration.cpp">
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../StdAfx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../StdAfx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../StdAfx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../StdAfx.h</PrecompiledHeaderFile>
-    </ClCompile>
-    <ClCompile Include="Chain\ChainSegment.cpp">
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../StdAfx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../StdAfx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../StdAfx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../StdAfx.h</PrecompiledHeaderFile>
-    </ClCompile>
     <ClCompile Include="ChainRendererGL.cpp" />
     <ClCompile Include="ChainSegmentRendererGL.cpp" />
     <ClCompile Include="ChainXmlReader.cpp" />
@@ -245,25 +227,9 @@
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="MaterialBlockDialog.cpp" />
-    <ClCompile Include="MillingTool.cpp" />
-    <ClCompile Include="MillingToolBall.cpp" />
-    <ClCompile Include="MillingToolCylinder.cpp" />
     <ClCompile Include="MillingToolPreview.cpp" />
     <ClCompile Include="MillingToolPropertiesDialog.cpp" />
     <ClCompile Include="PostprocessingDialog.cpp" />
-    <ClCompile Include="Postprocessor\5CPostprocessor.cpp">
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../StdAfx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../StdAfx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../StdAfx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../StdAfx.h</PrecompiledHeaderFile>
-    </ClCompile>
-    <ClCompile Include="Postprocessor\OrientationPostprocessor.cpp">
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../StdAfx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../StdAfx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../StdAfx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../StdAfx.h</PrecompiledHeaderFile>
-    </ClCompile>
-    <ClCompile Include="Postprocessor\PositionPostprocessor.cpp" />
     <ClCompile Include="SettingsDialog.cpp" />
     <ClCompile Include="SimulationData.cpp" />
     <ClCompile Include="SimulationDialog.cpp" />
@@ -282,10 +248,6 @@
     <ClInclude Include="3DViewManipulator.h" />
     <ClInclude Include="ApplicationConfiguration.h" />
     <ClInclude Include="BoxDialog.h" />
-    <ClInclude Include="Chain\Chain.h" />
-    <ClInclude Include="Chain\ChainConfiguration.h" />
-    <ClInclude Include="Chain\ChainParameter.h" />
-    <ClInclude Include="Chain\ChainSegment.h" />
     <ClInclude Include="ChainRendererGL.h" />
     <ClInclude Include="ChainSegmentRendererGL.h" />
     <ClInclude Include="ChainXmlReader.h" />
@@ -299,15 +261,9 @@
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="MaterialBlockDialog.h" />
-    <ClInclude Include="MillingTool.h" />
-    <ClInclude Include="MillingToolBall.h" />
-    <ClInclude Include="MillingToolCylinder.h" />
     <ClInclude Include="MillingToolPreview.h" />
     <ClInclude Include="MillingToolPropertiesDialog.h" />
     <ClInclude Include="PostprocessingDialog.h" />
-    <ClInclude Include="Postprocessor\5CPostprocessor.h" />
-    <ClInclude Include="Postprocessor\OrientationPostprocessor.h" />
-    <ClInclude Include="Postprocessor\PositionPostprocessor.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SettingsDialog.h" />
     <ClInclude Include="SimulationData.h" />

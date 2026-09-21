@@ -3,7 +3,7 @@
 #include "orientationpostprocessor.h"
 #include "positionpostprocessor.h"
 #include "PostprocessorSettings.h"
-#include "../millingtool.h"
+#include "millingtool.h"
 
 
 typedef pair<CChainConfiguration,CR3CaughtVector> tChainConfigurationWithResult;

@@ -4,6 +4,15 @@
     <Filter Include="3DGeometry">
       <UniqueIdentifier>{35A77D5A-B2D4-59D5-B2BF-557F0D60D14B}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Chain">
+      <UniqueIdentifier>{3A0A310A-C2D1-5545-A43A-1CBE66D17A18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MillingTool">
+      <UniqueIdentifier>{F90F2E73-2A66-5984-93E8-82F9C772B011}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Postprocessor">
+      <UniqueIdentifier>{52A723FD-F38F-544D-A944-8810345C45FE}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Exceptions">
       <UniqueIdentifier>{40482F10-7A8C-5289-815F-774F638BFBFA}</UniqueIdentifier>
     </Filter>
@@ -41,6 +50,33 @@
     </ClCompile>
     <ClCompile Include="Exceptions\GeneratorException.cpp">
       <Filter>Exceptions</Filter>
+    </ClCompile>
+    <ClCompile Include="Chain\Chain.cpp">
+      <Filter>Chain</Filter>
+    </ClCompile>
+    <ClCompile Include="Chain\ChainConfiguration.cpp">
+      <Filter>Chain</Filter>
+    </ClCompile>
+    <ClCompile Include="Chain\ChainSegment.cpp">
+      <Filter>Chain</Filter>
+    </ClCompile>
+    <ClCompile Include="MillingTool\MillingTool.cpp">
+      <Filter>MillingTool</Filter>
+    </ClCompile>
+    <ClCompile Include="MillingTool\MillingToolBall.cpp">
+      <Filter>MillingTool</Filter>
+    </ClCompile>
+    <ClCompile Include="MillingTool\MillingToolCylinder.cpp">
+      <Filter>MillingTool</Filter>
+    </ClCompile>
+    <ClCompile Include="Postprocessor\5CPostprocessor.cpp">
+      <Filter>Postprocessor</Filter>
+    </ClCompile>
+    <ClCompile Include="Postprocessor\OrientationPostprocessor.cpp">
+      <Filter>Postprocessor</Filter>
+    </ClCompile>
+    <ClCompile Include="Postprocessor\PositionPostprocessor.cpp">
+      <Filter>Postprocessor</Filter>
     </ClCompile>
     <ClCompile Include="PostprocessorSettings.cpp" />
     <ClCompile Include="string_tools.cpp" />
@@ -90,6 +126,36 @@
     </ClInclude>
     <ClInclude Include="Exceptions\MemoryMyException.h">
       <Filter>Exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="Chain\Chain.h">
+      <Filter>Chain</Filter>
+    </ClInclude>
+    <ClInclude Include="Chain\ChainConfiguration.h">
+      <Filter>Chain</Filter>
+    </ClInclude>
+    <ClInclude Include="Chain\ChainSegment.h">
+      <Filter>Chain</Filter>
+    </ClInclude>
+    <ClInclude Include="Chain\ChainParameter.h">
+      <Filter>Chain</Filter>
+    </ClInclude>
+    <ClInclude Include="MillingTool\MillingTool.h">
+      <Filter>MillingTool</Filter>
+    </ClInclude>
+    <ClInclude Include="MillingTool\MillingToolBall.h">
+      <Filter>MillingTool</Filter>
+    </ClInclude>
+    <ClInclude Include="MillingTool\MillingToolCylinder.h">
+      <Filter>MillingTool</Filter>
+    </ClInclude>
+    <ClInclude Include="Postprocessor\5CPostprocessor.h">
+      <Filter>Postprocessor</Filter>
+    </ClInclude>
+    <ClInclude Include="Postprocessor\OrientationPostprocessor.h">
+      <Filter>Postprocessor</Filter>
+    </ClInclude>
+    <ClInclude Include="Postprocessor\PositionPostprocessor.h">
+      <Filter>Postprocessor</Filter>
     </ClInclude>
     <ClInclude Include="PostprocessorSettings.h" />
     <ClInclude Include="stdafx.h" />

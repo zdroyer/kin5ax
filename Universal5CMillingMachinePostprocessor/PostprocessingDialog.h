@@ -3,7 +3,7 @@
 #include "Universal5CMillingMachinePostprocessorDoc.h"
 #include "afxwin.h"
 #include "afxcmn.h"
-#include "postprocessor\5cpostprocessor.h"
+#include "5cpostprocessor.h"
 
 // CPostprocessingDialog dialog
 

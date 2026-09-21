@@ -5,12 +5,6 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Source Files\Chain">
-      <UniqueIdentifier>{d88427bc-374b-468c-aeb6-830e53457dc9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Postprocessor">
-      <UniqueIdentifier>{19f8ebea-6adf-4ba6-ab4d-ff7edda0c7cb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
@@ -69,15 +63,6 @@
     <ClCompile Include="MaterialBlockDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MillingTool.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MillingToolBall.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MillingToolCylinder.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="MillingToolPreview.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -111,44 +96,8 @@
     <ClCompile Include="Universal5CMillingMachinePostprocessorView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Chain\Chain.cpp">
-      <Filter>Source Files\Chain</Filter>
-    </ClCompile>
-    <ClCompile Include="Chain\ChainConfiguration.cpp">
-      <Filter>Source Files\Chain</Filter>
-    </ClCompile>
-    <ClCompile Include="Chain\ChainSegment.cpp">
-      <Filter>Source Files\Chain</Filter>
-    </ClCompile>
-    <ClCompile Include="Postprocessor\5CPostprocessor.cpp">
-      <Filter>Source Files\Postprocessor</Filter>
-    </ClCompile>
-    <ClCompile Include="Postprocessor\OrientationPostprocessor.cpp">
-      <Filter>Source Files\Postprocessor</Filter>
-    </ClCompile>
-    <ClCompile Include="Postprocessor\PositionPostprocessor.cpp">
-      <Filter>Source Files\Postprocessor</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Chain\Chain.h">
-      <Filter>Source Files\Chain</Filter>
-    </ClInclude>
-    <ClInclude Include="Chain\ChainConfiguration.h">
-      <Filter>Source Files\Chain</Filter>
-    </ClInclude>
-    <ClInclude Include="Chain\ChainParameter.h">
-      <Filter>Source Files\Chain</Filter>
-    </ClInclude>
-    <ClInclude Include="Chain\ChainSegment.h">
-      <Filter>Source Files\Chain</Filter>
-    </ClInclude>
-    <ClInclude Include="Postprocessor\5CPostprocessor.h">
-      <Filter>Source Files\Postprocessor</Filter>
-    </ClInclude>
-    <ClInclude Include="Postprocessor\OrientationPostprocessor.h">
-      <Filter>Source Files\Postprocessor</Filter>
-    </ClInclude>
     <ClInclude Include="3DViewManipulator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -197,22 +146,10 @@
     <ClInclude Include="MaterialBlockDialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MillingTool.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MillingToolBall.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MillingToolCylinder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="MillingToolPreview.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MillingToolPropertiesDialog.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Postprocessor\PositionPostprocessor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PostprocessingDialog.h">

@@ -4,8 +4,8 @@
 
 #pragma once
 #include "gltools.h"
-#include "chain\chain.h"
-#include "postprocessor\5CPostprocessor.h"
+#include "chain.h"
+#include "5CPostprocessor.h"
 #include "material.h"
 #include "CutterLocationData.h"
 #include "millingtool.h"

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "chain\chain.h"
+#include "chain.h"
 #include "material.h"
 #include "CutterLocationData.h"
 
