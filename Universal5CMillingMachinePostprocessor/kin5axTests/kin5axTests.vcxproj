@@ -149,13 +149,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ChainTests.cpp" />
+    <ClCompile Include="CLDataTests.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="SolverRoundTrip.cpp" />
+    <ClCompile Include="SphereCLDataGenerator.cpp" />
     <ClCompile Include="TestData.cpp" />
     <ClCompile Include="..\ChainXmlReader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SolverRoundTrip.h" />
+    <ClInclude Include="SphereCLDataGenerator.h" />
     <ClInclude Include="TestData.h" />
   </ItemGroup>
   <ItemGroup>
