@@ -676,8 +676,9 @@ void CChain::DetectCollisions(CMillingTool &oMillingTool)
 			trToIInv = trToIInv * m_vMaterialHolderPart[n].GetParametrizedTransformation(m_vMaterialHolderPart[n].m_dActualParameterValue);
 			trToI = m_vMaterialHolderPart[n].GetInvertedParametrizedTransformation(m_vMaterialHolderPart[n].m_dActualParameterValue) * trToI;
 		}
-		trToI = m_vMaterialHolderPart[i].GetConstantTransformation() * trToI;
-		trToIInv =trToIInv * m_vMaterialHolderPart[i].GetInvertedConstantTransformation();
+		//trToI: from the base frame to the frame of the boxes of segment i (after its constant transformation)
+		trToI = m_vMaterialHolderPart[i].GetInvertedConstantTransformation() * trToI;
+		trToIInv =trToIInv * m_vMaterialHolderPart[i].GetConstantTransformation();
 		for(size_t k=0; k<m_vToolPart.size();k++){
 			const vector<CR3Box> &boxes2 = m_vToolPart[k].GetPartVector();
 			if(boxes2.empty())
