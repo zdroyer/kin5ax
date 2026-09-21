@@ -155,6 +155,7 @@
     <ClCompile Include="Postprocessor\OrientationPostprocessor.cpp" />
     <ClCompile Include="Postprocessor\PositionPostprocessor.cpp" />
     <ClCompile Include="PostprocessorSettings.cpp" />
+    <ClCompile Include="SimulationData.cpp" />
     <ClCompile Include="string_tools.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -185,6 +186,7 @@
     <ClInclude Include="Postprocessor\PositionPostprocessor.h" />
     <ClInclude Include="PostprocessorSettings.h" />
     <ClInclude Include="ProgressCallback.h" />
+    <ClInclude Include="SimulationData.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="string_tools.h" />
   </ItemGroup>

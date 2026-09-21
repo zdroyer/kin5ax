@@ -2,8 +2,6 @@
 #include ".\simulationdata.h"
 #include "string_tools.h"
 
-extern CPostprocessorSettings oPostprocessorSettings;
-
 CSimulationData::CSimulationData(size_t n)
 :m_nEmptySolutionsCount(0)
 ,m_nActualSolution(0)
@@ -111,7 +109,7 @@ static void ReportProgress(CProgressCallback *pProgress, double dFraction)
 		pProgress->SetProgress(dFraction);
 }
 
-void CSimulationData::FindShortestPath(CProgressCallback *pProgress)
+void CSimulationData::FindShortestPath(const CPostprocessorSettings &oSettings, CProgressCallback *pProgress)
 {
 	ReportProgress(pProgress,0.0);
 	for(size_t k =0; k< m_vIndexes.size();k++)
@@ -177,11 +175,11 @@ void CSimulationData::FindShortestPath(CProgressCallback *pProgress)
 		vDistances2 = vector<double>(m_vSolutions[j].size(),dMinD);
 		for(size_t l=0;l<m_vSolutions[j].size();l++){
 			double d0 = vDistances1[0];
-			dMinD = m_vSolutions[i][0].Distance(m_vSolutions[j][l],oPostprocessorSettings)+d0;
+			dMinD = m_vSolutions[i][0].Distance(m_vSolutions[j][l],oSettings)+d0;
 			nMinII=0;
 			for(size_t k=1; k<m_vSolutions[i].size ();k++){
 				double dd0 = vDistances1[k];
-				double d = m_vSolutions[i][k].Distance(m_vSolutions[j][l],oPostprocessorSettings) + dd0;
+				double d = m_vSolutions[i][k].Distance(m_vSolutions[j][l],oSettings) + dd0;
 				if(d<dMinD){
 					dMinD=d;
 					nMinII = k;

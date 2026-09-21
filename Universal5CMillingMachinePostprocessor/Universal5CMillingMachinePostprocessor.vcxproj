@@ -231,7 +231,6 @@
     <ClCompile Include="MillingToolPropertiesDialog.cpp" />
     <ClCompile Include="PostprocessingDialog.cpp" />
     <ClCompile Include="SettingsDialog.cpp" />
-    <ClCompile Include="SimulationData.cpp" />
     <ClCompile Include="SimulationDialog.cpp" />
     <ClCompile Include="SingleInputSolverDialog.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -267,7 +266,6 @@
     <ClInclude Include="PostprocessingDialog.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SettingsDialog.h" />
-    <ClInclude Include="SimulationData.h" />
     <ClInclude Include="SimulationDialog.h" />
     <ClInclude Include="SingleInputSolverDialog.h" />
     <ClInclude Include="stdafx.h" />

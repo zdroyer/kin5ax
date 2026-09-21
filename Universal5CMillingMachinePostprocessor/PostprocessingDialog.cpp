@@ -319,7 +319,7 @@ void CPostprocessingDialog::OnBnClickedStart()
 	m_progressPostprocessing.SetPos(100);
 	SetWindowText("2/4 finding shortest path in progres...");
 	CProgressCtrlCallback oProgress(m_progressPostprocessing);
-	m_pDoc->m_oSimulationData.FindShortestPath(&oProgress);
+	m_pDoc->m_oSimulationData.FindShortestPath(oPostprocessorSettings,&oProgress);
 	m_progressPostprocessing.SetPos(100);
 	m_buttonStart.EnableWindow(TRUE);
 	m_buttonSaveGCode.EnableWindow(TRUE);
