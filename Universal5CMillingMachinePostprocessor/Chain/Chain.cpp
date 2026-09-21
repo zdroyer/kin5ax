@@ -2,7 +2,6 @@
 #include "chain.h"
 #include "string_tools.h"
 
-#define CHAIN_XML_ROOT_NODE_TYPE_NAME "kinematic_chain"
 
 extern CR3Vector r3vOZ;
 extern CR3Point r3pZero;
@@ -27,39 +26,6 @@ CChain::~CChain(void)
 
 
 
-CChain::CChain(MSXML2::IXMLDOMElementPtr &pDocElement, const string &sFileName)
-{
-	assert(pDocElement!=NULL);
-	_bstr_t sNodeName = pDocElement->GetnodeName();
-	_bstr_t sKinematicChain(CHAIN_XML_ROOT_NODE_TYPE_NAME);
-	int n = wcscmp(sNodeName,sKinematicChain );
-	if(n!=0)
-		MY_THROW(CGeneratorException,"Invalid type of XML root node");
-	
-	MSXML2::IXMLDOMNodeListPtr pResultList = pDocElement->getElementsByTagName(_bstr_t("tool_part"));
-	long i = pResultList->length;	
-	MSXML2::IXMLDOMElementPtr pToolPartNode  = pResultList->item[0];
-
-	MSXML2::IXMLDOMNodeListPtr pNodes = pToolPartNode->GetchildNodes();
-	pNodes->reset();
-	vector<CChainSegment> segmentVector;
-	for(MSXML2::IXMLDOMNodePtr pChildNode = pNodes->nextNode() ; pChildNode != NULL; pChildNode = pNodes->nextNode())
-			segmentVector.push_back(CChainSegment(pChildNode));
-	m_vToolPart = segmentVector;
-
-	pResultList = pDocElement->getElementsByTagName(_bstr_t("material_holder_part"));
-	MSXML2::IXMLDOMElementPtr pMaterialHolderPartNode  = pResultList->item[0];
-	pNodes = pMaterialHolderPartNode->GetchildNodes();
-	segmentVector.erase(segmentVector.begin(),segmentVector.end());
-	pNodes->reset();
-	for(MSXML2::IXMLDOMNodePtr pChildNode = pNodes->nextNode() ; pChildNode != NULL; pChildNode = pNodes->nextNode())
-		segmentVector.push_back(CChainSegment(pChildNode));
-	m_vMaterialHolderPart.erase(m_vMaterialHolderPart.begin(),m_vMaterialHolderPart.end());
-	m_vMaterialHolderPart = segmentVector;
-	SetFileName(sFileName);
-	m_oActualParameters = CChainConfiguration((int)this->GetNumberOfRegularLinks());
-
-}
 size_t CChain::GetNumberOfRevoluteLinks() const
 	{
 		size_t n = 0;

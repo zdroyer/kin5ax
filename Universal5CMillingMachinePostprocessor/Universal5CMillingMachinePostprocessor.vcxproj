@@ -234,6 +234,7 @@
     </ClCompile>
     <ClCompile Include="ChainRendererGL.cpp" />
     <ClCompile Include="ChainSegmentRendererGL.cpp" />
+    <ClCompile Include="ChainXmlReader.cpp" />
     <ClCompile Include="CLDataFileDialog.cpp" />
     <ClCompile Include="CutterLocationData.cpp" />
     <ClCompile Include="MillingToolRendererGDI.cpp" />
@@ -287,6 +288,7 @@
     <ClInclude Include="Chain\ChainSegment.h" />
     <ClInclude Include="ChainRendererGL.h" />
     <ClInclude Include="ChainSegmentRendererGL.h" />
+    <ClInclude Include="ChainXmlReader.h" />
     <ClInclude Include="CLDataFileDialog.h" />
     <ClInclude Include="CutterLocationData.h" />
     <ClInclude Include="MillingToolRendererGDI.h" />

@@ -7,6 +7,9 @@
 #include "r3box.h"
 
 
+//name of the root node of the XML (.kc) representation
+#define CHAIN_XML_ROOT_NODE_TYPE_NAME "kinematic_chain"
+
 enum CHAIN_CONSTRAINTS_RESULT{
 	CHAIN_CONSTRAINTS_MET,
 	CHAIN_CONSTRAINTS_SHIFTS_EXCEEDED,
@@ -22,7 +25,6 @@ public:
 	double GetActualParameter(size_t nIndex, bool bToolPart) const;
 	void DetectCollisions(CMillingTool &oMillingTool);
 	CChain(void);
-	CChain(MSXML2::IXMLDOMElementPtr & pDocElement, const string &sFileName);
 	string toXML() const;
 	~CChain(void);
 	CR3Box GetBoundingBox() const;

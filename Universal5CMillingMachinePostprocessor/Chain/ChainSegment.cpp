@@ -4,7 +4,6 @@
 #include "rotation.h"
 #include "translation.h"
 #include "r3box.h"
-#include "Atlconv.h"
 
 extern CR3Vector r3vOZ;
 
@@ -34,115 +33,6 @@ string CChainSegment::GetTypeName() const
 	return m_sTypeName;
 }
 
-
-
-double getDoubleValue(MSXML2::IXMLDOMNamedNodeMapPtr &pMap, const string &sAttrName)
-{
-	MSXML2::IXMLDOMNodePtr pAttr = NULL;
-	pAttr = pMap->getNamedItem(_bstr_t(sAttrName.c_str()));
-	if(pAttr==NULL)
-		MY_THROW(CGeneratorException,"There is no chain segment attribute: "+sAttrName);
-	VARIANT varValue;
-	pAttr->get_nodeValue(&varValue);
-	HRESULT hr = VariantChangeTypeEx(&varValue,&varValue,1033,VARIANT_NOUSEROVERRIDE,VT_R8);
-	if(FAILED(hr))
-		MY_THROW(CGeneratorException,"Cannot obtain chain segment attribute: "+sAttrName);
-	return varValue.dblVal;
-}
-
-
-string getStringValue(MSXML2::IXMLDOMNamedNodeMapPtr &pMap, const string &sAttrName)
-{
-	MSXML2::IXMLDOMNodePtr pAttr;
-	pAttr = pMap->getNamedItem(_bstr_t(sAttrName.c_str()));
-	VARIANT varValue;
-	pAttr->get_nodeValue(&varValue);
-//	HRESULT hr = VariantChangeTypeEx(&varValue,&varValue,1033,VARIANT_NOUSEROVERRIDE,VT_LPSTR);
-	USES_CONVERSION;
-	return OLE2T(varValue.bstrVal);
-	
-}
-bool doubleValue(MSXML2::IXMLDOMNamedNodeMapPtr &pMap, const string &sAttrName, double &d)
-{
-	MSXML2::IXMLDOMNodePtr pAttr = NULL;
-	pAttr = pMap->getNamedItem(_bstr_t(sAttrName.c_str()));
-	if(pAttr==NULL)
-		return false;
-	d = getDoubleValue(pMap,sAttrName);
-	return true;
-}
-
-
-
-
-CChainSegment::CChainSegment(MSXML2::IXMLDOMNodePtr & pNode)
-	{	
-	assert(pNode!=NULL);
-	_bstr_t sNodeName = pNode->GetnodeName();
-	if(wcscmp(sNodeName,_bstr_t("segment")) != 0)
-		MY_THROW(CGeneratorException,"Invalid type of XML 'segment'node");
-	MSXML2::IXMLDOMNamedNodeMapPtr pAttributesMap = pNode->Getattributes();
-	SetName(getStringValue(pAttributesMap,"name"));
-	SetType(getStringValue(pAttributesMap,"type"));
-	m_dActualParameterValue = 0.0;
-	if(doubleValue(pAttributesMap,"parameter_value_minimum",m_dParameterValueMinimum) 
-		&& doubleValue(pAttributesMap,"parameter_value_maximum",m_dParameterValueMaximum)){
-	
-		m_bParameterIsConstrained = true;
-		if(m_type==CHAIN_SEGMENT_REVOLUTE_LINK){
-			m_dParameterValueMaximum = degrees_to_radians(m_dParameterValueMaximum);
-			m_dParameterValueMinimum = degrees_to_radians(m_dParameterValueMinimum);
-		}
-	}
-	else 
-		m_bParameterIsConstrained = false;
-	MSXML2::IXMLDOMNodePtr pTranslationNode = NULL, pRotationNode = NULL;
-	vector<MSXML2::IXMLDOMNodePtr> vpBoxesNodes;
-	MSXML2::IXMLDOMNodePtr pTempNode = pNode->firstChild;
-	while(pTempNode!=NULL){
-		if(wcscmp(pTempNode->GetnodeName(),_bstr_t("initial_translation")) == 0){
-			if(pTranslationNode==0)
-				pTranslationNode = pTempNode;
-
-		}
-		if(wcscmp(pTempNode->GetnodeName(),_bstr_t("initial_rotation")) == 0) {
-			if(pRotationNode==0)
-				pRotationNode = pTempNode;
-		}
-		if(wcscmp(pTempNode->GetnodeName(),_bstr_t("box")) == 0) {
-			vpBoxesNodes.push_back(pTempNode);
-		}
-
-		pTempNode = pTempNode->nextSibling;
-	}
-	if(pTranslationNode == NULL || pRotationNode == NULL)
-		MY_THROW(CGeneratorException,"Cannot obtain initial transforamtion of segment");
-	pAttributesMap = pTranslationNode->Getattributes();
-	m_r3vConstTranslation.SetX(getDoubleValue(pAttributesMap,"x"));
-	m_r3vConstTranslation.SetY(getDoubleValue(pAttributesMap,"y"));
-	m_r3vConstTranslation.SetZ(getDoubleValue(pAttributesMap,"z"));
-
-	pAttributesMap = pRotationNode->Getattributes();
-	m_r3vConstRevoluteAxis.SetX(getDoubleValue(pAttributesMap,"x"));
-	m_r3vConstRevoluteAxis.SetY(getDoubleValue(pAttributesMap,"y"));
-	m_r3vConstRevoluteAxis.SetZ(getDoubleValue(pAttributesMap,"z"));
-	m_dConstRevoluteAngle = getDoubleValue(pAttributesMap,"alpha");
-	if(is_zero(m_r3vConstRevoluteAxis.GetLengthSquare()))
-		m_r3vConstRevoluteAxis.SetX(1.0);
-
-	for(size_t i=0; i<vpBoxesNodes.size();i++){
-		pAttributesMap = vpBoxesNodes[i]->Getattributes();
-		double x1 = getDoubleValue(pAttributesMap,"x1");
-		double x2 = getDoubleValue(pAttributesMap,"x2");
-		double y1 = getDoubleValue(pAttributesMap,"y1");
-		double y2 = getDoubleValue(pAttributesMap,"y2");
-		double z1 = getDoubleValue(pAttributesMap,"z1");
-		double z2 = getDoubleValue(pAttributesMap,"z2");
-		m_vParts.push_back(CR3Box(x1,x2,y1,y2,z1,z2));
-	}		
-	m_nHighlightedPart=-1;
-	m_vCollisions = vector<bool>(m_vParts.size(),false);
-}
 
 
 CChainSegment::~CChainSegment(void)

@@ -10,6 +10,7 @@
 #include "millingtoolball.h"
 #include "mainfrm.h"
 #include "ChainRendererGL.h"
+#include "ChainXmlReader.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -130,7 +131,7 @@ BOOL CUniversal5CMillingMachinePostprocessorDoc::OnOpenDocument(LPCTSTR lpszPath
 		AfxMessageBox(strError);
 		return FALSE;
 	}
-	m_oChain = CChain(pXMLDoc->GetdocumentElement(),string(lpszPathName));
+	m_oChain = CChainXmlReader::ReadChain(pXMLDoc->GetdocumentElement(),string(lpszPathName));
 
 	
 	//GetRoutingFrame() is set only while a menu command is routed: it is NULL when the file

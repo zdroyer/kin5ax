@@ -46,7 +46,6 @@ public:
 					,double dParamtererMinimum=0.0
 					,double dParameterMaximum=0.0
 					);
-	CChainSegment(MSXML2::IXMLDOMNodePtr & pNode);
 	~CChainSegment(void);
 	CTransformation GetConstantTransformation() const;
 	CTransformation GetInvertedConstantTransformation() const;
