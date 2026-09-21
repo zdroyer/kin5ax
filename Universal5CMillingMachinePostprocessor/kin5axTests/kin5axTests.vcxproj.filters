@@ -13,6 +13,7 @@
     <ClCompile Include="CLDataTests.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MeridianCLDataTests.cpp" />
+    <ClCompile Include="MillingToolTests.cpp" />
     <ClCompile Include="RotationTests.cpp" />
     <ClCompile Include="SimulationDataTests.cpp" />
     <ClCompile Include="SolverRoundTrip.cpp" />
