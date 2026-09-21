@@ -116,10 +116,12 @@ TEST_P(MeridianCLDataOnChainTest, IsPostprocessedOverThePole)
 		oSimulationData.FindShortestPath(oSettings,NULL);
 		double dMaxAngleStep, dMaxShiftStep;
 		GetBiggestSteps(oSimulationData,dMaxAngleStep,dMaxShiftStep);
-		//The chosen path is smooth (1 deg interpolation). A machine that can tilt to one side only has to
-		//turn its rotary axis by 180 deg; that happens on the pole, where the turn moves nothing, and is
-		//spread over the two steps around it. A bigger step means a jump away from the pole.
-		EXPECT_LE(radians_to_degrees(dMaxAngleStep),90.0+1E-6);
+		//The chosen path is smooth (1 deg interpolation), except that a machine which can tilt to one side
+		//only has to turn its rotary axis by 180 deg once. The path length is a sum of absolute joint
+		//changes, so one 180 deg step and two 90 deg steps around the pole cost the same: which of them is
+		//chosen depends on the last bits of the arithmetic (x64: 90 deg, Win32: 180 deg for WM308S2).
+		//More than one such turn in a single step would be a real jump.
+		EXPECT_LE(radians_to_degrees(dMaxAngleStep),180.0+1E-6);
 		EXPECT_LT(dMaxShiftStep,0.01);
 		RecordProperty("problems",(int)oResult.m_nTotalProblemsCount);
 		RecordProperty("solved",(int)nSolved);
