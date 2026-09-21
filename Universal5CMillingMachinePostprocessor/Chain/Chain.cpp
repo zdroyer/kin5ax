@@ -197,7 +197,7 @@ void CChain::GetTranslationAxesAndOffset(
 		CR3Vector &r3vT2,
 		CR3Vector &r3vT3,
 		CR3Point &r3pP1, 
-		CChainConfiguration & oConfig) const
+		const CChainConfiguration & oConfig) const
 {
 	CTransformation m4x4F = m_vMaterialHolderPart.back().GetInvertedConstantTransformation();
 	size_t k=0;

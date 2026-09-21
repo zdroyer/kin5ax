@@ -41,7 +41,7 @@ public:
 		CR3Vector &r3vT2,
 		CR3Vector &r3vT3,
 		CR3Point &r3pP1, 
-		CChainConfiguration & oConfig) const;
+		const CChainConfiguration & oConfig) const;
 
 	void GetTranslationsIndexes(size_t &nFirst, size_t &nSecond, size_t &nThird) const;
 	void GetRotationsIndexes(size_t &nFirst, size_t &nSecond) const;
