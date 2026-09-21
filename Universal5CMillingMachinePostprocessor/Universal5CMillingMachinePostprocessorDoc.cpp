@@ -130,7 +130,11 @@ BOOL CUniversal5CMillingMachinePostprocessorDoc::OnOpenDocument(LPCTSTR lpszPath
 	m_oChain = CChain(pXMLDoc->GetdocumentElement(),string(lpszPathName));
 
 	
-	((CMainFrame*)this->GetRoutingFrame())->UpdateDialogs();
+	//GetRoutingFrame() is set only while a menu command is routed: it is NULL when the file
+	//comes from the command line, the shell or drag and drop
+	CMainFrame *pMainFrame = (CMainFrame*)AfxGetMainWnd();
+	if(pMainFrame)
+		pMainFrame->UpdateDialogs();
 	//MessageBox(0,pDOMDoc->xml,lpszPathName,MB_OK);	
 	UpdateAllViews(NULL);
 	return TRUE;
