@@ -232,6 +232,7 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../StdAfx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../StdAfx.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="ChainRendererGL.cpp" />
     <ClCompile Include="ChainSegmentRendererGL.cpp" />
     <ClCompile Include="CLDataFileDialog.cpp" />
     <ClCompile Include="CutterLocationData.cpp" />
@@ -284,6 +285,7 @@
     <ClInclude Include="Chain\ChainConfiguration.h" />
     <ClInclude Include="Chain\ChainParameter.h" />
     <ClInclude Include="Chain\ChainSegment.h" />
+    <ClInclude Include="ChainRendererGL.h" />
     <ClInclude Include="ChainSegmentRendererGL.h" />
     <ClInclude Include="CLDataFileDialog.h" />
     <ClInclude Include="CutterLocationData.h" />

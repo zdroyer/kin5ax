@@ -1,11 +1,8 @@
 #pragma once
 
-#include "../material.h"
 #include "../millingtool.h"
-#include "../CutterLocationData.h"
 #include "chainsegment.h"
 #include "chainconfiguration.h"
-#include "../gltools.h"
 #include "r3caughtvector.h"
 #include "r3box.h"
 
@@ -79,10 +76,8 @@ public:
 	void SetActiveSegment(bool bIsToolPartActive, int mActiveSegmentIndex);
 	void SetFileName(const string &sName);
 	string GetFileName() const ;
-	void Render3D(bool bFastRendering
-		, CMaterial &oMaterial
-		, CMillingTool *pTool
-		,const CCutterLocationData &oData);
+	//resizes the parameters vector if needed, detects collisions and places the tool (to be called before rendering)
+	void Update(CMillingTool *pTool);
 	void CheckAndCorrectSegmentsNames(void);
 	
 	bool HasParameterConstraints() const;

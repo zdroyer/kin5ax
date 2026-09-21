@@ -30,6 +30,9 @@
     <ClCompile Include="BoxDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ChainRendererGL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="ChainSegmentRendererGL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -150,6 +153,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="BoxDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ChainRendererGL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ChainSegmentRendererGL.h">

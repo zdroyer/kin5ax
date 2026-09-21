@@ -9,6 +9,7 @@
 
 #include "millingtoolball.h"
 #include "mainfrm.h"
+#include "ChainRendererGL.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -93,7 +94,8 @@ void CUniversal5CMillingMachinePostprocessorDoc::Dump(CDumpContext& dc) const
 void CUniversal5CMillingMachinePostprocessorDoc::Render3D(bool bFastRendering)
 {
 	
-	m_oChain.Render3D(bFastRendering, m_oMaterial,m_pMillingTool,m_oCutterLocationData);
+	m_oChain.Update(m_pMillingTool);
+	CChainRendererGL::Render(m_oChain,bFastRendering,m_oMaterial,m_pMillingTool,m_oCutterLocationData);
 
 }
 
