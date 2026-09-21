@@ -7,3 +7,10 @@
 //vertical rotary axis. dD: distance between neighbouring cutter locations.
 //Returns the number of the written locations, 0 if the file cannot be written.
 size_t WriteSphereCLData(const string &sFileName, double dR, double dD);
+
+//Writes nPoints (odd, at most 9 to stay below 10) "GOTO/x,y,z,i,j,k" lines along a meridian of the
+//northern hemisphere in the XZ plane: from the equator (-dR,0,0) over the north pole (0,0,dR) -
+//the middle point - to the opposite equator (dR,0,0); the tool axis is normal to the sphere.
+//The path crosses the singular orientation (0,0,1) of the machines with a vertical rotary axis.
+//Returns the number of the written locations, 0 if the file cannot be written.
+size_t WriteMeridianCLData(const string &sFileName, double dR, size_t nPoints);

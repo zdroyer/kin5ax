@@ -37,3 +37,24 @@ size_t WriteSphereCLData(const string &sFileName, double dR, double dD)
 	fclose(pFile);
 	return nLocations;
 }
+
+size_t WriteMeridianCLData(const string &sFileName, double dR, size_t nPoints)
+{
+	if(nPoints<3 || nPoints>9 || nPoints%2==0)
+		return 0;
+	FILE * pFile = fopen(sFileName.c_str(),"w");
+	if(pFile==NULL)
+		return 0;
+	double dPiDiv2 = acos(0.0);
+	size_t nMiddle = nPoints/2;
+	for(size_t i=0;i<nPoints;i++){
+		//angle from the pole: -90 deg ... 0 (the middle point) ... +90 deg
+		double dAngle = dPiDiv2*((double)i-(double)nMiddle)/(double)nMiddle;
+		CR3Vector v(sin(dAngle),0.0,cos(dAngle));
+		if(i==nMiddle)
+			v = CR3Vector(0.0,0.0,1.0);	//exactly the pole
+		fprintf(pFile,"GOTO/%lf,%lf,%lf,%lf,%lf,%lf\n",dR*v.GetX(),dR*v.GetY(),dR*v.GetZ(),v.GetX(),v.GetY(),v.GetZ());
+	}
+	fclose(pFile);
+	return nPoints;
+}
