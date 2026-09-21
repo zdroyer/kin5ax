@@ -251,7 +251,7 @@ void CChain::GetTranslationAxesAndOffset(
 				r3vT1 = (m4x4F * r3vOZ);
 				bWasT1 = true;
 			}
-			m4x4F = m4x4F * m_vMaterialHolderPart[i-1].GetConstantTransformation();
+			m4x4F = m4x4F * m_vMaterialHolderPart[i-1].GetInvertedConstantTransformation();
 		} else {
 			m4x4F = m4x4F * m_vMaterialHolderPart[i-1].GetInvertedParametrizedTransformation(oConfig[k].GetValue());
 		}		

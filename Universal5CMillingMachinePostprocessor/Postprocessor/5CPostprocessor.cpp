@@ -46,7 +46,14 @@ void C5CPostprocessor::CreatePositionPostprocessor(const CChain &oChain)
 		m_nFirstTranslationIndex,
 		m_nSecondTranslationIndex,
 		m_nThirdTranslationIndex);
-
+	//prismatic links in material holder part act inverted, like the rotations
+	size_t nMaterialHolderLinks = oChain.m_vMaterialHolderPart.size()-1;
+	if(m_nFirstTranslationIndex<nMaterialHolderLinks)
+		m_vSigns[m_nFirstTranslationIndex] = -1.0;
+	if(m_nSecondTranslationIndex<nMaterialHolderLinks)
+		m_vSigns[m_nSecondTranslationIndex] = -1.0;
+	if(m_nThirdTranslationIndex<nMaterialHolderLinks)
+		m_vSigns[m_nThirdTranslationIndex] = -1.0;
 }
 
 C5CPostprocessor::~C5CPostprocessor(void)
@@ -161,8 +168,11 @@ tChainConfigurationVector C5CPostprocessor::SolveWithKnownAlpha1(const CR3Point 
 		for(size_t j=0;j<vShifts.size();j++){
 			vResult.push_back(vSolutions2[i]);
 			vResult.back()[m_nFirstTranslationIndex] = vShifts[j][0];
+			vResult.back()[m_nFirstTranslationIndex].ApplySign(m_vSigns[m_nFirstTranslationIndex]);
 			vResult.back()[m_nSecondTranslationIndex] = vShifts[j][1];
+			vResult.back()[m_nSecondTranslationIndex].ApplySign(m_vSigns[m_nSecondTranslationIndex]);
 			vResult.back()[m_nThirdTranslationIndex] = vShifts[j][2];
+			vResult.back()[m_nThirdTranslationIndex].ApplySign(m_vSigns[m_nThirdTranslationIndex]);
 		}
 	}
 	return vResult;
@@ -210,8 +220,11 @@ tChainConfigurationVector C5CPostprocessor::SolveTheoretically(const CR3Point  r
 		for(size_t j=0;j<vShifts.size();j++){
 			vResult2.push_back(vRotations[i]);
 			vResult2.back()[m_nFirstTranslationIndex] = vShifts[j][0];
+			vResult2.back()[m_nFirstTranslationIndex].ApplySign(m_vSigns[m_nFirstTranslationIndex]);
 			vResult2.back()[m_nSecondTranslationIndex] = vShifts[j][1];
+			vResult2.back()[m_nSecondTranslationIndex].ApplySign(m_vSigns[m_nSecondTranslationIndex]);
 			vResult2.back()[m_nThirdTranslationIndex] = vShifts[j][2];
+			vResult2.back()[m_nThirdTranslationIndex].ApplySign(m_vSigns[m_nThirdTranslationIndex]);
 		}
 	}
 	return vResult2;
