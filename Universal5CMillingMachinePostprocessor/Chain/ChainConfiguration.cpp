@@ -2,7 +2,7 @@
 #include "chainconfiguration.h"
 #include "ArgsMyException.h"
 #include "chainconfiguration.h"
-#include "../string_tools.h"
+#include "string_tools.h"
 
 extern CApplicationConfiguration oConfiguration;
 

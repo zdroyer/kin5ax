@@ -1,6 +1,6 @@
 #pragma once
 
-#include "3DGeometry/r3box.h"
+#include "r3box.h"
 
 //OpenGL rendering of CR3Box (CR3Box itself does not depend on OpenGL)
 class CR3BoxRendererGL

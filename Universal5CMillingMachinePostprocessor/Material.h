@@ -1,7 +1,7 @@
 #pragma once
 
-#include "3DGeometry/r3point.h"
-#include "3DGeometry/r3vector.h"
+#include "r3point.h"
+#include "r3vector.h"
 #include "millingtool.h"
 
 typedef vector<unsigned char> uchar_vector;

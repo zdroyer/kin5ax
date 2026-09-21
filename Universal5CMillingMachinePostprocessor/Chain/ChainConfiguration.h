@@ -1,6 +1,6 @@
 #pragma once
 #include "chainparameter.h"
-#include "../string_tools.h"
+#include "string_tools.h"
 
 
 class CChainConfiguration

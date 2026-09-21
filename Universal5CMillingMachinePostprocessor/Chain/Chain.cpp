@@ -3,7 +3,7 @@
 #include "../gltools.h"
 #include "../R3BoxRendererGL.h"
 #include "../MillingToolRendererGL.h"
-#include "../string_tools.h"
+#include "string_tools.h"
 
 #define CHAIN_XML_ROOT_NODE_TYPE_NAME "kinematic_chain"
 

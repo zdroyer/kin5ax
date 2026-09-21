@@ -6,8 +6,8 @@
 #include "chainsegment.h"
 #include "chainconfiguration.h"
 #include "../gltools.h"
-#include "../3dGeometry/r3caughtvector.h"
-#include "../3dGeometry/r3box.h"
+#include "r3caughtvector.h"
+#include "r3box.h"
 
 
 enum CHAIN_CONSTRAINTS_RESULT{

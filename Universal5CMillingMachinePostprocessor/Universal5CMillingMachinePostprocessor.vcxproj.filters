@@ -84,7 +84,7 @@
     <ClCompile Include="PostprocessingDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="3DGeometry\R3CaughtVector.cpp">
+    <ClCompile Include="kin5ax\3DGeometry\R3CaughtVector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SettingsDialog.cpp">
@@ -102,7 +102,7 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="string_tools.cpp">
+    <ClCompile Include="kin5ax\string_tools.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Universal5CMillingMachinePostprocessor.cpp">
@@ -114,31 +114,31 @@
     <ClCompile Include="Universal5CMillingMachinePostprocessorView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="3DGeometry\M4x4.cpp">
+    <ClCompile Include="kin5ax\3DGeometry\M4x4.cpp">
       <Filter>Source Files\3DGeometry</Filter>
     </ClCompile>
-    <ClCompile Include="3DGeometry\Quaternion.cpp">
+    <ClCompile Include="kin5ax\3DGeometry\Quaternion.cpp">
       <Filter>Source Files\3DGeometry</Filter>
     </ClCompile>
-    <ClCompile Include="3DGeometry\R3Box.cpp">
+    <ClCompile Include="kin5ax\3DGeometry\R3Box.cpp">
       <Filter>Source Files\3DGeometry</Filter>
     </ClCompile>
-    <ClCompile Include="3DGeometry\R3Point.cpp">
+    <ClCompile Include="kin5ax\3DGeometry\R3Point.cpp">
       <Filter>Source Files\3DGeometry</Filter>
     </ClCompile>
-    <ClCompile Include="3DGeometry\R3Vector.cpp">
+    <ClCompile Include="kin5ax\3DGeometry\R3Vector.cpp">
       <Filter>Source Files\3DGeometry</Filter>
     </ClCompile>
-    <ClCompile Include="3DGeometry\Rotation.cpp">
+    <ClCompile Include="kin5ax\3DGeometry\Rotation.cpp">
       <Filter>Source Files\3DGeometry</Filter>
     </ClCompile>
-    <ClCompile Include="3DGeometry\Scale.cpp">
+    <ClCompile Include="kin5ax\3DGeometry\Scale.cpp">
       <Filter>Source Files\3DGeometry</Filter>
     </ClCompile>
-    <ClCompile Include="3DGeometry\Transformation.cpp">
+    <ClCompile Include="kin5ax\3DGeometry\Transformation.cpp">
       <Filter>Source Files\3DGeometry</Filter>
     </ClCompile>
-    <ClCompile Include="3DGeometry\Translation.cpp">
+    <ClCompile Include="kin5ax\3DGeometry\Translation.cpp">
       <Filter>Source Files\3DGeometry</Filter>
     </ClCompile>
     <ClCompile Include="Chain\Chain.cpp">
@@ -150,7 +150,7 @@
     <ClCompile Include="Chain\ChainSegment.cpp">
       <Filter>Source Files\Chain</Filter>
     </ClCompile>
-    <ClCompile Include="Exceptions\GeneratorException.cpp">
+    <ClCompile Include="kin5ax\Exceptions\GeneratorException.cpp">
       <Filter>Source Files\Exceptions</Filter>
     </ClCompile>
     <ClCompile Include="Postprocessor\5CPostprocessor.cpp">
@@ -164,37 +164,37 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="string_tools.h">
+    <ClInclude Include="kin5ax\string_tools.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="3DGeometry\double_tools.h">
+    <ClInclude Include="kin5ax\3DGeometry\double_tools.h">
       <Filter>Source Files\3DGeometry</Filter>
     </ClInclude>
-    <ClInclude Include="3DGeometry\M4x4.h">
+    <ClInclude Include="kin5ax\3DGeometry\M4x4.h">
       <Filter>Source Files\3DGeometry</Filter>
     </ClInclude>
-    <ClInclude Include="3DGeometry\Quaternion.h">
+    <ClInclude Include="kin5ax\3DGeometry\Quaternion.h">
       <Filter>Source Files\3DGeometry</Filter>
     </ClInclude>
-    <ClInclude Include="3DGeometry\R3Box.h">
+    <ClInclude Include="kin5ax\3DGeometry\R3Box.h">
       <Filter>Source Files\3DGeometry</Filter>
     </ClInclude>
-    <ClInclude Include="3DGeometry\R3Point.h">
+    <ClInclude Include="kin5ax\3DGeometry\R3Point.h">
       <Filter>Source Files\3DGeometry</Filter>
     </ClInclude>
-    <ClInclude Include="3DGeometry\R3Vector.h">
+    <ClInclude Include="kin5ax\3DGeometry\R3Vector.h">
       <Filter>Source Files\3DGeometry</Filter>
     </ClInclude>
-    <ClInclude Include="3DGeometry\Rotation.h">
+    <ClInclude Include="kin5ax\3DGeometry\Rotation.h">
       <Filter>Source Files\3DGeometry</Filter>
     </ClInclude>
-    <ClInclude Include="3DGeometry\Scale.h">
+    <ClInclude Include="kin5ax\3DGeometry\Scale.h">
       <Filter>Source Files\3DGeometry</Filter>
     </ClInclude>
-    <ClInclude Include="3DGeometry\Transformation.h">
+    <ClInclude Include="kin5ax\3DGeometry\Transformation.h">
       <Filter>Source Files\3DGeometry</Filter>
     </ClInclude>
-    <ClInclude Include="3DGeometry\Translation.h">
+    <ClInclude Include="kin5ax\3DGeometry\Translation.h">
       <Filter>Source Files\3DGeometry</Filter>
     </ClInclude>
     <ClInclude Include="Chain\Chain.h">
@@ -209,19 +209,19 @@
     <ClInclude Include="Chain\ChainSegment.h">
       <Filter>Source Files\Chain</Filter>
     </ClInclude>
-    <ClInclude Include="Exceptions\ArgsMyException.h">
+    <ClInclude Include="kin5ax\Exceptions\ArgsMyException.h">
       <Filter>Source Files\Exceptions</Filter>
     </ClInclude>
-    <ClInclude Include="Exceptions\DivByZeroMyException.h">
+    <ClInclude Include="kin5ax\Exceptions\DivByZeroMyException.h">
       <Filter>Source Files\Exceptions</Filter>
     </ClInclude>
-    <ClInclude Include="Exceptions\GeneratorException.h">
+    <ClInclude Include="kin5ax\Exceptions\GeneratorException.h">
       <Filter>Source Files\Exceptions</Filter>
     </ClInclude>
-    <ClInclude Include="Exceptions\InputMyException.h">
+    <ClInclude Include="kin5ax\Exceptions\InputMyException.h">
       <Filter>Source Files\Exceptions</Filter>
     </ClInclude>
-    <ClInclude Include="Exceptions\MemoryMyException.h">
+    <ClInclude Include="kin5ax\Exceptions\MemoryMyException.h">
       <Filter>Source Files\Exceptions</Filter>
     </ClInclude>
     <ClInclude Include="Postprocessor\5CPostprocessor.h">
@@ -290,7 +290,7 @@
     <ClInclude Include="PostprocessingDialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="3DGeometry\R3CaughtVector.h">
+    <ClInclude Include="kin5ax\3DGeometry\R3CaughtVector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Resource.h">

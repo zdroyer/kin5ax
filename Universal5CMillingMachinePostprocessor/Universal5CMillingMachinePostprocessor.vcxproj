@@ -96,7 +96,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\Postprocessor;.\Exceptions;.\Chain;.\3DGeometry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\Postprocessor;.\Chain;.\kin5ax;.\kin5ax\Exceptions;.\kin5ax\3DGeometry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -125,7 +125,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\Postprocessor;.\Exceptions;.\Chain;.\3DGeometry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\Postprocessor;.\Chain;.\kin5ax;.\kin5ax\Exceptions;.\kin5ax\3DGeometry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -154,7 +154,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>.\Postprocessor;.\Exceptions;.\Chain;.\3DGeometry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\Postprocessor;.\Chain;.\kin5ax;.\kin5ax\Exceptions;.\kin5ax\3DGeometry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -187,7 +187,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>.\Postprocessor;.\Exceptions;.\Chain;.\3DGeometry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\Postprocessor;.\Chain;.\kin5ax;.\kin5ax\Exceptions;.\kin5ax\3DGeometry;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -211,56 +211,56 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="3DGeometry\M4x4.cpp">
+    <ClCompile Include="kin5ax\3DGeometry\M4x4.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../StdAfx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../StdAfx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../StdAfx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../StdAfx.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="3DGeometry\Quaternion.cpp">
+    <ClCompile Include="kin5ax\3DGeometry\Quaternion.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../StdAfx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../StdAfx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../StdAfx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../StdAfx.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="3DGeometry\R3Box.cpp">
+    <ClCompile Include="kin5ax\3DGeometry\R3Box.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../StdAfx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../StdAfx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../StdAfx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../StdAfx.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="3DGeometry\R3CaughtVector.cpp" />
-    <ClCompile Include="3DGeometry\R3Point.cpp">
+    <ClCompile Include="kin5ax\3DGeometry\R3CaughtVector.cpp" />
+    <ClCompile Include="kin5ax\3DGeometry\R3Point.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../StdAfx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../StdAfx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../StdAfx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../StdAfx.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="3DGeometry\R3Vector.cpp">
+    <ClCompile Include="kin5ax\3DGeometry\R3Vector.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../StdAfx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../StdAfx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../StdAfx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../StdAfx.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="3DGeometry\Rotation.cpp">
+    <ClCompile Include="kin5ax\3DGeometry\Rotation.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../StdAfx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../StdAfx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../StdAfx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../StdAfx.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="3DGeometry\Scale.cpp">
+    <ClCompile Include="kin5ax\3DGeometry\Scale.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../StdAfx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../StdAfx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../StdAfx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../StdAfx.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="3DGeometry\Transformation.cpp">
+    <ClCompile Include="kin5ax\3DGeometry\Transformation.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../StdAfx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../StdAfx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../StdAfx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../StdAfx.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="3DGeometry\Translation.cpp">
+    <ClCompile Include="kin5ax\3DGeometry\Translation.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../StdAfx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../StdAfx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../StdAfx.h</PrecompiledHeaderFile>
@@ -289,7 +289,7 @@
     </ClCompile>
     <ClCompile Include="CLDataFileDialog.cpp" />
     <ClCompile Include="CutterLocationData.cpp" />
-    <ClCompile Include="Exceptions\GeneratorException.cpp">
+    <ClCompile Include="kin5ax\Exceptions\GeneratorException.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">../stdafx.h</PrecompiledHeaderFile>
@@ -332,23 +332,23 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="string_tools.cpp" />
+    <ClCompile Include="kin5ax\string_tools.cpp" />
     <ClCompile Include="Universal5CMillingMachinePostprocessor.cpp" />
     <ClCompile Include="Universal5CMillingMachinePostprocessorDoc.cpp" />
     <ClCompile Include="Universal5CMillingMachinePostprocessorView.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="3DGeometry\double_tools.h" />
-    <ClInclude Include="3DGeometry\M4x4.h" />
-    <ClInclude Include="3DGeometry\Quaternion.h" />
-    <ClInclude Include="3DGeometry\R3Box.h" />
-    <ClInclude Include="3DGeometry\R3CaughtVector.h" />
-    <ClInclude Include="3DGeometry\R3Point.h" />
-    <ClInclude Include="3DGeometry\R3Vector.h" />
-    <ClInclude Include="3DGeometry\Rotation.h" />
-    <ClInclude Include="3DGeometry\Scale.h" />
-    <ClInclude Include="3DGeometry\Transformation.h" />
-    <ClInclude Include="3DGeometry\Translation.h" />
+    <ClInclude Include="kin5ax\3DGeometry\double_tools.h" />
+    <ClInclude Include="kin5ax\3DGeometry\M4x4.h" />
+    <ClInclude Include="kin5ax\3DGeometry\Quaternion.h" />
+    <ClInclude Include="kin5ax\3DGeometry\R3Box.h" />
+    <ClInclude Include="kin5ax\3DGeometry\R3CaughtVector.h" />
+    <ClInclude Include="kin5ax\3DGeometry\R3Point.h" />
+    <ClInclude Include="kin5ax\3DGeometry\R3Vector.h" />
+    <ClInclude Include="kin5ax\3DGeometry\Rotation.h" />
+    <ClInclude Include="kin5ax\3DGeometry\Scale.h" />
+    <ClInclude Include="kin5ax\3DGeometry\Transformation.h" />
+    <ClInclude Include="kin5ax\3DGeometry\Translation.h" />
     <ClInclude Include="3DViewManipulator.h" />
     <ClInclude Include="ApplicationConfiguration.h" />
     <ClInclude Include="BoxDialog.h" />
@@ -358,11 +358,11 @@
     <ClInclude Include="Chain\ChainSegment.h" />
     <ClInclude Include="CLDataFileDialog.h" />
     <ClInclude Include="CutterLocationData.h" />
-    <ClInclude Include="Exceptions\ArgsMyException.h" />
-    <ClInclude Include="Exceptions\DivByZeroMyException.h" />
-    <ClInclude Include="Exceptions\GeneratorException.h" />
-    <ClInclude Include="Exceptions\InputMyException.h" />
-    <ClInclude Include="Exceptions\MemoryMyException.h" />
+    <ClInclude Include="kin5ax\Exceptions\ArgsMyException.h" />
+    <ClInclude Include="kin5ax\Exceptions\DivByZeroMyException.h" />
+    <ClInclude Include="kin5ax\Exceptions\GeneratorException.h" />
+    <ClInclude Include="kin5ax\Exceptions\InputMyException.h" />
+    <ClInclude Include="kin5ax\Exceptions\MemoryMyException.h" />
     <ClInclude Include="MillingToolRendererGDI.h" />
     <ClInclude Include="MillingToolRendererGL.h" />
     <ClInclude Include="R3BoxRendererGL.h" />
@@ -386,7 +386,7 @@
     <ClInclude Include="SimulationDialog.h" />
     <ClInclude Include="SingleInputSolverDialog.h" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="string_tools.h" />
+    <ClInclude Include="kin5ax\string_tools.h" />
     <ClInclude Include="Universal5CMillingMachinePostprocessor.h" />
     <ClInclude Include="Universal5CMillingMachinePostprocessorDoc.h" />
     <ClInclude Include="Universal5CMillingMachinePostprocessorView.h" />

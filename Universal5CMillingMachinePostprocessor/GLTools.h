@@ -2,10 +2,10 @@
 
 #include "GeneratorException.h"
 
-#include "3DGeometry/translation.h"
-#include "3DGeometry/scale.h"
-#include "3DGeometry/rotation.h"
-#include "3DGeometry/r3caughtvector.h"
+#include "translation.h"
+#include "scale.h"
+#include "rotation.h"
+#include "r3caughtvector.h"
 
 
 class CGLTools

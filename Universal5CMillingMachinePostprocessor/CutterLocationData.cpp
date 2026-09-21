@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 #include ".\cutterlocationdata.h"
 #include "gltools.h"
-#include "exceptions\memorymyexception.h"
+#include "memorymyexception.h"
 
 
 extern CApplicationConfiguration oConfiguration;

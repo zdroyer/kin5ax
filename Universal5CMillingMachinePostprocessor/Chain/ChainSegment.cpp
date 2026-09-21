@@ -2,7 +2,7 @@
 #include "chainsegment.h"
 #include "../gltools.h"
 #include "../R3BoxRendererGL.h"
-#include "../string_tools.h"
+#include "string_tools.h"
 #include "rotation.h"
 #include "translation.h"
 #include "r3box.h"
