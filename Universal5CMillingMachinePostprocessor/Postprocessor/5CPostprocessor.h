@@ -27,6 +27,7 @@ protected:
 	tChainConfigurationVector ApplyCollisionDetection(const tChainConfigurationVector &vSolutions, CChain &oChain,CMillingTool &oMillingTool,string &sLog);
 
 
+	void CreateSigns(const CChain &oChain);
 	void CreateOrientationPostprocessor(const CChain &oChain);
 	void CreatePositionPostprocessor(const CChain &oChain);
 

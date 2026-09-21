@@ -366,16 +366,15 @@ CR3CaughtVector CChain::GetActualToolPositionAndOrientation() const
 }
 
 
-CTransformation CChain::GetFirstConstantRotation(CHAIN_PART_TYPE &scope,size_t &nIndex) const
+CTransformation CChain::GetFirstConstantRotation(size_t &nFirstRotaryLinkIndex) const
 {
-	nIndex=0;
+	nFirstRotaryLinkIndex=0;
 	if(!Is5CChain())
 		MY_THROW(CGeneratorException, "Chain is not valid 5C kinematic chain");
 	CTransformation res(1.0);
 	for(size_t i = m_vMaterialHolderPart.size() ; i>0; i--){
 		if(m_vMaterialHolderPart[i-1].GetType()==CHAIN_SEGMENT_REVOLUTE_LINK){
-			scope = CHAIN_PART_MATERIAL_HOLDER;
-			nIndex=m_vMaterialHolderPart.size()-i-1;
+			nFirstRotaryLinkIndex=m_vMaterialHolderPart.size()-i-1;
 			return res;
 		}
 		res = res * m_vMaterialHolderPart[i-1].GetInvertedConstantRotation();
@@ -383,8 +382,7 @@ CTransformation CChain::GetFirstConstantRotation(CHAIN_PART_TYPE &scope,size_t &
 	for( size_t i=0; i< m_vToolPart.size(); i++){
 		res = res * m_vToolPart[i].GetConstantRotation();
 		if(m_vToolPart[i].GetType()==CHAIN_SEGMENT_REVOLUTE_LINK){
-			scope = CHAIN_PART_UNDEFINED;
-			nIndex = m_vMaterialHolderPart.size()+i-1;
+			nFirstRotaryLinkIndex = m_vMaterialHolderPart.size()+i-1;
 			return res;
 		}
 
@@ -393,17 +391,15 @@ CTransformation CChain::GetFirstConstantRotation(CHAIN_PART_TYPE &scope,size_t &
 	//to get rid of warning  C4715
 	return CTransformation(1.0);
 }
-CTransformation CChain::GetMiddleConstantRotation(CHAIN_PART_TYPE &scope) const
+CTransformation CChain::GetMiddleConstantRotation() const
 {
 	if(!Is5CChain())
 		MY_THROW(CGeneratorException, "Chain is not valid 5C kinematic chain");
 	CTransformation res(1.0);
 	bool bWasFirstParametricRotation = false;
-	scope = CHAIN_PART_MATERIAL_HOLDER;
 	for(size_t i = m_vMaterialHolderPart.size() ; i>0 ; i--){
 		if(bWasFirstParametricRotation){
 			if(m_vMaterialHolderPart[i-1].GetType()==CHAIN_SEGMENT_REVOLUTE_LINK){
-				scope = CHAIN_PART_MATERIAL_HOLDER;
 				return res;
 			}
 			res = res * m_vMaterialHolderPart[i-1].GetInvertedConstantRotation();
@@ -418,12 +414,10 @@ CTransformation CChain::GetMiddleConstantRotation(CHAIN_PART_TYPE &scope) const
 		if(bWasFirstParametricRotation){
 			res = res * m_vToolPart[i].GetConstantRotation();
 			if(m_vToolPart[i].GetType()==CHAIN_SEGMENT_REVOLUTE_LINK){
-				scope = CHAIN_PART_UNDEFINED;
 				return res;
 			}
 		} else {
 			if(m_vToolPart[i].GetType()==CHAIN_SEGMENT_REVOLUTE_LINK){
-				scope = CHAIN_PART_TOOL;
 				bWasFirstParametricRotation = true;
 			}
 		}
@@ -468,15 +462,14 @@ CTransformation CChain::GetMiddleConstantInvertedRotation() const
 }
 
 
-CTransformation CChain::GetLastConstantRotation(CHAIN_PART_TYPE &scope, size_t &nIndex) const
+CTransformation CChain::GetLastConstantRotation(size_t &nLastRotaryLinkIndex) const
 {
 	if(!Is5CChain())
 		MY_THROW(CGeneratorException, "Chain is not valid 5C kinematic chain");
 	CTransformation res(1.0);
 	for(size_t i = m_vToolPart.size() ; i>0; i--){
 		if(m_vToolPart[i-1].GetType()==CHAIN_SEGMENT_REVOLUTE_LINK){
-			scope = CHAIN_PART_TOOL;
-			nIndex = (m_vMaterialHolderPart.size()-1)+(i-1);
+			nLastRotaryLinkIndex = (m_vMaterialHolderPart.size()-1)+(i-1);
 			return res;
 		}
 		res = m_vToolPart[i-1].GetConstantRotation() * res;
@@ -484,8 +477,7 @@ CTransformation CChain::GetLastConstantRotation(CHAIN_PART_TYPE &scope, size_t &
 	for( size_t i=0; i < m_vMaterialHolderPart.size() ; i++){
 		res = m_vMaterialHolderPart[i].GetInvertedConstantRotation() * res;
 		if(m_vMaterialHolderPart[i].GetType()==CHAIN_SEGMENT_REVOLUTE_LINK){
-			scope = CHAIN_PART_UNDEFINED;
-			nIndex = m_vMaterialHolderPart.size()-i-2;
+			nLastRotaryLinkIndex = m_vMaterialHolderPart.size()-i-2;
 			return res;
 		}
 

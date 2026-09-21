@@ -9,26 +9,29 @@ C5CPostprocessor::C5CPostprocessor(const CChain &oChain)
 ,m_m4x4InitialOrientationTransformation(1.0)
 ,m_m4x4InitialPositionTransformation(1.0)									
 {
+	CreateSigns(oChain);
 	CreateOrientationPostprocessor(oChain);
 	CreatePositionPostprocessor(oChain);
+}
+void C5CPostprocessor::CreateSigns(const CChain &oChain)
+{
+	//links in material holder part act inverted (links are indexed from material holder to tool)
+	size_t nMaterialHolderLinks = oChain.m_vMaterialHolderPart.size()-1;
+	for(size_t i=0;i<m_vSigns.size();i++)
+		m_vSigns[i] = (i<nMaterialHolderLinks) ? -1.0 : 1.0;
 }
 void C5CPostprocessor::CreateOrientationPostprocessor(const CChain &oChain)
 {
 
-	CHAIN_PART_TYPE part;
 	size_t index;
-	CTransformation F1 = oChain.GetFirstConstantRotation(part, index);
+	CTransformation F1 = oChain.GetFirstConstantRotation(index);
 	m_nFirstRotationIndex = index;
-	if(part==CHAIN_PART_MATERIAL_HOLDER)
-		m_vSigns[m_nFirstRotationIndex] = -1.0;
 	F1.ZeroTranslation();
 	m_m4x4InitialOrientationTransformation =  F1.T();
-	CTransformation F2 = oChain.GetMiddleConstantRotation(part);
+	CTransformation F2 = oChain.GetMiddleConstantRotation();
 	F2.ZeroTranslation();
-	CTransformation F3 = oChain.GetLastConstantRotation(part,index);
+	CTransformation F3 = oChain.GetLastConstantRotation(index);
 	m_nSecondRotationIndex = index;
-	if(part==CHAIN_PART_MATERIAL_HOLDER || part == CHAIN_PART_UNDEFINED)
-		m_vSigns[m_nSecondRotationIndex] = -1.0;
 	F3.ZeroTranslation();
 	m_oOrientationPostprocessor.SetAxes(F2,F3*r3vOZ);
 
@@ -46,14 +49,6 @@ void C5CPostprocessor::CreatePositionPostprocessor(const CChain &oChain)
 		m_nFirstTranslationIndex,
 		m_nSecondTranslationIndex,
 		m_nThirdTranslationIndex);
-	//prismatic links in material holder part act inverted, like the rotations
-	size_t nMaterialHolderLinks = oChain.m_vMaterialHolderPart.size()-1;
-	if(m_nFirstTranslationIndex<nMaterialHolderLinks)
-		m_vSigns[m_nFirstTranslationIndex] = -1.0;
-	if(m_nSecondTranslationIndex<nMaterialHolderLinks)
-		m_vSigns[m_nSecondTranslationIndex] = -1.0;
-	if(m_nThirdTranslationIndex<nMaterialHolderLinks)
-		m_vSigns[m_nThirdTranslationIndex] = -1.0;
 }
 
 C5CPostprocessor::~C5CPostprocessor(void)

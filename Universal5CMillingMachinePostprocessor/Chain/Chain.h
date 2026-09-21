@@ -10,12 +10,6 @@
 #include "../3dGeometry/r3box.h"
 
 
-enum CHAIN_PART_TYPE{
-	CHAIN_PART_TOOL,
-	CHAIN_PART_MATERIAL_HOLDER,
-	CHAIN_PART_UNDEFINED
-} ;
-
 enum CHAIN_CONSTRAINTS_RESULT{
 	CHAIN_CONSTRAINTS_MET,
 	CHAIN_CONSTRAINTS_SHIFTS_EXCEEDED,
@@ -35,10 +29,10 @@ public:
 	string toXML() const;
 	~CChain(void);
 	CR3Box GetBoundingBox() const;
-	CTransformation GetFirstConstantRotation(CHAIN_PART_TYPE &scope,size_t &nIndex) const;
-	CTransformation GetMiddleConstantRotation(CHAIN_PART_TYPE &scope) const;
+	CTransformation GetFirstConstantRotation(size_t &nFirstRotaryLinkIndex) const;
+	CTransformation GetMiddleConstantRotation() const;
 	CTransformation GetMiddleConstantInvertedRotation() const;
-	CTransformation GetLastConstantRotation(CHAIN_PART_TYPE &scope, size_t &nIndex) const;
+	CTransformation GetLastConstantRotation(size_t &nLastRotaryLinkIndex) const;
 	CTransformation GetActualToMaterialInvertedTransformation() const;
 	CTransformation GetActualToToolTransformation() const;
 	CR3CaughtVector GetActualToolPositionAndOrientation() const;
