@@ -4,7 +4,7 @@
 #include "chainconfiguration.h"
 #include "string_tools.h"
 
-extern CApplicationConfiguration oConfiguration;
+extern CPostprocessorSettings oPostprocessorSettings;
 
 CChainConfiguration::CChainConfiguration(int nParametersCount)
 :m_vParametersVectors(nParametersCount,CChainParameter(DISTANCE_UNIT))
@@ -92,9 +92,9 @@ double CChainConfiguration::Distance(const CChainConfiguration &c2) const
 	for(size_t i=0; i<n; i++){
 		di = c2.m_vParametersVectors[i].distanceTo(this->m_vParametersVectors[i]);
 		if(c2.m_vParametersVectors[i].IsAngle())
-			d+= (di * oConfiguration.m_dAngleDistanceCoefficientRadians);
+			d+= (di * oPostprocessorSettings.m_dAngleDistanceCoefficientRadians);
 		else 
-			d+= (di * oConfiguration.m_dDisplacementCoefficient);
+			d+= (di * oPostprocessorSettings.m_dDisplacementCoefficient);
 	}
 	return d;
 }

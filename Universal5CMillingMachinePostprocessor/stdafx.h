@@ -65,6 +65,7 @@
 using namespace std;
 
 #include "ApplicationConfiguration.h"
+#include "PostprocessorSettings.h"
 
 
 #import <msxml6.dll> exclude("ISequentialStream","_FILETIME")

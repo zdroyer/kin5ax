@@ -5,4 +5,5 @@
 #include "stdafx.h"
 
 CApplicationConfiguration oConfiguration;
+CPostprocessorSettings oPostprocessorSettings;
 

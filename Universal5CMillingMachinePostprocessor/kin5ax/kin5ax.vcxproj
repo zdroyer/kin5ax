@@ -145,6 +145,7 @@
     <ClCompile Include="3DGeometry\Transformation.cpp" />
     <ClCompile Include="3DGeometry\Translation.cpp" />
     <ClCompile Include="Exceptions\GeneratorException.cpp" />
+    <ClCompile Include="PostprocessorSettings.cpp" />
     <ClCompile Include="string_tools.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -163,6 +164,7 @@
     <ClInclude Include="Exceptions\DivByZeroMyException.h" />
     <ClInclude Include="Exceptions\GeneratorException.h" />
     <ClInclude Include="Exceptions\MemoryMyException.h" />
+    <ClInclude Include="PostprocessorSettings.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="string_tools.h" />
   </ItemGroup>

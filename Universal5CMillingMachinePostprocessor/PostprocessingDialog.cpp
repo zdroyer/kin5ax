@@ -9,14 +9,14 @@
 #include ".\postprocessingdialog.h"
 // CPostprocessingDialog dialog
 
-extern CApplicationConfiguration oConfiguration;
+extern CPostprocessorSettings oPostprocessorSettings;
 
 IMPLEMENT_DYNAMIC(CPostprocessingDialog, CDialog)
 CPostprocessingDialog::CPostprocessingDialog(CWnd* pParent /*=NULL*/)
 	: CDialog(CPostprocessingDialog::IDD, pParent)
 	, m_pDoc(0)
-	, m_dPositionDifference(oConfiguration.m_dMaxPositionDifference)
-	, m_dOrientationDifference(oConfiguration.m_dMaxOrientationDifferenceDegrees)
+	, m_dPositionDifference(oPostprocessorSettings.m_dMaxPositionDifference)
+	, m_dOrientationDifference(oPostprocessorSettings.m_dMaxOrientationDifferenceDegrees)
 	, m_bDetailedReport(FALSE)
 	, m_nXNameIndex(0)
 	, m_nYNameIndex(1)
@@ -127,15 +127,15 @@ void CPostprocessingDialog::OnShowWindow(BOOL bShow, UINT nStatus)
 void CPostprocessingDialog::OnEnChangeEditOrientationDifference()
 {
 	UpdateData();
-	oConfiguration.m_dMaxOrientationDifferenceDegrees = fabs(m_dOrientationDifference);
-	oConfiguration.m_dMaxOrientationDifferenceRadians = degrees_to_radians(oConfiguration.m_dMaxOrientationDifferenceDegrees);
+	oPostprocessorSettings.m_dMaxOrientationDifferenceDegrees = fabs(m_dOrientationDifference);
+	oPostprocessorSettings.m_dMaxOrientationDifferenceRadians = degrees_to_radians(oPostprocessorSettings.m_dMaxOrientationDifferenceDegrees);
 	UpdateProblemsCountControl();
 }
 
 void CPostprocessingDialog::OnEnChangeEditPositionDifference()
 {
 	UpdateData();
-	oConfiguration.m_dMaxPositionDifference = fabs(m_dPositionDifference);
+	oPostprocessorSettings.m_dMaxPositionDifference = fabs(m_dPositionDifference);
 	UpdateProblemsCountControl();
 }
 
@@ -145,10 +145,10 @@ void CPostprocessingDialog::UpdateProblemsCountControl()
 	if(m_pDoc){
 		double dLocationsCount = (double) m_pDoc->m_oCutterLocationData.GetLocationsCount();
 		double dAvgDistance = m_pDoc->m_oCutterLocationData.GetTrajectoryLenght()/dLocationsCount;
-		double dProblemsForPosition = dLocationsCount*max(1.0,dAvgDistance/oConfiguration.m_dMaxPositionDifference);
+		double dProblemsForPosition = dLocationsCount*max(1.0,dAvgDistance/oPostprocessorSettings.m_dMaxPositionDifference);
 
 		double dAvgAngle = radians_to_degrees( m_pDoc->m_oCutterLocationData.GetTotalOrientationChangeRadians())/dLocationsCount;
-		double dProblemsForOrientation = dLocationsCount*max(1.0,dAvgAngle/oConfiguration.m_dMaxOrientationDifferenceDegrees);
+		double dProblemsForOrientation = dLocationsCount*max(1.0,dAvgAngle/oPostprocessorSettings.m_dMaxOrientationDifferenceDegrees);
 		
 		double  dProblemsCount = max(dProblemsForOrientation,dProblemsForPosition);
 		SetText(m_editProblemsCount,(size_t)(1.2*dProblemsCount));
@@ -173,8 +173,8 @@ void CPostprocessingDialog::OnBnClickedStart()
 	m_progressPostprocessing.SetRange(0,100);
 	m_progressPostprocessing.SetPos(0);
 
-	m_dActualMaxOrientationDiferenceDegrees = oConfiguration.m_dMaxOrientationDifferenceDegrees;
-	m_dActualMaxPositionDifference = oConfiguration.m_dMaxPositionDifference;
+	m_dActualMaxOrientationDiferenceDegrees = oPostprocessorSettings.m_dMaxOrientationDifferenceDegrees;
+	m_dActualMaxPositionDifference = oPostprocessorSettings.m_dMaxPositionDifference;
 	m_nTotalProblemsCount=0;
 
 	m_dMaxOrientationErrorVectorLength=-1.0;
@@ -346,8 +346,8 @@ void CPostprocessingDialog::InterpolateLoaction
 		result.push_back(pair<double,CR3CaughtVector>(1.0,CR3CaughtVector(v2,p2)));	
 		return;
 	}
-	double dAngle = (v1.UndirectedVersorsAngle(v2)/oConfiguration.m_dMaxOrientationDifferenceRadians);
-	double dDistance = (d_E(p1,p2)/oConfiguration.m_dMaxPositionDifference);
+	double dAngle = (v1.UndirectedVersorsAngle(v2)/oPostprocessorSettings.m_dMaxOrientationDifferenceRadians);
+	double dDistance = (d_E(p1,p2)/oPostprocessorSettings.m_dMaxPositionDifference);
 	double dInv = ceil(max(dAngle,dDistance));
 	if(dInv<=1.0){
 		result.push_back(pair<double,CR3CaughtVector>(1.0,CR3CaughtVector(v2,p2)));
@@ -372,7 +372,7 @@ string CPostprocessingDialog::GenerateReportHead() const
 		CTime t = CTime::GetCurrentTime();
 		CString sDate = t.Format( "%c");
 		sReportHead+=(sDate.GetBuffer(sDate.GetLength())+sNL);
-		sReportHead+=("Solving method: "+oConfiguration.GetComputationMethod("\n"));
+		sReportHead+=("Solving method: "+oPostprocessorSettings.GetComputationMethod("\n"));
 		sReportHead+=("Kinematic chain definition file: "+m_pDoc->m_oChain.GetFileName()+sNL);
 		sReportHead+=("Cutter location data file name: "+oCLData.GetFileName()+sNL);
 		sReportHead+=("\tlines in file: "+size_to_string(oCLData.GetLinesCount())+sNL);
@@ -425,7 +425,7 @@ void CPostprocessingDialog::GenerateAndShowReport(void)
 		CTime t = CTime::GetCurrentTime();
 		CString sDate = t.Format( "%c");
 		m_sReport+=(sDate.GetBuffer(0)+sRNL);
-		m_sReport+=(oConfiguration.GetComputationMethod(sRNL));
+		m_sReport+=(oPostprocessorSettings.GetComputationMethod(sRNL));
 		m_sReport+=("Kinematic chain definition file: "+m_pDoc->m_oChain.GetFileName()+sRNL);
 		m_sReport+=("Cutter location data file: "+oCLData.GetFileName()+sRNL);
 		m_sReport+=("\tlines in file: "+size_to_string(oCLData.GetLinesCount(),true));

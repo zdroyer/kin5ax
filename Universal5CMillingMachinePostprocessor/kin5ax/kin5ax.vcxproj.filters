@@ -42,6 +42,7 @@
     <ClCompile Include="Exceptions\GeneratorException.cpp">
       <Filter>Exceptions</Filter>
     </ClCompile>
+    <ClCompile Include="PostprocessorSettings.cpp" />
     <ClCompile Include="string_tools.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -90,6 +91,7 @@
     <ClInclude Include="Exceptions\MemoryMyException.h">
       <Filter>Exceptions</Filter>
     </ClInclude>
+    <ClInclude Include="PostprocessorSettings.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="string_tools.h" />
   </ItemGroup>

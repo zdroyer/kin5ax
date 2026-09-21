@@ -11,13 +11,14 @@
 // CSettingsDialog dialog
 
 extern CApplicationConfiguration oConfiguration;
+extern CPostprocessorSettings oPostprocessorSettings;
 
 IMPLEMENT_DYNAMIC(CSettingsDialog, CDialog)
 CSettingsDialog::CSettingsDialog(CWnd* pParent /*=NULL*/)
 	: CDialog(CSettingsDialog::IDD, pParent)
-	, m_nCalculationOrder((int)oConfiguration.m_nAnglesSolvingMethod)
-	, m_nAlpha1Method((int)oConfiguration.m_nAlpha1Method)
-	, m_nAlpha2Method((int)oConfiguration.m_nAlpha2Method)
+	, m_nCalculationOrder((int)oPostprocessorSettings.m_nAnglesSolvingMethod)
+	, m_nAlpha1Method((int)oPostprocessorSettings.m_nAlpha1Method)
+	, m_nAlpha2Method((int)oPostprocessorSettings.m_nAlpha2Method)
 	, m_dInternalPrecision(dEPSILON)
 {
 }
@@ -48,8 +49,8 @@ void CSettingsDialog::OnBnClickedOk()
 {
 	UpdateData();
 	dEPSILON = m_dInternalPrecision;
-	oConfiguration.m_nAlpha1Method = (ALPHA1_METHOD)m_nAlpha1Method;
-	oConfiguration.m_nAlpha2Method = (ALPHA2_METHOD)m_nAlpha2Method;
-	oConfiguration.m_nAnglesSolvingMethod = (ANGLES_SOLVING_METHOD)m_nCalculationOrder;
+	oPostprocessorSettings.m_nAlpha1Method = (ALPHA1_METHOD)m_nAlpha1Method;
+	oPostprocessorSettings.m_nAlpha2Method = (ALPHA2_METHOD)m_nAlpha2Method;
+	oPostprocessorSettings.m_nAnglesSolvingMethod = (ANGLES_SOLVING_METHOD)m_nCalculationOrder;
 	OnOK();
 }
