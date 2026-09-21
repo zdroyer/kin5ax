@@ -8,7 +8,7 @@ class CR3Vector
 	double m_vdV[3];
 
 public:
-	const CR3Vector &CR3Vector::operator+=(const CR3Vector &v);
+	const CR3Vector & operator+=(const CR3Vector &v);
 	CR3Vector operator+(const CR3Vector &v) const;
 	CR3Vector operator-(const CR3Vector &v) const;
 	int operator==(const CR3Vector &v) const;

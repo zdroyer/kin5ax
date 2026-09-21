@@ -198,7 +198,7 @@ public:
 
 
 
-	CR3Vector CR3Point::toR3Vector() const;
+	CR3Vector toR3Vector() const;
 	string toString() const;
 	string toStringInt() const;
 	inline const double * toGL3dv(void) const
