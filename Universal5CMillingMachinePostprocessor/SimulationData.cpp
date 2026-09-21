@@ -30,7 +30,7 @@ int CSimulationData::ExportToGCode(
 	sLine[254]=0;
 	size_t n = 1;
 	for(size_t i=0; i<m_vSolutions.size();i++){
-		if(m_vSolutions[i].size() && m_vIndexes[i]<m_vSolutions.size()){
+		if(m_vSolutions[i].size() && m_vIndexes[i]<m_vSolutions[i].size()) {
 			const CChainConfiguration &oConfig = m_vSolutions[i][m_vIndexes[i]];
 			double a1 = oConfig[nAngle1Index].GetValue();
 			double a2 = oConfig[nAngle2Index].GetValue();
@@ -142,7 +142,7 @@ void CSimulationData::FindShortestPath(CProgressCtrl &oProgresBar)
 		if(m_vSolutions[j].size()==0)
 			continue;
 		bool bIsAmbiguous = false;
-		for(size_t k=0;k<m_vSolutions[i].size();k++){
+		for(size_t k=0;k<m_vSolutions[j].size();k++){
 			if(m_vSolutions[j][k].IsAmbiguous()){
 				bIsAmbiguous=true;
 				break;
