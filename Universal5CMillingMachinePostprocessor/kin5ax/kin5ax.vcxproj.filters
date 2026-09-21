@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="3DGeometry">
+      <UniqueIdentifier>{35A77D5A-B2D4-59D5-B2BF-557F0D60D14B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Exceptions">
+      <UniqueIdentifier>{40482F10-7A8C-5289-815F-774F638BFBFA}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="3DGeometry\M4x4.cpp">
+      <Filter>3DGeometry</Filter>
+    </ClCompile>
+    <ClCompile Include="3DGeometry\Quaternion.cpp">
+      <Filter>3DGeometry</Filter>
+    </ClCompile>
+    <ClCompile Include="3DGeometry\R3Box.cpp">
+      <Filter>3DGeometry</Filter>
+    </ClCompile>
+    <ClCompile Include="3DGeometry\R3CaughtVector.cpp">
+      <Filter>3DGeometry</Filter>
+    </ClCompile>
+    <ClCompile Include="3DGeometry\R3Point.cpp">
+      <Filter>3DGeometry</Filter>
+    </ClCompile>
+    <ClCompile Include="3DGeometry\R3Vector.cpp">
+      <Filter>3DGeometry</Filter>
+    </ClCompile>
+    <ClCompile Include="3DGeometry\Rotation.cpp">
+      <Filter>3DGeometry</Filter>
+    </ClCompile>
+    <ClCompile Include="3DGeometry\Scale.cpp">
+      <Filter>3DGeometry</Filter>
+    </ClCompile>
+    <ClCompile Include="3DGeometry\Transformation.cpp">
+      <Filter>3DGeometry</Filter>
+    </ClCompile>
+    <ClCompile Include="3DGeometry\Translation.cpp">
+      <Filter>3DGeometry</Filter>
+    </ClCompile>
+    <ClCompile Include="Exceptions\GeneratorException.cpp">
+      <Filter>Exceptions</Filter>
+    </ClCompile>
+    <ClCompile Include="string_tools.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="3DGeometry\double_tools.h">
+      <Filter>3DGeometry</Filter>
+    </ClInclude>
+    <ClInclude Include="3DGeometry\M4x4.h">
+      <Filter>3DGeometry</Filter>
+    </ClInclude>
+    <ClInclude Include="3DGeometry\Quaternion.h">
+      <Filter>3DGeometry</Filter>
+    </ClInclude>
+    <ClInclude Include="3DGeometry\R3Box.h">
+      <Filter>3DGeometry</Filter>
+    </ClInclude>
+    <ClInclude Include="3DGeometry\R3CaughtVector.h">
+      <Filter>3DGeometry</Filter>
+    </ClInclude>
+    <ClInclude Include="3DGeometry\R3Point.h">
+      <Filter>3DGeometry</Filter>
+    </ClInclude>
+    <ClInclude Include="3DGeometry\R3Vector.h">
+      <Filter>3DGeometry</Filter>
+    </ClInclude>
+    <ClInclude Include="3DGeometry\Rotation.h">
+      <Filter>3DGeometry</Filter>
+    </ClInclude>
+    <ClInclude Include="3DGeometry\Scale.h">
+      <Filter>3DGeometry</Filter>
+    </ClInclude>
+    <ClInclude Include="3DGeometry\Transformation.h">
+      <Filter>3DGeometry</Filter>
+    </ClInclude>
+    <ClInclude Include="3DGeometry\Translation.h">
+      <Filter>3DGeometry</Filter>
+    </ClInclude>
+    <ClInclude Include="Exceptions\ArgsMyException.h">
+      <Filter>Exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="Exceptions\DivByZeroMyException.h">
+      <Filter>Exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="Exceptions\GeneratorException.h">
+      <Filter>Exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="Exceptions\MemoryMyException.h">
+      <Filter>Exceptions</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="string_tools.h" />
+  </ItemGroup>
+</Project>

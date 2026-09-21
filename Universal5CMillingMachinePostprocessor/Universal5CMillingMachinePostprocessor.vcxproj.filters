@@ -5,14 +5,8 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Source Files\3DGeometry">
-      <UniqueIdentifier>{c6f175a5-5ca3-4b06-a67f-51d33725f08d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Chain">
       <UniqueIdentifier>{d88427bc-374b-468c-aeb6-830e53457dc9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Exceptions">
-      <UniqueIdentifier>{71d8f975-4eef-4c78-b919-f26b423f18ef}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\Postprocessor">
       <UniqueIdentifier>{19f8ebea-6adf-4ba6-ab4d-ff7edda0c7cb}</UniqueIdentifier>
@@ -84,9 +78,6 @@
     <ClCompile Include="PostprocessingDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="kin5ax\3DGeometry\R3CaughtVector.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="SettingsDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -102,9 +93,6 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="kin5ax\string_tools.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Universal5CMillingMachinePostprocessor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -114,33 +102,6 @@
     <ClCompile Include="Universal5CMillingMachinePostprocessorView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="kin5ax\3DGeometry\M4x4.cpp">
-      <Filter>Source Files\3DGeometry</Filter>
-    </ClCompile>
-    <ClCompile Include="kin5ax\3DGeometry\Quaternion.cpp">
-      <Filter>Source Files\3DGeometry</Filter>
-    </ClCompile>
-    <ClCompile Include="kin5ax\3DGeometry\R3Box.cpp">
-      <Filter>Source Files\3DGeometry</Filter>
-    </ClCompile>
-    <ClCompile Include="kin5ax\3DGeometry\R3Point.cpp">
-      <Filter>Source Files\3DGeometry</Filter>
-    </ClCompile>
-    <ClCompile Include="kin5ax\3DGeometry\R3Vector.cpp">
-      <Filter>Source Files\3DGeometry</Filter>
-    </ClCompile>
-    <ClCompile Include="kin5ax\3DGeometry\Rotation.cpp">
-      <Filter>Source Files\3DGeometry</Filter>
-    </ClCompile>
-    <ClCompile Include="kin5ax\3DGeometry\Scale.cpp">
-      <Filter>Source Files\3DGeometry</Filter>
-    </ClCompile>
-    <ClCompile Include="kin5ax\3DGeometry\Transformation.cpp">
-      <Filter>Source Files\3DGeometry</Filter>
-    </ClCompile>
-    <ClCompile Include="kin5ax\3DGeometry\Translation.cpp">
-      <Filter>Source Files\3DGeometry</Filter>
-    </ClCompile>
     <ClCompile Include="Chain\Chain.cpp">
       <Filter>Source Files\Chain</Filter>
     </ClCompile>
@@ -149,9 +110,6 @@
     </ClCompile>
     <ClCompile Include="Chain\ChainSegment.cpp">
       <Filter>Source Files\Chain</Filter>
-    </ClCompile>
-    <ClCompile Include="kin5ax\Exceptions\GeneratorException.cpp">
-      <Filter>Source Files\Exceptions</Filter>
     </ClCompile>
     <ClCompile Include="Postprocessor\5CPostprocessor.cpp">
       <Filter>Source Files\Postprocessor</Filter>
@@ -164,39 +122,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="kin5ax\string_tools.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="kin5ax\3DGeometry\double_tools.h">
-      <Filter>Source Files\3DGeometry</Filter>
-    </ClInclude>
-    <ClInclude Include="kin5ax\3DGeometry\M4x4.h">
-      <Filter>Source Files\3DGeometry</Filter>
-    </ClInclude>
-    <ClInclude Include="kin5ax\3DGeometry\Quaternion.h">
-      <Filter>Source Files\3DGeometry</Filter>
-    </ClInclude>
-    <ClInclude Include="kin5ax\3DGeometry\R3Box.h">
-      <Filter>Source Files\3DGeometry</Filter>
-    </ClInclude>
-    <ClInclude Include="kin5ax\3DGeometry\R3Point.h">
-      <Filter>Source Files\3DGeometry</Filter>
-    </ClInclude>
-    <ClInclude Include="kin5ax\3DGeometry\R3Vector.h">
-      <Filter>Source Files\3DGeometry</Filter>
-    </ClInclude>
-    <ClInclude Include="kin5ax\3DGeometry\Rotation.h">
-      <Filter>Source Files\3DGeometry</Filter>
-    </ClInclude>
-    <ClInclude Include="kin5ax\3DGeometry\Scale.h">
-      <Filter>Source Files\3DGeometry</Filter>
-    </ClInclude>
-    <ClInclude Include="kin5ax\3DGeometry\Transformation.h">
-      <Filter>Source Files\3DGeometry</Filter>
-    </ClInclude>
-    <ClInclude Include="kin5ax\3DGeometry\Translation.h">
-      <Filter>Source Files\3DGeometry</Filter>
-    </ClInclude>
     <ClInclude Include="Chain\Chain.h">
       <Filter>Source Files\Chain</Filter>
     </ClInclude>
@@ -208,21 +133,6 @@
     </ClInclude>
     <ClInclude Include="Chain\ChainSegment.h">
       <Filter>Source Files\Chain</Filter>
-    </ClInclude>
-    <ClInclude Include="kin5ax\Exceptions\ArgsMyException.h">
-      <Filter>Source Files\Exceptions</Filter>
-    </ClInclude>
-    <ClInclude Include="kin5ax\Exceptions\DivByZeroMyException.h">
-      <Filter>Source Files\Exceptions</Filter>
-    </ClInclude>
-    <ClInclude Include="kin5ax\Exceptions\GeneratorException.h">
-      <Filter>Source Files\Exceptions</Filter>
-    </ClInclude>
-    <ClInclude Include="kin5ax\Exceptions\InputMyException.h">
-      <Filter>Source Files\Exceptions</Filter>
-    </ClInclude>
-    <ClInclude Include="kin5ax\Exceptions\MemoryMyException.h">
-      <Filter>Source Files\Exceptions</Filter>
     </ClInclude>
     <ClInclude Include="Postprocessor\5CPostprocessor.h">
       <Filter>Source Files\Postprocessor</Filter>
@@ -288,9 +198,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PostprocessingDialog.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="kin5ax\3DGeometry\R3CaughtVector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Resource.h">

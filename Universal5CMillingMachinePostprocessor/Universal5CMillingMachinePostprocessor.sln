@@ -4,6 +4,8 @@ VisualStudioVersion = 18.10.12210.168
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Universal5CMillingMachinePostprocessor", "Universal5CMillingMachinePostprocessor.vcxproj", "{84D7C20F-C0C8-4108-A6C0-C146F2369EBB}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kin5ax", "kin5ax\kin5ax.vcxproj", "{4F41F3D9-8186-5E04-BABD-7851ED77EA44}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -20,6 +22,14 @@ Global
 		{84D7C20F-C0C8-4108-A6C0-C146F2369EBB}.Release|Win32.Build.0 = Release|Win32
 		{84D7C20F-C0C8-4108-A6C0-C146F2369EBB}.Release|x64.ActiveCfg = Release|x64
 		{84D7C20F-C0C8-4108-A6C0-C146F2369EBB}.Release|x64.Build.0 = Release|x64
+		{4F41F3D9-8186-5E04-BABD-7851ED77EA44}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4F41F3D9-8186-5E04-BABD-7851ED77EA44}.Debug|Win32.Build.0 = Debug|Win32
+		{4F41F3D9-8186-5E04-BABD-7851ED77EA44}.Debug|x64.ActiveCfg = Debug|x64
+		{4F41F3D9-8186-5E04-BABD-7851ED77EA44}.Debug|x64.Build.0 = Debug|x64
+		{4F41F3D9-8186-5E04-BABD-7851ED77EA44}.Release|Win32.ActiveCfg = Release|Win32
+		{4F41F3D9-8186-5E04-BABD-7851ED77EA44}.Release|Win32.Build.0 = Release|Win32
+		{4F41F3D9-8186-5E04-BABD-7851ED77EA44}.Release|x64.ActiveCfg = Release|x64
+		{4F41F3D9-8186-5E04-BABD-7851ED77EA44}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
