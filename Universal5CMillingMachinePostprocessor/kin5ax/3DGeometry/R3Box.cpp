@@ -299,7 +299,7 @@ bool CR3Box::AsymmetricIntersection(const CR3Box &box, const CTransformation &tr
 		return true;
 	if(HasIntersectionWithLineSegment(vV[2],vV[3]))
 		return true;
-	if(HasIntersectionWithLineSegment(vV[1],vV[3]))
+	if(HasIntersectionWithLineSegment(vV[0],vV[3]))
 		return true;
 
 	if(HasIntersectionWithLineSegment(vV[4],vV[5]))
@@ -361,7 +361,7 @@ bool CR3Box::HasIntersectionWithOZCylinder(const double &dZ,const double &dR, co
 		return true;
 	if(LineSegmentAndOZCylinderIntersection(vV[2],vV[3], dZ, dR))
 		return true;
-	if(LineSegmentAndOZCylinderIntersection(vV[1],vV[3], dZ, dR))
+	if(LineSegmentAndOZCylinderIntersection(vV[0],vV[3], dZ, dR))
 		return true;
 
 	if(LineSegmentAndOZCylinderIntersection(vV[4],vV[5], dZ, dR))
