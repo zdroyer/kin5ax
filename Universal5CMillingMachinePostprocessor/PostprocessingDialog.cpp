@@ -192,7 +192,7 @@ void CPostprocessingDialog::OnBnClickedStart()
 			MessageBox(("Cannot open file: "+m_sReportFile+" for writing").c_str());
 			return;
 		}
-		fprintf(pFile,GenerateReportHead().c_str());
+		fputs(GenerateReportHead().c_str(),pFile);
 	}
 	
 	m_vsProblemsLogs.erase(m_vsProblemsLogs.begin(),m_vsProblemsLogs.end());

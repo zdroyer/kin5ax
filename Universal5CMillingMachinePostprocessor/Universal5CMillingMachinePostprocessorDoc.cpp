@@ -132,7 +132,7 @@ BOOL CUniversal5CMillingMachinePostprocessorDoc::OnSaveDocument(LPCTSTR lpszPath
 		return FALSE;
 	}
 	string sXML = m_oChain.toXML();
-	int nResult = fprintf(file,sXML.c_str());
+	int nResult = fputs(sXML.c_str(),file);
 	fclose(file);
 	m_oChain.SetFileName(string(lpszPathName));
 	if(nResult<0)
