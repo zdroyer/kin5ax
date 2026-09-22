@@ -75,6 +75,9 @@
     <ClCompile Include="Chain\ChainXmlReaderPugixml.cpp">
       <Filter>Chain</Filter>
     </ClCompile>
+    <ClCompile Include="Chain\ChainJson.cpp">
+      <Filter>Chain</Filter>
+    </ClCompile>
     <ClCompile Include="MillingTool\MillingTool.cpp">
       <Filter>MillingTool</Filter>
     </ClCompile>
@@ -149,6 +152,9 @@
       <Filter>Chain</Filter>
     </ClInclude>
     <ClInclude Include="Chain\ChainXmlReader.h">
+      <Filter>Chain</Filter>
+    </ClInclude>
+    <ClInclude Include="Chain\ChainJson.h">
       <Filter>Chain</Filter>
     </ClInclude>
     <ClInclude Include="Chain\ChainConfiguration.h">

@@ -1,0 +1,287 @@
+// The JSON form of a kinematic chain (kin5ax/kc.schema.json): CChainJsonReader and CChainJsonWriter.
+// The checks of the reader on deliberately broken documents, and the equivalence with the XML form
+// for every test chain.
+#include "stdafx.h"
+#include "gtest/gtest.h"
+#include "TestData.h"
+#include "ChainJson.h"
+#include "ChainXmlReader.h"
+#include "double_tools.h"
+
+using namespace kin5ax;
+
+//a valid document; two joints and the tool in one branch, one joint and the holder in the other
+static std::string Template()
+{
+	return R"KC({
+  "format": "kin5ax-chain",
+  "version": 1,
+  "name": "template",
+  "tool_branch": {
+    "links": [
+      { "type": "linear", "name": "Z",
+        "translation": [0, 0, 1],
+        "rotation": { "axis": [0, 0, 1], "angle_deg": 0 },
+        "limits": { "min": -0.5, "max": 0.5 },
+        "boxes": [ { "min": [-0.1, -0.1, 0], "max": [0.1, 0.1, 0.2] } ] },
+      { "type": "rotary", "name": "B",
+        "translation": [0, 0, 0],
+        "rotation": { "axis": [1, 0, 0], "angle_deg": 90 },
+        "limits": { "min": -90, "max": 90 } }
+    ],
+    "tool": {
+      "name": "tool",
+      "translation": [0, 0, 0],
+      "rotation": { "axis": [1, 0, 0], "angle_deg": 0 }
+    }
+  },
+  "workpiece_branch": {
+    "links": [
+      { "type": "rotary", "name": "C",
+        "translation": [0, 0, 0],
+        "rotation": { "axis": [0, 0, 1], "angle_deg": 0 } }
+    ],
+    "workpiece_holder": {
+      "name": "holder",
+      "translation": [0, 0, 0.1],
+      "rotation": { "axis": [1, 0, 0], "angle_deg": 0 }
+    }
+  }
+}
+)KC";
+}
+
+static std::string Replaced(const std::string &sText, const std::string &sOld, const std::string &sNew)
+{
+	size_t n = sText.find(sOld);
+	EXPECT_NE(std::string::npos,n)<<"the template does not contain: "<<sOld;
+	return n==std::string::npos ? sText : sText.substr(0,n)+sNew+sText.substr(n+sOld.size());
+}
+
+//the message of the reader for this document, empty when it loads
+static std::string JsonError(const std::string &sContent, CChain *pChain = NULL)
+{
+	try{
+		CChain oChain = CChainJsonReader::Parse(sContent);
+		if(pChain)
+			*pChain = oChain;
+	} catch (CGeneratorException &e){
+		return e.Message();
+	}
+	return std::string();
+}
+
+#define EXPECT_ERROR_CONTAINS(sError, sText) EXPECT_NE(std::string::npos,(sError).find(sText))<<"message: "<<(sError)
+
+TEST(ChainJsonReader, TemplateLoads)
+{
+	CChain oChain;
+	std::string sError = JsonError(Template(),&oChain);
+	ASSERT_EQ(std::string(),sError);
+	EXPECT_EQ("template",oChain.GetName());
+	ASSERT_EQ((size_t)3,oChain.m_vToolPart.size())<<"two joints and the tool";
+	ASSERT_EQ((size_t)2,oChain.m_vMaterialHolderPart.size())<<"one joint and the workpiece holder";
+
+	const CChainSegment &z = oChain.m_vToolPart[0];
+	EXPECT_EQ(CHAIN_SEGMENT_PRISMATIC_LINK,z.GetType())<<"linear is the prismatic joint of the model";
+	EXPECT_EQ("Z",z.GetName());
+	EXPECT_DOUBLE_EQ(1.0,z.m_r3vConstTranslation.GetZ());
+	EXPECT_TRUE(z.IsParameterConstrained());
+	EXPECT_DOUBLE_EQ(-0.5,z.m_dParameterValueMinimum)<<"a linear limit is a length";
+	EXPECT_DOUBLE_EQ(0.5,z.m_dParameterValueMaximum);
+	ASSERT_EQ((size_t)1,z.GetPartVector().size());
+	EXPECT_DOUBLE_EQ(-0.1,z.GetPartVector()[0].GetMinPoint().GetX());
+	EXPECT_DOUBLE_EQ(0.2,z.GetPartVector()[0].GetMaxPoint().GetZ());
+
+	const CChainSegment &b = oChain.m_vToolPart[1];
+	EXPECT_EQ(CHAIN_SEGMENT_REVOLUTE_LINK,b.GetType())<<"rotary is the revolute joint of the model";
+	EXPECT_NEAR(-dPiDiv2,b.m_dParameterValueMinimum,1E-12)<<"a rotary limit is degrees in the file";
+	EXPECT_NEAR(dPiDiv2,b.m_dParameterValueMaximum,1E-12);
+	EXPECT_DOUBLE_EQ(90.0,b.m_dConstRevoluteAngle)<<"angle_deg is stored as written";
+
+	EXPECT_EQ(CHAIN_SEGMENT_TOOL,oChain.m_vToolPart[2].GetType());
+	//CChainSegment::GetName ignores the stored name at the end of a branch and labels it itself
+	EXPECT_EQ("Tool holder",oChain.m_vToolPart[2].GetName());
+	EXPECT_FALSE(oChain.m_vToolPart[2].IsParameterConstrained())<<"the end of a branch is not a joint";
+	EXPECT_EQ(CHAIN_SEGMENT_MATERIAL_HOLDER,oChain.m_vMaterialHolderPart[1].GetType());
+	EXPECT_EQ("Material holder",oChain.m_vMaterialHolderPart[1].GetName());
+}
+
+TEST(ChainJsonReader, ABranchMayHaveNoJoint)
+{
+	std::string s = Replaced(Template()
+		,"\"links\": [\n      { \"type\": \"rotary\", \"name\": \"C\",\n        \"translation\": [0, 0, 0],\n"
+		 "        \"rotation\": { \"axis\": [0, 0, 1], \"angle_deg\": 0 } }\n    ]"
+		,"\"links\": []");
+	CChain oChain;
+	ASSERT_EQ(std::string(),JsonError(s,&oChain));
+	ASSERT_EQ((size_t)1,oChain.m_vMaterialHolderPart.size());
+	EXPECT_EQ(CHAIN_SEGMENT_MATERIAL_HOLDER,oChain.m_vMaterialHolderPart[0].GetType());
+}
+
+TEST(ChainJsonReader, MetadataIsRead)
+{
+	std::string s = Replaced(Template(),"\"name\": \"template\","
+		,"\"name\": \"template\",\n  \"machine\": \"SHW UniSpeed 3500\",\n  \"author\": \"P. Zdroik\",\n  \"modified\": \"2026-09-22\",");
+	CChain oChain;
+	ASSERT_EQ(std::string(),JsonError(s,&oChain));
+	EXPECT_EQ("SHW UniSpeed 3500",oChain.GetMachine());
+	EXPECT_EQ("P. Zdroik",oChain.GetAuthor());
+	EXPECT_EQ("2026-09-22",oChain.GetModified());
+}
+
+TEST(ChainJsonReader, ASchemaReferenceIsAccepted)
+{
+	EXPECT_EQ(std::string(),JsonError(Replaced(Template(),"{\n  \"format\"","{\n  \"$schema\": \"kc.schema.json\",\n  \"format\"")));
+}
+
+TEST(ChainJsonReader, SyntaxErrorIsReportedWithTheLine)
+{
+	std::string sError = JsonError(Replaced(Template(),"\"version\": 1,","\"version\": 1"));
+	EXPECT_ERROR_CONTAINS(sError,"JSON error");
+	EXPECT_ERROR_CONTAINS(sError,"line ");
+}
+
+TEST(ChainJsonReader, AForeignDocumentIsReported)
+{
+	std::string sError = JsonError("{ \"format\": \"something-else\", \"version\": 1, \"tool_branch\": {}, \"workpiece_branch\": {} }");
+	EXPECT_ERROR_CONTAINS(sError,"format");
+	EXPECT_ERROR_CONTAINS(sError,"kin5ax-chain");
+}
+
+TEST(ChainJsonReader, AnotherVersionIsReported)
+{
+	std::string sError = JsonError(Replaced(Template(),"\"version\": 1","\"version\": 2"));
+	EXPECT_ERROR_CONTAINS(sError,"version");
+}
+
+TEST(ChainJsonReader, MissingMemberIsReported)
+{
+	std::string sError = JsonError(Replaced(Template(),"\"name\": \"tool\",\n      ",""));
+	EXPECT_ERROR_CONTAINS(sError,"tool_branch.tool");
+	EXPECT_ERROR_CONTAINS(sError,"'name'");
+}
+
+TEST(ChainJsonReader, UnknownMemberIsReported)
+{
+	std::string sError = JsonError(Replaced(Template(),"\"type\": \"rotary\", \"name\": \"B\"","\"type\": \"rotary\", \"colour\": \"red\", \"name\": \"B\""));
+	EXPECT_ERROR_CONTAINS(sError,"tool_branch.links[1]");
+	EXPECT_ERROR_CONTAINS(sError,"'colour'");
+}
+
+TEST(ChainJsonReader, TheEndOfABranchTakesNoLimits)
+{
+	std::string sError = JsonError(Replaced(Template()
+		,"\"name\": \"tool\",","\"name\": \"tool\", \"limits\": { \"min\": 0, \"max\": 1 },"));
+	EXPECT_ERROR_CONTAINS(sError,"tool_branch.tool");
+	EXPECT_ERROR_CONTAINS(sError,"'limits'");
+}
+
+TEST(ChainJsonReader, UnknownLinkTypeIsReported)
+{
+	std::string sError = JsonError(Replaced(Template(),"\"type\": \"rotary\", \"name\": \"B\"","\"type\": \"revolute\", \"name\": \"B\""));
+	EXPECT_ERROR_CONTAINS(sError,"tool_branch.links[1].type");
+	EXPECT_ERROR_CONTAINS(sError,"revolute");
+}
+
+TEST(ChainJsonReader, OneSidedLimitIsReported)
+{
+	std::string sError = JsonError(Replaced(Template(),"\"limits\": { \"min\": -90, \"max\": 90 }","\"limits\": { \"min\": -90 }"));
+	EXPECT_ERROR_CONTAINS(sError,"limits");
+	EXPECT_ERROR_CONTAINS(sError,"'max'");
+}
+
+TEST(ChainJsonReader, MinimumAboveMaximumIsReported)
+{
+	std::string sError = JsonError(Replaced(Template(),"\"limits\": { \"min\": -90, \"max\": 90 }","\"limits\": { \"min\": 90, \"max\": -90 }"));
+	EXPECT_ERROR_CONTAINS(sError,"min is above max");
+}
+
+TEST(ChainJsonReader, AWrongTypeIsReported)
+{
+	std::string sError = JsonError(Replaced(Template(),"\"angle_deg\": 90","\"angle_deg\": \"90\""));
+	EXPECT_ERROR_CONTAINS(sError,"angle_deg");
+	EXPECT_ERROR_CONTAINS(sError,"number");
+}
+
+TEST(ChainJsonReader, AShortVectorIsReported)
+{
+	std::string sError = JsonError(Replaced(Template(),"\"translation\": [0, 0, 1]","\"translation\": [0, 1]"));
+	EXPECT_ERROR_CONTAINS(sError,"tool_branch.links[0].translation");
+	EXPECT_ERROR_CONTAINS(sError,"three numbers");
+}
+
+TEST(ChainJsonReader, ZeroRotationAxisWithAnAngleIsReported)
+{
+	std::string sError = JsonError(Replaced(Template(),"{ \"axis\": [1, 0, 0], \"angle_deg\": 90 }","{ \"axis\": [0, 0, 0], \"angle_deg\": 90 }"));
+	EXPECT_ERROR_CONTAINS(sError,"zero vector");
+}
+
+TEST(ChainJsonReader, ZeroRotationAxisWithoutAnAngleIsAccepted)
+{
+	EXPECT_EQ(std::string(),JsonError(Replaced(Template(),"{ \"axis\": [0, 0, 1], \"angle_deg\": 0 }","{ \"axis\": [0, 0, 0], \"angle_deg\": 0 }")));
+}
+
+TEST(ChainJsonWriter, VectorsStayOnOneLine)
+{
+	CChain oChain;
+	ASSERT_EQ(std::string(),JsonError(Template(),&oChain));
+	std::string sJson = CChainJsonWriter::ToJson(oChain);
+	EXPECT_ERROR_CONTAINS(sJson,"\"translation\": [0.0, 0.0, 1.0]");
+	EXPECT_EQ('\n',sJson[sJson.size()-1]);
+}
+
+TEST(ChainJsonWriter, WritesAndReadsAFile)
+{
+	CChain oChain;
+	ASSERT_EQ(std::string(),JsonError(Template(),&oChain));
+	std::string sFilePath = TempFilePath("kin5axTests_chain.kc.json");
+	CChain oReloaded;
+	try{
+		CChainJsonWriter::WriteFile(oChain,sFilePath);
+		oReloaded = CChainJsonReader::ReadFile(sFilePath);
+	} catch (CGeneratorException &e){
+		ADD_FAILURE()<<e.Message()<<" ("<<e.GetThrowingPlace()<<")";
+	}
+	remove(sFilePath.c_str());
+	EXPECT_EQ(oChain.toXML(),oReloaded.toXML());
+	EXPECT_EQ(sFilePath,oReloaded.GetFileName());
+}
+
+//---- every test chain: the JSON form carries the same machine as the XML one
+class ChainJsonFile : public ::testing::TestWithParam<std::string> {};
+
+struct ChainJsonFileName
+{
+	std::string operator()(const ::testing::TestParamInfo<std::string> &oInfo) const
+	{ return GetTestName(oInfo.param); }
+};
+
+TEST_P(ChainJsonFile, XmlToJsonToXmlKeepsTheChain)
+{
+	CChain oFromXml, oFromJson;
+	try{
+		oFromXml = CChainXmlReader::ReadFile(GetParam());
+		oFromJson = CChainJsonReader::Parse(CChainJsonWriter::ToJson(oFromXml),"json");
+	} catch (CGeneratorException &e){
+		FAIL()<<"exception: "<<e.Message()<<" ("<<e.GetThrowingPlace()<<")";
+	}
+	EXPECT_EQ(oFromXml.toXML(),oFromJson.toXML());
+	EXPECT_EQ(oFromXml.GetName(),oFromJson.GetName());
+}
+
+TEST_P(ChainJsonFile, WritingIsStable)
+{
+	std::string sFirst, sSecond;
+	try{
+		CChain oChain = CChainXmlReader::ReadFile(GetParam());
+		sFirst = CChainJsonWriter::ToJson(oChain);
+		sSecond = CChainJsonWriter::ToJson(CChainJsonReader::Parse(sFirst,"json"));
+	} catch (CGeneratorException &e){
+		FAIL()<<"exception: "<<e.Message()<<" ("<<e.GetThrowingPlace()<<")";
+	}
+	EXPECT_FALSE(sFirst.empty());
+	EXPECT_EQ(sFirst,sSecond)<<"a document read and written again must not change";
+}
+
+INSTANTIATE_TEST_CASE_P(Files, ChainJsonFile, ::testing::ValuesIn(GetChainFiles()), ChainJsonFileName());
