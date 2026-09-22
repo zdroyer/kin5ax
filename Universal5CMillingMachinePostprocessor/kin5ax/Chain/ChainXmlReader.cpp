@@ -163,6 +163,12 @@ static CChain ReadChain(MSXML2::IXMLDOMElementPtr pDocElement, const std::string
 	MSXML2::IXMLDOMNamedNodeMapPtr pRootAttributes = pDocElement->Getattributes();
 	if(pRootAttributes->getNamedItem(_bstr_t("name"))!=NULL)
 		oChain.SetName(getStringValue(pRootAttributes,"name"));
+	if(pRootAttributes->getNamedItem(_bstr_t("machine"))!=NULL)
+		oChain.SetMachine(getStringValue(pRootAttributes,"machine"));
+	if(pRootAttributes->getNamedItem(_bstr_t("author"))!=NULL)
+		oChain.SetAuthor(getStringValue(pRootAttributes,"author"));
+	if(pRootAttributes->getNamedItem(_bstr_t("modified"))!=NULL)
+		oChain.SetModified(getStringValue(pRootAttributes,"modified"));
 	oChain.m_vToolPart = ReadPart(pDocElement,"tool_part");
 	oChain.m_vMaterialHolderPart = ReadPart(pDocElement,"material_holder_part");
 	oChain.SetFileName(sFileName);

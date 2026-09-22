@@ -2,7 +2,10 @@
 
 <!ELEMENT kinematic_chain (tool_part, material_holder_part)>
 <!ATTLIST kinematic_chain
-	name CDATA #REQUIRED
+	name CDATA #IMPLIED
+	machine CDATA #IMPLIED
+	author CDATA #IMPLIED
+	modified CDATA #IMPLIED
 >
 <!ELEMENT tool_part (segment+)>
 <!ELEMENT material_holder_part (segment+)>

@@ -83,6 +83,9 @@ std::string CChain::toXML() const
 	result += "<!ELEMENT kinematic_chain (tool_part, material_holder_part)>\n";
 	result += "<!ATTLIST kinematic_chain\n";
 	result += "	name CDATA #IMPLIED\n";
+	result += "	machine CDATA #IMPLIED\n";
+	result += "	author CDATA #IMPLIED\n";
+	result += "	modified CDATA #IMPLIED\n";
 	result += ">\n";
 	result += "<!ELEMENT tool_part (segment+)>\n";
 	result += "<!ELEMENT material_holder_part (segment+)>\n";
@@ -121,6 +124,12 @@ std::string CChain::toXML() const
 	result += "<"+std::string(CHAIN_XML_ROOT_NODE_TYPE_NAME);
 	if(!m_sName.empty())
 		result += " name=\""+xml_escape(m_sName)+"\"";
+	if(!m_sMachine.empty())
+		result += " machine=\""+xml_escape(m_sMachine)+"\"";
+	if(!m_sAuthor.empty())
+		result += " author=\""+xml_escape(m_sAuthor)+"\"";
+	if(!m_sModified.empty())
+		result += " modified=\""+xml_escape(m_sModified)+"\"";
 	result += ">\n";
 	result += "<tool_part>\n";
 	for(size_t i=0; i<m_vToolPart.size(); i++){
@@ -551,6 +560,36 @@ void CChain::SetName(const std::string &sName)
 std::string CChain::GetName() const
 {
 	return m_sName;
+}
+
+void CChain::SetMachine(const std::string &sMachine)
+{
+	m_sMachine = sMachine;
+}
+
+std::string CChain::GetMachine() const
+{
+	return m_sMachine;
+}
+
+void CChain::SetAuthor(const std::string &sAuthor)
+{
+	m_sAuthor = sAuthor;
+}
+
+std::string CChain::GetAuthor() const
+{
+	return m_sAuthor;
+}
+
+void CChain::SetModified(const std::string &sModified)
+{
+	m_sModified = sModified;
+}
+
+std::string CChain::GetModified() const
+{
+	return m_sModified;
 }
 
 void CChain::SetFileName(const std::string &sName)

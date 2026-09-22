@@ -66,8 +66,11 @@ public:
 	//part of chain ended with material holder
 	std::vector<CChainSegment> m_vMaterialHolderPart;
 
-	//name of the machine modelled by the chain (the 'name' attribute of the XML root), free text
-	std::string m_sName;
+	//descriptive data of the chain, all free text and all optional; kept in the file, not used by the solver
+	std::string m_sName;		//name of the model, e.g. "BC tilt-rotary table"
+	std::string m_sMachine;		//brand and model of the real machine, e.g. "SHW UniSpeed 3500"
+	std::string m_sAuthor;
+	std::string m_sModified;	//last modification, ISO 8601 (e.g. "2026-09-22" or "2026-09-22T14:30:00Z")
 	std::string m_sFileName;
 
 	int m_nActiveSegmentIndex;
@@ -89,6 +92,12 @@ public:
 	void SetActiveSegment(bool bIsToolPartActive, int mActiveSegmentIndex);
 	void SetName(const std::string &sName);
 	std::string GetName() const;
+	void SetMachine(const std::string &sMachine);
+	std::string GetMachine() const;
+	void SetAuthor(const std::string &sAuthor);
+	std::string GetAuthor() const;
+	void SetModified(const std::string &sModified);
+	std::string GetModified() const;
 	void SetFileName(const std::string &sName);
 	std::string GetFileName() const ;
 	//resizes the parameters vector if needed, detects collisions and places the tool (to be called before rendering)
