@@ -67,10 +67,13 @@ bool CChainSegment::HasPartInCollision(string &sLog) const
 		return false;
 	}
 	string s = "";
+	bool bDetected = false;
 	for(size_t i=0; i<m_vCollisions.size();i++){
 		if(m_vCollisions[i]){
-			if(i)
+			if(bDetected)
 				s+=", ";
+			else
+				bDetected = true;
 			s+=("box_"+size_to_string(i+1));
 		}
 	}
@@ -241,7 +244,7 @@ string CChainSegment::toXML(void) const
 {
 	string sResult;
 	sResult += "<segment type=\""+GetTypeName();
-	sResult += "\" name=\""+GetName()+"\" " ;
+	sResult += "\" name=\""+xml_escape(GetName())+"\" " ;
 	if(m_bParameterIsConstrained){
 		if(m_type==CHAIN_SEGMENT_PRISMATIC_LINK){
 			sResult += "parameter_value_minimum=\""+double_to_string(m_dParameterValueMinimum)+"\" ";
@@ -299,7 +302,7 @@ void CChainSegment::HighlightPart(int n)
 
 void CChainSegment::SetPartCollision(size_t n)
 {
-	if(n>m_vCollisions.size())
+	if(n>=m_vCollisions.size())
 		return;
 	m_vCollisions[n]=true;
 }
