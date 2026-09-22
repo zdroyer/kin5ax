@@ -29,8 +29,6 @@ protected:
 	//One half of the box-box test: does an edge of the other box pass through this box?
 	//box - the other box in its own frame; tr - from the frame of box to the frame of this box.
 	bool AsymmetricIntersection(const CR3Box &box, const CTransformation &tr) const;
-	//Does the segment p1-p2 (given in the cylinder frame) meet the cylinder x^2+y^2<=dR^2, 0<=z<=dZ?
-	bool LineSegmentAndOZCylinderIntersection(const CR3Point &p1, const CR3Point &p2, const double &dZ, const double &dR) const;
 
 public:
 

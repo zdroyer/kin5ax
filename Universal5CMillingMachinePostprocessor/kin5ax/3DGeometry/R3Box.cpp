@@ -238,161 +238,121 @@ bool CR3Box::HasIntersectionWithBox(const CR3Box &box, const CTransformation &tr
 	return AsymmetricIntersection(box,tr) || box.AsymmetricIntersection((*this),tr_inv);
 
 }
-bool CR3Box::AsymmetricIntersection(const CR3Box &box, const CTransformation &tr) const
+//twice the signed area of the triangle a,b,c in the XY plane: positive when a->b->c turns left
+static double cross_xy(const pair<double,double> &a, const pair<double,double> &b, const pair<double,double> &c)
 {
+	return (b.first-a.first)*(c.second-a.second)-(b.second-a.second)*(c.first-a.first);
+}
+
+static double distance_from_origin_to_segment_xy(const pair<double,double> &a, const pair<double,double> &b)
+{
+	double dDX = b.first-a.first, dDY = b.second-a.second;
+	double dL2 = dDX*dDX+dDY*dDY;
+	double dT = is_zero(dL2) ? 0.0 : -(a.first*dDX+a.second*dDY)/dL2;
+	if(dT<0.0) dT=0.0;
+	if(dT>1.0) dT=1.0;
+	double dX = a.first+dT*dDX, dY = a.second+dT*dDY;
+	return sqrt(dX*dX+dY*dY);
+}
+
+//the 8 vertices of a box, transformed by tr; the order matches vBOX_EDGES
+static vector<CR3Point> box_vertices(const CR3Box &box, const CTransformation &tr)
+{
+	const CR3Point r3pMin = box.GetMinPoint(), r3pMax = box.GetMaxPoint();
 	vector<CR3Point> vV;
 	vV.reserve(8);
-	vV.push_back(CR3Point(box.m_dMaxX,box.m_dMaxY,box.m_dMaxZ));
-	vV.push_back(CR3Point(box.m_dMinX,box.m_dMaxY,box.m_dMaxZ));
-	vV.push_back(CR3Point(box.m_dMinX,box.m_dMinY,box.m_dMaxZ));
-	vV.push_back(CR3Point(box.m_dMaxX,box.m_dMinY,box.m_dMaxZ));
+	vV.push_back(tr*CR3Point(r3pMax.GetX(),r3pMax.GetY(),r3pMax.GetZ()));
+	vV.push_back(tr*CR3Point(r3pMin.GetX(),r3pMax.GetY(),r3pMax.GetZ()));
+	vV.push_back(tr*CR3Point(r3pMin.GetX(),r3pMin.GetY(),r3pMax.GetZ()));
+	vV.push_back(tr*CR3Point(r3pMax.GetX(),r3pMin.GetY(),r3pMax.GetZ()));
+	vV.push_back(tr*CR3Point(r3pMax.GetX(),r3pMax.GetY(),r3pMin.GetZ()));
+	vV.push_back(tr*CR3Point(r3pMin.GetX(),r3pMax.GetY(),r3pMin.GetZ()));
+	vV.push_back(tr*CR3Point(r3pMin.GetX(),r3pMin.GetY(),r3pMin.GetZ()));
+	vV.push_back(tr*CR3Point(r3pMax.GetX(),r3pMin.GetY(),r3pMin.GetZ()));
+	return vV;
+}
 
-	vV.push_back(CR3Point(box.m_dMaxX,box.m_dMaxY,box.m_dMinZ));
-	vV.push_back(CR3Point(box.m_dMinX,box.m_dMaxY,box.m_dMinZ));
-	vV.push_back(CR3Point(box.m_dMinX,box.m_dMinY,box.m_dMinZ));
-	vV.push_back(CR3Point(box.m_dMaxX,box.m_dMinY,box.m_dMinZ));
-	
-	for(size_t i=0; i<vV.size();i++)
-		vV[i] = tr*vV[i];
+//the 12 edges of a box as pairs of indexes into box_vertices: the top face, the bottom face, the vertical edges
+static const int vBOX_EDGES[12][2] = {{0,1},{1,2},{2,3},{3,0}, {4,5},{5,6},{6,7},{7,4}, {0,4},{1,5},{2,6},{3,7}};
 
-	if(HasIntersectionWithLineSegment(vV[0],vV[1]))
-		return true;
-	if(HasIntersectionWithLineSegment(vV[2],vV[1]))
-		return true;
-	if(HasIntersectionWithLineSegment(vV[2],vV[3]))
-		return true;
-	if(HasIntersectionWithLineSegment(vV[0],vV[3]))
-		return true;
-
-	if(HasIntersectionWithLineSegment(vV[4],vV[5]))
-		return true;
-	if(HasIntersectionWithLineSegment(vV[6],vV[5]))
-		return true;
-	if(HasIntersectionWithLineSegment(vV[6],vV[7]))
-		return true;
-	if(HasIntersectionWithLineSegment(vV[4],vV[7]))
-		return true;
-
-	if(HasIntersectionWithLineSegment(vV[4],vV[0]))
-		return true;
-	if(HasIntersectionWithLineSegment(vV[1],vV[5]))
-		return true;
-	if(HasIntersectionWithLineSegment(vV[6],vV[2]))
-		return true;
-	if(HasIntersectionWithLineSegment(vV[3],vV[7]))
-		return true;
-
+bool CR3Box::AsymmetricIntersection(const CR3Box &box, const CTransformation &tr) const
+{
+	vector<CR3Point> vV = box_vertices(box,tr);
+	for(int i=0;i<12;i++)
+		if(HasIntersectionWithLineSegment(vV[vBOX_EDGES[i][0]],vV[vBOX_EDGES[i][1]]))
+			return true;
 	return false;
 }
 
+//the distance from the origin to the convex hull of the points projected on the XY plane; 0 when the origin is inside
+static double distance_from_origin_to_convex_hull_xy(const vector<CR3Point> &vPoints)
+{
+	vector<pair<double,double> > v;
+	for(size_t i=0;i<vPoints.size();i++)
+		v.push_back(make_pair(vPoints[i].GetX(),vPoints[i].GetY()));
+	sort(v.begin(),v.end());
+	v.erase(unique(v.begin(),v.end()),v.end());
+	//the convex hull, counterclockwise (Andrew's monotone chain)
+	size_t n = v.size();
+	vector<pair<double,double> > vHull(2*n);
+	size_t k=0;
+	for(size_t i=0;i<n;i++){
+		while(k>=2 && cross_xy(vHull[k-2],vHull[k-1],v[i])<=0.0) k--;
+		vHull[k++] = v[i];
+	}
+	for(size_t i=n-1, t=k+1; i>0; i--){
+		while(k>=t && cross_xy(vHull[k-2],vHull[k-1],v[i-1])<=0.0) k--;
+		vHull[k++] = v[i-1];
+	}
+	if(n>1)
+		k--;	//the first point is repeated at the end
+	vHull.resize(k);
+	if(k==1)
+		return sqrt(vHull[0].first*vHull[0].first+vHull[0].second*vHull[0].second);
+	//inside: the origin lies on the left of every edge; otherwise the nearest edge decides
+	bool bInside = k>=3;
+	double dMin = -1.0;
+	for(size_t i=0;i<k;i++){
+		const pair<double,double> &a = vHull[i], &b = vHull[(i+1)%k];
+		if(cross_xy(a,b,make_pair(0.0,0.0))<0.0)
+			bInside = false;
+		double d = distance_from_origin_to_segment_xy(a,b);
+		if(dMin<0.0 || d<dMin)
+			dMin = d;
+	}
+	return bInside ? 0.0 : dMin;
+}
 
 bool CR3Box::HasIntersectionWithOZCylinder(const double &dZ,const double &dR, const CTransformation &trToBox,const CTransformation &trToCylinder) const
 {
-	/*
-	glColor3d(1.0,1.0,0.0);
-	GLUquadricObj *pQ = gluNewQuadric();
-	gluCylinder(pQ,dR,dR,dZ,20,20);
-	glPushMatrix();
-	glMultMatrixd(CTransformation(trToCylinder).toGLMatrix());
-	CR3BoxRendererGL::RenderWire(*this);
-	glPopMatrix();
-	//*/
-
+	if(IsEmpty())
+		return false;
+	//the quick answers: the box misses the box around the cylinder / hits the box inside it
 	if(!this->HasIntersectionWithBox(CR3Box::OuterBoxFromOZCylinder(dR,0.0,dZ),trToBox, trToCylinder))
 		return false;
 	if(this->HasIntersectionWithBox(CR3Box::InnerBoxFromOZCylinder(dR,0.0,dZ),trToBox, trToCylinder))
 		return true;
-	vector<CR3Point> vV;
-	vV.reserve(8);
-	vV.push_back(CR3Point(m_dMaxX,m_dMaxY,m_dMaxZ));
-	vV.push_back(CR3Point(m_dMinX,m_dMaxY,m_dMaxZ));
-	vV.push_back(CR3Point(m_dMinX,m_dMinY,m_dMaxZ));
-	vV.push_back(CR3Point(m_dMaxX,m_dMinY,m_dMaxZ));
-
-	vV.push_back(CR3Point(m_dMaxX,m_dMaxY,m_dMinZ));
-	vV.push_back(CR3Point(m_dMinX,m_dMaxY,m_dMinZ));
-	vV.push_back(CR3Point(m_dMinX,m_dMinY,m_dMinZ));
-	vV.push_back(CR3Point(m_dMaxX,m_dMinY,m_dMinZ));
-	
-	for(size_t i=0; i<vV.size();i++)
-		vV[i] = trToCylinder*vV[i];
-
-	if(LineSegmentAndOZCylinderIntersection(vV[0],vV[1], dZ, dR))
-		return true;
-	if(LineSegmentAndOZCylinderIntersection(vV[2],vV[1], dZ, dR))
-		return true;
-	if(LineSegmentAndOZCylinderIntersection(vV[2],vV[3], dZ, dR))
-		return true;
-	if(LineSegmentAndOZCylinderIntersection(vV[0],vV[3], dZ, dR))
-		return true;
-
-	if(LineSegmentAndOZCylinderIntersection(vV[4],vV[5], dZ, dR))
-		return true;
-	if(LineSegmentAndOZCylinderIntersection(vV[6],vV[5], dZ, dR))
-		return true;
-	if(LineSegmentAndOZCylinderIntersection(vV[6],vV[7], dZ, dR))
-		return true;
-	if(LineSegmentAndOZCylinderIntersection(vV[4],vV[7], dZ, dR))
-		return true;
-
-	if(LineSegmentAndOZCylinderIntersection(vV[4],vV[0], dZ, dR))
-		return true;
-	if(LineSegmentAndOZCylinderIntersection(vV[1],vV[5], dZ, dR))
-		return true;
-	if(LineSegmentAndOZCylinderIntersection(vV[6],vV[2], dZ, dR))
-		return true;
-	if(LineSegmentAndOZCylinderIntersection(vV[3],vV[7], dZ, dR))
-		return true;
-	return false;
-}
-
-bool CR3Box::LineSegmentAndOZCylinderIntersection(const CR3Point &p1, const CR3Point &p2, const double &dZ, const double &dR) const
-{
-	double dR2 = dR*dR;
-	if(is_between_or_equal(p1.GetZ(),0.0,dZ))
-		if(p1.XYDistanceSquareTo(0.0,0.0)<dR2+dEPSILON)
-			return true;
-	if(is_between_or_equal(p2.GetZ(),0.0,dZ))
-		if(p2.XYDistanceSquareTo(0.0,0.0)<dR2+dEPSILON)
-			return true;
-
-	CR3Vector v = p2-p1;
-
-	double dA = v.GetXYLengthSquare();
-	if(is_zero(dA)){
-		if(p1.XYDistanceSquareTo(0.0,0.0)>dR2+dEPSILON)
-			return false;
-		if( is_between_or_equal(p1.GetZ(),0.0,dZ)
-			|| is_between_or_equal(p2.GetZ(),0.0,dZ))
-			return true;
-		return false;
+	//exact: the part of the box between the planes z=0 and z=dZ (a convex solid: the vertices inside the slab and
+	//the points where the edges cross the planes) meets the cylinder iff its projection on the XY plane, a convex
+	//polygon, comes closer than dR to the axis
+	vector<CR3Point> vV = box_vertices(*this,trToCylinder);
+	vector<CR3Point> vSlab;
+	for(size_t i=0;i<vV.size();i++)
+		if(is_between_or_equal(vV[i].GetZ(),0.0,dZ))
+			vSlab.push_back(vV[i]);
+	for(int i=0;i<12;i++){
+		const CR3Point &a = vV[vBOX_EDGES[i][0]], &b = vV[vBOX_EDGES[i][1]];
+		double dDZ = b.GetZ()-a.GetZ();
+		if(is_zero(dDZ))
+			continue;
+		for(int j=0;j<2;j++){
+			double dPlane = (j==0) ? 0.0 : dZ;
+			double dT = (dPlane-a.GetZ())/dDZ;
+			if(dT>0.0 && dT<1.0)
+				vSlab.push_back(a + (b-a)*dT);
+		}
 	}
-	double dB = 2.0*(v.GetX()*p1.GetX()+v.GetY()+p1.GetY());
-	double dC = p1.XYDistanceSquareTo(0.0,0.0)-dR2;
-	double dDelta = dB*dB - 4.0*dA*dC;
-	if(dDelta<-dEPSILON)
+	if(vSlab.empty())
 		return false;
-	if(dDelta<0)
-		dDelta=0;
-	dDelta = sqrt(dDelta);
-	double dT1= (-dB-dDelta)/2.0*dA;
-	
-	double dZ1 = p1.GetZ()+dT1*v.GetZ();
-	if(is_in_0_1(dT1)){
-		if(is_between_or_equal(dZ1,0.0,dZ))
-			return true;
-	}
-	double dT2= (-dB+dDelta)/2.0*dA;
-	double dZ2 = p1.GetZ()+dT2*v.GetZ();
-	if(is_in_0_1(dT2)){
-		if(is_between_or_equal(dZ2,0.0,dZ))
-			return true;
-	}
-	if(dT1>1.0+dEPSILON && dT2>1.0+dEPSILON )
-		return false;
-	if(dT1<-dEPSILON && dT2<-dEPSILON )
-		return false;
-	if(dZ1*dZ2<dEPSILON)
-		return true;
-	return false;
+	return distance_from_origin_to_convex_hull_xy(vSlab)<=dR+dEPSILON;
 }

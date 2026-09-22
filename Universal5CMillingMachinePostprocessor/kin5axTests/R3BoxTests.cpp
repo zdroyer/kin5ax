@@ -170,9 +170,7 @@ TEST(BoxAgainstCylinder, CornerRegionOfTheCircumscribedSquareIsFree)
 }
 
 //a big face against the side of the cylinder: no edge and no vertex of the box is near
-//DISABLED: KnownBugs #37 - a shallow contact with a flat face is missed (no box edge is inside the cylinder,
-//the cylinder axis is not inside the box)
-TEST(BoxAgainstCylinder, DISABLED_FlatFaceAgainstTheSide)
+TEST(BoxAgainstCylinder, FlatFaceAgainstTheSide)
 {
 	EXPECT_TRUE(HitsCylinder(CR3Box(0.8,9.0,-9.0,9.0,-9.0,9.0)))<<"0.2 deep";
 	EXPECT_TRUE(HitsCylinder(CR3Box(0.999,9.0,-9.0,9.0,-9.0,9.0)));
@@ -208,8 +206,7 @@ TEST(BoxAgainstCylinder, TiltedBoxAtTheTopRim)
 }
 
 //random boxes and poses against a dense sampling of the box
-//DISABLED: KnownBugs #7 (LineSegmentAndOZCylinderIntersection: false hits, 12 cases) and #37 (case 234)
-TEST(BoxAgainstCylinder, DISABLED_AgreesWithPointSampling)
+TEST(BoxAgainstCylinder, AgreesWithPointSampling)
 {
 	srand(308);
 	const int nGRID = 24;
