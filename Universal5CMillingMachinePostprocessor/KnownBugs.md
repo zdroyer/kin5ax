@@ -39,12 +39,12 @@ Nothing here was observed at run time unless a test is named.
 | 12 | `Universal5CMillingMachinePostprocessorDoc.cpp` `GetPostprocessor` | Deletes `m_pPostprocessor` and may then throw without nulling it: double delete on the next call. | verified | **fixed** 57df9cc |
 | 13 | `PostprocessingDialog.cpp` `fprintf(pFile,GenerateReportHead().c_str())` | Data (file paths) used as the format string. | verified | **fixed** d58f899 |
 | 14 | `Universal5CMillingMachinePostprocessorDoc.cpp` `OnSaveDocument` `fprintf(file,sXML.c_str())` | Data (the XML) used as the format string. | verified | **fixed** d58f899 |
-| 15 | `KinematicChainPropertiesDialog.cpp` `m_pActiveSegment` | Pointer into a vector; stale after add/delete segment or a replaced chain. | reported | open |
-| 16 | `PostprocessingDialog.cpp`, `OnOpenDocument` | No try/catch around calls that throw `CGeneratorException`/`_com_error`: the application terminates. | reported | open |
+| 15 | `KinematicChainPropertiesDialog.cpp` `m_pActiveSegment` | Pointer into a vector; stale after add/delete segment or a replaced chain: the tree rebuild in `SetActiveDocument` fires the selection handler, which dereferenced it and indexed the vector with the old item data. | verified | **fixed** bd982f1 |
+| 16 | `PostprocessingDialog.cpp`, `OnOpenDocument` | No try/catch around calls that throw `CGeneratorException`/`_com_error`: the application terminates. `OnOpenDocument` got its catch with the reader move (2605ba7); `OnBnClickedStart` now catches around `Process`/`FindShortestPath` and refuses to start without a milling tool. | verified | **fixed** 869424a |
 | 17 | `CLDataPostprocessor.cpp` `InterpolateLocation` + dialog | A zero interpolation limit (also while typing "0.01") gives an endless loop; no locations gives 0/0. | reported | **fixed** 1447c0b |
 | 18 | `R3Point.cpp` `toString` | 35-byte static buffer, overflows with coordinates of 4+ digits (mm files). | reported | **fixed** ce75f65 |
 | 19 | `MainFrm.cpp` simulation thread | Pause+Stop leaves a suspended thread; tool/material replaced under the worker; pointer nulled after a blind Sleep; exit during simulation. | reported | open |
-| 20 | `MainFrm.cpp:380` | Refresh period 0 ends the simulation after one step. | reported | open |
+| 20 | `MainFrm.cpp:380` | Refresh period 0 ends the simulation after one step. | verified | **fixed** b6ee4e1 |
 
 ## Solver
 
