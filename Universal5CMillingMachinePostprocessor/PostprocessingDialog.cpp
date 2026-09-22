@@ -170,6 +170,10 @@ void CPostprocessingDialog::OnBnClickedStart()
 		MessageBox("Actual model is not valid 5C kinematic chain");
 		return;
 	}
+	if(!m_pDoc->m_pMillingTool){
+		MessageBox("No milling tool defined - set up the milling tool first");
+		return;
+	}
 		
 	m_buttonSaveGCode.EnableWindow(FALSE);
 
@@ -200,42 +204,53 @@ void CPostprocessingDialog::OnBnClickedStart()
 	m_vSolutions.erase(m_vSolutions.begin(),m_vSolutions.end());
 	SetWindowText("1/4 postprocessing in progress...");
 	m_timeBegin = m_timeBegin.GetCurrentTime();
-	//the postprocessing itself is done by the kin5ax library
-	CProgressCtrlCallback oPostprocessingProgress(m_progressPostprocessing);
-	CCLDataPostprocessor oCLDataPostprocessor(oPostprocessorSettings);
-	CCLDataPostprocessingResult oResult = oCLDataPostprocessor.Process
-		(m_pDoc->m_oChain
-		,*m_pDoc->m_pMillingTool
-		,m_pDoc->m_oCutterLocationData
-		,m_pDoc->m_oSimulationData
-		,pFile
-		,m_nDetailedReportContents
-		,&oPostprocessingProgress);
-	m_nTotalProblemsCount = oResult.m_nTotalProblemsCount;
-	m_dMaxPositionError = oResult.m_dMaxPositionError;
-	m_oMaxPositionErrorSolution = oResult.m_oMaxPositionErrorSolution;
-	m_cvMaxPositionErrorInput = oResult.m_cvMaxPositionErrorInput;
-	m_dMaxOrientationErrorVectorLength = oResult.m_dMaxOrientationErrorVectorLength;
-	m_oMaxOrientationErrorSolution = oResult.m_oMaxOrientationErrorSolution;
-	m_cvMaxOrientationErrorInput = oResult.m_cvMaxOrientationErrorInput;
-	m_timeEnd = CTime::GetCurrentTime();
+	try{
+		//the postprocessing itself is done by the kin5ax library
+		CProgressCtrlCallback oPostprocessingProgress(m_progressPostprocessing);
+		CCLDataPostprocessor oCLDataPostprocessor(oPostprocessorSettings);
+		CCLDataPostprocessingResult oResult = oCLDataPostprocessor.Process
+			(m_pDoc->m_oChain
+			,*m_pDoc->m_pMillingTool
+			,m_pDoc->m_oCutterLocationData
+			,m_pDoc->m_oSimulationData
+			,pFile
+			,m_nDetailedReportContents
+			,&oPostprocessingProgress);
+		m_nTotalProblemsCount = oResult.m_nTotalProblemsCount;
+		m_dMaxPositionError = oResult.m_dMaxPositionError;
+		m_oMaxPositionErrorSolution = oResult.m_oMaxPositionErrorSolution;
+		m_cvMaxPositionErrorInput = oResult.m_cvMaxPositionErrorInput;
+		m_dMaxOrientationErrorVectorLength = oResult.m_dMaxOrientationErrorVectorLength;
+		m_oMaxOrientationErrorSolution = oResult.m_oMaxOrientationErrorSolution;
+		m_cvMaxOrientationErrorInput = oResult.m_cvMaxOrientationErrorInput;
+		m_timeEnd = CTime::GetCurrentTime();
 
-	if(pFile){
-		fprintf(pFile,"\nErrors summary\n");
-		fprintf(pFile,"Maximum position error\n\tinput: XYZ:%s, IJK:%s\n\tparameters: %s\n"
-			,m_cvMaxPositionErrorInput.m_p.toString().c_str() 
-			,m_cvMaxPositionErrorInput.m_v.toString().c_str()
-			,m_oMaxPositionErrorSolution.toString(true,"\n\t").c_str());
-		fprintf(pFile,"Maximum orientation error\n\tinput: XYZ:%s, IJK:%s\n\tparameters: %s\n"
-			,m_cvMaxOrientationErrorInput.m_p.toString().c_str() 
-			,m_cvMaxOrientationErrorInput.m_v.toString().c_str()
-			,m_oMaxOrientationErrorSolution.toString(true,"\n\t").c_str());
-		fclose(pFile);
+		if(pFile){
+			fprintf(pFile,"\nErrors summary\n");
+			fprintf(pFile,"Maximum position error\n\tinput: XYZ:%s, IJK:%s\n\tparameters: %s\n"
+				,m_cvMaxPositionErrorInput.m_p.toString().c_str() 
+				,m_cvMaxPositionErrorInput.m_v.toString().c_str()
+				,m_oMaxPositionErrorSolution.toString(true,"\n\t").c_str());
+			fprintf(pFile,"Maximum orientation error\n\tinput: XYZ:%s, IJK:%s\n\tparameters: %s\n"
+				,m_cvMaxOrientationErrorInput.m_p.toString().c_str() 
+				,m_cvMaxOrientationErrorInput.m_v.toString().c_str()
+				,m_oMaxOrientationErrorSolution.toString(true,"\n\t").c_str());
+			fclose(pFile);
+			pFile = 0;
+		}
+		m_progressPostprocessing.SetPos(100);
+		SetWindowText("2/4 finding shortest path in progress...");
+		CProgressCtrlCallback oProgress(m_progressPostprocessing);
+		m_pDoc->m_oSimulationData.FindShortestPath(oPostprocessorSettings,&oProgress);
+	} catch (CGeneratorException &e){
+		if(pFile)
+			fclose(pFile);
+		m_progressPostprocessing.SetPos(0);
+		m_buttonStart.EnableWindow(TRUE);
+		SetWindowText("Postprocessing CL-data");
+		MessageBox(e.Message().c_str());
+		return;
 	}
-	m_progressPostprocessing.SetPos(100);
-	SetWindowText("2/4 finding shortest path in progress...");
-	CProgressCtrlCallback oProgress(m_progressPostprocessing);
-	m_pDoc->m_oSimulationData.FindShortestPath(oPostprocessorSettings,&oProgress);
 	m_progressPostprocessing.SetPos(100);
 	m_buttonStart.EnableWindow(TRUE);
 	m_buttonSaveGCode.EnableWindow(TRUE);
