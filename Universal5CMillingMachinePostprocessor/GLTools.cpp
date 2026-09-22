@@ -96,8 +96,11 @@ void CGLTools::Arrow(const CR3Point &tail,const CR3Point &head, double dR, doubl
 	double d1 = 0.04*d;
 	v/=d;
 	
+	//the arrow is drawn along OZ and turned to v; for v = -OZ the axis of the turn is any horizontal one
 	CR3Vector axis = r3vOZ.vectorProduct(v);
 	double dAngle = r3vOZ.UndirectedAngle(v);
+	if(axis.IsZero())
+		axis = CR3Vector(1.0,0.0,0.0);
 	glPushMatrix();
 	glTranslated(tail.GetX(),tail.GetY(),tail.GetZ());
 	glRotated(radians_to_degrees(dAngle),axis.GetX(),axis.GetY(),axis.GetZ());
