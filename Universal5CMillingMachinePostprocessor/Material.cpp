@@ -13,6 +13,7 @@ CMaterial::CMaterial(double dXSize
 					,double dZStart)
 :m_nObserverVectorIndex(0x07)
 ,m_bGraysShouldBeUpdated(false)
+,m_dPixelSize(0.0)
 {
 	GenerateBox(dXSize,dYSize,dZSize,dPrecision,dXStart,dYStart,dZStart);
 }

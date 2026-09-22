@@ -209,7 +209,7 @@ void CCLDataFileDialog::OnLbnSelchangeListFileContents()
 			return;
 		const CCutterLocationData::CCLLine line = m_pDoc->m_oCutterLocationData.GetLine(nLineNo);
 		CString s;
-		s.Format("%d",nLineNo);
+		s.Format("%zu",nLineNo);
 		m_editLineNumber.SetWindowText(s.GetBuffer(s.GetLength()));
 		m_editLineStatus.SetWindowText(line.GetStatus().c_str());
 		if(line.m_status==CL_LINE_OK){

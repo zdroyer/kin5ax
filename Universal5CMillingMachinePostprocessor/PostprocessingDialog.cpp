@@ -51,7 +51,7 @@ void CPostprocessingDialog::SetText(CWnd & window, size_t n)
 {
 	CString s;
 	//sprintf(s,9,"%d",n);
-	s.Format("%d",n);
+	s.Format("%zu",n);
 	window.SetWindowText(s.GetBuffer(1));
 }
 

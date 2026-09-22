@@ -24,6 +24,7 @@ CMillingToolPropertiesDialog::CMillingToolPropertiesDialog(CWnd* pParent /*=NULL
 	,m_dReferencePointHeight(0.012)
 	,m_nToolShapeIndex(0)
 	,m_pOldTool(0)
+	,m_pDoc(0)
 {
 
 }

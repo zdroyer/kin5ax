@@ -248,7 +248,7 @@ void CKinematicChainPropertiesDialog::OnBnClickedAddSegment()
 	CChainSegment oDefSegment(CHAIN_SEGMENT_REVOLUTE_LINK,CR3Vector(1.0,0.0,0.0),0.0,CR3Vector(0.2,0.2,0.2));
 	size_t n = m_pDoc->m_oChain.GetNumberOfPrismaticLinks()+m_pDoc->m_oChain.GetNumberOfRevoluteLinks();
 	CString s;
-	s.Format("S%d",n);
+	s.Format("S%zu",n);
 	oDefSegment.SetName(s.GetBuffer(0));
 	m_pDoc->m_oChain.AddSegmentAfterActiveSegment(oDefSegment);
 	SetActiveDocument(m_pDoc);

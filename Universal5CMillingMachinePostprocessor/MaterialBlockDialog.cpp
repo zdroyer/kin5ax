@@ -21,6 +21,7 @@ CMaterialBlockDialog::CMaterialBlockDialog(CWnd* pParent /*=NULL*/)
 	, m_dPositionX(-0.25)
 	, m_dPositionY(-0.25)
 	, m_dPositionZ(0.0)
+	, m_pDoc(0)
 {
 }
 
@@ -76,6 +77,10 @@ void CMaterialBlockDialog::OnEnChangeEditVoxelSize()
 void CMaterialBlockDialog::OnBnClickedOk()
 {
 	UpdateData(TRUE);
+	if(!(m_dVoxelSize > 0.0)){
+		AfxMessageBox("The voxel size must be greater than zero.");
+		return;
+	}
 	CString sMainTitle;
 	GetParent()->GetWindowText(sMainTitle);
 	GetParent()->SetWindowText("Generating material block ...");
