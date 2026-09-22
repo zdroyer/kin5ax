@@ -161,3 +161,59 @@ TEST_P(RotationFromTwoVectorsTest, AcceptsVectorsOfAnyLength)
 
 //0 and 180 deg are the degenerate cases (the vector product is zero)
 INSTANTIATE_TEST_CASE_P(Angles, RotationFromTwoVectorsTest, ::testing::Values(0.0,1E-7,10.0,30.0,45.0,60.0,90.0,120.0,150.0,179.0,180.0));
+
+//---- GetAxis and GetAngle as a representation of the rotation (KnownBugs #53)
+static void ExpectSameRotation(const CRotation &oExpected, const CRotation &oActual, const std::string &sWhat)
+{
+	double d = 0.0;
+	for(int i=0;i<3;i++)
+		for(int j=0;j<3;j++)
+			d = std::max(d,fabs(oExpected.GetM(i,j)-oActual.GetM(i,j)));
+	//the axis of a half turn comes out of a square root, so half of the digits are lost, and
+	//an angle of a few nanoradians cannot be read back from a matrix at all
+	EXPECT_NEAR(0.0,d,1E-7)<<sWhat;
+}
+
+TEST(Rotation, AxisAndAngleRebuildTheRotation)
+{
+	const double dAngles[] = {0.0,1E-7,15.0,45.0,90.0,120.0,179.0,179.999,180.0};
+	CR3Vector vAxes[] = {CR3Vector(1.0,0.0,0.0),CR3Vector(0.0,1.0,0.0),CR3Vector(0.0,0.0,1.0)
+		,CR3Vector(1.0,1.0,1.0),CR3Vector(-2.0,1.0,0.5),CR3Vector(0.0,-3.0,4.0)};
+	for(size_t a=0;a<sizeof(dAngles)/sizeof(dAngles[0]);a++)
+		for(size_t v=0;v<sizeof(vAxes)/sizeof(vAxes[0]);v++){
+			CRotation oRotation(vAxes[v],dAngles[a],0.0);
+			CR3Vector r3vAxis = oRotation.GetAxis();
+			double dAngle = oRotation.GetAngle();
+			EXPECT_NEAR(1.0,r3vAxis.GetLength(),1E-9)<<"the axis is a unit vector";
+			ExpectSameRotation(oRotation,CRotation(r3vAxis,dAngle,0.0)
+				,"axis "+size_to_string(v)+", "+double_to_string(dAngles[a])+" degrees");
+		}
+}
+
+TEST(Rotation, AngleOfAHalfTurnIsAHalfTurn)
+{
+	CRotation oRotation(CR3Vector(0.0,1.0,0.0),180.0,0.0);
+	EXPECT_NEAR(180.0,oRotation.GetAngle(),1E-9);
+	ExpectVectorsNear(CR3Vector(0.0,1.0,0.0),oRotation.GetAxis(),"the axis of a half turn");
+}
+
+TEST(Rotation, AngleOfARotationTimesItsInverseIsZero)
+{
+	//the trace of the product is 3 plus a rounding error: acos of more than 1 is not a number
+	for(int i=0;i<64;i++){
+		CR3Vector r3vAxis(1.0+0.01*i,-0.3*i,0.7);
+		CRotation oRotation(r3vAxis,0.1*i+0.05,0.0);
+		CRotation oProduct(oRotation*CRotation(oRotation.Inverted()));
+		double dAngle = oProduct.GetAngle();
+		EXPECT_FALSE(dAngle!=dAngle)<<"GetAngle returned a NaN at step "<<i;
+		//acos is flat at 1: a rounding error of 1E-16 in the matrix is 1E-6 degrees in the angle
+		EXPECT_NEAR(0.0,dAngle,1E-4);
+	}
+}
+
+TEST(Rotation, AxisOfNoRotationIsUsable)
+{
+	CRotation oIdentity(CR3Vector(0.0,0.0,1.0),0.0,0.0);
+	EXPECT_NEAR(0.0,oIdentity.GetAngle(),1E-12);
+	EXPECT_NEAR(1.0,oIdentity.GetAxis().GetLength(),1E-12)<<"a unit vector, not the zero vector";
+}
