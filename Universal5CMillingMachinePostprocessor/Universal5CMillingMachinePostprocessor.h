@@ -25,6 +25,7 @@ public:
 
 // Implementation
 	afx_msg void OnAppAbout();
+	afx_msg void OnFileOpenPugixml();
 	DECLARE_MESSAGE_MAP()
 };
 

@@ -21,6 +21,7 @@ BEGIN_MESSAGE_MAP(CUniversal5CMillingMachinePostprocessorApp, CWinApp)
 	// Standard file based document commands
 	ON_COMMAND(ID_FILE_NEW, CWinApp::OnFileNew)
 	ON_COMMAND(ID_FILE_OPEN, CWinApp::OnFileOpen)
+	ON_COMMAND(ID_FILE_OPEN_PUGIXML, OnFileOpenPugixml)
 END_MESSAGE_MAP()
 
 
@@ -129,3 +130,15 @@ void CUniversal5CMillingMachinePostprocessorApp::OnAppAbout()
 
 // CUniversal5CMillingMachinePostprocessorApp message handlers
 
+
+//Chain > Open (pugixml): the same as Open, read by the portable reader of kin5ax
+void CUniversal5CMillingMachinePostprocessorApp::OnFileOpenPugixml()
+{
+	CFileDialog dlg(TRUE,"kc",NULL,OFN_HIDEREADONLY|OFN_FILEMUSTEXIST,
+		"Kinematic chain files (*.kc)|*.kc|All files (*.*)|*.*||");
+	if(dlg.DoModal()!=IDOK)
+		return;
+	CUniversal5CMillingMachinePostprocessorDoc::s_bOpenWithPugixml = true;
+	OpenDocumentFile(dlg.GetPathName());	//the framework calls OnOpenDocument, sets the title and the recent files
+	CUniversal5CMillingMachinePostprocessorDoc::s_bOpenWithPugixml = false;
+}

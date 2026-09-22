@@ -219,13 +219,14 @@
 #define ID_SHOW_LINKS_PARTS             32845
 #define ID_BUTTON32847                  32847
 #define ID_SHOW_TOOL_BOUNDING_BOX       32849
+#define ID_FILE_OPEN_PUGIXML            32850
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        146
-#define _APS_NEXT_COMMAND_VALUE         32850
+#define _APS_NEXT_COMMAND_VALUE         32851
 #define _APS_NEXT_CONTROL_VALUE         1141
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
