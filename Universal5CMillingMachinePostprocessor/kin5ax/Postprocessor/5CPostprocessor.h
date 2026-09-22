@@ -20,6 +20,9 @@ public:
 	tChainConfigurationVector Solve(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,CMillingTool &oMillingTool,string &sLog);
 	tChainConfigurationVector SolveWithKnownAlpha1(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,string &sLog,vector<double> vAlpha1,CMillingTool &oMillingTool);
 
+	//the cutter locations of a section where the orientation is singular (alpha1 free): alpha1 is interpolated
+	//between the solutions before and after the section. One solution set per solved location; none when no
+	//location of the section can be solved.
 	vector<tChainConfigurationVector> SolveSingularOrientation(const vector<CR3CaughtVector> &vInput, CChain &oChain,CMillingTool &oMillingTool,string &sLog);
 
 protected:

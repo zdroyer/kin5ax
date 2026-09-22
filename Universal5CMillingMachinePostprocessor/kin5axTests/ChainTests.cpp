@@ -5,6 +5,7 @@
 #include "SolverRoundTrip.h"
 #include "MillingToolBall.h"
 #include "string_tools.h"
+#include "5CPostprocessor.h"
 
 class ChainFileTest : public ::testing::TestWithParam<string>
 {
@@ -182,6 +183,32 @@ TEST_P(ChainFileTest, SolverRoundTrip)
 		EXPECT_EQ((size_t)0,oResult.m_nNotRecovered)<<oResult.m_sFirstProblem;
 		RecordProperty("targets",(int)oResult.m_nTargets);
 		RecordProperty("skipped_colliding_poses",(int)oResult.m_nCollisions);
+	} catch (CGeneratorException &e){
+		FAIL()<<"exception: "<<e.Message()<<" ("<<e.GetThrowingPlace()<<")";
+	}
+}
+
+//KnownBugs #32: a singular section with no solvable location took the front() of an empty vector
+TEST_P(ChainFileTest, SingularSectionOutOfReachGivesNoSolution)
+{
+	CChain oChain = Load();
+	ASSERT_TRUE(oChain.Is5CChain());
+	if(!oChain.HasParameterConstraints()){
+		RecordProperty("skipped","no joint limits: everything is within reach");
+		return;
+	}
+	CMillingToolBall oTool(0.016,0.016,0.064,0.016);
+	C5CPostprocessor oPostprocessor(oChain,CPostprocessorSettings());
+	//three locations of a vertical tool, a kilometre away: beyond the limits of the linear axes
+	vector<CR3CaughtVector> vInput;
+	for(int i=0;i<3;i++)
+		vInput.push_back(CR3CaughtVector(CR3Vector(0.0,0.0,1.0),CR3Point(1000.0+i,0.0,0.0)));
+	string sLog;
+	try{
+		vector<tChainConfigurationVector> vResult = oPostprocessor.SolveSingularOrientation(vInput,oChain,oTool,sLog);
+		for(size_t i=0;i<vResult.size();i++)
+			EXPECT_TRUE(vResult[i].empty())<<"set "<<i;
+		EXPECT_NE(string::npos,sLog.find("can be solved"))<<sLog;
 	} catch (CGeneratorException &e){
 		FAIL()<<"exception: "<<e.Message()<<" ("<<e.GetThrowingPlace()<<")";
 	}

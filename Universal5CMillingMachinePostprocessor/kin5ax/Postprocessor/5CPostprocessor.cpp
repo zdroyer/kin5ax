@@ -254,6 +254,10 @@ vector<tChainConfigurationVector> C5CPostprocessor::SolveSingularOrientation(con
 		if(vFirst.size())
 			break;
 	}
+	if(vFirst.empty()){
+		sLog+="No cutter location of the singular section can be solved:\n"+sFirstLog;
+		return vResult;
+	}
 	vector<double> vAlpha1_1;
 	for(size_t i=0;i<vFirst.size();i++)
 		vAlpha1_1.push_back(vFirst[i].GetFirstAngleValue());
