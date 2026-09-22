@@ -1,5 +1,5 @@
 #pragma once
-#include "millingtool.h"
+#include "MillingTool.h"
 
 class CMillingToolBall :
 	public CMillingTool

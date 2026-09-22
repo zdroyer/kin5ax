@@ -1,9 +1,9 @@
 #pragma once
-#include "r3vector.h"
-#include "r3point.h"
-#include "r3box.h"
+#include "R3Vector.h"
+#include "R3Point.h"
+#include "R3Box.h"
 
-#include "rotation.h"
+#include "Rotation.h"
 
 enum CHAIN_SEGMENT_TYPE{
 	CHAIN_SEGMENT_REVOLUTE_LINK=1,

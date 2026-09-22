@@ -1,7 +1,7 @@
-#include "../StdAfx.h"
-#include "chainconfiguration.h"
+#include "../stdafx.h"
+#include "ChainConfiguration.h"
 #include "ArgsMyException.h"
-#include "chainconfiguration.h"
+#include "ChainConfiguration.h"
 #include "string_tools.h"
 
 

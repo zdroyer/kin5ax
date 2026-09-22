@@ -1,4 +1,4 @@
-#include "../StdAfx.h"
+#include "../stdafx.h"
 #include "OrientationPostprocessor.h"
 
 extern CR3Vector r3vOZ;

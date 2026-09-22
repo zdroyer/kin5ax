@@ -1,9 +1,9 @@
 #pragma once
-#include "../Chain/Chain.h"
-#include "orientationpostprocessor.h"
-#include "positionpostprocessor.h"
+#include "Chain.h"
+#include "OrientationPostprocessor.h"
+#include "PositionPostprocessor.h"
 #include "PostprocessorSettings.h"
-#include "millingtool.h"
+#include "MillingTool.h"
 
 
 typedef pair<CChainConfiguration,CR3CaughtVector> tChainConfigurationWithResult;

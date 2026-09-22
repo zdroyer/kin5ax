@@ -1,5 +1,5 @@
-#include "StdAfx.h"
-#include ".\simulationdata.h"
+#include "stdafx.h"
+#include "SimulationData.h"
 #include "string_tools.h"
 
 CSimulationData::CSimulationData(size_t n)

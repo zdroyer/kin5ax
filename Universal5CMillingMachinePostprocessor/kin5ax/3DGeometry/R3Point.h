@@ -1,7 +1,6 @@
 #pragma once
 
 #include "double_tools.h"
-#include "R3Point.h"
 #include "R3Vector.h"
 
 

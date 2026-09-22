@@ -1,5 +1,5 @@
-#include "../StdAfx.h"
-#include ".\5cpostprocessor.h"
+#include "../stdafx.h"
+#include "5CPostprocessor.h"
 #include "string_tools.h"
 
 extern CR3Vector r3vOZ;

@@ -1,6 +1,6 @@
-#include "StdAfx.h"
-#include ".\millingtoolcylinder.h"
-#include "argsmyexception.h"
+#include "../stdafx.h"
+#include "MillingToolCylinder.h"
+#include "ArgsMyException.h"
 
 
 CMillingToolCylinder::CMillingToolCylinder

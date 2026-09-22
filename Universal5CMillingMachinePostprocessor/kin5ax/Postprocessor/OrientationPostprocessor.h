@@ -1,7 +1,7 @@
 #pragma once
-#include "r3vector.h"
-#include "chainconfiguration.h"
-#include "rotation.h"
+#include "R3Vector.h"
+#include "ChainConfiguration.h"
+#include "Rotation.h"
 #include "PostprocessorSettings.h"
 
 

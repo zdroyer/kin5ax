@@ -1,13 +1,13 @@
 #pragma once
 
-#include "r3point.h"
-#include "r3vector.h"
-#include "r3caughtvector.h"
+#include "R3Point.h"
+#include "R3Vector.h"
+#include "R3CaughtVector.h"
 
-#include "r3box.h"
-#include "transformation.h"
-#include "rotation.h"
-#include "translation.h"
+#include "R3Box.h"
+#include "Transformation.h"
+#include "Rotation.h"
+#include "Translation.h"
 
 enum MILLING_TOOL_TYPE{
 	MILLING_TOOL_BALL,

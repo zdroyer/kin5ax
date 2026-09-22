@@ -1,6 +1,6 @@
-#include "StdAfx.h"
-#include ".\positionpostprocessor.h"
-#include "argsmyexception.h"
+#include "../stdafx.h"
+#include "PositionPostprocessor.h"
+#include "ArgsMyException.h"
 
 
 extern CR3Vector r3vOZ;

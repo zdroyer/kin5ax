@@ -1,9 +1,9 @@
-#include "../StdAfx.h"
-#include "chainsegment.h"
+#include "../stdafx.h"
+#include "ChainSegment.h"
 #include "string_tools.h"
-#include "rotation.h"
-#include "translation.h"
-#include "r3box.h"
+#include "Rotation.h"
+#include "Translation.h"
+#include "R3Box.h"
 
 extern CR3Vector r3vOZ;
 

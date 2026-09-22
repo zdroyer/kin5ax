@@ -1,7 +1,7 @@
 
 #pragma once
-#include "../exceptions/ArgsMyException.h"
-#include "../exceptions/DivByZeroMyException.h"
+#include "ArgsMyException.h"
+#include "DivByZeroMyException.h"
 //#include "R4Vector.h"
 
 class CM4x4  

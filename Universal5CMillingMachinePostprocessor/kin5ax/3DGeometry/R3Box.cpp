@@ -1,9 +1,9 @@
 #include "../stdafx.h"
-#include "r3box.h"
-#include "r3vector.h"
+#include "R3Box.h"
+#include "R3Vector.h"
 
-#include "../string_tools.h"
-#include "transformation.h"
+#include "string_tools.h"
+#include "Transformation.h"
 
 
 extern CR3Vector r3vOZ;

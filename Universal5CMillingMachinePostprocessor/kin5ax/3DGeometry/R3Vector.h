@@ -1,6 +1,6 @@
 #pragma once
 #include "double_tools.h"
-#include "../exceptions/DivByZeroMyException.h"
+#include "DivByZeroMyException.h"
 
 class CR3Vector  
 {

@@ -1,5 +1,5 @@
-#include "../StdAfx.h"
-#include "chain.h"
+#include "../stdafx.h"
+#include "Chain.h"
 #include "string_tools.h"
 
 

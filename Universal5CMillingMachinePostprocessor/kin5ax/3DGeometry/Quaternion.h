@@ -1,5 +1,5 @@
 #pragma once
-#include "r3vector.h"
+#include "R3Vector.h"
 
 class CQuaternion  
 {

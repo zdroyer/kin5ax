@@ -1,5 +1,5 @@
-#include "StdAfx.h"
-#include ".\cutterlocationdata.h"
+#include "stdafx.h"
+#include "CutterLocationData.h"
 
 
 CCutterLocationData::CCutterLocationData(void)

@@ -1,5 +1,5 @@
 #pragma once
-#include "generatorexception.h"
+#include "GeneratorException.h"
 
 class CArgsMyException:
 	public CGeneratorException 

@@ -1,5 +1,5 @@
-#include "StdAfx.h"
-#include ".\millingtool.h"
+#include "../stdafx.h"
+#include "MillingTool.h"
 
 
 extern CR3Vector r3vOZ;

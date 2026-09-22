@@ -1,5 +1,5 @@
 #pragma once
-#include "chainparameter.h"
+#include "ChainParameter.h"
 #include "PostprocessorSettings.h"
 #include "string_tools.h"
 

@@ -1,7 +1,7 @@
 #pragma once
-#include "r3point.h"
-#include "r3vector.h"
-#include "chainconfiguration.h"
+#include "R3Point.h"
+#include "R3Vector.h"
+#include "ChainConfiguration.h"
 
 
 class CPositionPostprocessor

@@ -1,6 +1,6 @@
-#include "StdAfx.h"
-#include ".\millingtoolball.h"
-#include "argsmyexception.h"
+#include "../stdafx.h"
+#include "MillingToolBall.h"
+#include "ArgsMyException.h"
 
 
 CMillingToolBall::CMillingToolBall

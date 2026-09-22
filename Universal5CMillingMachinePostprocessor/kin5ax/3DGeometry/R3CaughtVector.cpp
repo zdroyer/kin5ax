@@ -1,5 +1,5 @@
-#include "StdAfx.h"
-#include ".\r3caughtvector.h"
+#include "../stdafx.h"
+#include "R3CaughtVector.h"
 
 CR3CaughtVector::CR3CaughtVector(void)
 {

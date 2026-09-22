@@ -1,6 +1,6 @@
 #pragma once
-#include "r3vector.h"
-#include "r3point.h"
+#include "R3Vector.h"
+#include "R3Point.h"
 
 class CR3CaughtVector
 {

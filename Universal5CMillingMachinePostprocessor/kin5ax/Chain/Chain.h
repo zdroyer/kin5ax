@@ -1,10 +1,10 @@
 #pragma once
 
-#include "millingtool.h"
-#include "chainsegment.h"
-#include "chainconfiguration.h"
-#include "r3caughtvector.h"
-#include "r3box.h"
+#include "MillingTool.h"
+#include "ChainSegment.h"
+#include "ChainConfiguration.h"
+#include "R3CaughtVector.h"
+#include "R3Box.h"
 
 
 //name of the root node of the XML (.kc) representation
