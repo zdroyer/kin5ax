@@ -16,11 +16,12 @@ shortest feasible trajectory through the solution sets is selected.
 ## Base paper and author
 
 K. Marciniak, J. Porter-Sobieraj, P. Zdroik, *Analytical methods of the inverse problem
-solving for 5C milling machines*, Faculty of Mathematics and Information Science, Warsaw
-University of Technology. It builds on Marciniak, Porter-Sobieraj, *Universal postprocessor
-for 5-axis milling machines with two rotating tables*, MMSS'03, Krakow 2003.
+solving for 5C milling machines*, MMSS'06, Kraków 2006 (Faculty of Mathematics and Information
+Science, Warsaw University of Technology). The paper and this library grew out of
+P. Zdroik's Master's thesis of 2004; they build on Marciniak, Porter-Sobieraj, *Universal
+postprocessor for 5-axis milling machines with two rotating tables*, MMSS'03, Kraków 2003.
 
-Code: Przemysław Zdroik (2004-2006, revived in 2026 on Visual Studio 2022, x64).
+Code: Przemysław Zdroik (2004, revived in 2026 on Visual Studio 2022, x64).
 
 ## The machine model (.kc file)
 
