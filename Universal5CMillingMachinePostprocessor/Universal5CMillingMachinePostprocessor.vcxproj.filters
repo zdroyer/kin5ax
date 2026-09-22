@@ -30,9 +30,6 @@
     <ClCompile Include="ChainSegmentRendererGL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ChainXmlReader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CLDataFileDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -108,9 +105,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ChainSegmentRendererGL.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ChainXmlReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CLDataFileDialog.h">

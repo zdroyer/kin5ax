@@ -15,8 +15,6 @@ protected:
 			return LoadChain(GetParam());
 		} catch (CGeneratorException &e){
 			ADD_FAILURE()<<"exception while loading: "<<e.Message()<<" ("<<e.GetThrowingPlace()<<")";
-		} catch (_com_error &e){
-			ADD_FAILURE()<<"COM error while loading: 0x"<<std::hex<<(unsigned)e.Error();
 		}
 		return CChain();
 	}
@@ -31,6 +29,47 @@ struct ChainFileTestName
 TEST(ChainFiles, AreFound)
 {
 	EXPECT_GE(GetChainFiles().size(),(size_t)1)<<"no .kc file in "<<GetTestChainsDir()<<" (the build copies kin5axTests/TestChains there)";
+}
+
+//the reader reports every problem as CGeneratorException, nothing else leaves it
+static string LoadError(const string &sFilePath)
+{
+	try{
+		LoadChain(sFilePath);
+	} catch (CGeneratorException &e){
+		return e.Message();
+	}
+	return string();
+}
+
+TEST(ChainFiles, MissingFileIsReported)
+{
+	string sError = LoadError(GetTestChainsDir()+"no_such_chain.kc");
+	EXPECT_NE(string::npos,sError.find("no_such_chain.kc"))<<sError;
+}
+
+TEST(ChainFiles, BrokenXmlIsReportedWithTheLine)
+{
+	string sFilePath = GetTestChainsDir()+"kin5axTests_broken.kc";
+	FILE *pFile = fopen(sFilePath.c_str(),"wt");
+	ASSERT_TRUE(pFile!=NULL);
+	fputs("<?xml version=\"1.0\"?>\n<kinematic_chain>\n<tool_part>\n<segment name=\"x\" type=\"tool\">\n</kinematic_chain>\n",pFile);
+	fclose(pFile);
+	string sError = LoadError(sFilePath);
+	remove(sFilePath.c_str());
+	EXPECT_NE(string::npos,sError.find("line 5"))<<sError;
+}
+
+TEST(ChainFiles, WrongRootElementIsReported)
+{
+	string sFilePath = GetTestChainsDir()+"kin5axTests_wrong_root.kc";
+	FILE *pFile = fopen(sFilePath.c_str(),"wt");
+	ASSERT_TRUE(pFile!=NULL);
+	fputs("<?xml version=\"1.0\"?>\n<not_a_chain/>\n",pFile);
+	fclose(pFile);
+	string sError = LoadError(sFilePath);
+	remove(sFilePath.c_str());
+	EXPECT_NE(string::npos,sError.find("root node"))<<sError;
 }
 
 TEST_P(ChainFileTest, LoadsAsValid5CChain)

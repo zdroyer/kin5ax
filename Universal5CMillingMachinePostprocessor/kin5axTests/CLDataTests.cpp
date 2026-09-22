@@ -148,8 +148,6 @@ TEST_P(SphereCLDataOnChainTest, IsPostprocessedToGCode)
 		EXPECT_EQ(nSolved,CountLines(sGCodeFile));
 	} catch (CGeneratorException &e){
 		ADD_FAILURE()<<"exception: "<<e.Message()<<" ("<<e.GetThrowingPlace()<<")";
-	} catch (_com_error &e){
-		ADD_FAILURE()<<"COM error: 0x"<<std::hex<<(unsigned)e.Error();
 	}
 	remove(sCLDataFile.c_str());
 	remove(sGCodeFile.c_str());

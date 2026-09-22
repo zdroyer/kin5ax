@@ -60,6 +60,9 @@
     <ClCompile Include="Chain\ChainSegment.cpp">
       <Filter>Chain</Filter>
     </ClCompile>
+    <ClCompile Include="Chain\ChainXmlReader.cpp">
+      <Filter>Chain</Filter>
+    </ClCompile>
     <ClCompile Include="MillingTool\MillingTool.cpp">
       <Filter>MillingTool</Filter>
     </ClCompile>
@@ -131,6 +134,9 @@
       <Filter>Exceptions</Filter>
     </ClInclude>
     <ClInclude Include="Chain\Chain.h">
+      <Filter>Chain</Filter>
+    </ClInclude>
+    <ClInclude Include="Chain\ChainXmlReader.h">
       <Filter>Chain</Filter>
     </ClInclude>
     <ClInclude Include="Chain\ChainConfiguration.h">

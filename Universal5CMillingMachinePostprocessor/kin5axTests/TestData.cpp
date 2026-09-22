@@ -1,6 +1,6 @@
 #include "../stdafx.h"
 #include "TestData.h"
-#include "../ChainXmlReader.h"
+#include "ChainXmlReader.h"
 
 static const char cSEPARATOR = 92;	//backslash
 
@@ -49,14 +49,5 @@ string GetTestName(const string &sFilePath)
 
 CChain LoadChain(const string &sFilePath)
 {
-	//the same settings as CUniversal5CMillingMachinePostprocessorDoc::OnOpenDocument
-	MSXML2::IXMLDOMDocument2Ptr pDOMDoc;
-	if(FAILED(pDOMDoc.CreateInstance(__uuidof(DOMDocument60))))
-		MY_THROW(CGeneratorException,"Cannot create MSXML 6 document");
-	pDOMDoc->put_async(VARIANT_FALSE);
-	pDOMDoc->put_validateOnParse(VARIANT_TRUE);
-	pDOMDoc->setProperty(_bstr_t("ProhibitDTD"), _variant_t(false));
-	if(VARIANT_FALSE == pDOMDoc->load(_variant_t(_bstr_t(sFilePath.c_str()))))
-		MY_THROW(CGeneratorException,"XML parse error: "+string((char*)pDOMDoc->GetparseError()->Getreason()));
-	return CChainXmlReader::ReadChain(pDOMDoc->GetdocumentElement(),sFilePath);
+	return CChainXmlReader::ReadFile(sFilePath);
 }

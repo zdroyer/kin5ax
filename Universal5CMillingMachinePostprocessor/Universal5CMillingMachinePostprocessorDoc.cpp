@@ -105,35 +105,13 @@ BOOL CUniversal5CMillingMachinePostprocessorDoc::OnOpenDocument(LPCTSTR lpszPath
 {
 //	if (!CDocument::OnOpenDocument(lpszPathName))
 //		return FALSE;
-	MSXML2::IXMLDOMDocument2Ptr pDOMDoc;
-	
-	HRESULT hr = pDOMDoc.CreateInstance(__uuidof(DOMDocument60));
-	MSXML2::IXMLDOMDocument2 * pXMLDoc = pDOMDoc;
-	if (FAILED(hr))
-	{
-		_com_error er(hr);
-		AfxMessageBox(er.ErrorMessage()+CString("xreate instance error"));
+	try{
+		m_oChain = CChainXmlReader::ReadFile(string(lpszPathName));
+	} catch (CGeneratorException &e){
+		AfxMessageBox(e.Message().c_str());
 		return FALSE;
 	}
-	pDOMDoc->put_async(VARIANT_FALSE);
-	pDOMDoc->put_validateOnParse(VARIANT_TRUE);
-	// MSXML 6 prohibits DTDs by default; .kc files carry an inline DTD
-	pDOMDoc->setProperty(_bstr_t("ProhibitDTD"), _variant_t(false));
-	_bstr_t bstrURL = lpszPathName;
-	VARIANT_BOOL varResult = pDOMDoc->load(_variant_t(bstrURL));
-	if (VARIANT_FALSE == varResult)
-	{
-		// Load failed
-		MSXML2::IXMLDOMParseErrorPtr pParseError = pDOMDoc->GetparseError();
-		_bstr_t bstrReason = pParseError->Getreason();
-		CString strError;
-		strError.Format(_T("XML Parse Error\nLine : %ld; Char : %ld\nError: %s"),pParseError->line, pParseError->linepos,(char*)bstrReason);
-		AfxMessageBox(strError);
-		return FALSE;
-	}
-	m_oChain = CChainXmlReader::ReadChain(pXMLDoc->GetdocumentElement(),string(lpszPathName));
 
-	
 	//GetRoutingFrame() is set only while a menu command is routed: it is NULL when the file
 	//comes from the command line, the shell or drag and drop
 	CMainFrame *pMainFrame = (CMainFrame*)AfxGetMainWnd();

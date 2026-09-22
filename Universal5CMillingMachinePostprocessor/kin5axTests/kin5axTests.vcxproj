@@ -30,7 +30,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v143</PlatformToolset>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <!-- MFC only because ChainXmlReader.cpp is compiled with the stdafx.h of the application -->
+    <!-- MFC only because the tests are compiled with the stdafx.h of the application -->
     <UseOfMfc>Dynamic</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -38,7 +38,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v143</PlatformToolset>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <!-- MFC only because ChainXmlReader.cpp is compiled with the stdafx.h of the application -->
+    <!-- MFC only because the tests are compiled with the stdafx.h of the application -->
     <UseOfMfc>Dynamic</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -46,7 +46,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v143</PlatformToolset>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <!-- MFC only because ChainXmlReader.cpp is compiled with the stdafx.h of the application -->
+    <!-- MFC only because the tests are compiled with the stdafx.h of the application -->
     <UseOfMfc>Dynamic</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -54,7 +54,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v143</PlatformToolset>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <!-- MFC only because ChainXmlReader.cpp is compiled with the stdafx.h of the application -->
+    <!-- MFC only because the tests are compiled with the stdafx.h of the application -->
     <UseOfMfc>Dynamic</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -159,7 +159,6 @@
     <ClCompile Include="SolverRoundTrip.cpp" />
     <ClCompile Include="SphereCLDataGenerator.cpp" />
     <ClCompile Include="TestData.cpp" />
-    <ClCompile Include="..\ChainXmlReader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SolverRoundTrip.h" />

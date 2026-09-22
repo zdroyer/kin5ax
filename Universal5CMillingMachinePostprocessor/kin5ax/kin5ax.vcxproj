@@ -148,6 +148,7 @@
     <ClCompile Include="Chain\Chain.cpp" />
     <ClCompile Include="Chain\ChainConfiguration.cpp" />
     <ClCompile Include="Chain\ChainSegment.cpp" />
+    <ClCompile Include="Chain\ChainXmlReader.cpp" />
     <ClCompile Include="MillingTool\MillingTool.cpp" />
     <ClCompile Include="MillingTool\MillingToolBall.cpp" />
     <ClCompile Include="MillingTool\MillingToolCylinder.cpp" />
@@ -177,6 +178,7 @@
     <ClInclude Include="Exceptions\GeneratorException.h" />
     <ClInclude Include="Exceptions\MemoryMyException.h" />
     <ClInclude Include="Chain\Chain.h" />
+    <ClInclude Include="Chain\ChainXmlReader.h" />
     <ClInclude Include="Chain\ChainConfiguration.h" />
     <ClInclude Include="Chain\ChainSegment.h" />
     <ClInclude Include="Chain\ChainParameter.h" />

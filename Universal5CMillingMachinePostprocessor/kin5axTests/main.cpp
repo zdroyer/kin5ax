@@ -11,8 +11,5 @@ int main(int argc, char **argv)
 	_CrtSetReportMode(_CRT_ERROR,_CRTDBG_MODE_FILE);
 	_CrtSetReportFile(_CRT_ERROR,_CRTDBG_FILE_STDERR);
 	::testing::InitGoogleTest(&argc, argv);
-	CoInitialize(NULL);		//the chains are read with MSXML
-	int nResult = RUN_ALL_TESTS();
-	CoUninitialize();
-	return nResult;
+	return RUN_ALL_TESTS();
 }

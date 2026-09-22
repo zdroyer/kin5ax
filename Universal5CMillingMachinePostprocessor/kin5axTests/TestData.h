@@ -13,5 +13,5 @@ vector<string> GetChainFiles();
 //file name without folder and extension, reduced to [A-Za-z0-9_] (GoogleTest parameter names)
 string GetTestName(const string &sFilePath);
 
-//reads a chain the same way as the application does (MSXML 6, DTD validation on)
+//reads a chain the same way as the application does (CChainXmlReader of kin5ax)
 CChain LoadChain(const string &sFilePath);

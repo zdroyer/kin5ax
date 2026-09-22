@@ -129,8 +129,6 @@ TEST_P(MeridianCLDataOnChainTest, IsPostprocessedOverThePole)
 		RecordProperty("max_shift_step_um",(int)(1E6*dMaxShiftStep));
 	} catch (CGeneratorException &e){
 		ADD_FAILURE()<<"exception: "<<e.Message()<<" ("<<e.GetThrowingPlace()<<")";
-	} catch (_com_error &e){
-		ADD_FAILURE()<<"COM error: 0x"<<std::hex<<(unsigned)e.Error();
 	}
 	remove(sCLDataFile.c_str());
 }
