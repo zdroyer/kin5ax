@@ -27,10 +27,15 @@ public:
 	ALPHA2_METHOD m_nAlpha2Method;
 	ANGLES_SOLVING_METHOD m_nAnglesSolvingMethod;
 
-	//linear interpolation limits between two cutter locations
+	//linear interpolation limits between two cutter locations; a limit of zero (or less) switches
+	//the interpolation by that criterion off
 	double m_dMaxPositionDifference;
 	double m_dMaxOrientationDifferenceDegrees;
 	double m_dMaxOrientationDifferenceRadians;
+	//the count of steps (1 = no intermediate location) into which a move of dDistance and dAngleRadians is divided
+	//so that no step exceeds the limits above; never below 1 and never above nMAX_INTERPOLATION_STEPS
+	double InterpolationSteps(double dDistance, double dAngleRadians) const;
+	static const double dMAX_INTERPOLATION_STEPS;
 
 	//weights of CChainConfiguration::Distance
 	double m_dAngleDistanceCoefficientRadians;

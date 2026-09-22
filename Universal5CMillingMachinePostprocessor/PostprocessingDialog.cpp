@@ -145,17 +145,19 @@ void CPostprocessingDialog::UpdateProblemsCountControl()
 {
 	assert(m_pDoc);
 	if(m_pDoc){
+		//an estimate: the average move between two locations, divided as the interpolation limits demand
 		double dLocationsCount = (double) m_pDoc->m_oCutterLocationData.GetLocationsCount();
-		double dAvgDistance = m_pDoc->m_oCutterLocationData.GetTrajectoryLength()/dLocationsCount;
-		double dProblemsForPosition = dLocationsCount*max(1.0,dAvgDistance/oPostprocessorSettings.m_dMaxPositionDifference);
-
-		double dAvgAngle = radians_to_degrees( m_pDoc->m_oCutterLocationData.GetTotalOrientationChangeRadians())/dLocationsCount;
-		double dProblemsForOrientation = dLocationsCount*max(1.0,dAvgAngle/oPostprocessorSettings.m_dMaxOrientationDifferenceDegrees);
-		
-		double  dProblemsCount = max(dProblemsForOrientation,dProblemsForPosition);
+		double dProblemsCount = 0.0;
+		if(dLocationsCount>0.0){
+			double dAvgDistance = m_pDoc->m_oCutterLocationData.GetTrajectoryLength()/dLocationsCount;
+			double dAvgAngle = m_pDoc->m_oCutterLocationData.GetTotalOrientationChangeRadians()/dLocationsCount;
+			dProblemsCount = dLocationsCount*oPostprocessorSettings.InterpolationSteps(dAvgDistance,dAvgAngle);
+		}
 		SetText(m_editProblemsCount,(size_t)(1.2*dProblemsCount));
-		m_vSolutions.reserve(size_t(1.2*dProblemsCount));
-		m_pDoc->m_oSimulationData.ReserveMemory(size_t(1.2*dProblemsCount));
+		if(dProblemsCount<1E7){	//an estimate from a limit typed half way is no reason to grab the memory
+			m_vSolutions.reserve(size_t(1.2*dProblemsCount));
+			m_pDoc->m_oSimulationData.ReserveMemory(size_t(1.2*dProblemsCount));
+		}
 	}
 }
 

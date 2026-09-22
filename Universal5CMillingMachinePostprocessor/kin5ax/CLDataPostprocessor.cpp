@@ -144,9 +144,7 @@ void CCLDataPostprocessor::InterpolateLocation
 		result.push_back(pair<double,CR3CaughtVector>(1.0,CR3CaughtVector(v2,p2)));	
 		return;
 	}
-	double dAngle = (v1.UndirectedUnitVectorsAngle(v2)/m_oSettings.m_dMaxOrientationDifferenceRadians);
-	double dDistance = (d_E(p1,p2)/m_oSettings.m_dMaxPositionDifference);
-	double dInv = ceil(max(dAngle,dDistance));
+	double dInv = m_oSettings.InterpolationSteps(d_E(p1,p2),v1.UndirectedUnitVectorsAngle(v2));
 	if(dInv<=1.0){
 		result.push_back(pair<double,CR3CaughtVector>(1.0,CR3CaughtVector(v2,p2)));
 		return;
