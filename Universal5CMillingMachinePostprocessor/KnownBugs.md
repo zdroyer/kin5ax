@@ -17,11 +17,12 @@ Nothing here was observed at run time unless a test is named.
 
 | # | Where | Defect | Check | Status |
 |---|---|---|---|---|
-| 4 | `R3Box.cpp` `InnerBoxFromOZCylinder` | Half side `R*sqrt(2)` instead of `R/sqrt(2)`: the "inner" box is bigger than the outer one, the tool shank collides like a square prism. | verified | open |
-| 5 | `R3Box.cpp` `AsymmetricIntersection` | The top face tests the diagonal (1,3) instead of the edge (0,3): one edge of the box is never tested. | verified | open |
+| 4 | `R3Box.cpp` `InnerBoxFromOZCylinder` | Half side `R*sqrt(2)` instead of `R/sqrt(2)`: the "inner" box is bigger than the outer one, the tool shank collides like a square prism. Tests: `R3BoxTests.cpp` `CylinderBoxes`, `CornerRegionOfTheCircumscribedSquareIsFree`. | verified | **fixed** 15c4724 |
+| 5 | `R3Box.cpp` `AsymmetricIntersection`, `HasIntersectionWithOZCylinder` | Both edge lists test the diagonal (1,3) instead of the edge (0,3): one edge of the box is never tested. Tests: `R3BoxTests.cpp` `BoxEdgeTest` (edge 7 failed before the fix). | verified | **fixed** f998e5c |
 | 6 | `R3Box.cpp` `HasIntersectionWithLineSegment` | The clipping assumes increasing coordinates; a segment running in the negative direction can be missed. | reported | open |
-| 7 | `R3Box.cpp` `LineSegmentAndOZCylinderIntersection` | `+` instead of `*` in `dB`, `/2.0*dA` instead of `/(2.0*dA)`; hits on the extrapolated line. | reported | open |
+| 7 | `R3Box.cpp` `LineSegmentAndOZCylinderIntersection` | `+` instead of `*` in `dB`, `/2.0*dA` instead of `/(2.0*dA)`; the final `dZ1*dZ2` test uses the z of the extrapolated line: a segment inside the infinite cylinder but entirely above it is a hit. Test: `DISABLED_AgreesWithPointSampling` (12 false hits out of 400 random cases; with the arithmetic corrected they all disappear). | verified | open |
 | 8 | `MillingToolBall.cpp`, `MillingToolCylinder.cpp` | Ball: only the sphere is tested between R and 2R, the collision cylinder overlaps the ball and misses the top R; cylinder tool subtracts the reference point twice. | reported | open |
+| 37 | `R3Box.cpp` `HasIntersectionWithOZCylinder` | The algorithm (outer box, inner box, then the 12 box edges against the cylinder) misses a box whose flat face cuts the side of the cylinder less than `(1-1/sqrt(2))R` deep when no box edge is inside the cylinder: the side lines of the cylinder are never tested against the box. Hidden by #4 until now. Tests: `DISABLED_FlatFaceAgainstTheSide`, `DISABLED_AgreesWithPointSampling` case 234. | verified | open |
 
 ## CL-data parsing
 
