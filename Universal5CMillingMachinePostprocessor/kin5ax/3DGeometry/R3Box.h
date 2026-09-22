@@ -26,18 +26,30 @@ protected:
 	}
 
 
+	//One half of the box-box test: does an edge of the other box pass through this box?
+	//box - the other box in its own frame; tr - from the frame of box to the frame of this box.
 	bool AsymmetricIntersection(const CR3Box &box, const CTransformation &tr) const;
+	//Does the segment p1-p2 (given in the cylinder frame) meet the cylinder x^2+y^2<=dR^2, 0<=z<=dZ?
 	bool LineSegmentAndOZCylinderIntersection(const CR3Point &p1, const CR3Point &p2, const double &dZ, const double &dR) const;
 
 public:
 
+	//A box with all six limits equal to zero (the default constructor) is empty: it never contains or meets anything.
 	bool IsEmpty() const;
+	//Does this box meet a box given in another frame (touching counts as meeting)?
+	//box - the other box in its own frame; tr - from the frame of box to the frame of this box; tr_inv - the inverse of tr.
+	//Two convex bodies meet iff an edge of one of them passes through the other, so both directions are tested.
 	bool HasIntersectionWithBox(const CR3Box &box, const CTransformation &tr,const CTransformation &tr_inv) const;
+	//Does the segment p1-p2 (in the frame of this box) have a point inside or on this box?
 	bool HasIntersectionWithLineSegment(const CR3Point &p1, const CR3Point &p2) const;
+	//Does the sphere with the centre p1 (in the frame of this box) and the radius dR meet this box?
 	bool HasIntersectionWithSphere(const CR3Point &p1, const double &dR) const;
+	//Does this box meet the cylinder x^2+y^2<=dR^2, 0<=z<=dZ given in its own (cylinder) frame?
+	//trToBox - from the cylinder frame to the frame of this box; trToCylinder - the inverse of trToBox.
 	bool HasIntersectionWithOZCylinder(const double &dZ,const double &dR, const CTransformation &trToBox,const CTransformation &trToCylinder) const;
+	//Is the point p (in the frame of this box) inside or on this box (within dEPSILON)?
 	bool Contains(const CR3Point &p)const;
-	
+
 
 	//Creates empty box
 	CR3Box()
@@ -80,9 +92,13 @@ public:
 		m_dMinZ = box.m_dMinZ;
 	}
 
+	//The biggest box inside the cylinder x^2+y^2<=dRadius^2, dZ1<=z<=dZ2 (square side dRadius*sqrt(2)): a hit of it is a hit of the cylinder.
 	static CR3Box InnerBoxFromOZCylinder(double dRadius, double dZ1, double dZ2);
+	//The smallest box around the cylinder x^2+y^2<=dRadius^2, dZ1<=z<=dZ2: a miss of it is a miss of the cylinder.
 	static CR3Box OuterBoxFromOZCylinder(double dRadius, double dZ1, double dZ2);
+	//The bounding box of the cylinder with the axis p1-p2 and the radius dR.
 	static CR3Box BoxFromCylinder(const CR3Point &p1, const CR3Point &p2, double dR);
+	//The box dXSize x dYSize centred on the OZ axis, from z=0 to z=dZ.
 	static CR3Box BoxFromOZBox(double dXSize, double dYSize, double dZ);
 
 	void ExpandXYZ(double dX, double dY, double dZ);

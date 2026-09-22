@@ -1,6 +1,7 @@
 #pragma once
 #include "MillingTool.h"
 
+//Ball nose tool: a ball of radius m_dR at the tip, then the shank of radius m_dRz up to m_dCuttingHeight.
 class CMillingToolBall :
 	public CMillingTool
 {

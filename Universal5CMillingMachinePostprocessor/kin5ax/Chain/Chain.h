@@ -23,6 +23,9 @@ class CChain
 	CChainConfiguration m_oActualParameters;
 public:
 	double GetActualParameter(size_t nIndex, bool bToolPart) const;
+	//Collision test of every box of every segment against the boxes of every other segment, and of the tool against
+	//the boxes of all segments, at the actual parameters. The result is stored in the segments (IsPartInCollision)
+	//and in the collision log of the tool; the tool part and the material holder part are both walked from the base.
 	void DetectCollisions(CMillingTool &oMillingTool);
 	CChain(void);
 	string toXML() const;
@@ -84,6 +87,8 @@ public:
 	
 	bool HasParameterConstraints() const;
 	CHAIN_CONSTRAINTS_RESULT MeetsParametersConstraints(const CChainConfiguration &oChainConfig,string &sExceededConstraints) const; 
+	//DetectCollisions and a report: returns true when any part is in collision, then sLog names the parameters,
+	//the segments and their boxes, and the boxes hit by the tool.
 	bool HasCollision(CMillingTool &oMillingTool,string &sLog);
 
 

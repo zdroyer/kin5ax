@@ -18,14 +18,16 @@ class CChainSegment
 {
 
 protected:
-	vector<CR3Box> m_vParts;
-	vector<bool> m_vCollisions;
+	vector<CR3Box> m_vParts;		//the solids of the segment, in the frame after its constant transformation
+	vector<bool> m_vCollisions;	//one flag per box, set by CChain::DetectCollisions
 	int m_nHighlightedPart;
 
 public:
+	//Is any box of the segment flagged? Then sLog names the segment and the boxes.
 	bool HasPartInCollision(string &sLog) const;
 	void ClearAllPartCollision();
 
+	//the collision flag of box n (0-based)
 	void SetPartCollision(size_t n);
 	bool IsPartInCollision(size_t n) const;
 	void SetPartVector(vector<CR3Box> vNewParts);

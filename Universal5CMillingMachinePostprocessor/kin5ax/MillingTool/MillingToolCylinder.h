@@ -2,6 +2,7 @@
 #include "MillingTool.h"
 
 
+//Flat end mill: a cylinder of radius m_dRz from the tip up to m_dCuttingHeight (dR is unused).
 class CMillingToolCylinder	:	
 	public CMillingTool
 {
