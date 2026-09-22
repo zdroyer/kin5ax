@@ -83,6 +83,7 @@ public:
 	string GetFileName() const ;
 	//resizes the parameters vector if needed, detects collisions and places the tool (to be called before rendering)
 	void Update(CMillingTool *pTool);
+	//gives every regular segment a non-empty name different from the names of the earlier segments
 	void CheckAndCorrectSegmentsNames(void);
 	
 	bool HasParameterConstraints() const;

@@ -566,22 +566,20 @@ CR3Box CChain::GetBoundingBox() const
 	return box;
 }
 
+//an empty name becomes S<index>; a name equal to the name of an earlier segment gets "_1" appended
+//until it differs from all of them
 void CChain::CheckAndCorrectSegmentsNames(void)
 {
-	char s[255];
-	s[254]=0;
 	int n = (int)GetNumberOfRegularLinks();
 	for(int i=0;i<n;i++){
-		if((*this)[i].GetName().empty()){
-			sprintf(s,"S%d",i);		
-			((*this)[i]).SetName(string(s));
-		}
+		if((*this)[i].GetName().empty())
+			((*this)[i]).SetName(string_printf("S%d",i));
 	}
 	for(int i=0;i<n;i++){
 		for(int j=0;j<i;j++){
 			if((*this)[i].GetName()==(*this)[j].GetName()){
 				((*this)[i]).SetName((*this)[i].GetName()+"_1");
-				j=0;
+				j=-1;	//the new name against all the earlier segments again
 			}
 		}
 	}
