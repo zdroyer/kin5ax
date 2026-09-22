@@ -110,7 +110,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Exceptions;$(ProjectDir)3DGeometry;$(ProjectDir)Chain;$(ProjectDir)Postprocessor;$(ProjectDir)MillingTool;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_LIB;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <!-- must equal the runtime library of the application in the same configuration -->
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ConformanceMode>true</ConformanceMode>
@@ -128,7 +128,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Exceptions;$(ProjectDir)3DGeometry;$(ProjectDir)Chain;$(ProjectDir)Postprocessor;$(ProjectDir)MillingTool;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_LIB;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <!-- must equal the runtime library of the application in the same configuration -->
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <ConformanceMode>true</ConformanceMode>
