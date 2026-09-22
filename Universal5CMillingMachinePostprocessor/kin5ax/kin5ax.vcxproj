@@ -153,6 +153,7 @@
     <ClCompile Include="Chain\ChainConfiguration.cpp" />
     <ClCompile Include="Chain\ChainSegment.cpp" />
     <ClCompile Include="Chain\ChainXmlReader.cpp" />
+    <ClCompile Include="Chain\ChainXmlReaderPugixml.cpp" />
     <ClCompile Include="MillingTool\MillingTool.cpp" />
     <ClCompile Include="MillingTool\MillingToolBall.cpp" />
     <ClCompile Include="MillingTool\MillingToolCylinder.cpp" />

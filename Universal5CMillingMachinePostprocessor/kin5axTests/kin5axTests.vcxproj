@@ -145,6 +145,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ChainTests.cpp" />
+    <ClCompile Include="ChainXmlReaderTests.cpp" />
     <ClCompile Include="CLDataParsingTests.cpp" />
     <ClCompile Include="CLDataTests.cpp" />
     <ClCompile Include="InterpolationTests.cpp" />

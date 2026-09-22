@@ -32,6 +32,9 @@ public:
 	void DetectCollisions(CMillingTool &oMillingTool);
 	CChain(void);
 	std::string toXML() const;
+	//the tool part ends with the only TOOL segment, the material holder part with the only
+	//MATERIAL_HOLDER segment, no part is empty, no limit is above its maximum: else CGeneratorException
+	void CheckStructure() const;
 	~CChain(void);
 	CR3Box GetBoundingBox() const;
 	CTransformation GetFirstConstantRotation(size_t &nFirstRotaryLinkIndex) const;
