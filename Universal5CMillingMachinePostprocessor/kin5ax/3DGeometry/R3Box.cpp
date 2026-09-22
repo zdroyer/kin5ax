@@ -60,7 +60,7 @@ CR3Box CR3Box::OuterBoxFromOZCylinder(double dRadius, double dZ1, double dZ2)
 }
 CR3Box CR3Box::InnerBoxFromOZCylinder(double dRadius, double dZ1, double dZ2)
 {
-	double dA = dRadius*sqrt(2.0);
+	double dA = dRadius/sqrt(2.0);	//half side of the square inscribed in the circle
 	return CR3Box(-dA,dA,-dA,dA,dZ1,dZ2);
 }
 
