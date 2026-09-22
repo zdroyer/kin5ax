@@ -7,6 +7,7 @@
 #include "MillingToolCylinder.h"
 #include "Rotation.h"
 #include "Translation.h"
+#include <type_traits>
 
 static const double dRADIUS = 0.016;
 static const double dCUTTING_HEIGHT = 0.064;
@@ -37,6 +38,14 @@ static vector<CToolPlacement> Placements()
 			v.push_back(o);
 		}
 	return v;
+}
+
+//KnownBugs #26: the tools are deleted through the base class pointer
+TEST(MillingTool, HasAVirtualDestructor)
+{
+	EXPECT_TRUE(std::has_virtual_destructor<CMillingTool>::value);
+	CMillingTool *pTool = new CMillingToolBall(dRADIUS,dRADIUS,dCUTTING_HEIGHT,0.0);
+	delete pTool;
 }
 
 // ---------------------------------------------------------------- the cut volume

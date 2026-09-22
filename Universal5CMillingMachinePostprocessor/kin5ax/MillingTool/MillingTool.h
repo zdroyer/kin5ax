@@ -117,5 +117,6 @@ public:
 		,double dReferencePointZ);
 
 //	virtual void GetBoundingBox(CR3Point &r3pP1, CR3Point &r3pP2) const = 0;
-	~CMillingTool(void);
+	//the tools are owned and deleted through CMillingTool pointers (the document, the tool dialog)
+	virtual ~CMillingTool(void);
 };
