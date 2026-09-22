@@ -51,6 +51,8 @@ public:
 	};
 	CCutterLocationData(void);
 	~CCutterLocationData(void);
+	//reads the file: every line becomes a CCLLine (GOTO/x,y,z,i,j,k -> OK; MSYS/...; empty; anything else -> ERROR).
+	//Throws CGeneratorException when the file cannot be read.
 	void LoadFile(const string & sFileName, const string &sFileTitle);
 	void ResetLocationIterator(void);
 	bool GetNextLocation(CR3Point & p, CR3Vector & v);
@@ -58,9 +60,12 @@ public:
 protected:
 	CR3Box m_oBox, m_oBoxTransformed;
 
-	CCLLine ParseLine(int nLineBeginIndex, size_t nLineNumber);
-	int ReadDouble(const char *s,double &d) const;
-	int ReadDelims(const char *s) const;
+	//the line of the text beginning at nLineBeginIndex (already terminated by 0) as a CL line
+	CCLLine ParseLine(size_t nLineBeginIndex, size_t nLineNumber);
+	//a number read from s into d; returns the count of characters used, 0 when there is no number
+	size_t ReadDouble(const char *s,double &d) const;
+	//the count of characters before the first character that can begin a number (digit, sign, point)
+	size_t ReadDelims(const char *s) const;
 
 	vector<CCLLine> m_vLines;
 	size_t m_nActual;
@@ -69,7 +74,7 @@ protected:
 	double m_dTrajectoryLength;
 	double m_dTotalOrientationChangeRadians;
 
-	char *m_pData;
+	vector<char> m_vData;	//the text of the file, every line terminated by 0
 	CTransformation m_m4x4P,m_m4x4V;
 
 	string m_sFileName;
@@ -106,7 +111,7 @@ public:
 	{ return m_nErrors; }
 	
 	const CCutterLocationData::CCLLine &GetLine(size_t index) const{
-		if(index>m_vLines.size())
+		if(index>=m_vLines.size())
 			MY_THROW(CArgsMyException,"Invalid line number");
 		return m_vLines[index];
 	}

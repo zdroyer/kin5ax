@@ -10,6 +10,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ChainTests.cpp" />
+    <ClCompile Include="CLDataParsingTests.cpp" />
     <ClCompile Include="CLDataTests.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MeridianCLDataTests.cpp" />
