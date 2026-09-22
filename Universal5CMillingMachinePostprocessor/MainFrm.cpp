@@ -377,17 +377,17 @@ UINT simulationFunction(LPVOID pParam )
 
 	CChainConfiguration oChainConfig;
 	pDoc->m_oSimulationData.ResetConfigurationsIterator();
-	for(size_t i=0;i<=oConfiguration.m_nRefreshPeriod ; i++){
+	for(size_t i=0;;i++){
 		if(oConfiguration.m_bStopSimulation){
 			pView->Invalidate(FALSE);
 			pView->GetParent()->SendNotifyMessage(WM_APP,1,0);
 			AfxEndThread(0,TRUE);
 			return 0;
 		}
-		if(i==oConfiguration.m_nRefreshPeriod){
+		// a refresh period of 0 means no repaint during the simulation
+		if(oConfiguration.m_nRefreshPeriod && i>=oConfiguration.m_nRefreshPeriod){
 			i=0;
-			if(oConfiguration.m_nRefreshPeriod)
-				pView->SendNotifyMessage(WM_PAINT,0,0);
+			pView->SendNotifyMessage(WM_PAINT,0,0);
 		}
 		if(!pDoc->m_oSimulationData.NextConfiguration(oChainConfig))
 			break;
