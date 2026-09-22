@@ -1,12 +1,10 @@
-//the only Windows dependency of kin5ax: MSXML 6 through COM; nothing of it leaves this file.
-//These headers come before stdafx.h on purpose: the Windows typedef "byte" and std::byte of
-//C++17 are ambiguous once the standard library has been pulled into the global namespace.
+#include "../stdafx.h"
+#include "ChainXmlReader.h"
+
+//the only Windows dependency of kin5ax: MSXML 6 through COM; nothing of it leaves this file
 #define NOMINMAX
 #include <comdef.h>
 #import <msxml6.dll> exclude("ISequentialStream","_FILETIME")
-
-#include "../stdafx.h"
-#include "ChainXmlReader.h"
 
 //COM initialised for the lifetime of the object; a thread already initialised in another mode is left as it is
 namespace kin5ax {
