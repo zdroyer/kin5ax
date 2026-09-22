@@ -45,6 +45,8 @@ CKinematicChainPropertiesDialog::~CKinematicChainPropertiesDialog()
 void CKinematicChainPropertiesDialog::SetActiveDocument(CUniversal5CMillingMachinePostprocessorDoc *pDoc)
 {
 	assert(pDoc);
+	// the segment vectors may have changed: the pointer is taken again from the tree selection
+	m_pActiveSegment = 0;
 	if(m_pDoc){
 		while(1){
 			HTREEITEM item = m_treeSegments.GetChildItem(m_hToolPart);
@@ -206,7 +208,7 @@ void CKinematicChainPropertiesDialog::OnTvnSelchangedSegmentTree(NMHDR *pNMHDR, 
 	vector<CChainSegment> *pvVector;
 	int nIndex;
 	bool bIsToolPartActive;
-	if(GetSegmentVectorFromTreeItem(pNMTreeView->itemNew.hItem,&pvVector,nIndex)){
+	if(GetSegmentVectorFromTreeItem(pNMTreeView->itemNew.hItem,&pvVector,nIndex) && nIndex<(int)pvVector->size()){
 		
 		m_pActiveSegment = &(*pvVector)[nIndex];
 		EnableSegmentProperties((*pvVector)[nIndex]);
@@ -250,15 +252,25 @@ void CKinematicChainPropertiesDialog::OnBnClickedAddSegment()
 	CString s;
 	s.Format("S%zu",n);
 	oDefSegment.SetName(s.GetBuffer(0));
+	ForgetActiveSegment();
 	m_pDoc->m_oChain.AddSegmentAfterActiveSegment(oDefSegment);
 	SetActiveDocument(m_pDoc);
 	UpdateParameterSliderUnits();
 	m_pDoc->UpdateAllViews(NULL);
 }
 
+// Before the segment vector changes: m_pActiveSegment would dangle
+void CKinematicChainPropertiesDialog::ForgetActiveSegment()
+{
+	if(m_pActiveSegment)
+		m_pActiveSegment->HighlightPart(-1);
+	m_pActiveSegment = 0;
+}
+
 void CKinematicChainPropertiesDialog::OnBnClickedDeleteSegment()
 {
 	assert(m_pDoc);
+	ForgetActiveSegment();
 	m_pDoc->m_oChain.DeleteActiveSegment();
 	SetActiveDocument(m_pDoc);
 	UpdateParameterSliderUnits();

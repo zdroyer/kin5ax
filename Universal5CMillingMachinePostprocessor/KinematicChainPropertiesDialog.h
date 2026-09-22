@@ -37,6 +37,7 @@ public:
 	double m_dTrZ;
 
 	CChainSegment *m_pActiveSegment;
+	void ForgetActiveSegment();
 
 	CComboBox m_comboPredefinedAxes;
 	CComboBox m_comboPredefinedAngles;
