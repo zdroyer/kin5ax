@@ -75,6 +75,14 @@ test of all boxes and of the tool.
   (pugixml, vendored in `3rdParty/pugixml/`, portable; no DTD, the reader checks the elements,
   attributes and numbers itself and names the line of every problem). Both end with
   `CChain::CheckStructure`. Written by `CChain::toXML`.
+- **.kc.json** (in and out): the same machine in JSON, described by `kc.schema.json`
+  (draft 2020-12). The tool and the workpiece holder are members of their branch instead of
+  entries in the segment list and carry no type and no limits; a joint is `"rotary"` or
+  `"linear"`; a branch may have no joint at all; the name of the model, the machine, the
+  author and the date of the last change are members of the document. `CChainJsonReader`
+  and `CChainJsonWriter` on nlohmann/json (`3rdParty/nlohmann/`); no library validates a
+  schema, so the reader checks the same rules itself and names the member at fault by its
+  path, e.g. `tool_branch.links[1].rotation.axis`.
 - **CL data** (in): APT-like text, one location per line, `GOTO/x,y,z,i,j,k`; `MSYS/` lines
   are recognised, anything else is reported as an error line and skipped. Parsed by
   `CCutterLocationData` (locale independent, CRLF tolerant).
