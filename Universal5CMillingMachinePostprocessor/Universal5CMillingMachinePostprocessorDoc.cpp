@@ -144,8 +144,8 @@ BOOL CUniversal5CMillingMachinePostprocessorDoc::OnSaveDocument(LPCTSTR lpszPath
 
 C5CPostprocessor * CUniversal5CMillingMachinePostprocessorDoc::GetPostprocessor(void)
 {
-	if(m_pPostprocessor!=0)
-		delete m_pPostprocessor;
+	delete m_pPostprocessor;
+	m_pPostprocessor = 0;
 	if(m_oChain.Is5CChain()){
 		m_pPostprocessor = new C5CPostprocessor(m_oChain,oPostprocessorSettings);
 		return m_pPostprocessor;
