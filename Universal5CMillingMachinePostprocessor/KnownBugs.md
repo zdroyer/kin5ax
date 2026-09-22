@@ -50,8 +50,8 @@ Nothing here was observed at run time unless a test is named.
 
 | # | Where | Defect | Check | Status |
 |---|---|---|---|---|
-| 21 | `5CPostprocessor.cpp` `SolveWithKnownAlpha1` | Limits and collisions are checked while alpha1 is still ANY (value 0); the interpolated alpha1 and the recomputed shifts are never checked. | reported | open |
-| 22 | `OrientationPostprocessor.cpp` `getAlpha1AxisMethod` (`todo: WHY`) | A ratio slightly below -1 is forced to +1: acos gives 0 instead of pi, "no solution" on a boundary orientation. | reported | open |
+| 21 | `5CPostprocessor.cpp` `SolveWithKnownAlpha1` | Limits and collisions are checked while alpha1 is still ANY (value 0); the interpolated alpha1 and the recomputed shifts are never checked (after `SetAmbiguousParameter` the shifts from `m_oPositionPostprocessor.Solve` go straight into the result). | verified | open |
+| 22 | `OrientationPostprocessor.cpp` `getAlpha1AxisMethod` (`todo: WHY`) | A ratio slightly below -1 is forced to +1: acos gives 0 instead of pi, "no solution" on a boundary orientation (`dDenominator = dNumerator` whenever the magnitude is larger, sign ignored). Proposed: clamp the ratio to [-1,1] within a tolerance, no solution beyond it. | verified | open |
 | 23 | `double_tools.h` `static double dEPSILON` | One copy per source file: the precision of the settings dialog has no effect; the working tolerance is 1E-15 everywhere. | verified | open |
 
 ## Design issues
