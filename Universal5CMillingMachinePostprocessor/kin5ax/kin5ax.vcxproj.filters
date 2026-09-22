@@ -13,6 +13,12 @@
     <Filter Include="Postprocessor">
       <UniqueIdentifier>{52A723FD-F38F-544D-A944-8810345C45FE}</UniqueIdentifier>
     </Filter>
+    <Filter Include="3rdParty">
+      <UniqueIdentifier>{7C1E3B0A-5D2F-4E8B-9A61-2F0C6D8E4B11}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdParty\pugixml">
+      <UniqueIdentifier>{9B4F0D2C-31A7-4C55-8E2D-6A1B7F3C9D22}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Exceptions">
       <UniqueIdentifier>{40482F10-7A8C-5289-815F-774F638BFBFA}</UniqueIdentifier>
     </Filter>
@@ -173,5 +179,19 @@
     <ClInclude Include="SimulationData.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="string_tools.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="3rdParty\pugixml\pugixml.cpp">
+      <Filter>3rdParty\pugixml</Filter>
+    </ClCompile>
+    <ClInclude Include="3rdParty\pugixml\pugixml.hpp">
+      <Filter>3rdParty\pugixml</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\pugixml\pugiconfig.hpp">
+      <Filter>3rdParty\pugixml</Filter>
+    </ClInclude>
+    <None Include="3rdParty\pugixml\LICENSE.md">
+      <Filter>3rdParty\pugixml</Filter>
+    </None>
   </ItemGroup>
 </Project>
