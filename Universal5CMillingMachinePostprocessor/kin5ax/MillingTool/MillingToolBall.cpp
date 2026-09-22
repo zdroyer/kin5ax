@@ -48,31 +48,31 @@ bool CMillingToolBall::CauseCollision(const CR3Box &box, const CTransformation t
 	gluSphere(pQ,m_dR,10,10);
 	glPopMatrix();
 //*/	
+	//the ball: its centre is m_dR above the tip, the tip m_dReferencePointZ below the reference point
 	CR3Point p(0.0,0.0,m_dR - m_dReferencePointZ);
 	if(box.HasIntersectionWithSphere(trToBoxFrame*p,m_dR))
 		return true;
-	CTranslation moveToO(0.0,0.0,m_dReferencePointZ); 
-	CTranslation moveFromO(0.0,0.0,-m_dReferencePointZ); 
-	return box.HasIntersectionWithOZCylinder(m_dCuttingHeight-m_dR,m_dRz,trToBoxFrame*moveFromO,moveToO*trToToolFrame);
-	//todo: implementation for cylinder
-	return false;
+	//the shank: a cylinder from the equator of the ball to the end of the tool
+	if(m_dCuttingHeight<=m_dR)
+		return false;
+	CTranslation moveToShank(0.0,0.0,m_dReferencePointZ-m_dR);
+	CTranslation moveFromShank(0.0,0.0,m_dR-m_dReferencePointZ);
+	return box.HasIntersectionWithOZCylinder(m_dCuttingHeight-m_dR,m_dRz,trToBoxFrame*moveFromShank,moveToShank*trToToolFrame);
 }
 
 
 
+//the ball with the centre m_dR above the tip, and from its equator up the shank of radius m_dRz
 bool CMillingToolBall::IsInOZCuttingSpace(const CR3Point &p) const
 {
 	if(p.GetZ()<-dEPSILON)
 		return false;
 	if(p.GetZ()>m_dCuttingHeight+dEPSILON)
 		return false;
-	if(p.GetZ()<2.0*m_dR+dEPSILON ){
-		if((p-CR3Point(0.0,0.0,m_dR)).GetLengthSquare()<=m_dRSquare+dEPSILON)
-			return true;
+	if((p-CR3Point(0.0,0.0,m_dR)).GetLengthSquare()<=m_dRSquare+dEPSILON)
+		return true;
+	if(p.GetZ()<m_dR-dEPSILON)
 		return false;
-	}
 	double dSq = p.GetX()*p.GetX()+p.GetY()*p.GetY();
-	if(dSq>m_dRzSquare+dEPSILON)
-		return false;
-	return true;
+	return dSq<=m_dRzSquare+dEPSILON;
 }
