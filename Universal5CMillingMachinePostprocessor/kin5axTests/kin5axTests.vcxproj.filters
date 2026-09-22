@@ -12,6 +12,7 @@
     <ClCompile Include="ChainTests.cpp" />
     <ClCompile Include="ChainXmlReaderTests.cpp" />
     <ClCompile Include="ChainJsonTests.cpp" />
+    <ClCompile Include="ChainFcmTests.cpp" />
     <ClCompile Include="CLDataParsingTests.cpp" />
     <ClCompile Include="CLDataTests.cpp" />
     <ClCompile Include="InterpolationTests.cpp" />

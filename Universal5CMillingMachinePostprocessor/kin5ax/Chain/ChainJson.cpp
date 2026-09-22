@@ -278,60 +278,6 @@ tJson BranchToJson(const std::vector<CChainSegment> &vPart, const char *szTermin
 	return branch;
 }
 
-//dump() puts every element of an array on its own line: a three-number vector is easier to read
-//and to edit on one line. Only arrays that hold nothing but numbers are collapsed, so no string
-//is ever touched (a string would bring a character that is not part of a number).
-std::string CollapseNumberArrays(const std::string &s)
-{
-	std::string sResult;
-	sResult.reserve(s.size());
-	for(size_t i=0;i<s.size();){
-		char c = s[i];
-		if(c=='"'){							//copy a string literal unchanged
-			size_t j=i+1;
-			while(j<s.size() && s[j]!='"'){
-				if(s[j]=='\\')
-					j++;
-				j++;
-			}
-			j = std::min(j+1,s.size());
-			sResult.append(s,i,j-i);
-			i = j;
-			continue;
-		}
-		if(c=='['){
-			size_t j=i+1;
-			bool bOnlyNumbers = true;
-			while(j<s.size() && s[j]!=']'){
-				char d = s[j];
-				if(!(isdigit((unsigned char)d) || d=='-' || d=='+' || d=='.' || d=='e' || d=='E'
-					|| d==',' || isspace((unsigned char)d))){
-					bOnlyNumbers = false;
-					break;
-				}
-				j++;
-			}
-			if(bOnlyNumbers && j<s.size()){
-				sResult += '[';
-				for(size_t k=i+1;k<j;k++){
-					if(isspace((unsigned char)s[k]))
-						continue;
-					if(s[k]==',')
-						sResult += ", ";
-					else
-						sResult += s[k];
-				}
-				sResult += ']';
-				i = j+1;
-				continue;
-			}
-		}
-		sResult += c;
-		i++;
-	}
-	return sResult;
-}
-
 } // namespace
 
 CChain CChainJsonReader::Parse(const std::string &sJson, const std::string &sWhere)
@@ -405,7 +351,7 @@ std::string CChainJsonWriter::ToJson(const CChain &oChain)
 		root["modified"] = oChain.GetModified();
 	root["tool_branch"] = BranchToJson(oChain.m_vToolPart,"tool");
 	root["workpiece_branch"] = BranchToJson(oChain.m_vMaterialHolderPart,"workpiece_holder");
-	return CollapseNumberArrays(root.dump(2))+"\n";
+	return json_numbers_on_one_line(root.dump(2))+"\n";
 }
 
 void CChainJsonWriter::WriteFile(const CChain &oChain, const std::string &sFilePath)
