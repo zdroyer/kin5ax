@@ -1,6 +1,7 @@
 #pragma once
 #include "double_tools.h"
 #include "DivByZeroMyException.h"
+#include "string_tools.h"
 
 class CR3Vector  
 {
@@ -153,9 +154,7 @@ public:
 	}
 	string toString() const
 	{
-		static char tmp[50];
-		sprintf(tmp,"[%.4lf; %.4lf; %.4lf]",GetX(),GetY(),GetZ());
-		return string(tmp);
+		return string_printf("[%.4lf; %.4lf; %.4lf]",GetX(),GetY(),GetZ());
 	}
 
 	CR3Vector vectorProduct(const CR3Vector &b) const 

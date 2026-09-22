@@ -22,6 +22,7 @@
     <ClCompile Include="SimulationDataTests.cpp" />
     <ClCompile Include="SolverRoundTrip.cpp" />
     <ClCompile Include="SphereCLDataGenerator.cpp" />
+    <ClCompile Include="StringToolsTests.cpp" />
     <ClCompile Include="TestData.cpp" />
     <ClCompile Include="..\ChainXmlReader.cpp">
       <Filter>Application</Filter>

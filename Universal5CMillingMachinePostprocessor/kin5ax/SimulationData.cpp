@@ -24,8 +24,6 @@ int CSimulationData::ExportToGCode(
 						size_t nAngle2Index,
 						bool bRadians) const
 {
-	static char sLine[255];
-	sLine[254]=0;
 	size_t n = 1;
 	for(size_t i=0; i<m_vSolutions.size();i++){
 		if(m_vSolutions[i].size() && m_vIndexes[i]<m_vSolutions[i].size()) {

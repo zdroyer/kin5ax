@@ -5,6 +5,7 @@
 #include "../stdafx.h"
 #include "R3Vector.h"
 #include "R3Point.h"
+#include "string_tools.h"
 
 
 //////////////////////////////////////////////////////////////////////
@@ -76,17 +77,13 @@ POINT CR3Point::toPOINT() const
 
 string CR3Point::toStringInt() const
 {
-	static char str[35];
-	sprintf(str,"(%d, %d, %d)\0",(int)GetX(),(int)GetY(),(int)GetZ());
-	return string(str);
+	return string_printf("(%d, %d, %d)",(int)GetX(),(int)GetY(),(int)GetZ());
 }
 
 
 string CR3Point::toString() const
 {
-	static char str[35];
-	sprintf(str,"(%.4f, %.4f, %.4f)\0",GetX(),GetY(),GetZ());
-	return string(str);
+	return string_printf("(%.4f, %.4f, %.4f)",GetX(),GetY(),GetZ());
 }
 
 

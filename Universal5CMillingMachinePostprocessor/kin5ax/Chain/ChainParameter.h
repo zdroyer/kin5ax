@@ -4,6 +4,7 @@
 #include "ArgsMyException.h"
 
 #include "double_tools.h"
+#include "string_tools.h"
 
 enum CHAIN_PARAMETER_TYPE{
 	CHAIN_PARAMETER_SINGLE_NUMBER=1,
@@ -73,16 +74,9 @@ public:
 
 	string toString( ) const
 	{
-		static char szBuffer[30];
-		switch (m_nType){
-			case CHAIN_PARAMETER_SINGLE_NUMBER:
-				sprintf(szBuffer,"%2.4G",m_dValue);
-				break;
-			case CHAIN_PARAMETER_ANY_NUMBER:
-				sprintf(szBuffer,"ANY");
-				break;
-		}
-		return string(szBuffer);
+		if(m_nType==CHAIN_PARAMETER_ANY_NUMBER)
+			return "ANY";
+		return string_printf("%2.4G",m_dValue);
 	}
 	bool operator==(const CChainParameter &p2)const
 	{

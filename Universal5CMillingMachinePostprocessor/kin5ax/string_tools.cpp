@@ -6,23 +6,29 @@
 //static string sRNL("\r\n");
 
 
+string string_printf(const char *szFormat, ...)
+{
+	va_list args;
+	va_start(args,szFormat);
+	va_list args2;
+	va_copy(args2,args);
+	int nLength = vsnprintf(NULL,0,szFormat,args);
+	va_end(args);
+	string sResult;
+	if(nLength>0){
+		vector<char> v((size_t)nLength+1);
+		vsnprintf(&v[0],v.size(),szFormat,args2);
+		sResult.assign(&v[0],(size_t)nLength);
+	}
+	va_end(args2);
+	return sResult;
+}
+
 string size_to_string(size_t n, bool bEndWithNewLineAndR){
-	static char s[25];
-	s[24]=0;
-	if(bEndWithNewLineAndR)
-		sprintf(s,"%zu\r\n",n);
-	else
-		sprintf(s,"%zu",n);
-	return string(s);
+	return string_printf(bEndWithNewLineAndR ? "%zu\r\n" : "%zu",n);
 }
 string double_to_string(double d, bool bEndWithNewLineAndR){
-	static char s[255];
-	s[254]=0;
-	if(bEndWithNewLineAndR)
-		sprintf(s,"%.8G\r\n",d);
-	else
-		sprintf(s,"%.8G",d);
-	return string(s);
+	return string_printf(bEndWithNewLineAndR ? "%.8G\r\n" : "%.8G",d);
 }
 
 string xml_escape(const string &s)
