@@ -7,6 +7,7 @@
 #include "gltools.h"
 
 #include "Universal5CMillingMachinePostprocessorDoc.h"
+#include "ChainJson.h"
 #include "Universal5CMillingMachinePostprocessorView.h"
 
 #ifdef _DEBUG
@@ -22,6 +23,8 @@ BEGIN_MESSAGE_MAP(CUniversal5CMillingMachinePostprocessorApp, CWinApp)
 	ON_COMMAND(ID_FILE_NEW, CWinApp::OnFileNew)
 	ON_COMMAND(ID_FILE_OPEN, CWinApp::OnFileOpen)
 	ON_COMMAND(ID_FILE_OPEN_PUGIXML, OnFileOpenPugixml)
+	ON_COMMAND(ID_FILE_OPEN_JSON, OnFileOpenJson)
+	ON_COMMAND(ID_FILE_SAVE_AS_JSON, OnFileSaveAsJson)
 END_MESSAGE_MAP()
 
 
@@ -131,6 +134,16 @@ void CUniversal5CMillingMachinePostprocessorApp::OnAppAbout()
 // CUniversal5CMillingMachinePostprocessorApp message handlers
 
 
+//Opens a chain file with the given reader; the framework sets the title and the recent files
+void CUniversal5CMillingMachinePostprocessorApp::OpenWith(int nReader, LPCTSTR lpszPathName)
+{
+	CUniversal5CMillingMachinePostprocessorDoc::s_nextReader =
+		(CUniversal5CMillingMachinePostprocessorDoc::CHAIN_FILE_READER)nReader;
+	OpenDocumentFile(lpszPathName);
+	CUniversal5CMillingMachinePostprocessorDoc::s_nextReader =
+		CUniversal5CMillingMachinePostprocessorDoc::CHAIN_FILE_READER_MSXML;
+}
+
 //Chain > Open (pugixml): the same as Open, read by the portable reader of kin5ax
 void CUniversal5CMillingMachinePostprocessorApp::OnFileOpenPugixml()
 {
@@ -138,7 +151,36 @@ void CUniversal5CMillingMachinePostprocessorApp::OnFileOpenPugixml()
 		"Kinematic chain files (*.kc)|*.kc|All files (*.*)|*.*||");
 	if(dlg.DoModal()!=IDOK)
 		return;
-	CUniversal5CMillingMachinePostprocessorDoc::s_bOpenWithPugixml = true;
-	OpenDocumentFile(dlg.GetPathName());	//the framework calls OnOpenDocument, sets the title and the recent files
-	CUniversal5CMillingMachinePostprocessorDoc::s_bOpenWithPugixml = false;
+	OpenWith(CUniversal5CMillingMachinePostprocessorDoc::CHAIN_FILE_READER_PUGIXML,dlg.GetPathName());
+}
+
+//Chain > Open (JSON): a chain from its JSON form (kin5ax/kc.schema.json)
+void CUniversal5CMillingMachinePostprocessorApp::OnFileOpenJson()
+{
+	CFileDialog dlg(TRUE,"json",NULL,OFN_HIDEREADONLY|OFN_FILEMUSTEXIST,
+		"Kinematic chain, JSON (*.kc.json;*.json)|*.kc.json;*.json|All files (*.*)|*.*||");
+	if(dlg.DoModal()!=IDOK)
+		return;
+	OpenWith(CUniversal5CMillingMachinePostprocessorDoc::CHAIN_FILE_READER_JSON,dlg.GetPathName());
+}
+
+//Chain > Save As (JSON): the chain of the active document, its XML file untouched
+void CUniversal5CMillingMachinePostprocessorApp::OnFileSaveAsJson()
+{
+	CFrameWnd *pFrame = (CFrameWnd*)AfxGetMainWnd();
+	CUniversal5CMillingMachinePostprocessorDoc *pDoc = pFrame ?
+		(CUniversal5CMillingMachinePostprocessorDoc*)pFrame->GetActiveDocument() : NULL;
+	if(!pDoc){
+		AfxMessageBox("No kinematic chain to save");
+		return;
+	}
+	CFileDialog dlg(FALSE,"json",NULL,OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT,
+		"Kinematic chain, JSON (*.kc.json)|*.kc.json|All files (*.*)|*.*||");
+	if(dlg.DoModal()!=IDOK)
+		return;
+	try{
+		CChainJsonWriter::WriteFile(pDoc->m_oChain,std::string(dlg.GetPathName()));
+	} catch (CGeneratorException &e){
+		AfxMessageBox(e.Message().c_str());
+	}
 }

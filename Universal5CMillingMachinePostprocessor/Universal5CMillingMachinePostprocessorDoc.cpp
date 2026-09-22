@@ -11,6 +11,7 @@
 #include "mainfrm.h"
 #include "ChainRendererGL.h"
 #include "ChainXmlReader.h"
+#include "ChainJson.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -25,7 +26,8 @@ extern CGLTools oGLTools;
 
 IMPLEMENT_DYNCREATE(CUniversal5CMillingMachinePostprocessorDoc, CDocument)
 
-bool CUniversal5CMillingMachinePostprocessorDoc::s_bOpenWithPugixml = false;
+CUniversal5CMillingMachinePostprocessorDoc::CHAIN_FILE_READER
+	CUniversal5CMillingMachinePostprocessorDoc::s_nextReader = CUniversal5CMillingMachinePostprocessorDoc::CHAIN_FILE_READER_MSXML;
 
 BEGIN_MESSAGE_MAP(CUniversal5CMillingMachinePostprocessorDoc, CDocument)
 END_MESSAGE_MAP()
@@ -108,10 +110,17 @@ BOOL CUniversal5CMillingMachinePostprocessorDoc::OnOpenDocument(LPCTSTR lpszPath
 //	if (!CDocument::OnOpenDocument(lpszPathName))
 //		return FALSE;
 	try{
-		if(s_bOpenWithPugixml)
-			m_oChain = CChainXmlReaderPugixml::ReadFile(std::string(lpszPathName));
-		else
-			m_oChain = CChainXmlReader::ReadFile(std::string(lpszPathName));
+		switch(s_nextReader){
+			case CHAIN_FILE_READER_PUGIXML:
+				m_oChain = CChainXmlReaderPugixml::ReadFile(std::string(lpszPathName));
+				break;
+			case CHAIN_FILE_READER_JSON:
+				m_oChain = CChainJsonReader::ReadFile(std::string(lpszPathName));
+				break;
+			default:
+				m_oChain = CChainXmlReader::ReadFile(std::string(lpszPathName));
+				break;
+		}
 	} catch (CGeneratorException &e){
 		AfxMessageBox(e.Message().c_str());
 		return FALSE;

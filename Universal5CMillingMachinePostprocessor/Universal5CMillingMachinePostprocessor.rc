@@ -795,8 +795,10 @@ BEGIN
         MENUITEM "&New\tCtrl+N",                ID_FILE_NEW
         MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
         MENUITEM "Open (pugi&xml)...",          ID_FILE_OPEN_PUGIXML
+        MENUITEM "Open (&JSON)...",             ID_FILE_OPEN_JSON
         MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
         MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
+        MENUITEM "Save As (JSO&N)...",          ID_FILE_SAVE_AS_JSON
         MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
@@ -965,6 +967,8 @@ BEGIN
     ID_FILE_NEW             "Create a new document\nNew"
     ID_FILE_OPEN            "Open an existing document\nOpen"
     ID_FILE_OPEN_PUGIXML    "Open a kinematic chain with the pugixml reader\nOpen (pugixml)"
+    ID_FILE_OPEN_JSON       "Open a kinematic chain from a JSON file\nOpen (JSON)"
+    ID_FILE_SAVE_AS_JSON    "Save the kinematic chain as a JSON file\nSave As (JSON)"
     ID_FILE_CLOSE           "Close the active document\nClose"
     ID_FILE_SAVE            "Save the active document\nSave"
     ID_FILE_SAVE_AS         "Save the active document with a new name\nSave As"
