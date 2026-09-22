@@ -75,7 +75,7 @@ Nothing here was observed at run time unless a test is named.
 | 33 | `Universal5CMillingMachinePostprocessorView.cpp:82` | A GLU quadric is created on every repaint and never freed. | **fixed** ac6538c |
 | 34 | `KinematicChainPropertiesDialog.cpp` | `size_t m_nActivePart`: `GetCurSel()` of -1 and `max(0,n-1)` underflow. | **fixed** c0e8462 |
 | 35 | `GLTools.cpp` arrows | A vector (0,0,-1) gives a zero rotation axis: drawn pointing up. | **fixed** 25c7486 |
-| 36 | various | `MaterialBlockDialog` accepts voxel size 0; `CMaterial::m_dPixelSize` and `CMillingToolPropertiesDialog::m_pDoc` uninitialised; `"%d"` with `size_t` in two dialogs. | open |
+| 36 | various | `MaterialBlockDialog` accepts voxel size 0; `CMaterial::m_dPixelSize` and `CMillingToolPropertiesDialog::m_pDoc` uninitialised; `"%d"` with `size_t` in three dialogs; also `CMaterialBlockDialog::m_pDoc` uninitialised. | **fixed** a93f8ce |
 
 ## Fixed earlier (for the record)
 
