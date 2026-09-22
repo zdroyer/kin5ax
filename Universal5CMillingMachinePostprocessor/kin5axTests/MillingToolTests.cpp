@@ -25,11 +25,11 @@ void PrintTo(const CToolPlacement &o, ::std::ostream *pOut)
 	*pOut<<"tilt "<<o.m_dTiltDegrees<<" deg, reference point "<<o.m_dReferencePointZ<<" above the tip";
 }
 
-static vector<CToolPlacement> Placements()
+static std::vector<CToolPlacement> Placements()
 {
 	const double vTilts[] = {0.0,10.0,30.0,45.0,90.0,135.0,180.0};
 	const double vReferences[] = {0.0,dRADIUS,0.04};	//the tip, the ball centre (the default tool), a point on the shank
-	vector<CToolPlacement> v;
+	std::vector<CToolPlacement> v;
 	for(int i=0;i<7;i++)
 		for(int j=0;j<3;j++){
 			CToolPlacement o;

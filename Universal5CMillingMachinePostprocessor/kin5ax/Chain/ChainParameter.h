@@ -72,7 +72,7 @@ public:
 	{return m_nUnit == DISTANCE_UNIT;}
 
 
-	string toString( ) const
+	std::string toString( ) const
 	{
 		if(m_nType==CHAIN_PARAMETER_ANY_NUMBER)
 			return "ANY";
@@ -121,7 +121,7 @@ protected:
 		if(m_nUnit == DISTANCE_UNIT) 
 			return d;
 		double dif1 = fabs(d2Pi-d);
-		return min(fmod(dif1,d2Pi),fmod(d,d2Pi));
+		return std::min(fmod(dif1,d2Pi),fmod(d,d2Pi));
 	}
 
 	double m_dValue;
@@ -131,4 +131,4 @@ protected:
 
 };
 
-typedef vector<CChainParameter> tChainParameterVector;
+typedef std::vector<CChainParameter> tChainParameterVector;

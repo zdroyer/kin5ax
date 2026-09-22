@@ -49,11 +49,11 @@ void CMillingToolRendererGDI::RenderBall(CDC &dc, const CMillingTool &oTool)
 	CBrush cuttingBrush(RGB(255,128,0));
 	CBrush *pOldBrush = dc.SelectObject(&cuttingBrush);
 	if(nH>2*nR)
-		dc.Rectangle(x0-nRz,z0-nR,x0+nRz,max(z0-nH,margin));
+		dc.Rectangle(x0-nRz,z0-nR,x0+nRz,std::max(z0-nH,margin));
 	if(nH<2*nR){
 		if(nH){
 			if(nH>nR)
-				dc.Rectangle(x0-nRz,z0-nR,x0+nRz,max(z0-nH-1,margin));
+				dc.Rectangle(x0-nRz,z0-nR,x0+nRz,std::max(z0-nH-1,margin));
 			int r = (int)sqrt((double)(2*nR*nH-nH*nH));
 			dc.MoveTo(x0-r,z0-nH);
 			dc.LineTo(x0+r,z0-nH);
@@ -119,7 +119,7 @@ void CMillingToolRendererGDI::RenderCylinder(CDC &dc, const CMillingTool &oTool)
 
 	CBrush cuttingBrush(RGB(255,128,0));
 	CBrush *pOldBrush = dc.SelectObject(&cuttingBrush);
-	dc.Rectangle(x0-nRz,z0,x0+nRz,max(z0-nH,margin));
+	dc.Rectangle(x0-nRz,z0,x0+nRz,std::max(z0-nH,margin));
 	dc.SelectObject(pOldBrush);
 	cuttingBrush.DeleteObject();
 

@@ -22,17 +22,17 @@ public:
 		CR3Point m_p;
 		CR3Vector m_v;	
 		size_t m_nIndexOfString;
-		string GetStatus() const
+		std::string GetStatus() const
 		{
 			switch(m_status){
 				case CL_LINE_EMPTY:
-					return string("EMPTY");
+					return std::string("EMPTY");
 				case CL_LINE_ERROR:
-					return string("ERROR");
+					return std::string("ERROR");
 				case CL_LINE_MSYS:
-					return string("MSYS");
+					return std::string("MSYS");
 				default:
-					return string("OK");
+					return std::string("OK");
 			}
 		}
 		CCLLine(CL_LINE_STATUS status,size_t lineNumber,size_t indexOfString,CR3Point p, CR3Vector v)
@@ -53,7 +53,7 @@ public:
 	~CCutterLocationData(void);
 	//reads the file: every line becomes a CCLLine (GOTO/x,y,z,i,j,k -> OK; MSYS/...; empty; anything else -> ERROR).
 	//Throws CGeneratorException when the file cannot be read.
-	void LoadFile(const string & sFileName, const string &sFileTitle);
+	void LoadFile(const std::string & sFileName, const std::string &sFileTitle);
 	void ResetLocationIterator(void);
 	bool GetNextLocation(CR3Point & p, CR3Vector & v);
 	
@@ -67,18 +67,18 @@ protected:
 	//the count of characters before the first character that can begin a number (digit, sign, point)
 	size_t ReadDelims(const char *s) const;
 
-	vector<CCLLine> m_vLines;
+	std::vector<CCLLine> m_vLines;
 	size_t m_nActual;
 	size_t m_nErrors;
 	size_t m_nLocations;
 	double m_dTrajectoryLength;
 	double m_dTotalOrientationChangeRadians;
 
-	vector<char> m_vData;	//the text of the file, every line terminated by 0
+	std::vector<char> m_vData;	//the text of the file, every line terminated by 0
 	CTransformation m_m4x4P,m_m4x4V;
 
-	string m_sFileName;
-	string m_sFileTitle;
+	std::string m_sFileName;
+	std::string m_sFileTitle;
 
 public:
 	bool HasMoreLocations() const;
@@ -116,10 +116,10 @@ public:
 		return m_vLines[index];
 	}
 
-	const string GetFileName() const 
+	const std::string GetFileName() const 
 	{ return m_sFileName;}
 
-	const string GetFileTitle() const 
+	const std::string GetFileTitle() const 
 	{ return m_sFileTitle;}
 
 };

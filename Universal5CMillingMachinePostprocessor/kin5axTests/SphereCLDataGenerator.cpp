@@ -4,7 +4,7 @@
 #include "r3point.h"
 #include "rotation.h"
 
-size_t WriteSphereCLData(const string &sFileName, double dR, double dD)
+size_t WriteSphereCLData(const std::string &sFileName, double dR, double dD)
 {
 	FILE * pFile = fopen(sFileName.c_str(),"w");
 	if(pFile==NULL)
@@ -38,7 +38,7 @@ size_t WriteSphereCLData(const string &sFileName, double dR, double dD)
 	return nLocations;
 }
 
-size_t WriteMeridianCLData(const string &sFileName, double dR, size_t nPoints)
+size_t WriteMeridianCLData(const std::string &sFileName, double dR, size_t nPoints)
 {
 	if(nPoints<3 || nPoints>9 || nPoints%2==0)
 		return 0;

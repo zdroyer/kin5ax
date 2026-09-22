@@ -4,9 +4,9 @@
 #include "r3vector.h"
 #include "millingtool.h"
 
-typedef vector<unsigned char> uchar_vector;
-typedef vector<uchar_vector> uchar_matrix;
-typedef vector<uchar_matrix> uchar_box;
+typedef std::vector<unsigned char> uchar_vector;
+typedef std::vector<uchar_vector> uchar_matrix;
+typedef std::vector<uchar_matrix> uchar_box;
 
 enum VOXEL_COLOR{
 	VOXEL_BLACK=0x00,
@@ -32,7 +32,7 @@ protected:
 	double m_dPixelSize;
 	size_t MinimumIndex(double d, double dSize, size_t nMax) const;
 	size_t MaximumIndex(double d, double dSize, size_t nMax) const;
-	vector<CR3Point> m_vGrayVoxels;
+	std::vector<CR3Point> m_vGrayVoxels;
 public:
 	void SetObserverVector(const CR3Vector &r3vV);
 	void RenderContour() const;

@@ -6,7 +6,7 @@
 static double AngleDifference(double d1, double d2)
 {
 	double d = fmod(fabs(d1-d2),d2Pi);
-	return min(d,d2Pi-d);
+	return std::min(d,d2Pi-d);
 }
 
 CSolverRoundTripResult RunSolverRoundTrip(CChain &oChain, CMillingTool &oTool, size_t nSamples, double dTolerance)
@@ -31,7 +31,7 @@ CSolverRoundTripResult RunSolverRoundTrip(CChain &oChain, CMillingTool &oTool, s
 			oSet[i].SetParameter(std::uniform_real_distribution<double>(dMin,dMax)(oGenerator),bRevolute ? RADIAN : DISTANCE_UNIT);
 		}
 		oChain.SetParameters(oSet);
-		string sLog;
+		std::string sLog;
 		if(oChain.HasCollision(oTool,sLog)){
 			oResult.m_nCollisions++;
 			continue;
@@ -54,8 +54,8 @@ CSolverRoundTripResult RunSolverRoundTrip(CChain &oChain, CMillingTool &oTool, s
 			CR3CaughtVector cv = oChain.GetActualToolPositionAndOrientation();
 			double dPosition = d_E(cv.m_p,cvTarget.m_p);
 			double dOrientation = (cv.m_v-cvTarget.m_v).GetLength();
-			oResult.m_dWorstPositionError = max(oResult.m_dWorstPositionError,dPosition);
-			oResult.m_dWorstOrientationError = max(oResult.m_dWorstOrientationError,dOrientation);
+			oResult.m_dWorstPositionError = std::max(oResult.m_dWorstPositionError,dPosition);
+			oResult.m_dWorstOrientationError = std::max(oResult.m_dWorstOrientationError,dOrientation);
 			if(dPosition>dTolerance || dOrientation>dTolerance){
 				oResult.m_nWrongSolutions++;
 				if(oResult.m_sFirstProblem.empty())

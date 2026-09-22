@@ -6,7 +6,7 @@
 
 class CR3Point  
 {
-friend ostream & operator<<(ostream &out, const CR3Point &p);
+friend std::ostream & operator<<(std::ostream &out, const CR3Point &p);
 friend class CTransformation;
 friend CR3Point operator * (double d, const CR3Point &p);
 friend CR3Point average(const CR3Point &p1, const CR3Point &p2);
@@ -198,8 +198,8 @@ public:
 
 
 	CR3Vector toR3Vector() const;
-	string toString() const;
-	string toStringInt() const;
+	std::string toString() const;
+	std::string toStringInt() const;
 	inline const double * toGL3dv(void) const
 	{
 		return m_dV;

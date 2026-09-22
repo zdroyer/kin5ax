@@ -34,14 +34,14 @@ CTransformation CTransformation::operator*(const CTransformation &b) const
 }
 
 
-ostream & operator << (ostream &out, const CTransformation &a)
+std::ostream & operator << (std::ostream &out, const CTransformation &a)
 {
 	
 	for(int i=0;i<4;i++){
 		for(int j=0;j<4;j++){
 			out<<a.M[j][i]<<" ";
 		}
-		out<<endl;
+		out<<std::endl;
 	}
 	//*/
 	return out;

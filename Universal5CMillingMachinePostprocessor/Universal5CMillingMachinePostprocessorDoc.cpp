@@ -106,7 +106,7 @@ BOOL CUniversal5CMillingMachinePostprocessorDoc::OnOpenDocument(LPCTSTR lpszPath
 //	if (!CDocument::OnOpenDocument(lpszPathName))
 //		return FALSE;
 	try{
-		m_oChain = CChainXmlReader::ReadFile(string(lpszPathName));
+		m_oChain = CChainXmlReader::ReadFile(std::string(lpszPathName));
 	} catch (CGeneratorException &e){
 		AfxMessageBox(e.Message().c_str());
 		return FALSE;
@@ -131,10 +131,10 @@ BOOL CUniversal5CMillingMachinePostprocessorDoc::OnSaveDocument(LPCTSTR lpszPath
 		MessageBox(0,lpszPathName,"Cannot open file to write",MB_OK);
 		return FALSE;
 	}
-	string sXML = m_oChain.toXML();
+	std::string sXML = m_oChain.toXML();
 	int nResult = fputs(sXML.c_str(),file);
 	fclose(file);
-	m_oChain.SetFileName(string(lpszPathName));
+	m_oChain.SetFileName(std::string(lpszPathName));
 	if(nResult<0)
 		MessageBox(0,lpszPathName,"Error with saving file",MB_OK);
 	else

@@ -29,7 +29,7 @@ public:
 	//and in the collision log of the tool; the tool part and the material holder part are both walked from the base.
 	void DetectCollisions(CMillingTool &oMillingTool);
 	CChain(void);
-	string toXML() const;
+	std::string toXML() const;
 	~CChain(void);
 	CR3Box GetBoundingBox() const;
 	CTransformation GetFirstConstantRotation(size_t &nFirstRotaryLinkIndex) const;
@@ -56,12 +56,12 @@ public:
 	const CChainSegment & operator[](int nIndex) const;
 	void SetVirtualToolPosition(const CR3Vector &r3v, const CR3Point &r3p);
 	// part of chain ended with milling tool 
-	vector<CChainSegment> m_vToolPart;
+	std::vector<CChainSegment> m_vToolPart;
 	size_t GetNumberOfRegularLinks() const; 
 	//part of chain ended with material holder
-	vector<CChainSegment> m_vMaterialHolderPart;
+	std::vector<CChainSegment> m_vMaterialHolderPart;
 
-	string m_sFileName;
+	std::string m_sFileName;
 
 	int m_nActiveSegmentIndex;
 	bool m_bIsToolPartActive;
@@ -78,20 +78,20 @@ public:
 	void DeleteActiveSegment();
 	CChainSegment * GetActiveSegment();
 	void ZeroAllParameters();
-	vector<CChainSegment> & GetActivePart();
+	std::vector<CChainSegment> & GetActivePart();
 	void SetActiveSegment(bool bIsToolPartActive, int mActiveSegmentIndex);
-	void SetFileName(const string &sName);
-	string GetFileName() const ;
+	void SetFileName(const std::string &sName);
+	std::string GetFileName() const ;
 	//resizes the parameters vector if needed, detects collisions and places the tool (to be called before rendering)
 	void Update(CMillingTool *pTool);
 	//gives every regular segment a non-empty name different from the names of the earlier segments
 	void CheckAndCorrectSegmentsNames(void);
 	
 	bool HasParameterConstraints() const;
-	CHAIN_CONSTRAINTS_RESULT MeetsParametersConstraints(const CChainConfiguration &oChainConfig,string &sExceededConstraints) const; 
+	CHAIN_CONSTRAINTS_RESULT MeetsParametersConstraints(const CChainConfiguration &oChainConfig,std::string &sExceededConstraints) const; 
 	//DetectCollisions and a report: returns true when any part is in collision, then sLog names the parameters,
 	//the segments and their boxes, and the boxes hit by the tool.
-	bool HasCollision(CMillingTool &oMillingTool,string &sLog);
+	bool HasCollision(CMillingTool &oMillingTool,std::string &sLog);
 
 
 

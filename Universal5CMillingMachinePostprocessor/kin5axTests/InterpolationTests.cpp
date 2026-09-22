@@ -4,7 +4,7 @@
 #include "gtest/gtest.h"
 #include "CLDataPostprocessor.h"
 
-typedef vector<pair<double,CR3CaughtVector> > tLocations;
+typedef std::vector<std::pair<double,CR3CaughtVector> > tLocations;
 
 static CPostprocessorSettings Limits(double dPosition, double dOrientationDegrees)
 {

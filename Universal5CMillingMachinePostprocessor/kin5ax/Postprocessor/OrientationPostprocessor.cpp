@@ -98,10 +98,10 @@ size_t COrientationPostprocessor::SolutionsNumber(const CR3Vector& r3vV0) const
 	
 }
 
-vector<CChainConfiguration> COrientationPostprocessor::SolveIndependently(const CR3Vector& V0) const
+std::vector<CChainConfiguration> COrientationPostprocessor::SolveIndependently(const CR3Vector& V0) const
 {
-	vector<CChainParameter> vAlpha1; 
-	vector<CChainParameter> vAlpha2;
+	std::vector<CChainParameter> vAlpha1; 
+	std::vector<CChainParameter> vAlpha2;
 	if(m_oSettings.m_nAlpha1Method==ALPHA1_AXIS_MULTIPLICATION)
         vAlpha1 = getAlpha1AxisMethod(V0);
 	else 
@@ -111,7 +111,7 @@ vector<CChainConfiguration> COrientationPostprocessor::SolveIndependently(const 
 	else
 		vAlpha2 = getAlpha2SquareEquation(V0);
 
-	vector<CChainConfiguration> vResult;
+	std::vector<CChainConfiguration> vResult;
 	CChainConfiguration oChainConfig(2);
 
 	CRotation r1,r2;
@@ -134,16 +134,16 @@ vector<CChainConfiguration> COrientationPostprocessor::SolveIndependently(const 
 
 
 }
-vector<CChainConfiguration> COrientationPostprocessor::SolveAlpha1ThenAlpha2(const CR3Vector& V0) const
+std::vector<CChainConfiguration> COrientationPostprocessor::SolveAlpha1ThenAlpha2(const CR3Vector& V0) const
 {
-	vector<CChainParameter> vAlpha1; 
+	std::vector<CChainParameter> vAlpha1; 
 	if(m_oSettings.m_nAlpha1Method==ALPHA1_AXIS_MULTIPLICATION)
         vAlpha1 = getAlpha1AxisMethod(V0);
 	else 
 		vAlpha1 = getAlpha1ConeMethod(V0);
 	
 	CChainConfiguration oChainConfig(2);
-	vector<CChainConfiguration> vResult;
+	std::vector<CChainConfiguration> vResult;
 	for(size_t i=0;i<vAlpha1.size();i++){
 		if(vAlpha1[i].GetType()==CHAIN_PARAMETER_SINGLE_NUMBER
 		 ||vAlpha1[i].GetType()==CHAIN_PARAMETER_ANY_NUMBER){
@@ -155,16 +155,16 @@ vector<CChainConfiguration> COrientationPostprocessor::SolveAlpha1ThenAlpha2(con
 	}
 	return vResult;
 }
-vector<CChainConfiguration> COrientationPostprocessor::SolveAlpha2ThenAlpha1(const CR3Vector& V0) const
+std::vector<CChainConfiguration> COrientationPostprocessor::SolveAlpha2ThenAlpha1(const CR3Vector& V0) const
 {
-	vector<CChainParameter> vAlpha2;
+	std::vector<CChainParameter> vAlpha2;
 	if(m_oSettings.m_nAlpha2Method==ALPHA2_AXIS_MULTIPLICATION)
         vAlpha2 = getAlpha2AxisMethod(V0);
 	else
 		vAlpha2 = getAlpha2SquareEquation(V0);
 
 	CChainConfiguration oChainConfig(2);
-	vector<CChainConfiguration> vResult;
+	std::vector<CChainConfiguration> vResult;
 	for(size_t i=0;i<vAlpha2.size();i++){
 		if(vAlpha2[i].GetType()==CHAIN_PARAMETER_SINGLE_NUMBER){
 			CChainParameter alpha1(RADIAN);
@@ -179,7 +179,7 @@ vector<CChainConfiguration> COrientationPostprocessor::SolveAlpha2ThenAlpha1(con
 	}
 	return vResult;
 }
-vector<CChainConfiguration> COrientationPostprocessor::Solve(const CR3Vector& r3vV0) const
+std::vector<CChainConfiguration> COrientationPostprocessor::Solve(const CR3Vector& r3vV0) const
 {
 	if(!m_bAxesSet)
 		MY_THROW(CGeneratorException,"Orientation postprocessor not initialized");
@@ -197,9 +197,9 @@ vector<CChainConfiguration> COrientationPostprocessor::Solve(const CR3Vector& r3
 			return SolveAlpha2ThenAlpha1(V0);			
 	}
 }
-vector<CChainParameter> COrientationPostprocessor::getAlpha1AxisMethod(const CR3Vector & r3vV0) const	
+std::vector<CChainParameter> COrientationPostprocessor::getAlpha1AxisMethod(const CR3Vector & r3vV0) const	
 {
-	vector<CChainParameter> vResult;
+	std::vector<CChainParameter> vResult;
 	if(is_zero(r3vV0.GetXYLengthSquare(),dEPSILON*dEPSILON)){
 		vResult.push_back(CChainParameter(RADIAN,0.0,CHAIN_PARAMETER_ANY_NUMBER));
 		return vResult;
@@ -251,9 +251,9 @@ vector<CChainParameter> COrientationPostprocessor::getAlpha1AxisMethod(const CR3
 }
 
 
-vector<CChainParameter> COrientationPostprocessor::getAlpha1ConeMethod(const CR3Vector & V0) const
+std::vector<CChainParameter> COrientationPostprocessor::getAlpha1ConeMethod(const CR3Vector & V0) const
 {
-	vector<CChainParameter> vResult;
+	std::vector<CChainParameter> vResult;
 	double vx = V0.GetXYLength();
 	if(is_zero(vx,dEPSILON)){
 		if((V0.GetZ()>0.0 && are_equal(m_dPhi,m_dPsi))
@@ -285,14 +285,14 @@ vector<CChainParameter> COrientationPostprocessor::getAlpha1ConeMethod(const CR3
 	}
 	return vResult;
 }
-vector<CChainParameter> COrientationPostprocessor::getAlpha2SquareEquation(const CR3Vector & r3vV0)const
+std::vector<CChainParameter> COrientationPostprocessor::getAlpha2SquareEquation(const CR3Vector & r3vV0)const
 {
 	static double dPiD2 = acos(0.0);
 	static double dPi = acos(-1.0);
 	static double d2Pi = 2.0*acos(-1.0);
 
 
-	vector<CChainParameter> result;
+	std::vector<CChainParameter> result;
 	double dA = -(2.0*m_r3vN1.GetZ()* (m_r3vN1.scalarProduct( m_r3vV2)) - m_r3vV2.GetZ()- r3vV0.GetZ());
 	double dB = -2.0*(m_r3vN1.GetX()*m_r3vV2.GetY() - m_r3vN1.GetY()*m_r3vV2.GetX());
 	double dC = r3vV0.GetZ() - m_r3vV2.GetZ();
@@ -351,7 +351,7 @@ vector<CChainParameter> COrientationPostprocessor::getAlpha2SquareEquation(const
 
 
 
-vector<CChainParameter> COrientationPostprocessor::getAlpha2AxisMethod(const CR3Vector & r3vV0)const
+std::vector<CChainParameter> COrientationPostprocessor::getAlpha2AxisMethod(const CR3Vector & r3vV0)const
 {
 	double dLambda = atan2(m_r3vV3.GetY(),m_r3vV3.GetX());
 	double dMi = atan2(m_r3vM.GetY(),m_r3vM.GetX());
@@ -364,7 +364,7 @@ vector<CChainParameter> COrientationPostprocessor::getAlpha2AxisMethod(const CR3
 		d=1.0;
 	if(are_equal(d,-1.0))
 		d=-1.0;
-	vector<CChainParameter> vResult;
+	std::vector<CChainParameter> vResult;
 	if(fabs(d)>1.0)//bo solution
 		return vResult;
 	double dACos = acos(d);

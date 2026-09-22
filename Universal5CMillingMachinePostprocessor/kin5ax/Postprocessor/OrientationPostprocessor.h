@@ -14,14 +14,14 @@ public:
 	void CheckAxes() const;
 	void SetAxes(const CTransformation &m4x4F2, const CR3Vector& r3vV3);
 	void SetSettings(const CPostprocessorSettings &oSettings);
-	vector<CChainConfiguration> Solve(const CR3Vector& r3vV0) const;
+	std::vector<CChainConfiguration> Solve(const CR3Vector& r3vV0) const;
 	size_t SolutionsNumber(const CR3Vector& r3vV0) const;
 
 protected:
 
-	vector<CChainConfiguration> SolveIndependently(const CR3Vector& r3vV0) const;
-	vector<CChainConfiguration> SolveAlpha1ThenAlpha2(const CR3Vector& r3vV0) const;
-	vector<CChainConfiguration> SolveAlpha2ThenAlpha1(const CR3Vector& r3vV0) const;
+	std::vector<CChainConfiguration> SolveIndependently(const CR3Vector& r3vV0) const;
+	std::vector<CChainConfiguration> SolveAlpha1ThenAlpha2(const CR3Vector& r3vV0) const;
+	std::vector<CChainConfiguration> SolveAlpha2ThenAlpha1(const CR3Vector& r3vV0) const;
 
 	bool m_bAxesSet;
 
@@ -56,11 +56,11 @@ protected:
 	//transformation-rotation from N1 to OZ
 	CTransformation m_m4x4F2;
 
-	vector<CChainParameter> getAlpha1AxisMethod	(const CR3Vector & r3vV0) const ;
-	vector<CChainParameter> getAlpha1ConeMethod(const CR3Vector & r3vV0) const ;
+	std::vector<CChainParameter> getAlpha1AxisMethod	(const CR3Vector & r3vV0) const ;
+	std::vector<CChainParameter> getAlpha1ConeMethod(const CR3Vector & r3vV0) const ;
 	
-	vector<CChainParameter> getAlpha2SquareEquation(const CR3Vector & r3vV0) const ;
-	vector<CChainParameter> getAlpha2AxisMethod(const CR3Vector & r3vV0) const;
+	std::vector<CChainParameter> getAlpha2SquareEquation(const CR3Vector & r3vV0) const ;
+	std::vector<CChainParameter> getAlpha2AxisMethod(const CR3Vector & r3vV0) const;
 
 	bool getAlpha1(double dAlpha2, const CR3Vector & V0unit, CChainParameter &) const ; 
 	bool getAlpha2(double dAlpha1, const CR3Vector & V0unit,CChainParameter &)const;

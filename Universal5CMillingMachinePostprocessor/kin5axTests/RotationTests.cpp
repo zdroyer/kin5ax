@@ -18,27 +18,27 @@ static double Difference(const CTransformation &a, const CTransformation &b)
 	double d = 0.0;
 	for(int i=0;i<4;i++)
 		for(int j=0;j<4;j++)
-			d = max(d,fabs(a.GetM(i,j)-b.GetM(i,j)));
+			d = std::max(d,fabs(a.GetM(i,j)-b.GetM(i,j)));
 	return d;
 }
 
 //a rotation matrix: R*RT = I and det R = +1
-static void ExpectIsRotation(const CTransformation &r, const string &sWhat)
+static void ExpectIsRotation(const CTransformation &r, const std::string &sWhat)
 {
 	EXPECT_LT(Difference(r*r.T(),CTransformation(1.0)),dTOLERANCE)<<sWhat<<": the matrix is not orthonormal";
 	EXPECT_NEAR(1.0,Determinant3x3(r),dTOLERANCE)<<sWhat;
 }
 
-static void ExpectVectorsNear(const CR3Vector &expected, const CR3Vector &actual, const string &sWhat)
+static void ExpectVectorsNear(const CR3Vector &expected, const CR3Vector &actual, const std::string &sWhat)
 {
 	EXPECT_LT((expected-actual).GetLength(),dTOLERANCE)<<sWhat<<": expected "<<expected.toString()<<", actual "<<actual.toString();
 }
 
-static string AngleText(double dDegrees)
+static std::string AngleText(double dDegrees)
 {
 	char sz[64];
 	sprintf(sz,"angle %G deg",dDegrees);
-	return string(sz);
+	return std::string(sz);
 }
 
 static const CR3Vector r3vX(1.0,0.0,0.0), r3vY(0.0,1.0,0.0), r3vZ(0.0,0.0,1.0);

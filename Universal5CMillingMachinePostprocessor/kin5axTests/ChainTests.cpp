@@ -7,7 +7,7 @@
 #include "string_tools.h"
 #include "5CPostprocessor.h"
 
-class ChainFileTest : public ::testing::TestWithParam<string>
+class ChainFileTest : public ::testing::TestWithParam<std::string>
 {
 protected:
 	//the exceptions of kin5ax do not derive from std::exception: report their message
@@ -24,7 +24,7 @@ protected:
 
 struct ChainFileTestName
 {
-	string operator()(const ::testing::TestParamInfo<string> &oInfo) const
+	std::string operator()(const ::testing::TestParamInfo<std::string> &oInfo) const
 	{ return GetTestName(oInfo.param); }
 };
 
@@ -34,44 +34,44 @@ TEST(ChainFiles, AreFound)
 }
 
 //the reader reports every problem as CGeneratorException, nothing else leaves it
-static string LoadError(const string &sFilePath)
+static std::string LoadError(const std::string &sFilePath)
 {
 	try{
 		LoadChain(sFilePath);
 	} catch (CGeneratorException &e){
 		return e.Message();
 	}
-	return string();
+	return std::string();
 }
 
 TEST(ChainFiles, MissingFileIsReported)
 {
-	string sError = LoadError(GetTestChainsDir()+"no_such_chain.kc");
-	EXPECT_NE(string::npos,sError.find("no_such_chain.kc"))<<sError;
+	std::string sError = LoadError(GetTestChainsDir()+"no_such_chain.kc");
+	EXPECT_NE(std::string::npos,sError.find("no_such_chain.kc"))<<sError;
 }
 
 TEST(ChainFiles, BrokenXmlIsReportedWithTheLine)
 {
-	string sFilePath = GetTestChainsDir()+"kin5axTests_broken.kc";
+	std::string sFilePath = GetTestChainsDir()+"kin5axTests_broken.kc";
 	FILE *pFile = fopen(sFilePath.c_str(),"wt");
 	ASSERT_TRUE(pFile!=NULL);
 	fputs("<?xml version=\"1.0\"?>\n<kinematic_chain>\n<tool_part>\n<segment name=\"x\" type=\"tool\">\n</kinematic_chain>\n",pFile);
 	fclose(pFile);
-	string sError = LoadError(sFilePath);
+	std::string sError = LoadError(sFilePath);
 	remove(sFilePath.c_str());
-	EXPECT_NE(string::npos,sError.find("line 5"))<<sError;
+	EXPECT_NE(std::string::npos,sError.find("line 5"))<<sError;
 }
 
 TEST(ChainFiles, WrongRootElementIsReported)
 {
-	string sFilePath = GetTestChainsDir()+"kin5axTests_wrong_root.kc";
+	std::string sFilePath = GetTestChainsDir()+"kin5axTests_wrong_root.kc";
 	FILE *pFile = fopen(sFilePath.c_str(),"wt");
 	ASSERT_TRUE(pFile!=NULL);
 	fputs("<?xml version=\"1.0\"?>\n<not_a_chain/>\n",pFile);
 	fclose(pFile);
-	string sError = LoadError(sFilePath);
+	std::string sError = LoadError(sFilePath);
 	remove(sFilePath.c_str());
-	EXPECT_NE(string::npos,sError.find("root node"))<<sError;
+	EXPECT_NE(std::string::npos,sError.find("root node"))<<sError;
 }
 
 TEST(XmlEscape, MarkupCharactersBecomeEntities)
@@ -87,7 +87,7 @@ TEST(ChainFiles, SegmentNamesAreEscapedInXml)
 {
 	ASSERT_GE(GetChainFiles().size(),(size_t)1);
 	CChain oChain;
-	string sNames[2] = {"A \"quoted\" <name> & more", "it's <b>"};
+	std::string sNames[2] = {"A \"quoted\" <name> & more", "it's <b>"};
 	try{
 		oChain = LoadChain(GetChainFiles()[0]);
 		ASSERT_GE(oChain.GetNumberOfRegularLinks(),(size_t)2);
@@ -96,16 +96,16 @@ TEST(ChainFiles, SegmentNamesAreEscapedInXml)
 	} catch (CGeneratorException &e){
 		FAIL()<<"exception: "<<e.Message();
 	}
-	string sXML = oChain.toXML();
-	EXPECT_NE(string::npos,sXML.find("name=\"A &quot;quoted&quot; &lt;name&gt; &amp; more\""))<<sXML;
-	EXPECT_EQ(string::npos,sXML.find("<name>"))<<"an unescaped name";
+	std::string sXML = oChain.toXML();
+	EXPECT_NE(std::string::npos,sXML.find("name=\"A &quot;quoted&quot; &lt;name&gt; &amp; more\""))<<sXML;
+	EXPECT_EQ(std::string::npos,sXML.find("<name>"))<<"an unescaped name";
 
-	string sFilePath = GetTestChainsDir()+"kin5axTests_escaped_names.kc";
+	std::string sFilePath = GetTestChainsDir()+"kin5axTests_escaped_names.kc";
 	FILE *pFile = fopen(sFilePath.c_str(),"wb");
 	ASSERT_TRUE(pFile!=NULL);
 	fwrite(sXML.data(),1,sXML.size(),pFile);
 	fclose(pFile);
-	string sError;
+	std::string sError;
 	try{
 		CChain oRead = LoadChain(sFilePath);
 		EXPECT_EQ(sNames[0],oRead[0].GetName());
@@ -142,7 +142,7 @@ TEST(ChainSegments, NamesAreMadeUniqueAndNonEmpty)
 //of its segment i is the (size-2-i)th parameter of the chain, not the (size-1-i)th
 TEST(ChainSegments, ActualParameterOfEveryPart)
 {
-	vector<string> vFiles = GetChainFiles();
+	std::vector<std::string> vFiles = GetChainFiles();
 	ASSERT_GE(vFiles.size(),(size_t)1);
 	size_t nMaterialSideJoints = 0;
 	for(size_t f=0;f<vFiles.size();f++){
@@ -200,15 +200,15 @@ TEST_P(ChainFileTest, SingularSectionOutOfReachGivesNoSolution)
 	CMillingToolBall oTool(0.016,0.016,0.064,0.016);
 	C5CPostprocessor oPostprocessor(oChain,CPostprocessorSettings());
 	//three locations of a vertical tool, a kilometre away: beyond the limits of the linear axes
-	vector<CR3CaughtVector> vInput;
+	std::vector<CR3CaughtVector> vInput;
 	for(int i=0;i<3;i++)
 		vInput.push_back(CR3CaughtVector(CR3Vector(0.0,0.0,1.0),CR3Point(1000.0+i,0.0,0.0)));
-	string sLog;
+	std::string sLog;
 	try{
-		vector<tChainConfigurationVector> vResult = oPostprocessor.SolveSingularOrientation(vInput,oChain,oTool,sLog);
+		std::vector<tChainConfigurationVector> vResult = oPostprocessor.SolveSingularOrientation(vInput,oChain,oTool,sLog);
 		for(size_t i=0;i<vResult.size();i++)
 			EXPECT_TRUE(vResult[i].empty())<<"set "<<i;
-		EXPECT_NE(string::npos,sLog.find("can be solved"))<<sLog;
+		EXPECT_NE(std::string::npos,sLog.find("can be solved"))<<sLog;
 	} catch (CGeneratorException &e){
 		FAIL()<<"exception: "<<e.Message()<<" ("<<e.GetThrowingPlace()<<")";
 	}

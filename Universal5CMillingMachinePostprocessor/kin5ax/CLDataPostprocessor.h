@@ -60,7 +60,7 @@ public:
 		, const CR3Vector &v1
 		, const CR3Point &p2
 		, const CR3Vector &v2
-		, vector<pair<double,CR3CaughtVector> > & result) const;
+		, std::vector<std::pair<double,CR3CaughtVector> > & result) const;
 protected:
 	CPostprocessorSettings m_oSettings;
 };

@@ -85,7 +85,7 @@ void CMaterialBlockDialog::OnBnClickedOk()
 	GetParent()->GetWindowText(sMainTitle);
 	GetParent()->SetWindowText("Generating material block ...");
 	m_pDoc->m_oMaterial.GenerateBox(m_dSizeX,m_dSizeY,m_dSizeZ,m_dVoxelSize,m_dPositionX,m_dPositionY,m_dPositionZ);
-	double dMax = max(m_dSizeX,m_dSizeY);
+	double dMax = std::max(m_dSizeX,m_dSizeY);
 	oConfiguration.m_dUnit = dMax/0.9;
 	GetParent()->SetWindowText(sMainTitle);
 

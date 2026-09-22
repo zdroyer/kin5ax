@@ -24,7 +24,7 @@ public:
 	CPositionPostprocessor(void);
 	~CPositionPostprocessor(void);
 	void SetAxesAndOffset(const CR3Vector & r3vT1,const CR3Vector & r3vT2, const CR3Vector & r3vT3, const CR3Point & r3pP1);
-	vector<CChainConfiguration> Solve(const CR3Point & r3pP0)const ;
+	std::vector<CChainConfiguration> Solve(const CR3Point & r3pP0)const ;
 
 
 };

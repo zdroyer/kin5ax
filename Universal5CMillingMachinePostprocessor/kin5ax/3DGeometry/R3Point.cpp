@@ -58,7 +58,7 @@ CR3Point throwOver(const CR3Point &middle, const CR3Point &term)
 	return middle + (middle-term);
 }
 
-ostream & operator <<(ostream & out, const CR3Point &p)
+std::ostream & operator <<(std::ostream & out, const CR3Point &p)
 { 
 	out<<p.toString();
 	return out;
@@ -75,13 +75,13 @@ POINT CR3Point::toPOINT() const
 }
 //*/
 
-string CR3Point::toStringInt() const
+std::string CR3Point::toStringInt() const
 {
 	return string_printf("(%d, %d, %d)",(int)GetX(),(int)GetY(),(int)GetZ());
 }
 
 
-string CR3Point::toString() const
+std::string CR3Point::toString() const
 {
 	return string_printf("(%.4f, %.4f, %.4f)",GetX(),GetY(),GetZ());
 }

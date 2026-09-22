@@ -25,4 +25,4 @@
 #include <list>
 #include <algorithm>
 
-using namespace std;
+//no using-directive: the library names its standard types explicitly (std::)

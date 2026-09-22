@@ -16,7 +16,7 @@ struct CSolverRoundTripResult
 	size_t m_nSolutions;		//all returned solutions
 	double m_dWorstPositionError;
 	double m_dWorstOrientationError;
-	string m_sFirstProblem;		//description of the first failing target, with the solver log
+	std::string m_sFirstProblem;		//description of the first failing target, with the solver log
 };
 
 CSolverRoundTripResult RunSolverRoundTrip(CChain &oChain, CMillingTool &oTool, size_t nSamples, double dTolerance);

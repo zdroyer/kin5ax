@@ -13,7 +13,7 @@ static const size_t nPOINTS = 9;
 
 TEST(MeridianCLData, HasThePoleInTheMiddle)
 {
-	string sFileName = TempFilePath("kin5axTests_meridian.cld");
+	std::string sFileName = TempFilePath("kin5axTests_meridian.cld");
 	ASSERT_EQ(nPOINTS,WriteMeridianCLData(sFileName,dRADIUS,nPOINTS));
 	EXPECT_EQ((size_t)0,WriteMeridianCLData(sFileName+"_",dRADIUS,10))<<"more than 9 points or an even number must be refused";
 	try{
@@ -47,13 +47,13 @@ TEST(MeridianCLData, HasThePoleInTheMiddle)
 	remove(sFileName.c_str());
 }
 
-class MeridianCLDataOnChainTest : public ::testing::TestWithParam<string>
+class MeridianCLDataOnChainTest : public ::testing::TestWithParam<std::string>
 {
 };
 
 struct MeridianCLDataOnChainTestName
 {
-	string operator()(const ::testing::TestParamInfo<string> &oInfo) const
+	std::string operator()(const ::testing::TestParamInfo<std::string> &oInfo) const
 	{ return GetTestName(oInfo.param); }
 };
 
@@ -70,9 +70,9 @@ static void GetBiggestSteps(const CSimulationData &oSimulationData, double &dMax
 				for(size_t k=0;k<oActual.GetParametersCount();k++){
 					double d = oActual[k].distanceTo(oPrevious[k]);
 					if(oActual[k].IsAngle())
-						dMaxAngleStep = max(dMaxAngleStep,d);
+						dMaxAngleStep = std::max(dMaxAngleStep,d);
 					else
-						dMaxShiftStep = max(dMaxShiftStep,d);
+						dMaxShiftStep = std::max(dMaxShiftStep,d);
 				}
 			}
 			oPrevious = oActual;
@@ -84,7 +84,7 @@ static void GetBiggestSteps(const CSimulationData &oSimulationData, double &dMax
 
 TEST_P(MeridianCLDataOnChainTest, IsPostprocessedOverThePole)
 {
-	string sCLDataFile = TempFilePath("kin5axTests_meridian_"+GetTestName(GetParam())+".cld");
+	std::string sCLDataFile = TempFilePath("kin5axTests_meridian_"+GetTestName(GetParam())+".cld");
 	ASSERT_EQ(nPOINTS,WriteMeridianCLData(sCLDataFile,dRADIUS,nPOINTS));
 	try{
 		CChain oChain = LoadChain(GetParam());

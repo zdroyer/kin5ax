@@ -26,7 +26,7 @@ public:
 	afx_msg void OnBnClickedBtnSolve();
 	void SetActiveDocument(CUniversal5CMillingMachinePostprocessorDoc * pDocument);
 protected:
-	vector<tChainConfigurationWithResult> m_vConfigurations;
+	std::vector<tChainConfigurationWithResult> m_vConfigurations;
 	double m_dX;
 	double m_dY;
 	double m_dZ;

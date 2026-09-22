@@ -28,7 +28,7 @@ CCutterLocationData::~CCutterLocationData(void)
 {
 }
 
-void CCutterLocationData::LoadFile(const string & sFileName, const string &sFileTitle)
+void CCutterLocationData::LoadFile(const std::string & sFileName, const std::string &sFileTitle)
 {
 	FILE *pFile = fopen(sFileName.c_str(),"rb");
 	if(pFile==NULL)
@@ -43,7 +43,7 @@ void CCutterLocationData::LoadFile(const string & sFileName, const string &sFile
 		MY_THROW(CArgsMyException,"Problem with obtaining size of file: "+sFileName);
 	}
 	rewind(pFile);
-	vector<char> vData((size_t)nFileLength+1,0);
+	std::vector<char> vData((size_t)nFileLength+1,0);
 	size_t nCharsRead = fread(&vData[0],1,(size_t)nFileLength,pFile);
 	bool bError = ferror(pFile)!=0;
 	fclose(pFile);
@@ -56,7 +56,7 @@ void CCutterLocationData::LoadFile(const string & sFileName, const string &sFile
 
 	m_sFileName = sFileName;
 	m_sFileTitle = sFileTitle;
-	string sOldLocale(setlocale(LC_NUMERIC,NULL));
+	std::string sOldLocale(setlocale(LC_NUMERIC,NULL));
 	setlocale(LC_NUMERIC,"C");	//the decimal separator of the file is the point
 	m_nErrors=0;
 	m_nActual=0;

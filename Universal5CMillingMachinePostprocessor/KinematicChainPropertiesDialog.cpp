@@ -205,7 +205,7 @@ void CKinematicChainPropertiesDialog::OnTvnSelchangedSegmentTree(NMHDR *pNMHDR, 
 	if(m_pActiveSegment)
 		m_pActiveSegment->HighlightPart(-1);
 	LPNMTREEVIEW pNMTreeView = reinterpret_cast<LPNMTREEVIEW>(pNMHDR);
-	vector<CChainSegment> *pvVector;
+	std::vector<CChainSegment> *pvVector;
 	int nIndex;
 	bool bIsToolPartActive;
 	if(GetSegmentVectorFromTreeItem(pNMTreeView->itemNew.hItem,&pvVector,nIndex) && nIndex<(int)pvVector->size()){
@@ -242,7 +242,7 @@ void CKinematicChainPropertiesDialog::OnBnClickedAddSegment()
 {
 	HTREEITEM hItem = m_treeSegments.GetSelectedItem();
 	UpdateData(TRUE);
-	vector<CChainSegment> *pvVector;
+	std::vector<CChainSegment> *pvVector;
 	int nIndex;
 	GetSegmentVectorFromTreeItem(hItem,&pvVector,nIndex);
 	assert(m_pDoc);
@@ -380,7 +380,7 @@ void CKinematicChainPropertiesDialog::EnableSegmentProperties(const CChainSegmen
 	UpdateSegmentPartsList();
 
 }
-bool CKinematicChainPropertiesDialog::GetSegmentVectorFromTreeItem(const HTREEITEM & hTreeItem,vector<CChainSegment> **ppvVectorSegment, int &nIndex)
+bool CKinematicChainPropertiesDialog::GetSegmentVectorFromTreeItem(const HTREEITEM & hTreeItem,std::vector<CChainSegment> **ppvVectorSegment, int &nIndex)
 {
 	assert(m_pDoc);
 	nIndex = (int)m_treeSegments.GetItemData(hTreeItem);
@@ -470,7 +470,7 @@ void CKinematicChainPropertiesDialog::UpdateActualSegment(CWnd *pControlWnd,bool
 
 	HTREEITEM hItem = m_treeSegments.GetSelectedItem();
 //	m_nOldIndex = (int)m_treeSegments.GetItemData(hItem);
-	vector<CChainSegment> *pvVector;
+	std::vector<CChainSegment> *pvVector;
 	int nIndex;
 	
 	if(GetSegmentVectorFromTreeItem(hItem,&pvVector,nIndex)){
@@ -830,7 +830,7 @@ void CKinematicChainPropertiesDialog::UpdateSegmentPartsList(void)
 	m_listboxSegmentParts.ResetContent();
 	if(m_pActiveSegment){
 		for(size_t i=0;i<m_vBoxes.size();i++){
-			string s("box_");
+			std::string s("box_");
 			s+=size_to_string(i+1);
 			m_listboxSegmentParts.AddString(s.c_str());
 		}

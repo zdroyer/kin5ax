@@ -22,19 +22,19 @@ public:
 	enum { IDD = ID_POSTPROCESSING_DIALOG };
 
 protected:
-	string GenerateReportHead() const;
-	vector<string> m_vsProblemsLogs;
-	vector<tChainConfigurationVector> m_vSolutions; 
+	std::string GenerateReportHead() const;
+	std::vector<std::string> m_vsProblemsLogs;
+	std::vector<tChainConfigurationVector> m_vSolutions; 
 
 	CTime m_timeBegin, m_timeEnd;
 	void UpdateProblemsCountControl();
 	void SetText(CWnd & window, double d);
 	void SetText(CWnd & window, size_t n);
-	string m_sReport;
+	std::string m_sReport;
 	CUniversal5CMillingMachinePostprocessorDoc *m_pDoc;
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	vector<size_t> m_vTranslationsIndexes;
-	vector<size_t> m_vRotationsIndexes;
+	std::vector<size_t> m_vTranslationsIndexes;
+	std::vector<size_t> m_vRotationsIndexes;
 
 	DECLARE_MESSAGE_MAP()
 public:
@@ -60,7 +60,7 @@ public:
 	double m_dActualMaxPositionDifference;
 	double m_dActualMaxOrientationDifferenceDegrees;
 	size_t m_nTotalProblemsCount;
-	string m_sReportFile;
+	std::string m_sReportFile;
     
 	void GenerateAndShowReport(void);
 	CButton m_buttonStart;

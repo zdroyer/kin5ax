@@ -99,7 +99,7 @@ tChainConfigurationVector CSimulationData::GetLastNonemptyConfigurationSet() con
 	return tChainConfigurationVector();
 }
 
-typedef vector<size_t> tSizeTVector;
+typedef std::vector<size_t> tSizeTVector;
 
 static void ReportProgress(CProgressCallback *pProgress, double dFraction)
 {
@@ -116,7 +116,7 @@ void CSimulationData::FindShortestPath(const CPostprocessorSettings &oSettings, 
 		ReportProgress(pProgress,1.0);
 		return;
 	}
-	vector<tSizeTVector> vvClosestNeighbourIndexes(m_vSolutions.size(),tSizeTVector());
+	std::vector<tSizeTVector> vvClosestNeighbourIndexes(m_vSolutions.size(),tSizeTVector());
 	vvClosestNeighbourIndexes.reserve(m_vSolutions.size());
 
 
@@ -151,7 +151,7 @@ void CSimulationData::FindShortestPath(const CPostprocessorSettings &oSettings, 
 			MY_THROW(CArgsMyException,"Ambiguous solution as an input for 'FindShortestPath'");
 		break;
 	}
-	vector<double> vDistances1,vDistances2;
+	std::vector<double> vDistances1,vDistances2;
 	vDistances1.reserve(18);
 	vDistances2.reserve(18);
 
@@ -165,12 +165,12 @@ void CSimulationData::FindShortestPath(const CPostprocessorSettings &oSettings, 
 		vDistances2.erase(vDistances2.begin(),vDistances2.end());
 		vDistances2.reserve(m_vSolutions[j].size());
 		if(vDistances1.size()==0){
-			vDistances1 = vector<double>(m_vSolutions[i].size(),0.0);
+			vDistances1 = std::vector<double>(m_vSolutions[i].size(),0.0);
 			size_t n = vDistances1.size();;
 			n++;
 		}
-		vvClosestNeighbourIndexes[j]=vector<size_t>(m_vSolutions[j].size(),0);
-		vDistances2 = vector<double>(m_vSolutions[j].size(),dMinD);
+		vvClosestNeighbourIndexes[j]=std::vector<size_t>(m_vSolutions[j].size(),0);
+		vDistances2 = std::vector<double>(m_vSolutions[j].size(),dMinD);
 		for(size_t l=0;l<m_vSolutions[j].size();l++){
 			double d0 = vDistances1[0];
 			dMinD = m_vSolutions[i][0].Distance(m_vSolutions[j][l],oSettings)+d0;

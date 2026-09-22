@@ -10,5 +10,5 @@ class CChainXmlReader
 {
 public:
 	//throws CGeneratorException: file not readable, XML error (with line and position), invalid chain
-	static CChain ReadFile(const string &sFilePath);
+	static CChain ReadFile(const std::string &sFilePath);
 };

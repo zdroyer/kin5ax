@@ -17,44 +17,44 @@ static fs::path ExeDir()
 #ifdef _WIN32
 	char szPath[4096];
 	DWORD nLength = GetModuleFileNameA(NULL,szPath,sizeof(szPath));
-	return fs::path(string(szPath,nLength)).parent_path();
+	return fs::path(std::string(szPath,nLength)).parent_path();
 #else
 	return fs::read_symlink("/proc/self/exe").parent_path();
 #endif
 }
 
-string GetTestChainsDir()
+std::string GetTestChainsDir()
 {
 	fs::path oDir = ExeDir()/"TestChains";
 	return oDir.string()+(char)fs::path::preferred_separator;
 }
 
-vector<string> GetChainFiles()
+std::vector<std::string> GetChainFiles()
 {
-	vector<string> vFiles;
+	std::vector<std::string> vFiles;
 	std::error_code oError;	//a missing folder gives an empty list, not an exception
 	for(const fs::directory_entry &oEntry : fs::directory_iterator(GetTestChainsDir(),oError))
 		if(oEntry.is_regular_file() && oEntry.path().extension()==".kc")
 			vFiles.push_back(oEntry.path().string());
-	sort(vFiles.begin(),vFiles.end());
+	std::sort(vFiles.begin(),vFiles.end());
 	return vFiles;
 }
 
-string GetTestName(const string &sFilePath)
+std::string GetTestName(const std::string &sFilePath)
 {
-	string sName = fs::path(sFilePath).stem().string();
+	std::string sName = fs::path(sFilePath).stem().string();
 	for(size_t i=0;i<sName.size();i++)
 		if(!isalnum((unsigned char)sName[i]))
 			sName[i]='_';
 	return sName;
 }
 
-string TempFilePath(const string &sName)
+std::string TempFilePath(const std::string &sName)
 {
 	return (fs::temp_directory_path()/sName).string();
 }
 
-CChain LoadChain(const string &sFilePath)
+CChain LoadChain(const std::string &sFilePath)
 {
 	return CChainXmlReader::ReadFile(sFilePath);
 }

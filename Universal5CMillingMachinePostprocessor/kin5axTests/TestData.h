@@ -5,16 +5,16 @@
 #include "Chain.h"
 
 //folder with the .kc files (with the trailing separator): TestChains next to the test exe
-string GetTestChainsDir();
+std::string GetTestChainsDir();
 
 //full paths of all .kc files of GetTestChainsDir()
-vector<string> GetChainFiles();
+std::vector<std::string> GetChainFiles();
 
 //file name without folder and extension, reduced to [A-Za-z0-9_] (GoogleTest parameter names)
-string GetTestName(const string &sFilePath);
+std::string GetTestName(const std::string &sFilePath);
 
 //a file name in the temporary folder of the system
-string TempFilePath(const string &sName);
+std::string TempFilePath(const std::string &sName);
 
 //reads a chain the same way as the application does (CChainXmlReader of kin5ax)
-CChain LoadChain(const string &sFilePath);
+CChain LoadChain(const std::string &sFilePath);

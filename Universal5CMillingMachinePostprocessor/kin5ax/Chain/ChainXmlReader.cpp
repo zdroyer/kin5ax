@@ -25,13 +25,13 @@ public:
 	}
 };
 
-static string toString(const _bstr_t &s)
+static std::string toString(const _bstr_t &s)
 {
 	const char *p = s;
-	return p ? string(p) : string();
+	return p ? std::string(p) : std::string();
 }
 
-static MSXML2::IXMLDOMNodePtr getAttribute(MSXML2::IXMLDOMNamedNodeMapPtr &pMap, const string &sAttrName)
+static MSXML2::IXMLDOMNodePtr getAttribute(MSXML2::IXMLDOMNamedNodeMapPtr &pMap, const std::string &sAttrName)
 {
 	MSXML2::IXMLDOMNodePtr pAttr = pMap->getNamedItem(_bstr_t(sAttrName.c_str()));
 	if(pAttr==NULL)
@@ -39,7 +39,7 @@ static MSXML2::IXMLDOMNodePtr getAttribute(MSXML2::IXMLDOMNamedNodeMapPtr &pMap,
 	return pAttr;
 }
 
-static double getDoubleValue(MSXML2::IXMLDOMNamedNodeMapPtr &pMap, const string &sAttrName)
+static double getDoubleValue(MSXML2::IXMLDOMNamedNodeMapPtr &pMap, const std::string &sAttrName)
 {
 	_variant_t varValue;
 	getAttribute(pMap,sAttrName)->get_nodeValue(&varValue);
@@ -50,14 +50,14 @@ static double getDoubleValue(MSXML2::IXMLDOMNamedNodeMapPtr &pMap, const string 
 	return varValue.dblVal;
 }
 
-static string getStringValue(MSXML2::IXMLDOMNamedNodeMapPtr &pMap, const string &sAttrName)
+static std::string getStringValue(MSXML2::IXMLDOMNamedNodeMapPtr &pMap, const std::string &sAttrName)
 {
 	_variant_t varValue;
 	getAttribute(pMap,sAttrName)->get_nodeValue(&varValue);
 	return toString(_bstr_t(varValue));
 }
 
-static bool doubleValue(MSXML2::IXMLDOMNamedNodeMapPtr &pMap, const string &sAttrName, double &d)
+static bool doubleValue(MSXML2::IXMLDOMNamedNodeMapPtr &pMap, const std::string &sAttrName, double &d)
 {
 	MSXML2::IXMLDOMNodePtr pAttr = pMap->getNamedItem(_bstr_t(sAttrName.c_str()));
 	if(pAttr==NULL)
@@ -94,7 +94,7 @@ static CChainSegment ReadSegment(MSXML2::IXMLDOMNodePtr pNode)
 	else
 		oSegment.m_bParameterIsConstrained = false;
 	MSXML2::IXMLDOMNodePtr pTranslationNode = NULL, pRotationNode = NULL;
-	vector<MSXML2::IXMLDOMNodePtr> vpBoxesNodes;
+	std::vector<MSXML2::IXMLDOMNodePtr> vpBoxesNodes;
 	for(MSXML2::IXMLDOMNodePtr pTempNode = pNode->firstChild; pTempNode!=NULL; pTempNode = pTempNode->nextSibling){
 		if(isNode(pTempNode,"initial_translation")){
 			if(pTranslationNode==NULL)
@@ -122,7 +122,7 @@ static CChainSegment ReadSegment(MSXML2::IXMLDOMNodePtr pNode)
 	if(is_zero(oSegment.m_r3vConstRevoluteAxis.GetLengthSquare()))
 		oSegment.m_r3vConstRevoluteAxis.SetX(1.0);
 
-	vector<CR3Box> vParts;
+	std::vector<CR3Box> vParts;
 	for(size_t i=0; i<vpBoxesNodes.size();i++){
 		pAttributesMap = vpBoxesNodes[i]->Getattributes();
 		double x1 = getDoubleValue(pAttributesMap,"x1");
@@ -138,21 +138,21 @@ static CChainSegment ReadSegment(MSXML2::IXMLDOMNodePtr pNode)
 }
 
 //the segments of the <tool_part> or the <material_holder_part> element
-static vector<CChainSegment> ReadPart(MSXML2::IXMLDOMElementPtr pDocElement, const char *szPartName)
+static std::vector<CChainSegment> ReadPart(MSXML2::IXMLDOMElementPtr pDocElement, const char *szPartName)
 {
 	MSXML2::IXMLDOMNodeListPtr pResultList = pDocElement->getElementsByTagName(_bstr_t(szPartName));
 	MSXML2::IXMLDOMElementPtr pPartNode = pResultList->item[0];
 	if(pPartNode==NULL)
-		MY_THROW(CGeneratorException,string("There is no '")+szPartName+"' element");
+		MY_THROW(CGeneratorException,std::string("There is no '")+szPartName+"' element");
 	MSXML2::IXMLDOMNodeListPtr pNodes = pPartNode->GetchildNodes();
 	pNodes->reset();
-	vector<CChainSegment> vSegments;
+	std::vector<CChainSegment> vSegments;
 	for(MSXML2::IXMLDOMNodePtr pChildNode = pNodes->nextNode(); pChildNode != NULL; pChildNode = pNodes->nextNode())
 		vSegments.push_back(ReadSegment(pChildNode));
 	return vSegments;
 }
 
-static CChain ReadChain(MSXML2::IXMLDOMElementPtr pDocElement, const string &sFileName)
+static CChain ReadChain(MSXML2::IXMLDOMElementPtr pDocElement, const std::string &sFileName)
 {
 	assert(pDocElement!=NULL);
 	if(!isNode(pDocElement,CHAIN_XML_ROOT_NODE_TYPE_NAME))
@@ -171,7 +171,7 @@ static CChain ReadChain(MSXML2::IXMLDOMElementPtr pDocElement, const string &sFi
 }
 
 //all COM objects live inside this function, so they are released before CoUninitialize
-static CChain LoadAndRead(const string &sFilePath)
+static CChain LoadAndRead(const std::string &sFilePath)
 {
 	MSXML2::IXMLDOMDocument2Ptr pDOMDoc;
 	if(FAILED(pDOMDoc.CreateInstance(__uuidof(MSXML2::DOMDocument60))))
@@ -189,7 +189,7 @@ static CChain LoadAndRead(const string &sFilePath)
 	return ReadChain(pDOMDoc->GetdocumentElement(),sFilePath);
 }
 
-CChain CChainXmlReader::ReadFile(const string &sFilePath)
+CChain CChainXmlReader::ReadFile(const std::string &sFilePath)
 {
 	CComInitialiser oCom;
 	try{

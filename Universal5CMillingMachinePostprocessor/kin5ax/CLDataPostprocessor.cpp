@@ -28,16 +28,16 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 	CR3Point p1,p2,pi;
 	CR3Vector v1,v2,vi;
 
-	size_t n = max((size_t)1,data.GetLocationsCount()/300);
-	vector<pair<double,CR3CaughtVector> > vIntermediateLocations;
+	size_t n = std::max((size_t)1,data.GetLocationsCount()/300);
+	std::vector<std::pair<double,CR3CaughtVector> > vIntermediateLocations;
 
 	data.ResetLocationIterator();
 	data.GetNextLocation(p1,v1);
 	data.ResetLocationIterator();
 	oSimulationData.DeleteContents();
-	string sLog;
+	std::string sLog;
 	bool bCollectingAmbiguousSolutions=false;
-	vector<CR3CaughtVector> vAmbiguousCollection;
+	std::vector<CR3CaughtVector> vAmbiguousCollection;
 	vAmbiguousCollection.reserve(50);
 	CR3CaughtVector lastInput(CR3Vector(0.0),CR3Point(0.0));
 	for(int i=0; data.GetNextLocation(p2,v2);i++){
@@ -58,8 +58,8 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 				}
 				vAmbiguousCollection.push_back(vIntermediateLocations[j].second);
 				if(j+1>=vIntermediateLocations.size() && !data.HasMoreLocations()){
-					string sSingularSolutionLog="";
-					vector<tChainConfigurationVector> vUnambiguous = oPostprocessor.SolveSingularOrientation(vAmbiguousCollection,oChain,oTool,sSingularSolutionLog);
+					std::string sSingularSolutionLog="";
+					std::vector<tChainConfigurationVector> vUnambiguous = oPostprocessor.SolveSingularOrientation(vAmbiguousCollection,oChain,oTool,sSingularSolutionLog);
 					for(size_t q=0;q<vUnambiguous.size();q++)
 						oSimulationData.AddConfigurationSet(vUnambiguous[q]);
 					if(pFile)
@@ -69,8 +69,8 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 			} else {
 				if(bCollectingAmbiguousSolutions){
 					vAmbiguousCollection.push_back(vIntermediateLocations[j].second);
-					string sSingularSolutionLog="";
-					vector<tChainConfigurationVector> vUnambiguous = oPostprocessor.SolveSingularOrientation(vAmbiguousCollection,oChain,oTool,sSingularSolutionLog);
+					std::string sSingularSolutionLog="";
+					std::vector<tChainConfigurationVector> vUnambiguous = oPostprocessor.SolveSingularOrientation(vAmbiguousCollection,oChain,oTool,sSingularSolutionLog);
 					for(size_t q=0;q<vUnambiguous.size();q++)
 						oSimulationData.AddConfigurationSet(vUnambiguous[q]);
 					if(pFile)
@@ -98,8 +98,8 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 			}
 			
 			if(pFile){
-				string s = "XYZ:"+vIntermediateLocations[j].second.m_p.toString()+", IJK:"+vIntermediateLocations[j].second.m_v.toString()+", location no. "+size_to_string(i+1);
-				string s2="";
+				std::string s = "XYZ:"+vIntermediateLocations[j].second.m_p.toString()+", IJK:"+vIntermediateLocations[j].second.m_v.toString()+", location no. "+size_to_string(i+1);
+				std::string s2="";
 
 				for(size_t k=0;k<vSolutions.size();k++){
 					s2+=(""+vSolutions[k].toString()+"\n; ");
@@ -137,23 +137,23 @@ void CCLDataPostprocessor::InterpolateLocation
 	, const CR3Vector &v1
 	, const CR3Point &p2
 	, const CR3Vector &v2
-	, vector<pair<double,CR3CaughtVector> > & result) const
+	, std::vector<std::pair<double,CR3CaughtVector> > & result) const
 {
 	result.erase(result.begin(),result.end());
 	if(p1==p2 && v1==v2){
-		result.push_back(pair<double,CR3CaughtVector>(1.0,CR3CaughtVector(v2,p2)));	
+		result.push_back(std::pair<double,CR3CaughtVector>(1.0,CR3CaughtVector(v2,p2)));	
 		return;
 	}
 	double dInv = m_oSettings.InterpolationSteps(d_E(p1,p2),v1.UndirectedUnitVectorsAngle(v2));
 	if(dInv<=1.0){
-		result.push_back(pair<double,CR3CaughtVector>(1.0,CR3CaughtVector(v2,p2)));
+		result.push_back(std::pair<double,CR3CaughtVector>(1.0,CR3CaughtVector(v2,p2)));
 		return;
 	} 
 	double t;
 	result.reserve((size_t)fabs(dInv));
 	for(double i=1.0;i<dInv-0.001; i++){
 		t = i/dInv;
-		result.push_back(pair<double,CR3CaughtVector>(t,CR3CaughtVector(((v2*t)+(v1*(1.0-t))).GetUnitVector(),(p2*t)+(p1*(1.0-t)))));
+		result.push_back(std::pair<double,CR3CaughtVector>(t,CR3CaughtVector(((v2*t)+(v1*(1.0-t))).GetUnitVector(),(p2*t)+(p1*(1.0-t)))));
 	}
-	result.push_back(pair<double,CR3CaughtVector>(1.0,CR3CaughtVector(v2,p2)));
+	result.push_back(std::pair<double,CR3CaughtVector>(1.0,CR3CaughtVector(v2,p2)));
 }

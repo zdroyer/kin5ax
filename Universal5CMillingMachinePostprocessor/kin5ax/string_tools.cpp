@@ -6,7 +6,7 @@
 //static string sRNL("\r\n");
 
 
-string string_printf(const char *szFormat, ...)
+std::string string_printf(const char *szFormat, ...)
 {
 	va_list args;
 	va_start(args,szFormat);
@@ -14,9 +14,9 @@ string string_printf(const char *szFormat, ...)
 	va_copy(args2,args);
 	int nLength = vsnprintf(NULL,0,szFormat,args);
 	va_end(args);
-	string sResult;
+	std::string sResult;
 	if(nLength>0){
-		vector<char> v((size_t)nLength+1);
+		std::vector<char> v((size_t)nLength+1);
 		vsnprintf(&v[0],v.size(),szFormat,args2);
 		sResult.assign(&v[0],(size_t)nLength);
 	}
@@ -24,16 +24,16 @@ string string_printf(const char *szFormat, ...)
 	return sResult;
 }
 
-string size_to_string(size_t n, bool bEndWithNewLineAndR){
+std::string size_to_string(size_t n, bool bEndWithNewLineAndR){
 	return string_printf(bEndWithNewLineAndR ? "%zu\r\n" : "%zu",n);
 }
-string double_to_string(double d, bool bEndWithNewLineAndR){
+std::string double_to_string(double d, bool bEndWithNewLineAndR){
 	return string_printf(bEndWithNewLineAndR ? "%.8G\r\n" : "%.8G",d);
 }
 
-string xml_escape(const string &s)
+std::string xml_escape(const std::string &s)
 {
-	string sResult;
+	std::string sResult;
 	sResult.reserve(s.size());
 	for(size_t i=0;i<s.size();i++){
 		switch(s[i]){

@@ -41,9 +41,9 @@ public:
 	double m_dAngleDistanceCoefficientRadians;
 	double m_dDisplacementCoefficient;
 
-	string GetComputationMethod(const string &sEndLine="\n") const
+	std::string GetComputationMethod(const std::string &sEndLine="\n") const
 	{
-		string sResult;
+		std::string sResult;
 		switch (m_nAnglesSolvingMethod){
 			case ANGLES_SOLVING_INDEPENDENTLY:
 				sResult+="Independent angles computation "+sEndLine;

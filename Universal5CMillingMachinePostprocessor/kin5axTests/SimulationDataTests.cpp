@@ -31,16 +31,16 @@ static tChainConfigurationVector EmptySet()
 }
 
 //length of the cheapest path through the non-empty sets, by trying every combination
-static double BruteForceLength(const vector<tChainConfigurationVector> &vSets, const CPostprocessorSettings &oSettings)
+static double BruteForceLength(const std::vector<tChainConfigurationVector> &vSets, const CPostprocessorSettings &oSettings)
 {
-	vector<tChainConfigurationVector> vNonEmpty;
+	std::vector<tChainConfigurationVector> vNonEmpty;
 	for(size_t i=0;i<vSets.size();i++)
 		if(vSets[i].size())
 			vNonEmpty.push_back(vSets[i]);
 	if(vNonEmpty.size()<2)
 		return 0.0;
 	double dBest = -1.0;
-	vector<size_t> vIndexes(vNonEmpty.size(),0);
+	std::vector<size_t> vIndexes(vNonEmpty.size(),0);
 	while(true){
 		double d = 0.0;
 		for(size_t i=1;i<vNonEmpty.size();i++)
@@ -60,7 +60,7 @@ static double BruteForceLength(const vector<tChainConfigurationVector> &vSets, c
 }
 
 //length of the path chosen by FindShortestPath; every empty set must throw, every other must not
-static double ChosenLength(const vector<tChainConfigurationVector> &vSets, const CPostprocessorSettings &oSettings)
+static double ChosenLength(const std::vector<tChainConfigurationVector> &vSets, const CPostprocessorSettings &oSettings)
 {
 	CSimulationData oData(10);
 	for(size_t i=0;i<vSets.size();i++)
@@ -84,7 +84,7 @@ static double ChosenLength(const vector<tChainConfigurationVector> &vSets, const
 	return d;
 }
 
-static void ExpectShortest(const vector<tChainConfigurationVector> &vSets)
+static void ExpectShortest(const std::vector<tChainConfigurationVector> &vSets)
 {
 	CPostprocessorSettings oSettings;
 	EXPECT_NEAR(BruteForceLength(vSets,oSettings),ChosenLength(vSets,oSettings),1E-12);
@@ -92,7 +92,7 @@ static void ExpectShortest(const vector<tChainConfigurationVector> &vSets)
 
 TEST(FindShortestPath, PicksTheSecondSolutionOfTheFirstSet)
 {
-	vector<tChainConfigurationVector> v;
+	std::vector<tChainConfigurationVector> v;
 	v.push_back(Set(5.0,0.0));	//the path 0,0,0,0 starts with the second solution
 	v.push_back(Set(0.1,4.0));
 	v.push_back(Set(0.2,4.1));
@@ -102,7 +102,7 @@ TEST(FindShortestPath, PicksTheSecondSolutionOfTheFirstSet)
 
 TEST(FindShortestPath, LastSetsAreEmpty)
 {
-	vector<tChainConfigurationVector> v;
+	std::vector<tChainConfigurationVector> v;
 	v.push_back(Set(0.0,5.0));
 	v.push_back(Set(5.1,0.1));
 	v.push_back(Set(0.2,5.2));
@@ -113,7 +113,7 @@ TEST(FindShortestPath, LastSetsAreEmpty)
 
 TEST(FindShortestPath, FirstSetsAreEmpty)
 {
-	vector<tChainConfigurationVector> v;
+	std::vector<tChainConfigurationVector> v;
 	v.push_back(EmptySet());
 	v.push_back(EmptySet());
 	v.push_back(Set(3.0,0.0));
@@ -124,7 +124,7 @@ TEST(FindShortestPath, FirstSetsAreEmpty)
 
 TEST(FindShortestPath, EmptySetsInTheMiddle)
 {
-	vector<tChainConfigurationVector> v;
+	std::vector<tChainConfigurationVector> v;
 	v.push_back(Set(2.0,0.0));
 	v.push_back(EmptySet());
 	v.push_back(Set(0.1,2.1));
@@ -136,7 +136,7 @@ TEST(FindShortestPath, EmptySetsInTheMiddle)
 
 TEST(FindShortestPath, FirstSetBiggerThanTheSecond)
 {
-	vector<tChainConfigurationVector> v;
+	std::vector<tChainConfigurationVector> v;
 	v.push_back(Set(1.0,0.0));
 	v.push_back(Set(0.1));
 	v.push_back(Set(0.2,1.2));
@@ -146,7 +146,7 @@ TEST(FindShortestPath, FirstSetBiggerThanTheSecond)
 
 TEST(FindShortestPath, FirstSetSmallerThanTheSecond)
 {
-	vector<tChainConfigurationVector> v;
+	std::vector<tChainConfigurationVector> v;
 	v.push_back(Set(0.0));
 	v.push_back(Set(1.1,0.1));
 	v.push_back(Set(0.2,1.2));
@@ -156,7 +156,7 @@ TEST(FindShortestPath, FirstSetSmallerThanTheSecond)
 
 TEST(FindShortestPath, OnlyOneSetHasSolutions)
 {
-	vector<tChainConfigurationVector> v;
+	std::vector<tChainConfigurationVector> v;
 	v.push_back(EmptySet());
 	v.push_back(Set(1.0,0.0));
 	v.push_back(EmptySet());
@@ -166,6 +166,6 @@ TEST(FindShortestPath, OnlyOneSetHasSolutions)
 
 TEST(FindShortestPath, NoSetHasSolutions)
 {
-	vector<tChainConfigurationVector> v(4,EmptySet());
+	std::vector<tChainConfigurationVector> v(4,EmptySet());
 	ExpectShortest(v);
 }

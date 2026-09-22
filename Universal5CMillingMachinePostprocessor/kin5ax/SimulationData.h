@@ -29,8 +29,8 @@ public:
 	bool NextConfiguration(CChainConfiguration &oChainConfiguration);
 	void ResetConfigurationsIterator();
 protected:
-	vector<tChainConfigurationVector> m_vSolutions; 
-	vector<size_t> m_vIndexes;
+	std::vector<tChainConfigurationVector> m_vSolutions; 
+	std::vector<size_t> m_vIndexes;
 	size_t m_nEmptySolutionsCount;
 	size_t m_nActualSolution;
 public:

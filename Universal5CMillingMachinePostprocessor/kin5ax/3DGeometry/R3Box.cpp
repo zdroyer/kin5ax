@@ -39,9 +39,9 @@ CR3Box::CR3Box(const CR3Point &r3pO, double dRadius)
 	m_dMaxZ=r3pO.GetZ()+dRadius;
 }
 
-string CR3Box::toXML() const
+std::string CR3Box::toXML() const
 {
-	string sResult;
+	std::string sResult;
 	sResult+="<box ";
 	sResult+="x1=\""+double_to_string(m_dMinX)+"\" ";
 	sResult+="x2=\""+double_to_string(m_dMaxX)+"\" ";
@@ -88,7 +88,7 @@ CR3Box CR3Box::BoxFromCylinder(const CR3Point &p1, const CR3Point &p2,double dR 
 		else{
 			double dZ = fabs(dR * sin(acos(dCosAlpha)));
 			double dXY = dR * dCosAlpha;
-			double dY = sqrt(max(0.0,(v.GetX()*v.GetX()*dR*dR-v.GetX()*v.GetX()*dZ*dZ)/(v.GetX()*v.GetX()+v.GetY()*v.GetY())));
+			double dY = sqrt(std::max(0.0,(v.GetX()*v.GetX()*dR*dR-v.GetX()*v.GetX()*dZ*dZ)/(v.GetX()*v.GetX()+v.GetY()*v.GetY())));
 			double dX =dR;
 			if(is_not_zero(v.GetX())){
 				dX = v.GetY()*dY/v.GetX();
@@ -192,7 +192,7 @@ static bool clip_to_slab(double d1, double d2, double dMin, double dMax, double 
 		return is_between_or_equal(d1,dMin,dMax);
 	double dTNear = (dMin-d1)/dD, dTFar = (dMax-d1)/dD;
 	if(dTNear>dTFar)
-		swap(dTNear,dTFar);
+		std::swap(dTNear,dTFar);
 	if(dTNear>dT1) dT1 = dTNear;
 	if(dTFar<dT2) dT2 = dTFar;
 	return dT1<=dT2+dEPSILON;
@@ -239,12 +239,12 @@ bool CR3Box::HasIntersectionWithBox(const CR3Box &box, const CTransformation &tr
 
 }
 //twice the signed area of the triangle a,b,c in the XY plane: positive when a->b->c turns left
-static double cross_xy(const pair<double,double> &a, const pair<double,double> &b, const pair<double,double> &c)
+static double cross_xy(const std::pair<double,double> &a, const std::pair<double,double> &b, const std::pair<double,double> &c)
 {
 	return (b.first-a.first)*(c.second-a.second)-(b.second-a.second)*(c.first-a.first);
 }
 
-static double distance_from_origin_to_segment_xy(const pair<double,double> &a, const pair<double,double> &b)
+static double distance_from_origin_to_segment_xy(const std::pair<double,double> &a, const std::pair<double,double> &b)
 {
 	double dDX = b.first-a.first, dDY = b.second-a.second;
 	double dL2 = dDX*dDX+dDY*dDY;
@@ -256,10 +256,10 @@ static double distance_from_origin_to_segment_xy(const pair<double,double> &a, c
 }
 
 //the 8 vertices of a box, transformed by tr; the order matches vBOX_EDGES
-static vector<CR3Point> box_vertices(const CR3Box &box, const CTransformation &tr)
+static std::vector<CR3Point> box_vertices(const CR3Box &box, const CTransformation &tr)
 {
 	const CR3Point r3pMin = box.GetMinPoint(), r3pMax = box.GetMaxPoint();
-	vector<CR3Point> vV;
+	std::vector<CR3Point> vV;
 	vV.reserve(8);
 	vV.push_back(tr*CR3Point(r3pMax.GetX(),r3pMax.GetY(),r3pMax.GetZ()));
 	vV.push_back(tr*CR3Point(r3pMin.GetX(),r3pMax.GetY(),r3pMax.GetZ()));
@@ -277,7 +277,7 @@ static const int vBOX_EDGES[12][2] = {{0,1},{1,2},{2,3},{3,0}, {4,5},{5,6},{6,7}
 
 bool CR3Box::AsymmetricIntersection(const CR3Box &box, const CTransformation &tr) const
 {
-	vector<CR3Point> vV = box_vertices(box,tr);
+	std::vector<CR3Point> vV = box_vertices(box,tr);
 	for(int i=0;i<12;i++)
 		if(HasIntersectionWithLineSegment(vV[vBOX_EDGES[i][0]],vV[vBOX_EDGES[i][1]]))
 			return true;
@@ -285,16 +285,16 @@ bool CR3Box::AsymmetricIntersection(const CR3Box &box, const CTransformation &tr
 }
 
 //the distance from the origin to the convex hull of the points projected on the XY plane; 0 when the origin is inside
-static double distance_from_origin_to_convex_hull_xy(const vector<CR3Point> &vPoints)
+static double distance_from_origin_to_convex_hull_xy(const std::vector<CR3Point> &vPoints)
 {
-	vector<pair<double,double> > v;
+	std::vector<std::pair<double,double> > v;
 	for(size_t i=0;i<vPoints.size();i++)
-		v.push_back(make_pair(vPoints[i].GetX(),vPoints[i].GetY()));
-	sort(v.begin(),v.end());
+		v.push_back(std::make_pair(vPoints[i].GetX(),vPoints[i].GetY()));
+	std::sort(v.begin(),v.end());
 	v.erase(unique(v.begin(),v.end()),v.end());
 	//the convex hull, counterclockwise (Andrew's monotone chain)
 	size_t n = v.size();
-	vector<pair<double,double> > vHull(2*n);
+	std::vector<std::pair<double,double> > vHull(2*n);
 	size_t k=0;
 	for(size_t i=0;i<n;i++){
 		while(k>=2 && cross_xy(vHull[k-2],vHull[k-1],v[i])<=0.0) k--;
@@ -313,8 +313,8 @@ static double distance_from_origin_to_convex_hull_xy(const vector<CR3Point> &vPo
 	bool bInside = k>=3;
 	double dMin = -1.0;
 	for(size_t i=0;i<k;i++){
-		const pair<double,double> &a = vHull[i], &b = vHull[(i+1)%k];
-		if(cross_xy(a,b,make_pair(0.0,0.0))<0.0)
+		const std::pair<double,double> &a = vHull[i], &b = vHull[(i+1)%k];
+		if(cross_xy(a,b,std::make_pair(0.0,0.0))<0.0)
 			bInside = false;
 		double d = distance_from_origin_to_segment_xy(a,b);
 		if(dMin<0.0 || d<dMin)
@@ -335,8 +335,8 @@ bool CR3Box::HasIntersectionWithOZCylinder(const double &dZ,const double &dR, co
 	//exact: the part of the box between the planes z=0 and z=dZ (a convex solid: the vertices inside the slab and
 	//the points where the edges cross the planes) meets the cylinder iff its projection on the XY plane, a convex
 	//polygon, comes closer than dR to the axis
-	vector<CR3Point> vV = box_vertices(*this,trToCylinder);
-	vector<CR3Point> vSlab;
+	std::vector<CR3Point> vV = box_vertices(*this,trToCylinder);
+	std::vector<CR3Point> vSlab;
 	for(size_t i=0;i<vV.size();i++)
 		if(is_between_or_equal(vV[i].GetZ(),0.0,dZ))
 			vSlab.push_back(vV[i]);

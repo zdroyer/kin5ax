@@ -10,16 +10,16 @@ CGeneratorException::~CGeneratorException(void)
 }
 
 	// Standardowy konstruktor jaki powinien byæ wykorzystywany przy wyrzucaniu wyj¹tku
-CGeneratorException::CGeneratorException(const string & message // komunikat wyj¹tku
-										  ,const string & fileName // nazwa pliku Ÿród³owego: __FILE__
+CGeneratorException::CGeneratorException(const std::string & message // komunikat wyj¹tku
+										  ,const std::string & fileName // nazwa pliku Ÿród³owego: __FILE__
 										  ,const int lineNumber // numer lini w pliku: __LINE__
-										  ,const string & methodName) // nazwa metody wyrzucaj¹cej: __FUNCTION__ 										  
+										  ,const std::string & methodName) // nazwa metody wyrzucaj¹cej: __FUNCTION__ 										  
 {
-	m_sMessage = string(message);
+	m_sMessage = std::string(message);
 	char str[50];
 	::sprintf(str,", Line: %d\0:",lineNumber);
-	m_sThrowingPlace = string("File: ") + fileName + string(str);
-	m_sThrowingMethod = string("Function: ")+methodName;
+	m_sThrowingPlace = std::string("File: ") + fileName + std::string(str);
+	m_sThrowingMethod = std::string("Function: ")+methodName;
 	//m_sThrowingModule = string("Ten komunikat nie powinien siê nigdy pokazaæ \nnie wyrzucamy wyj¹tku klasy CGeneratorException \nprosze poprawiæ kod.");	
 
 //	LOG_ADDSTRING("-----");
@@ -31,7 +31,7 @@ CGeneratorException::CGeneratorException(const string & message // komunikat wyj
 }
 
 // komunikat opisuj¹cy przyczyny wyst¹pienia wyj¹tku
-const string & CGeneratorException::Message(void) const
+const std::string & CGeneratorException::Message(void) const
 {
 	return m_sMessage;
 }
@@ -45,7 +45,7 @@ const string &CGeneratorException::GetThrowingModule(void) const
 //*/
 
 // Miejsca, sk¹d wyszed³ wyj¹tek
-const string & CGeneratorException::GetThrowingPlace(void) const
+const std::string & CGeneratorException::GetThrowingPlace(void) const
 {
 	return m_sThrowingPlace;
 }

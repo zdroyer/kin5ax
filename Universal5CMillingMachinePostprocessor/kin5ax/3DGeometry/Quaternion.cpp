@@ -100,7 +100,7 @@ CQuaternion operator/(const CQuaternion &a,const double &b )
 	return res;
 }
 
-ostream & operator << (ostream &o, const CQuaternion &a)
+std::ostream & operator << (std::ostream &o, const CQuaternion &a)
 {
 	o<<"["<<a.q[0]<<", "<<a.q[1]<<", "<<a.q[2]<<", "<<a.q[3]<<"]";
 	return o;

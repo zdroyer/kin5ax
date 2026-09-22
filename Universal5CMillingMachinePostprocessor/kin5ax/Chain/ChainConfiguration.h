@@ -24,12 +24,12 @@ public:
 	double GetFirstAngleValue() const;
 	void SetAmbiguousParameter(double dVal);
 	bool IsAmbiguous() const;
-	vector<CChainConfiguration> GetEquivalents()const;
+	std::vector<CChainConfiguration> GetEquivalents()const;
 	double Distance(const CChainConfiguration &c2, const CPostprocessorSettings &oSettings) const; 
 	void ZeroAll();
-	string toString(bool bTwoLines = false,string sEndLine=sNL) const;
+	std::string toString(bool bTwoLines = false,std::string sEndLine=sNL) const;
 	CChainParameter & operator[](size_t i);
 	const CChainParameter & operator[](size_t i) const;
 };
 
-typedef vector<CChainConfiguration> tChainConfigurationVector;
+typedef std::vector<CChainConfiguration> tChainConfigurationVector;

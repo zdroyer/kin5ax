@@ -152,7 +152,7 @@ public:
 		m_vdV[2]=m_dZ;
 		return m_vdV;
 	}
-	string toString() const
+	std::string toString() const
 	{
 		return string_printf("[%.4lf; %.4lf; %.4lf]",GetX(),GetY(),GetZ());
 	}

@@ -37,17 +37,17 @@ CMillingTool::~CMillingTool(void)
 {
 }
 
-string CMillingTool::GetCollisionLog() const
+std::string CMillingTool::GetCollisionLog() const
 {
 	if(m_sCollisionLog.size())
-		return string("Milling tool in collision with:")+m_sCollisionLog;
+		return std::string("Milling tool in collision with:")+m_sCollisionLog;
 	return "";
 }
 void CMillingTool::ClearCollisionLog()
 {
 	m_sCollisionLog="";
 }
-void CMillingTool::AddToCollisionLog(const string &s)
+void CMillingTool::AddToCollisionLog(const std::string &s)
 {
 	m_sCollisionLog+=("\n\t\t"+s);
 }

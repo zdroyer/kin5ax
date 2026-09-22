@@ -6,7 +6,7 @@ class CQuaternion
 friend  CQuaternion operator* (const CQuaternion &a, const CQuaternion &b);
 friend   CQuaternion operator* (const CQuaternion &a, const double &b);
 friend  CQuaternion operator* (const double &a, const CQuaternion &b);
-friend   ostream & operator << (ostream &o, const CQuaternion &a);
+friend   std::ostream & operator << (std::ostream &o, const CQuaternion &a);
 friend  CQuaternion operator*(const CQuaternion &Q, const CR3Vector &w);
 friend   CQuaternion operator/(const CQuaternion &a,const double &b );
 protected:

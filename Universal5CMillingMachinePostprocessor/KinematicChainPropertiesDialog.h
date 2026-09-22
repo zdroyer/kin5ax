@@ -70,7 +70,7 @@ protected:
 public:
 	// enables and fills controls conserned with passed chain segment
 	void EnableSegmentProperties(const CChainSegment & segment);
-	bool GetSegmentVectorFromTreeItem(const HTREEITEM & hTreeItem,vector<CChainSegment> **ppvVectorSegment, int &nIndex);
+	bool GetSegmentVectorFromTreeItem(const HTREEITEM & hTreeItem,std::vector<CChainSegment> **ppvVectorSegment, int &nIndex);
 	afx_msg void OnCbnSelchangeComboPredefinedAxis();
 	// index of selected item in Segment Type combo
 	int m_nSegmentTypeIndex;
@@ -131,7 +131,7 @@ public:
 	void SetParameterValue(double dNewValue , int nSliderPosition);
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	
-	vector<CR3Box> m_vBoxes;
+	std::vector<CR3Box> m_vBoxes;
 	int m_nActivePart;	//index into m_vBoxes, -1 when no box is selected
 protected:
 	void UpdateParameterSliderUnits(void);

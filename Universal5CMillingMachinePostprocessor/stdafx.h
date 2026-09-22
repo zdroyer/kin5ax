@@ -27,6 +27,7 @@
 // turns off MFC's hiding of some common and often safely ignored warning messages
 #define _AFX_ALL_WARNINGS
 
+#define NOMINMAX            // no min/max macros: the code uses std::min and std::max
 #include <afxwin.h>         // MFC core and standard components
 #include <afxext.h>         // MFC extensions
 
@@ -62,7 +63,7 @@
 
 
 //#include <afxdhtml.h>
-using namespace std;
+
 
 #include "ApplicationConfiguration.h"
 #include "PostprocessorSettings.h"

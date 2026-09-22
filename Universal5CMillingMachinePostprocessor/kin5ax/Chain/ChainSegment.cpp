@@ -27,7 +27,7 @@ CChainSegment::CChainSegment(CHAIN_SEGMENT_TYPE type
 	SetType(type);
 }
 
-string CChainSegment::GetTypeName() const
+std::string CChainSegment::GetTypeName() const
 {
 
 	return m_sTypeName;
@@ -59,14 +59,14 @@ CRotation CChainSegment::GetInvertedConstantRotation() const
 	return CRotation(m_r3vConstRevoluteAxis,-m_dConstRevoluteAngle,0.0);
 }
 
-bool CChainSegment::HasPartInCollision(string &sLog) const
+bool CChainSegment::HasPartInCollision(std::string &sLog) const
 {
 	if(m_vParts.empty())
 		return false;
 	if(m_vParts.size()!= m_vCollisions.size()){
 		return false;
 	}
-	string s = "";
+	std::string s = "";
 	bool bDetected = false;
 	for(size_t i=0; i<m_vCollisions.size();i++){
 		if(m_vCollisions[i]){
@@ -137,9 +137,9 @@ bool CChainSegment::MeetsConstraints(double dParam) const
 
 }
 
-string CChainSegment::GetConstraint() const
+std::string CChainSegment::GetConstraint() const
 {
-	string sResult;
+	std::string sResult;
 	if(m_bParameterIsConstrained){
 		sResult=GetName()+" in ["+double_to_string(m_dParameterValueMinimum)+"; "+double_to_string(m_dParameterValueMaximum)+"]";
 	} else {
@@ -167,7 +167,7 @@ void CChainSegment::SetParameterValue(double dValue)
 }
 
 
-double string_to_double(const string &s)
+double string_to_double(const std::string &s)
 {
 	double d;
 	sscanf(s.c_str(),"%lG",&d);
@@ -203,7 +203,7 @@ void CChainSegment::SetType(CHAIN_SEGMENT_TYPE type)
 	
 }
 
-void CChainSegment::SetType(const string &sType)
+void CChainSegment::SetType(const std::string &sType)
 {
 	if(0==strcmp("REVOLUTE_LINK",sType.c_str())){
 		SetType(CHAIN_SEGMENT_REVOLUTE_LINK);
@@ -225,12 +225,12 @@ void CChainSegment::SetType(const string &sType)
 }
 
 
-void CChainSegment::SetName(const string &sName)
+void CChainSegment::SetName(const std::string &sName)
 {
 	m_sName = sName;
 }
 
-string CChainSegment::GetName() const
+std::string CChainSegment::GetName() const
 {
 	if(IsRegularJoint())
 		return m_sName;
@@ -240,9 +240,9 @@ string CChainSegment::GetName() const
 
 }
 
-string CChainSegment::toXML(void) const
+std::string CChainSegment::toXML(void) const
 {
-	string sResult;
+	std::string sResult;
 	sResult += "<segment type=\""+GetTypeName();
 	sResult += "\" name=\""+xml_escape(GetName())+"\" " ;
 	if(m_bParameterIsConstrained){
@@ -283,12 +283,12 @@ string CChainSegment::toXML(void) const
 }
 
 
-void CChainSegment::SetPartVector(vector<CR3Box> vNewParts)
+void CChainSegment::SetPartVector(std::vector<CR3Box> vNewParts)
 {
 	m_vParts = vNewParts;
-	m_vCollisions = vector<bool>(vNewParts.size(),false);
+	m_vCollisions = std::vector<bool>(vNewParts.size(),false);
 }
-const vector<CR3Box> &CChainSegment::GetPartVector() const
+const std::vector<CR3Box> &CChainSegment::GetPartVector() const
 {
 	return m_vParts;
 }
@@ -309,7 +309,7 @@ void CChainSegment::SetPartCollision(size_t n)
 
 void CChainSegment::ClearAllPartCollision()
 {
-	m_vCollisions = vector<bool>(m_vCollisions.size(),false);
+	m_vCollisions = std::vector<bool>(m_vCollisions.size(),false);
 }
 CR3Box *CChainSegment::GetActivePartPointer()
 {

@@ -18,27 +18,27 @@ class CChainSegment
 {
 
 protected:
-	vector<CR3Box> m_vParts;		//the solids of the segment, in the frame after its constant transformation
-	vector<bool> m_vCollisions;	//one flag per box, set by CChain::DetectCollisions
+	std::vector<CR3Box> m_vParts;		//the solids of the segment, in the frame after its constant transformation
+	std::vector<bool> m_vCollisions;	//one flag per box, set by CChain::DetectCollisions
 	int m_nHighlightedPart;
 
 public:
 	//Is any box of the segment flagged? Then sLog names the segment and the boxes.
-	bool HasPartInCollision(string &sLog) const;
+	bool HasPartInCollision(std::string &sLog) const;
 	void ClearAllPartCollision();
 
 	//the collision flag of box n (0-based)
 	void SetPartCollision(size_t n);
 	bool IsPartInCollision(size_t n) const;
-	void SetPartVector(vector<CR3Box> vNewParts);
-	const vector<CR3Box> &GetPartVector()const;
+	void SetPartVector(std::vector<CR3Box> vNewParts);
+	const std::vector<CR3Box> &GetPartVector()const;
 	void HighlightPart(int n);
 	int GetHighlightedPartIndex() const;
 	CR3Box *GetActivePartPointer();
 
 	bool MeetsConstraints(double dParam) const;
 
-	string GetConstraint() const;
+	std::string GetConstraint() const;
 	
 	CChainSegment(CHAIN_SEGMENT_TYPE type
 					,const CR3Vector &r3vConstRevoluteAxis
@@ -60,8 +60,8 @@ public:
 
 
 	CHAIN_SEGMENT_TYPE m_type;
-	string m_sTypeName;
-	string m_sName;
+	std::string m_sTypeName;
+	std::string m_sName;
 	CR3Vector m_r3vConstRevoluteAxis;
 	double m_dConstRevoluteAngle;
 	CR3Vector m_r3vConstTranslation;
@@ -75,10 +75,10 @@ public:
 	bool IsRegularJoint() const;
 	CHAIN_SEGMENT_TYPE GetType() const;
 	void SetType(CHAIN_SEGMENT_TYPE type);
-	void SetType(const string &sType);
-	void SetName(const string &sName);
+	void SetType(const std::string &sType);
+	void SetName(const std::string &sName);
 	void SetParameterValue(double dValue);
-	string GetName() const;
-	string toXML(void) const;
-	string GetTypeName() const;
+	std::string GetName() const;
+	std::string toXML(void) const;
+	std::string GetTypeName() const;
 };

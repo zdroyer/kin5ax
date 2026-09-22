@@ -258,7 +258,7 @@ void CPostprocessingDialog::OnBnClickedStart()
 	SetWindowText("4/4 report generating in progress...");
 	GenerateAndShowReport();
 	if(m_pDoc->m_oSimulationData.GetEmptySolutionsCount()){
-		MessageBox((string("There is "+size_to_string(m_pDoc->m_oSimulationData.GetEmptySolutionsCount())+" problem(s) without any valid solution\nProblems without solution are ignored during simulation/saving G-code output")).c_str());
+		MessageBox((std::string("There is "+size_to_string(m_pDoc->m_oSimulationData.GetEmptySolutionsCount())+" problem(s) without any valid solution\nProblems without solution are ignored during simulation/saving G-code output")).c_str());
 	}
 	SetWindowText("Postprocessing CL-data");
 	if(m_bDetailedReport){
@@ -267,10 +267,10 @@ void CPostprocessingDialog::OnBnClickedStart()
 	}
 }
 
-string CPostprocessingDialog::GenerateReportHead() const
+std::string CPostprocessingDialog::GenerateReportHead() const
 {
 	assert(m_pDoc);
-	string sReportHead;
+	std::string sReportHead;
 	if(m_pDoc){
 		CCutterLocationData &oCLData = m_pDoc->m_oCutterLocationData;
 		sReportHead="";
@@ -286,8 +286,8 @@ string CPostprocessingDialog::GenerateReportHead() const
 		sReportHead+=("\tlines with error: "+size_to_string(oCLData.GetErrorsCount())+sNL);
 		sReportHead+=("\tempty lines: "+size_to_string(oCLData.GetLinesCount()-oCLData.GetLocationsCount()-oCLData.GetErrorsCount())+sNL);
 
-		sReportHead+=("\nPostprocessing started at "+string(m_timeBegin.Format("%c").GetBuffer(0))+sNL);
-		sReportHead+=("Postprocessing finished at "+string(m_timeEnd.Format("%c").GetBuffer(0))+sNL);
+		sReportHead+=("\nPostprocessing started at "+std::string(m_timeBegin.Format("%c").GetBuffer(0))+sNL);
+		sReportHead+=("Postprocessing finished at "+std::string(m_timeEnd.Format("%c").GetBuffer(0))+sNL);
 		CTimeSpan interval(m_timeEnd-m_timeBegin);
 		sReportHead+=("Consumed time: "
 			+double_to_string((double)interval.GetDays())+"days, "
@@ -340,7 +340,7 @@ void CPostprocessingDialog::GenerateAndShowReport(void)
 		m_sReport+=("\tempty lines: "+size_to_string(oCLData.GetLinesCount()-oCLData.GetLocationsCount()-oCLData.GetErrorsCount(),true));
 
 		m_sReport+=(sRNL+"Postprocessing started at "+m_timeBegin.Format("%c").GetBuffer(0)+sRNL);
-		m_sReport+=(string("Postprocessing finished at ")+m_timeEnd.Format("%c").GetBuffer(0)+sRNL);
+		m_sReport+=(std::string("Postprocessing finished at ")+m_timeEnd.Format("%c").GetBuffer(0)+sRNL);
 		CTimeSpan interval(m_timeEnd-m_timeBegin);
 		m_sReport+=("Consumed time: "
 			+double_to_string((double)interval.GetDays())+"days, "
@@ -424,7 +424,7 @@ BOOL CPostprocessingDialog::OnInitDialog()
 		m_vTranslationsIndexes.push_back(nSecond);		
 		m_vTranslationsIndexes.push_back(nThird);
 		for(size_t i=0;i<3;i++){
-			string s = m_pDoc->m_oChain[(int)m_vTranslationsIndexes[i]].GetName();
+			std::string s = m_pDoc->m_oChain[(int)m_vTranslationsIndexes[i]].GetName();
 			if(s.length() && (s[0]=='x' || s[0]=='X'))
 				m_nXNameIndex=(int)i;
 			if(s.length() && (s[0]=='y' || s[0]=='Y'))

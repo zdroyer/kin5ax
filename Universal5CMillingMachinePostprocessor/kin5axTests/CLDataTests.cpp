@@ -10,7 +10,7 @@
 static const double dSPHERE_RADIUS = 0.05;
 static const double dLOCATIONS_DISTANCE = 0.01;
 
-static size_t CountLines(const string &sFileName)
+static size_t CountLines(const std::string &sFileName)
 {
 	FILE *pFile = fopen(sFileName.c_str(),"rt");
 	if(!pFile)
@@ -24,9 +24,9 @@ static size_t CountLines(const string &sFileName)
 }
 
 //the beginning and the end of a text file (nChars each)
-static string ReadBothEnds(const string &sFileName, size_t nChars)
+static std::string ReadBothEnds(const std::string &sFileName, size_t nChars)
 {
-	string sAll;
+	std::string sAll;
 	FILE *pFile = fopen(sFileName.c_str(),"rt");
 	if(!pFile)
 		return sAll;
@@ -41,7 +41,7 @@ static string ReadBothEnds(const string &sFileName, size_t nChars)
 
 TEST(SphereCLData, IsReadBackByCutterLocationData)
 {
-	string sFileName = TempFilePath("kin5axTests_sphere.cld");
+	std::string sFileName = TempFilePath("kin5axTests_sphere.cld");
 	size_t nWritten = WriteSphereCLData(sFileName,dSPHERE_RADIUS,dLOCATIONS_DISTANCE);
 	ASSERT_GT(nWritten,(size_t)10);
 	try{
@@ -74,21 +74,21 @@ TEST(SphereCLData, IsReadBackByCutterLocationData)
 	remove(sFileName.c_str());
 }
 
-class SphereCLDataOnChainTest : public ::testing::TestWithParam<string>
+class SphereCLDataOnChainTest : public ::testing::TestWithParam<std::string>
 {
 };
 
 struct SphereCLDataOnChainTestName
 {
-	string operator()(const ::testing::TestParamInfo<string> &oInfo) const
+	std::string operator()(const ::testing::TestParamInfo<std::string> &oInfo) const
 	{ return GetTestName(oInfo.param); }
 };
 
 //CL-data file -> CCLDataPostprocessor -> shortest path -> G-code file
 TEST_P(SphereCLDataOnChainTest, IsPostprocessedToGCode)
 {
-	string sCLDataFile = TempFilePath("kin5axTests_sphere_"+GetTestName(GetParam())+".cld");
-	string sGCodeFile = TempFilePath("kin5axTests_sphere_"+GetTestName(GetParam())+".nc");
+	std::string sCLDataFile = TempFilePath("kin5axTests_sphere_"+GetTestName(GetParam())+".cld");
+	std::string sGCodeFile = TempFilePath("kin5axTests_sphere_"+GetTestName(GetParam())+".nc");
 	size_t nWritten = WriteSphereCLData(sCLDataFile,dSPHERE_RADIUS,dLOCATIONS_DISTANCE);
 	ASSERT_GT(nWritten,(size_t)10);
 	try{
@@ -110,7 +110,7 @@ TEST_P(SphereCLDataOnChainTest, IsPostprocessedToGCode)
 		size_t nSolved = oSimulationData.GetSize()-oSimulationData.GetEmptySolutionsCount();
 		if(nSolved==0){
 			//run again with the detailed report: the solver log tells why
-			string sReportFile = TempFilePath("kin5axTests_sphere_"+GetTestName(GetParam())+".txt");
+			std::string sReportFile = TempFilePath("kin5axTests_sphere_"+GetTestName(GetParam())+".txt");
 			FILE *pReport = fopen(sReportFile.c_str(),"wt");
 			CSimulationData oIgnored;
 			oPostprocessor.Process(oChain,oTool,oData,oIgnored,pReport,0,NULL);

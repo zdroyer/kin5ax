@@ -10,11 +10,11 @@ TEST(StringPrintf, FormatsAnyLength)
 {
 	EXPECT_EQ("",string_printf(""));
 	EXPECT_EQ("a=1, b=2.50",string_printf("a=%d, b=%.2f",1,2.5));
-	string sLong = string_printf("%.0f",1E300);
+	std::string sLong = string_printf("%.0f",1E300);
 	EXPECT_EQ((size_t)301,sLong.size());
 	EXPECT_EQ('1',sLong[0]);
 	//two results at once: no shared buffer
-	string a = string_printf("%d",1), b = string_printf("%d",2);
+	std::string a = string_printf("%d",1), b = string_printf("%d",2);
 	EXPECT_EQ("1",a);
 	EXPECT_EQ("2",b);
 }
@@ -33,7 +33,7 @@ TEST(ToString, PointWithBigCoordinates)
 {
 	EXPECT_EQ("(1.5000, -2.2500, 0.0000)",CR3Point(1.5,-2.25,0.0).toString());
 	EXPECT_EQ("(123456789.1250, -123456789.1250, 123456789.1250)",CR3Point(123456789.125,-123456789.125,123456789.125).toString());
-	string s = CR3Point(1E300,1E300,1E300).toString();
+	std::string s = CR3Point(1E300,1E300,1E300).toString();
 	EXPECT_GT(s.size(),(size_t)900);
 	EXPECT_EQ("(1, -2, 3)",CR3Point(1.4,-2.4,3.4).toStringInt());
 }

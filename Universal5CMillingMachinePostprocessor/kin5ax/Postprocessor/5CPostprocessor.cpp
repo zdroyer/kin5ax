@@ -59,10 +59,10 @@ C5CPostprocessor::~C5CPostprocessor(void)
 
 
 
-vector<tChainConfigurationWithResult> C5CPostprocessor::SolveWithLocations(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,CMillingTool &oMillingTool, string &sLog)
+std::vector<tChainConfigurationWithResult> C5CPostprocessor::SolveWithLocations(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,CMillingTool &oMillingTool, std::string &sLog)
 {
 	tChainConfigurationVector vResult2 = Solve(r3pPosition,r3vOrientation,oChain,oMillingTool,sLog);
-	vector<tChainConfigurationWithResult> v(vResult2.size());
+	std::vector<tChainConfigurationWithResult> v(vResult2.size());
 	for(size_t i=0;i<vResult2.size();i++){
 		v[i].first = vResult2[i];
 		oChain.SetParameters(vResult2[i]);
@@ -73,7 +73,7 @@ vector<tChainConfigurationWithResult> C5CPostprocessor::SolveWithLocations(const
 }
 
 
-tChainConfigurationVector C5CPostprocessor::Solve(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,CMillingTool &oMillingTool, string &sLog)
+tChainConfigurationVector C5CPostprocessor::Solve(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,CMillingTool &oMillingTool, std::string &sLog)
 {
 	tChainConfigurationVector  vResult = SolveTheoretically(r3pPosition,r3vOrientation,oChain,sLog);
 	vResult = ApplyParameterConstraints(vResult,oChain,sLog);
@@ -82,7 +82,7 @@ tChainConfigurationVector C5CPostprocessor::Solve(const CR3Point  r3pPosition, c
     return vResult;
 }
 
-tChainConfigurationVector C5CPostprocessor::ApplyParameterConstraints(const tChainConfigurationVector &vSolutions, CChain &oChain,string &sLog)
+tChainConfigurationVector C5CPostprocessor::ApplyParameterConstraints(const tChainConfigurationVector &vSolutions, CChain &oChain,std::string &sLog)
 {
 	if(!oChain.HasParameterConstraints())
 		return vSolutions;
@@ -91,7 +91,7 @@ tChainConfigurationVector C5CPostprocessor::ApplyParameterConstraints(const tCha
 	for(size_t i=0; i<vSolutions.size();i++){
 		tChainConfigurationVector vEquivalents = vSolutions[i].GetEquivalents();
 		for(size_t j=0;j<vEquivalents.size();j++){
-			string sExceededConstraints="";
+			std::string sExceededConstraints="";
 			CHAIN_CONSTRAINTS_RESULT result = oChain.MeetsParametersConstraints(vEquivalents[j],sExceededConstraints);
 			if(result==CHAIN_CONSTRAINTS_MET){
 				vResults.push_back(vEquivalents[j]);
@@ -102,7 +102,7 @@ tChainConfigurationVector C5CPostprocessor::ApplyParameterConstraints(const tCha
 					&& j<vEquivalents.size()-1){
 					continue;
 				}else{
-					sLog+=(string("Solution: ")+vSolutions[i].toString()+" (and equivalents) rejected;\nexceeded constraint(s):"+sExceededConstraints+sNL);
+					sLog+=(std::string("Solution: ")+vSolutions[i].toString()+" (and equivalents) rejected;\nexceeded constraint(s):"+sExceededConstraints+sNL);
 					break;
 				}
 			}
@@ -112,9 +112,9 @@ tChainConfigurationVector C5CPostprocessor::ApplyParameterConstraints(const tCha
 	return vResults;
 }
 
-tChainConfigurationVector C5CPostprocessor::ApplyCollisionDetection(const tChainConfigurationVector &vSolutions, CChain &oChain,CMillingTool &oMillingTool,string &sLog)
+tChainConfigurationVector C5CPostprocessor::ApplyCollisionDetection(const tChainConfigurationVector &vSolutions, CChain &oChain,CMillingTool &oMillingTool,std::string &sLog)
 {
-	string sCollisionLog;
+	std::string sCollisionLog;
 	tChainConfigurationVector vResults;
 	for(size_t i=0;i<vSolutions.size();i++){
 		oChain.SetParameters(vSolutions[i]);
@@ -129,7 +129,7 @@ tChainConfigurationVector C5CPostprocessor::ApplyCollisionDetection(const tChain
 }
 
 
-tChainConfigurationVector C5CPostprocessor::SolveWithKnownAlpha1(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,string &sLog,vector<double> vAlpha1,CMillingTool &oMillingTool)
+tChainConfigurationVector C5CPostprocessor::SolveWithKnownAlpha1(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,std::string &sLog,std::vector<double> vAlpha1,CMillingTool &oMillingTool)
 {
 	if(vAlpha1.size()==0)
 		vAlpha1.push_back(0.0);
@@ -147,11 +147,11 @@ tChainConfigurationVector C5CPostprocessor::SolveWithKnownAlpha1(const CR3Point 
 
 	CR3Vector r3vT1,r3vT2,r3vT3;
 	CR3Point r3pP1;
-	vector<CChainConfiguration> vShifts;
+	std::vector<CChainConfiguration> vShifts;
 	
 	for(size_t i = 0; i<vSolutions2.size(); i++){
 		oChain.GetTranslationAxesAndOffset(r3vT1,r3vT2,r3vT3,r3pP1,vSolutions2[i]);
-		string sExceptionMessage="";
+		std::string sExceptionMessage="";
 		try{
 			m_oPositionPostprocessor.SetAxesAndOffset(r3vT1,r3vT2,r3vT3,r3pP1);
 			vShifts = m_oPositionPostprocessor.Solve(r3pPosition);
@@ -176,14 +176,14 @@ tChainConfigurationVector C5CPostprocessor::SolveWithKnownAlpha1(const CR3Point 
 
 
 }
-tChainConfigurationVector C5CPostprocessor::SolveTheoretically(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,string &sLog)
+tChainConfigurationVector C5CPostprocessor::SolveTheoretically(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,std::string &sLog)
 {
 	CChainConfiguration oChainConfig(5);
 
 	CR3Vector r3vV0 =  m_m4x4InitialOrientationTransformation * r3vOrientation;
-	vector<CChainConfiguration> vRotations;
+	std::vector<CChainConfiguration> vRotations;
 	try{
-		vector<CChainConfiguration> vAngles = m_oOrientationPostprocessor.Solve(r3vV0);
+		std::vector<CChainConfiguration> vAngles = m_oOrientationPostprocessor.Solve(r3vV0);
 		sLog += ("found "+size_to_string(vAngles.size())+" generic orientation solution\n");
 		for(size_t i=0;i<vAngles.size();i++){
 			vRotations.push_back(CChainConfiguration(5));
@@ -194,16 +194,16 @@ tChainConfigurationVector C5CPostprocessor::SolveTheoretically(const CR3Point  r
 		}
 	} catch (CGeneratorException e){
 		sLog+=("Error occurred during orientation solving:\n"+e.Message());
-		return vector<CChainConfiguration>(0);
+		return std::vector<CChainConfiguration>(0);
 	}
 
 	static CR3Vector r3vT1, r3vT2,r3vT3;
 	static CR3Point r3pP1;
-	vector<CChainConfiguration> vShifts;
-	vector<CChainConfiguration> vResult2;
+	std::vector<CChainConfiguration> vShifts;
+	std::vector<CChainConfiguration> vResult2;
 	for(size_t i = 0; i<vRotations.size(); i++){
 		oChain.GetTranslationAxesAndOffset(r3vT1,r3vT2,r3vT3,r3pP1,vRotations[i]);
-		string sExceptionMessage="";
+		std::string sExceptionMessage="";
 		try{
 			m_oPositionPostprocessor.SetAxesAndOffset(r3vT1,r3vT2,r3vT3,r3pP1);
 			vShifts = m_oPositionPostprocessor.Solve(r3pPosition);
@@ -229,9 +229,9 @@ tChainConfigurationVector C5CPostprocessor::SolveTheoretically(const CR3Point  r
 
 
 
-vector<tChainConfigurationVector> C5CPostprocessor::SolveSingularOrientation(const vector<CR3CaughtVector> &vInput, CChain &oChain,CMillingTool &oMillingTool,string &sLog)
+std::vector<tChainConfigurationVector> C5CPostprocessor::SolveSingularOrientation(const std::vector<CR3CaughtVector> &vInput, CChain &oChain,CMillingTool &oMillingTool,std::string &sLog)
 {
-	vector<tChainConfigurationVector> vResult;
+	std::vector<tChainConfigurationVector> vResult;
 	if(vInput.size()==0)
 		return vResult; 
 	if(vInput.size()==1){
@@ -244,8 +244,8 @@ vector<tChainConfigurationVector> C5CPostprocessor::SolveSingularOrientation(con
 		vResult.push_back(v);
 		return vResult;
 	}
-	string sFirstLog;
-	string sLastLog;
+	std::string sFirstLog;
+	std::string sLastLog;
 	tChainConfigurationVector vFirst,vLast;
 	size_t nBegin=0;
 
@@ -258,7 +258,7 @@ vector<tChainConfigurationVector> C5CPostprocessor::SolveSingularOrientation(con
 		sLog+="No cutter location of the singular section can be solved:\n"+sFirstLog;
 		return vResult;
 	}
-	vector<double> vAlpha1_1;
+	std::vector<double> vAlpha1_1;
 	for(size_t i=0;i<vFirst.size();i++)
 		vAlpha1_1.push_back(vFirst[i].GetFirstAngleValue());
 	if(!vFirst.front().IsAmbiguous())
@@ -277,7 +277,7 @@ vector<tChainConfigurationVector> C5CPostprocessor::SolveSingularOrientation(con
 		vResult.push_back(vFirst);
 		return vResult;
 	}
-	vector<double> vAlpha1_2;
+	std::vector<double> vAlpha1_2;
 	for(size_t i=0;i<vLast.size();i++)
 		vAlpha1_2.push_back( vLast[i].GetFirstAngleValue());
 	if(!vLast.front().IsAmbiguous())
@@ -293,9 +293,9 @@ vector<tChainConfigurationVector> C5CPostprocessor::SolveSingularOrientation(con
 	double t=0.0;
 	double n = (double)nEnd-nBegin+2;
 	p = vInput[nBegin].m_p;
-	vector<double> vAlpha1;
+	std::vector<double> vAlpha1;
 	vAlpha1.reserve(4);
-	string sIntermediateLog;
+	std::string sIntermediateLog;
 	for(size_t i=nBegin;i<=nEnd;i++){
 		dActD += d_E(p,vInput[i].m_p);
 		p=vInput[i].m_p;

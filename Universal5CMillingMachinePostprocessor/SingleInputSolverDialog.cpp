@@ -86,7 +86,7 @@ void CSingleInputSolverDialog::OnBnClickedBtnSolve()
 		if(r3vV0.IsZero())
 			MY_THROW(CArgsMyException,"Zero-length orientation vector");
 		m_pDoc->m_oChain.SetVirtualToolPosition(r3vV0,r3pP0);
-		string sLog;
+		std::string sLog;
 		m_vConfigurations = m_pDoc->GetPostprocessor()->SolveWithLocations(r3pP0,r3vV0,m_pDoc->m_oChain,*m_pDoc->m_pMillingTool,sLog);
 		m_listboxSolutions.ResetContent();
 		if(m_vConfigurations.size()==0)

@@ -71,7 +71,7 @@ protected:
 
 	const CR3Vector &GetMoveVector() const;
 	CR3Point m_r3pBoundingBoxLLN,m_r3pBoundingBoxRTF;
-	string m_sCollisionLog;
+	std::string m_sCollisionLog;
 	//in radians
 	double m_dAxisOZAngle;
 	double m_dSineAxisOZAngle;
@@ -86,9 +86,9 @@ protected:
 	virtual bool IsInOZCuttingSpace(const CR3Point &p) const = 0;
 	void MakeMinMax(double &d1,double &d2) const;
 public:
-	string GetCollisionLog() const;
+	std::string GetCollisionLog() const;
 	void ClearCollisionLog();
-	void AddToCollisionLog(const string &s);
+	void AddToCollisionLog(const std::string &s);
 	//Collision test with a box of a machine part. box - in its own frame;
 	//trToBoxFrame - from the tool frame (the reference point at the origin, the axis along +OZ) to the frame of box;
 	//trToToolFrame - the inverse. Returns true when the tool (its whole length m_dCuttingHeight from the tip) meets the box.

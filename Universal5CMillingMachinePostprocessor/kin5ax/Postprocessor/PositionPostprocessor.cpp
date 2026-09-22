@@ -44,11 +44,11 @@ void CPositionPostprocessor::SetAxesAndOffset(
 }
 
 
-vector<CChainConfiguration> CPositionPostprocessor::Solve(const CR3Point& r3pP0) const
+std::vector<CChainConfiguration> CPositionPostprocessor::Solve(const CR3Point& r3pP0) const
 {
 	CR3Vector r3vP0 = (r3pP0 - m_r3pP1);
 
-	vector<CChainConfiguration> vConfiguration;
+	std::vector<CChainConfiguration> vConfiguration;
 	double dW = Get3x3Determinant(m_r3vT1,m_r3vT2,m_r3vT3);
 	double dW1 = Get3x3Determinant(r3vP0,m_r3vT2,m_r3vT3);
 	double dW2 = Get3x3Determinant(m_r3vT1,r3vP0,m_r3vT3);

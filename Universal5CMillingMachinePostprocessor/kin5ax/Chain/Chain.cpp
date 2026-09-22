@@ -71,11 +71,11 @@ bool CChain::HasParameterConstraints() const
 			return true;
 	return false;
 }
-string CChain::toXML() const
+std::string CChain::toXML() const
 {
-	string result;
+	std::string result;
 	result += "<?xml version=\"1.0\"?>\n";
-	result += "<!DOCTYPE "+string(CHAIN_XML_ROOT_NODE_TYPE_NAME)+" [\n";
+	result += "<!DOCTYPE "+std::string(CHAIN_XML_ROOT_NODE_TYPE_NAME)+" [\n";
 //	result += "<!ENTITY %% segment_type \"(REVOLUTE_LINK | PRISMATIC_LINK | TOOL | MATERIAL_HOLDER)\">\n";
 	result += "\n";
 	result += "<!ELEMENT kinematic_chain (tool_part, material_holder_part)>\n";
@@ -116,7 +116,7 @@ string CChain::toXML() const
 	result += "	alpha CDATA #REQUIRED\n";
 	result += ">\n";
 	result += "]>\n";
-	result += "<"+string(CHAIN_XML_ROOT_NODE_TYPE_NAME)+" >\n";
+	result += "<"+std::string(CHAIN_XML_ROOT_NODE_TYPE_NAME)+" >\n";
 	result += "<tool_part>\n";
 	for(size_t i=0; i<m_vToolPart.size(); i++){
 		result += m_vToolPart[i].toXML();
@@ -127,7 +127,7 @@ string CChain::toXML() const
 		result += m_vMaterialHolderPart[i].toXML();
 	}
 	result += "</material_holder_part>\n";
-	result +="</"+string(CHAIN_XML_ROOT_NODE_TYPE_NAME)+">\n";
+	result +="</"+std::string(CHAIN_XML_ROOT_NODE_TYPE_NAME)+">\n";
 	return result;
 }
 void CChain::AddSegmentAfterActiveSegment(const CChainSegment & oSegment)
@@ -147,8 +147,8 @@ void CChain::AddSegmentAfterActiveSegment(const CChainSegment & oSegment)
 	}
 	pvPart->insert(it,oSegment);
 //*/
-	vector<CChainSegment> &vPart = GetActivePart();
-	vector<CChainSegment>::iterator it=vPart.begin();
+	std::vector<CChainSegment> &vPart = GetActivePart();
+	std::vector<CChainSegment>::iterator it=vPart.begin();
 	for(size_t i=0; i<vPart.size();i++){
 		if(i==m_nActiveSegmentIndex || m_nActiveSegmentIndex<0)
 			break;
@@ -169,7 +169,7 @@ void CChain::SetVirtualToolPosition(const CR3Vector &r3v, const CR3Point &r3p)
 }
 CChainSegment * CChain::GetActiveSegment()
 {
-	vector<CChainSegment> &vPart = GetActivePart();
+	std::vector<CChainSegment> &vPart = GetActivePart();
 	if(m_nActiveSegmentIndex<0 || (size_t)m_nActiveSegmentIndex >= vPart.size())
 		return NULL;
 	return & vPart[m_nActiveSegmentIndex];
@@ -181,8 +181,8 @@ void CChain::DeleteActiveSegment()
 //	assert(nSegmentIndex>=0 && nSegmentIndex < pvPart->size());
 	if(m_nActiveSegmentIndex<0)
 		return;
-	vector<CChainSegment> &vPart = GetActivePart();
-	vector<CChainSegment>::iterator it=vPart.begin();
+	std::vector<CChainSegment> &vPart = GetActivePart();
+	std::vector<CChainSegment>::iterator it=vPart.begin();
 	for(size_t i=0; i<=vPart.size();i++){
 		if(i==m_nActiveSegmentIndex)
 			break;
@@ -490,7 +490,7 @@ void CChain::SetActiveSegment(bool bIsToolPartActive, int nActiveSegmentIndex)
 	m_nActiveSegmentIndex = nActiveSegmentIndex;
 }
 
- vector<CChainSegment> & CChain::GetActivePart() 
+ std::vector<CChainSegment> & CChain::GetActivePart() 
 {
 	if(m_bIsToolPartActive)
 		return m_vToolPart;
@@ -512,12 +512,12 @@ void CChain::Update(CMillingTool *pTool)
 	}
 }
 
-void CChain::SetFileName(const string &sName)
+void CChain::SetFileName(const std::string &sName)
 {
-	m_sFileName= string(sName);
+	m_sFileName= std::string(sName);
 }
 
-string CChain::GetFileName() const
+std::string CChain::GetFileName() const
 {
 	return m_sFileName;
 }
@@ -544,7 +544,7 @@ double CChain::GetActualParameter(size_t nIndex, bool bToolPart) const
 }
 CR3Box CChain::GetBoundingBox() const
 {
-	list<CR3Point> lstPoints;
+	std::list<CR3Point> lstPoints;
 	CR3Point p;
 	CR3Box box;
 	CTransformation tr;
@@ -593,7 +593,7 @@ size_t CChain::GetNumberOfRegularLinks() const
 
 
 
-CHAIN_CONSTRAINTS_RESULT CChain::MeetsParametersConstraints(const CChainConfiguration &oChainConfig,string &sExceededConstraints) const
+CHAIN_CONSTRAINTS_RESULT CChain::MeetsParametersConstraints(const CChainConfiguration &oChainConfig,std::string &sExceededConstraints) const
 {
 	CHAIN_CONSTRAINTS_RESULT result=CHAIN_CONSTRAINTS_MET;
 	for(int i =0; i<(int)GetNumberOfRegularLinks();i++){
@@ -616,12 +616,12 @@ CHAIN_CONSTRAINTS_RESULT CChain::MeetsParametersConstraints(const CChainConfigur
 	}
 	return result;
 }
-bool CChain::HasCollision(CMillingTool &oMillingTool,string &sLog)
+bool CChain::HasCollision(CMillingTool &oMillingTool,std::string &sLog)
 {
 	DetectCollisions(oMillingTool);
 
-	string s="";
-	string s2;
+	std::string s="";
+	std::string s2;
 	for(int i=-1; i<(int)GetNumberOfRegularLinks()+1; i++)
 		if((*this)[i].HasPartInCollision(s2))
 			s+=("\t"+s2+"\n");
@@ -642,14 +642,14 @@ void CChain::DetectCollisions(CMillingTool &oMillingTool)
 	oMillingTool.ClearCollisionLog();
 	//material holder part
 	for(size_t i=0;i<m_vMaterialHolderPart.size();i++){
-		const vector<CR3Box> &boxes = m_vMaterialHolderPart[i].GetPartVector();
+		const std::vector<CR3Box> &boxes = m_vMaterialHolderPart[i].GetPartVector();
 		if(boxes.empty())
 			continue;
 		// material part <-> material part
 		CTransformation trVariable = m_vMaterialHolderPart[i].GetVariablePartTransformation(m_vMaterialHolderPart[i].m_dActualParameterValue);
 		CTransformation trVariableInv = m_vMaterialHolderPart[i].GetInvertedVariablePartTransformation(m_vMaterialHolderPart[i].m_dActualParameterValue);
 		for(size_t k=i+1; k<m_vMaterialHolderPart.size();k++){
-			const vector<CR3Box> &boxes2 = m_vMaterialHolderPart[k].GetPartVector();
+			const std::vector<CR3Box> &boxes2 = m_vMaterialHolderPart[k].GetPartVector();
 			if(boxes2.empty())
 				continue;
 			CTransformation tr = trVariable;
@@ -680,7 +680,7 @@ void CChain::DetectCollisions(CMillingTool &oMillingTool)
 		trToI = m_vMaterialHolderPart[i].GetInvertedConstantTransformation() * trToI;
 		trToIInv =trToIInv * m_vMaterialHolderPart[i].GetConstantTransformation();
 		for(size_t k=0; k<m_vToolPart.size();k++){
-			const vector<CR3Box> &boxes2 = m_vToolPart[k].GetPartVector();
+			const std::vector<CR3Box> &boxes2 = m_vToolPart[k].GetPartVector();
 			if(boxes2.empty())
 				continue;
 			CTransformation tr = trToI;
@@ -711,13 +711,13 @@ void CChain::DetectCollisions(CMillingTool &oMillingTool)
 	}
 	// tool part <-> tool part
 	for(size_t i = 0; i<m_vToolPart.size();i++){
-		const vector<CR3Box> &boxes = m_vToolPart[i].GetPartVector();
+		const std::vector<CR3Box> &boxes = m_vToolPart[i].GetPartVector();
 		if(boxes.empty())
 			continue;
 		CTransformation trVariable = m_vToolPart[i].GetVariablePartTransformation(m_vToolPart[i].m_dActualParameterValue);
 		CTransformation trVariableInv = m_vToolPart[i].GetInvertedVariablePartTransformation(m_vToolPart[i].m_dActualParameterValue);
 		for(size_t k=i+1; k<m_vToolPart.size();k++){
-			const vector<CR3Box> &boxes2 = m_vToolPart[k].GetPartVector();
+			const std::vector<CR3Box> &boxes2 = m_vToolPart[k].GetPartVector();
 			if(boxes2.empty())
 				continue;
 			CTransformation tr = trVariable;

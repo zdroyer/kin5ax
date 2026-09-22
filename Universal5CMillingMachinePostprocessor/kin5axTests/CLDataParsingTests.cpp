@@ -5,9 +5,9 @@
 #include "CutterLocationData.h"
 
 //writes the text as it is (binary: the line ends are not touched) and loads it
-static void LoadText(CCutterLocationData &oData, const string &sText, const char *szName="kin5axTests_parsing.cld")
+static void LoadText(CCutterLocationData &oData, const std::string &sText, const char *szName="kin5axTests_parsing.cld")
 {
-	string sFileName = TempFilePath(szName);
+	std::string sFileName = TempFilePath(szName);
 	FILE *pFile = fopen(sFileName.c_str(),"wb");
 	ASSERT_TRUE(pFile!=NULL);
 	fwrite(sText.data(),1,sText.size(),pFile);

@@ -33,7 +33,7 @@ CChainConfiguration::~CChainConfiguration(void)
 {
 }
 
-vector<CChainConfiguration> CChainConfiguration::GetEquivalents()const
+std::vector<CChainConfiguration> CChainConfiguration::GetEquivalents()const
 {
 	size_t n=0;
 	int nFirst=-1, nSecond=-1;
@@ -52,7 +52,7 @@ vector<CChainConfiguration> CChainConfiguration::GetEquivalents()const
 		MY_THROW(CGeneratorException,"Attempt to obtain equivalents of parameter set\ncontaining not exactly 2 revolute joints.");
 	tChainParameterVector vA1 = GetAngleEquivalents(m_vParametersVectors[nFirst]);
 	tChainParameterVector vA2 = GetAngleEquivalents(m_vParametersVectors[nSecond]);
-	vector<CChainConfiguration>	vRes(vA1.size()*vA2.size(),(*this));
+	std::vector<CChainConfiguration>	vRes(vA1.size()*vA2.size(),(*this));
 	n=0;
 	for(size_t i=0;i<vA1.size();i++)
 		for(size_t j=0;j<vA2.size();j++){
@@ -98,9 +98,9 @@ double CChainConfiguration::Distance(const CChainConfiguration &c2, const CPostp
 	return d;
 }
 
-string CChainConfiguration::toString(bool bThreeLines,string sEndLine) const
+std::string CChainConfiguration::toString(bool bThreeLines,std::string sEndLine) const
 {
-	string sResult ="{";
+	std::string sResult ="{";
 	for(size_t i=0; i<m_vParametersVectors.size();i++){
 		if(i>0)
 			sResult+="; ";
