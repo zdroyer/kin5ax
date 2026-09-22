@@ -117,6 +117,50 @@ TEST(ChainFiles, SegmentNamesAreEscapedInXml)
 	EXPECT_EQ("",sError)<<"the written file does not read back";
 }
 
+//KnownBugs #30: after a rename the comparison restarted at 1, so a duplicate of the first name survived
+TEST(ChainSegments, NamesAreMadeUniqueAndNonEmpty)
+{
+	ASSERT_GE(GetChainFiles().size(),(size_t)1);
+	CChain oChain = LoadChain(GetChainFiles()[0]);
+	int n = (int)oChain.GetNumberOfRegularLinks();
+	ASSERT_GE(n,3);
+	oChain[0].SetName("A_1");
+	oChain[1].SetName("A");
+	oChain[2].SetName("A");
+	for(int i=3;i<n;i++)
+		oChain[i].SetName("");
+	oChain.CheckAndCorrectSegmentsNames();
+	for(int i=0;i<n;i++){
+		EXPECT_FALSE(oChain[i].GetName().empty())<<"segment "<<i;
+		for(int j=0;j<i;j++)
+			EXPECT_NE(oChain[j].GetName(),oChain[i].GetName())<<"segments "<<j<<" and "<<i;
+	}
+}
+
+//KnownBugs #31: the material holder part is stored from the base towards the holder, so the parameter
+//of its segment i is the (size-2-i)th parameter of the chain, not the (size-1-i)th
+TEST(ChainSegments, ActualParameterOfEveryPart)
+{
+	vector<string> vFiles = GetChainFiles();
+	ASSERT_GE(vFiles.size(),(size_t)1);
+	size_t nMaterialSideJoints = 0;
+	for(size_t f=0;f<vFiles.size();f++){
+		CChain oChain = LoadChain(vFiles[f]);
+		size_t n = oChain.GetNumberOfRegularLinks();
+		CChainConfiguration oConfig((int)n);
+		for(size_t k=0;k<n;k++)
+			oConfig[k].SetValue(0.1*(k+1));
+		oChain.SetParameters(oConfig);
+		for(size_t i=0;i+1<oChain.m_vMaterialHolderPart.size();i++,nMaterialSideJoints++)
+			EXPECT_DOUBLE_EQ(oChain.m_vMaterialHolderPart[i].m_dActualParameterValue,oChain.GetActualParameter(i,false))<<GetTestName(vFiles[f])<<": material holder part segment "<<i;
+		EXPECT_DOUBLE_EQ(0.0,oChain.GetActualParameter(oChain.m_vMaterialHolderPart.size()-1,false))<<"the material holder has no parameter";
+		for(size_t i=0;i+1<oChain.m_vToolPart.size();i++)
+			EXPECT_DOUBLE_EQ(oChain.m_vToolPart[i].m_dActualParameterValue,oChain.GetActualParameter(i,true))<<GetTestName(vFiles[f])<<": tool part segment "<<i;
+		EXPECT_DOUBLE_EQ(0.0,oChain.GetActualParameter(oChain.m_vToolPart.size()-1,true))<<"the tool has no parameter";
+	}
+	EXPECT_GT(nMaterialSideJoints,(size_t)0)<<"no test chain with a joint on the material side";
+}
+
 TEST_P(ChainFileTest, LoadsAsValid5CChain)
 {
 	CChain oChain = Load();

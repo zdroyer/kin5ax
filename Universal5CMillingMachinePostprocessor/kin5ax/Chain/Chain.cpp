@@ -522,6 +522,8 @@ string CChain::GetFileName() const
 	return m_sFileName;
 }
 
+//the parameters of the chain are numbered from the base: the material holder part backwards
+//(its segment i has the parameter size-2-i), then the tool part forwards (see SetParameters)
 double CChain::GetActualParameter(size_t nIndex, bool bToolPart) const
 {
 	
@@ -535,7 +537,7 @@ double CChain::GetActualParameter(size_t nIndex, bool bToolPart) const
 		assert(nIndex<m_vMaterialHolderPart.size());
 		if(nIndex>=m_vMaterialHolderPart.size()-1)
 			return 0.0;
-		return m_oActualParameters[m_vMaterialHolderPart.size()-1-nIndex].GetValue();
+		return m_oActualParameters[m_vMaterialHolderPart.size()-2-nIndex].GetValue();
 	}
 
 

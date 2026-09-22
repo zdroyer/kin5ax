@@ -22,6 +22,7 @@ class CChain
 
 	CChainConfiguration m_oActualParameters;
 public:
+	//the actual parameter of segment nIndex of the tool part / the material holder part (0.0 for the tool and the holder)
 	double GetActualParameter(size_t nIndex, bool bToolPart) const;
 	//Collision test of every box of every segment against the boxes of every other segment, and of the tool against
 	//the boxes of all segments, at the actual parameters. The result is stored in the segments (IsPartInCollision)
