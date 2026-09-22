@@ -41,8 +41,8 @@ Nothing here was observed at run time unless a test is named.
 | 14 | `Universal5CMillingMachinePostprocessorDoc.cpp` `OnSaveDocument` `fprintf(file,sXML.c_str())` | Data (the XML) used as the format string. | verified | open |
 | 15 | `KinematicChainPropertiesDialog.cpp` `m_pActiveSegment` | Pointer into a vector; stale after add/delete segment or a replaced chain. | reported | open |
 | 16 | `PostprocessingDialog.cpp`, `OnOpenDocument` | No try/catch around calls that throw `CGeneratorException`/`_com_error`: the application terminates. | reported | open |
-| 17 | `CLDataPostprocessor.cpp` `InterpolateLocation` + dialog | A zero interpolation limit (also while typing "0.01") gives an endless loop; no locations gives 0/0. | reported | open |
-| 18 | `R3Point.cpp` `toString` | 35-byte static buffer, overflows with coordinates of 4+ digits (mm files). | reported | open |
+| 17 | `CLDataPostprocessor.cpp` `InterpolateLocation` + dialog | A zero interpolation limit (also while typing "0.01") gives an endless loop; no locations gives 0/0. | reported | **fixed** 1447c0b |
+| 18 | `R3Point.cpp` `toString` | 35-byte static buffer, overflows with coordinates of 4+ digits (mm files). | reported | **fixed** ce75f65 |
 | 19 | `MainFrm.cpp` simulation thread | Pause+Stop leaves a suspended thread; tool/material replaced under the worker; pointer nulled after a blind Sleep; exit during simulation. | reported | open |
 | 20 | `MainFrm.cpp:380` | Refresh period 0 ends the simulation after one step. | reported | open |
 
@@ -65,16 +65,16 @@ Nothing here was observed at run time unless a test is named.
 
 | # | Where | Defect | Status |
 |---|---|---|---|
-| 26 | `MillingTool.h` | `~CMillingTool` is not virtual, the tool is deleted through a `CMillingTool*`. | open |
+| 26 | `MillingTool.h` | `~CMillingTool` is not virtual, the tool is deleted through a `CMillingTool*`. | **fixed** e510631 |
 | 27 | `CutterLocationData.h` | Owns `char *m_pData` without copy constructor/assignment (a copied object crashed the test run); `LoadFile` throws without `_close`; `GetLine` uses `index>size`. Now a `vector<char>`, `fopen`/`fread`, `>=`. | **fixed** 47f7760 |
 | 28 | `ChainSegment.cpp` | `SetPartCollision` uses `n>size`; `HasPartInCollision` prints a leading ", "; `toXML` does not escape the name (a name with a quote gives a file that does not load). Tests: `ChainTests.cpp` `SegmentNamesAreEscapedInXml`. | **fixed** 874d335 |
 | 29 | `M4x4.h` `GetAt`/`SetAt` | `i<0` tested twice, `j<0` never. Tests: `M4x4Tests.cpp` (the negative column cases threw nothing before the fix). | **fixed** f82a993 |
-| 30 | `Chain.cpp` `CheckAndCorrectSegmentsNames` | `j=0` inside the `for(...;j++)` restarts at 1: duplicate names can survive. | open |
-| 31 | `Chain.cpp` `GetActualParameter` | Off by one for the material holder part (unused function). | open |
-| 32 | `5CPostprocessor.cpp` `SolveSingularOrientation` | `vFirst.front()` on an empty vector when no input is solvable (not reachable from the current caller). | open |
-| 33 | `Universal5CMillingMachinePostprocessorView.cpp:82` | A GLU quadric is created on every repaint and never freed. | open |
-| 34 | `KinematicChainPropertiesDialog.cpp` | `size_t m_nActivePart`: `GetCurSel()` of -1 and `max(0,n-1)` underflow. | open |
-| 35 | `GLTools.cpp` arrows | A vector (0,0,-1) gives a zero rotation axis: drawn pointing up. | open |
+| 30 | `Chain.cpp` `CheckAndCorrectSegmentsNames` | `j=0` inside the `for(...;j++)` restarts at 1: duplicate names can survive. | **fixed** e0e981d |
+| 31 | `Chain.cpp` `GetActualParameter` | Off by one for the material holder part (unused function). | **fixed** d7a1c87 |
+| 32 | `5CPostprocessor.cpp` `SolveSingularOrientation` | `vFirst.front()` on an empty vector when no input is solvable (not reachable from the current caller). | **fixed** 6fa8a61 |
+| 33 | `Universal5CMillingMachinePostprocessorView.cpp:82` | A GLU quadric is created on every repaint and never freed. | **fixed** ac6538c |
+| 34 | `KinematicChainPropertiesDialog.cpp` | `size_t m_nActivePart`: `GetCurSel()` of -1 and `max(0,n-1)` underflow. | **fixed** c0e8462 |
+| 35 | `GLTools.cpp` arrows | A vector (0,0,-1) gives a zero rotation axis: drawn pointing up. | **fixed** 25c7486 |
 | 36 | various | `MaterialBlockDialog` accepts voxel size 0; `CMaterial::m_dPixelSize` and `CMillingToolPropertiesDialog::m_pDoc` uninitialised; `"%d"` with `size_t` in two dialogs. | open |
 
 ## Fixed earlier (for the record)
