@@ -66,6 +66,8 @@ public:
 	//part of chain ended with material holder
 	std::vector<CChainSegment> m_vMaterialHolderPart;
 
+	//name of the machine modelled by the chain (the 'name' attribute of the XML root), free text
+	std::string m_sName;
 	std::string m_sFileName;
 
 	int m_nActiveSegmentIndex;
@@ -85,6 +87,8 @@ public:
 	void ZeroAllParameters();
 	std::vector<CChainSegment> & GetActivePart();
 	void SetActiveSegment(bool bIsToolPartActive, int mActiveSegmentIndex);
+	void SetName(const std::string &sName);
+	std::string GetName() const;
 	void SetFileName(const std::string &sName);
 	std::string GetFileName() const ;
 	//resizes the parameters vector if needed, detects collisions and places the tool (to be called before rendering)

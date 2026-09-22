@@ -160,6 +160,9 @@ static CChain ReadChain(MSXML2::IXMLDOMElementPtr pDocElement, const std::string
 
 	//the default segments of a new chain are replaced below
 	CChain oChain;
+	MSXML2::IXMLDOMNamedNodeMapPtr pRootAttributes = pDocElement->Getattributes();
+	if(pRootAttributes->getNamedItem(_bstr_t("name"))!=NULL)
+		oChain.SetName(getStringValue(pRootAttributes,"name"));
 	oChain.m_vToolPart = ReadPart(pDocElement,"tool_part");
 	oChain.m_vMaterialHolderPart = ReadPart(pDocElement,"material_holder_part");
 	oChain.SetFileName(sFileName);

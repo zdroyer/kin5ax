@@ -206,6 +206,7 @@ CChain CChainXmlReaderPugixml::ReadFile(const std::string &sFilePath)
 
 	//the default segments of a new chain are replaced below
 	CChain oChain;
+	oChain.SetName(root.attribute("name").value());	//absent: empty
 	oChain.m_vToolPart = ReadPart(ctx,root,"tool_part");
 	oChain.m_vMaterialHolderPart = ReadPart(ctx,root,"material_holder_part");
 	oChain.SetFileName(sFilePath);

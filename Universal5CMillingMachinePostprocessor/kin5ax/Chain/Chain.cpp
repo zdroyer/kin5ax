@@ -118,7 +118,10 @@ std::string CChain::toXML() const
 	result += "	alpha CDATA #REQUIRED\n";
 	result += ">\n";
 	result += "]>\n";
-	result += "<"+std::string(CHAIN_XML_ROOT_NODE_TYPE_NAME)+" >\n";
+	result += "<"+std::string(CHAIN_XML_ROOT_NODE_TYPE_NAME);
+	if(!m_sName.empty())
+		result += " name=\""+xml_escape(m_sName)+"\"";
+	result += ">\n";
 	result += "<tool_part>\n";
 	for(size_t i=0; i<m_vToolPart.size(); i++){
 		result += m_vToolPart[i].toXML();
@@ -538,6 +541,16 @@ void CChain::Update(CMillingTool *pTool)
 		DetectCollisions(*pTool);
 		pTool->SetPositionAndOrientation(GetActualToolPositionAndOrientation());
 	}
+}
+
+void CChain::SetName(const std::string &sName)
+{
+	m_sName = sName;
+}
+
+std::string CChain::GetName() const
+{
+	return m_sName;
 }
 
 void CChain::SetFileName(const std::string &sName)
