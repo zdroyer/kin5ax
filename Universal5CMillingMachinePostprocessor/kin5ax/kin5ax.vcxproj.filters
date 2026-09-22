@@ -19,6 +19,9 @@
     <Filter Include="3rdParty\pugixml">
       <UniqueIdentifier>{9B4F0D2C-31A7-4C55-8E2D-6A1B7F3C9D22}</UniqueIdentifier>
     </Filter>
+    <Filter Include="3rdParty\nlohmann">
+      <UniqueIdentifier>{2E6A8C41-7B93-4D10-95C7-0E4D2A8B6F33}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Exceptions">
       <UniqueIdentifier>{40482F10-7A8C-5289-815F-774F638BFBFA}</UniqueIdentifier>
     </Filter>
@@ -195,6 +198,12 @@
     </ClInclude>
     <None Include="3rdParty\pugixml\LICENSE.md">
       <Filter>3rdParty\pugixml</Filter>
+    </None>
+    <ClInclude Include="3rdParty\nlohmann\json.hpp">
+      <Filter>3rdParty\nlohmann</Filter>
+    </ClInclude>
+    <None Include="3rdParty\nlohmann\LICENSE.MIT">
+      <Filter>3rdParty\nlohmann</Filter>
     </None>
   </ItemGroup>
 </Project>

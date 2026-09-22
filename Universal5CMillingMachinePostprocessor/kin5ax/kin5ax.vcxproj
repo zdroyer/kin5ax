@@ -203,10 +203,12 @@
     <ClInclude Include="string_tools.h" />
     <ClInclude Include="3rdParty\pugixml\pugixml.hpp" />
     <ClInclude Include="3rdParty\pugixml\pugiconfig.hpp" />
+    <ClInclude Include="3rdParty\nlohmann\json.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Readme.md" />
     <None Include="3rdParty\pugixml\LICENSE.md" />
+    <None Include="3rdParty\nlohmann\LICENSE.MIT" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
