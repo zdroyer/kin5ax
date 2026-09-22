@@ -19,18 +19,18 @@ Nothing here was observed at run time unless a test is named.
 |---|---|---|---|---|
 | 4 | `R3Box.cpp` `InnerBoxFromOZCylinder` | Half side `R*sqrt(2)` instead of `R/sqrt(2)`: the "inner" box is bigger than the outer one, the tool shank collides like a square prism. Tests: `R3BoxTests.cpp` `CylinderBoxes`, `CornerRegionOfTheCircumscribedSquareIsFree`. | verified | **fixed** 15c4724 |
 | 5 | `R3Box.cpp` `AsymmetricIntersection`, `HasIntersectionWithOZCylinder` | Both edge lists test the diagonal (1,3) instead of the edge (0,3): one edge of the box is never tested. Tests: `R3BoxTests.cpp` `BoxEdgeTest` (edge 7 failed before the fix). | verified | **fixed** f998e5c |
-| 6 | `R3Box.cpp` `HasIntersectionWithLineSegment` | The clipping assumes increasing coordinates; a segment running in the negative direction can be missed. | reported | open |
-| 7 | `R3Box.cpp` `LineSegmentAndOZCylinderIntersection` | `+` instead of `*` in `dB`, `/2.0*dA` instead of `/(2.0*dA)`; the final `dZ1*dZ2` test uses the z of the extrapolated line: a segment inside the infinite cylinder but entirely above it is a hit. Test: `DISABLED_AgreesWithPointSampling` (12 false hits out of 400 random cases; with the arithmetic corrected they all disappear). | verified | open |
-| 8 | `MillingToolBall.cpp`, `MillingToolCylinder.cpp` | Ball: only the sphere is tested between R and 2R, the collision cylinder overlaps the ball and misses the top R; cylinder tool subtracts the reference point twice. | reported | open |
-| 37 | `R3Box.cpp` `HasIntersectionWithOZCylinder` | The algorithm (outer box, inner box, then the 12 box edges against the cylinder) misses a box whose flat face cuts the side of the cylinder less than `(1-1/sqrt(2))R` deep when no box edge is inside the cylinder: the side lines of the cylinder are never tested against the box. Hidden by #4 until now. Tests: `DISABLED_FlatFaceAgainstTheSide`, `DISABLED_AgreesWithPointSampling` case 234. | verified | open |
+| 6 | `R3Box.cpp` `HasIntersectionWithLineSegment` | The clipping kept the wrong part of the segment whenever it ran towards smaller coordinates: a segment through the box with both ends outside was missed in most orientations. Now slab clipping (Liang-Barsky). Tests: `R3BoxTests.cpp` `BoxAgainstSegment` (2000 random segments). | verified | **fixed** c5f35f1 |
+| 7 | `R3Box.cpp` `LineSegmentAndOZCylinderIntersection` | `+` instead of `*` in `dB`, `/2.0*dA` instead of `/(2.0*dA)`; the final `dZ1*dZ2` test uses the z of the extrapolated line: a segment inside the infinite cylinder but entirely above it is a hit (12 false hits out of 400 random cases). The function is removed with #37. | verified | **fixed** b6dfe81 |
+| 8 | `MillingToolBall.cpp`, `MillingToolCylinder.cpp` | Ball: the cut volume had only the ball up to 2R (no shank beside its upper half); the collision cylinder began at the tip (false collisions beside the narrow nose) and ended R below the end of the tool. Cylinder tool: the cut volume was shifted down by the reference point. Now both tools have one solid for cutting and collisions (ball + shank from the equator; cylinder from the tip). Tests: `MillingToolTests.cpp`. | verified | **fixed** 88903cc |
+| 37 | `R3Box.cpp` `HasIntersectionWithOZCylinder` | The algorithm (outer box, inner box, then the 12 box edges against the cylinder) missed a box whose flat face cuts the side of the cylinder less than `(1-1/sqrt(2))R` deep when no box edge is inside the cylinder. Hidden by #4 until then. Now exact: the box clipped to the slab of the cylinder, projected on XY, against the disc. Tests: `FlatFaceAgainstTheSide`, `AgreesWithPointSampling` (400 random poses). | verified | **fixed** b6dfe81 |
 
 ## CL-data parsing
 
 | # | Where | Defect | Check | Status |
 |---|---|---|---|---|
-| 9 | `CutterLocationData.cpp` `ReadDouble` | `errno` is tested but never cleared: one out-of-range number turns every following line into an error. | verified | open |
-| 10 | `CutterLocationData.cpp` `ReadDelims` | A leading `.` is a delimiter: `.5` is read as `5`, no error. | verified | open |
-| 11 | `CutterLocationData.cpp` `LoadFile` | The last line is lost when the file does not end with a newline. | reported | open |
+| 9 | `CutterLocationData.cpp` `ReadDouble` | `errno` is tested but never cleared: one out-of-range number turns every following line into an error. Tests: `CLDataParsingTests.cpp`. | verified | **fixed** 47f7760 |
+| 10 | `CutterLocationData.cpp` `ReadDelims` | A leading `.` (or `+`) is a delimiter: `.5` is read as `5`, no error. | verified | **fixed** 47f7760 |
+| 11 | `CutterLocationData.cpp` `LoadFile` | The last line is lost when the file does not end with a newline. Fixed together with: CR left on CRLF files read in binary mode; the orientation change summed from a bad first line. | verified | **fixed** 47f7760 |
 
 ## Crashes and undefined behaviour
 
@@ -66,7 +66,7 @@ Nothing here was observed at run time unless a test is named.
 | # | Where | Defect | Status |
 |---|---|---|---|
 | 26 | `MillingTool.h` | `~CMillingTool` is not virtual, the tool is deleted through a `CMillingTool*`. | open |
-| 27 | `CutterLocationData.h` | Owns `char *m_pData` without copy constructor/assignment; `LoadFile` throws without `_close`; `GetLine` uses `index>size`. | open |
+| 27 | `CutterLocationData.h` | Owns `char *m_pData` without copy constructor/assignment (a copied object crashed the test run); `LoadFile` throws without `_close`; `GetLine` uses `index>size`. Now a `vector<char>`, `fopen`/`fread`, `>=`. | **fixed** 47f7760 |
 | 28 | `ChainSegment.cpp` | `SetPartCollision` uses `n>size`; `HasPartInCollision` prints a leading ", "; `toXML` does not escape the name. | open |
 | 29 | `M4x4.h` `GetAt`/`SetAt` | `i<0` tested twice, `j<0` never. | open |
 | 30 | `Chain.cpp` `CheckAndCorrectSegmentsNames` | `j=0` inside the `for(...;j++)` restarts at 1: duplicate names can survive. | open |
