@@ -9,6 +9,8 @@
 #include "Translation.h"
 #include <type_traits>
 
+using namespace kin5ax;
+
 static const double dRADIUS = 0.016;
 static const double dCUTTING_HEIGHT = 0.064;
 static const double dSTEP = 1E-6;	//just inside / just outside

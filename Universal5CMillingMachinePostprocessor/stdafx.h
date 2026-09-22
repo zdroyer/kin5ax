@@ -67,3 +67,5 @@
 
 #include "ApplicationConfiguration.h"
 #include "PostprocessorSettings.h"
+
+using namespace kin5ax;	//the inverse kinematics library

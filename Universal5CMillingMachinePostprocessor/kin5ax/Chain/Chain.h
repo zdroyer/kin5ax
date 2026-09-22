@@ -10,6 +10,8 @@
 //name of the root node of the XML (.kc) representation
 #define CHAIN_XML_ROOT_NODE_TYPE_NAME "kinematic_chain"
 
+namespace kin5ax {
+
 enum CHAIN_CONSTRAINTS_RESULT{
 	CHAIN_CONSTRAINTS_MET,
 	CHAIN_CONSTRAINTS_SHIFTS_EXCEEDED,
@@ -96,3 +98,5 @@ public:
 
 
 };
+
+} // namespace kin5ax

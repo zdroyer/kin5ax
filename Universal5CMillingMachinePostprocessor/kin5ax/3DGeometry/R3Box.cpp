@@ -6,6 +6,8 @@
 #include "Transformation.h"
 
 
+namespace kin5ax {
+
 extern CR3Vector r3vOZ;
 
 void CR3Box::ExpandXYZ(double dX, double dY, double dZ)
@@ -356,3 +358,5 @@ bool CR3Box::HasIntersectionWithOZCylinder(const double &dZ,const double &dR, co
 		return false;
 	return distance_from_origin_to_convex_hull_xy(vSlab)<=dR+dEPSILON;
 }
+
+} // namespace kin5ax

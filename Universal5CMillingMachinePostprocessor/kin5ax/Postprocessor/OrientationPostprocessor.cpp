@@ -1,6 +1,8 @@
 #include "../stdafx.h"
 #include "OrientationPostprocessor.h"
 
+namespace kin5ax {
+
 extern CR3Vector r3vOZ;
 
 COrientationPostprocessor::COrientationPostprocessor(const CTransformation &m4x4F2, const CR3Vector &r3vV3)
@@ -445,3 +447,5 @@ bool COrientationPostprocessor::ComputeOZRotationAngle(const CR3Vector & input,c
 	return true;
 }
 
+
+} // namespace kin5ax

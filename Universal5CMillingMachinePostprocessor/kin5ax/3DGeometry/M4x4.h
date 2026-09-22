@@ -4,6 +4,8 @@
 #include "DivByZeroMyException.h"
 //#include "R4Vector.h"
 
+namespace kin5ax {
+
 class CM4x4  
 {
 
@@ -42,3 +44,5 @@ public:
 
 //-------------------------------------------------------
 
+
+} // namespace kin5ax

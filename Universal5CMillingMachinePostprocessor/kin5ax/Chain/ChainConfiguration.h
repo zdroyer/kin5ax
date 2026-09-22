@@ -4,6 +4,8 @@
 #include "string_tools.h"
 
 
+namespace kin5ax {
+
 class CChainConfiguration
 {
 public:
@@ -33,3 +35,5 @@ public:
 };
 
 typedef std::vector<CChainConfiguration> tChainConfigurationVector;
+
+} // namespace kin5ax

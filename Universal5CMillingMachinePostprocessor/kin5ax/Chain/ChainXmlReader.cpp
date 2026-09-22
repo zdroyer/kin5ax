@@ -9,6 +9,8 @@
 #include "ChainXmlReader.h"
 
 //COM initialised for the lifetime of the object; a thread already initialised in another mode is left as it is
+namespace kin5ax {
+
 class CComInitialiser
 {
 	bool m_bUninitialise;
@@ -198,3 +200,5 @@ CChain CChainXmlReader::ReadFile(const std::string &sFilePath)
 		MY_THROW(CGeneratorException,"COM error while reading "+sFilePath+": "+toString(_bstr_t(e.ErrorMessage())));
 	}
 }
+
+} // namespace kin5ax

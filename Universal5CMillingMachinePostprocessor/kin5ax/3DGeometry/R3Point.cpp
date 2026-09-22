@@ -11,6 +11,8 @@
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
+namespace kin5ax {
+
 template<class T>
 T maxI(const T &a, const T &b)
 {
@@ -91,3 +93,5 @@ CR3Vector CR3Point::toR3Vector() const
 {
 	return CR3Vector(GetX(),GetY(),GetZ());
 }
+
+} // namespace kin5ax

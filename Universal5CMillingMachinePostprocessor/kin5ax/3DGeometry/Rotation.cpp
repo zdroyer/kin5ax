@@ -10,6 +10,8 @@
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
+namespace kin5ax {
+
 CRotation::CRotation():CTransformation(1.0)
 {}
 
@@ -148,3 +150,5 @@ CTransformation CRotation::Inverted() const
 	
 	return T();
 }
+
+} // namespace kin5ax

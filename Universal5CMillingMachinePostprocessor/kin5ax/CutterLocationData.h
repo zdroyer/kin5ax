@@ -6,6 +6,8 @@
 #include "Transformation.h"
 
 
+namespace kin5ax {
+
 enum CL_LINE_STATUS{
 	CL_LINE_OK,
 	CL_LINE_EMPTY,
@@ -123,3 +125,5 @@ public:
 	{ return m_sFileTitle;}
 
 };
+
+} // namespace kin5ax

@@ -2,6 +2,8 @@
 #include "R3Vector.h"
 #include "R3Point.h"
 
+namespace kin5ax {
+
 class CR3CaughtVector
 {
 public:
@@ -12,3 +14,5 @@ public:
 	CR3Vector m_v;
 	CR3Point m_p;
 };
+
+} // namespace kin5ax

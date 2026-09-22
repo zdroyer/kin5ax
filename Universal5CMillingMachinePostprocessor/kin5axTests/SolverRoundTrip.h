@@ -19,4 +19,4 @@ struct CSolverRoundTripResult
 	std::string m_sFirstProblem;		//description of the first failing target, with the solver log
 };
 
-CSolverRoundTripResult RunSolverRoundTrip(CChain &oChain, CMillingTool &oTool, size_t nSamples, double dTolerance);
+CSolverRoundTripResult RunSolverRoundTrip(kin5ax::CChain &oChain, kin5ax::CMillingTool &oTool, size_t nSamples, double dTolerance);

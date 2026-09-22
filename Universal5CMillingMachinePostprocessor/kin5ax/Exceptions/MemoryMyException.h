@@ -2,6 +2,8 @@
 
 #include "GeneratorException.h"
 
+namespace kin5ax {
+
 class CMemoryMyException : public CGeneratorException  
 {
 	public:
@@ -15,3 +17,5 @@ class CMemoryMyException : public CGeneratorException
 			m_sExceptionDescription = std::string("Invalid function argument(s)");
 		}
 };
+
+} // namespace kin5ax

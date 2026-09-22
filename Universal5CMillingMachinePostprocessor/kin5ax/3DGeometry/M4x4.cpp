@@ -9,6 +9,8 @@
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
+namespace kin5ax {
+
 CM4x4::CM4x4(double i)
 {
 	this->MakeDiag(i,i,i,i);
@@ -70,3 +72,5 @@ CM4x4 CM4x4::Inverted() const
 }
 
 
+
+} // namespace kin5ax

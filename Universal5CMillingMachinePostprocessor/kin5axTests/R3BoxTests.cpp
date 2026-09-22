@@ -6,6 +6,8 @@
 #include "translation.h"
 
 //gives the tests access to the one-directional edge test
+using namespace kin5ax;
+
 class CR3BoxProbe : public CR3Box
 {
 public:

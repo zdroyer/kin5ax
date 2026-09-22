@@ -5,7 +5,7 @@
 #include "scale.h"
 
 extern CApplicationConfiguration oConfiguration;
-extern CR3Vector r3vOZ;
+namespace kin5ax { extern CR3Vector r3vOZ; }
 
 C3DViewManipulator::C3DViewManipulator(void)
 :m_m4x4InvertedInitialViewTransformation(1.0)

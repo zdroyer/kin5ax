@@ -9,6 +9,8 @@
 #include "Rotation.h"
 #include "Translation.h"
 
+namespace kin5ax {
+
 enum MILLING_TOOL_TYPE{
 	MILLING_TOOL_BALL,
 	MILLING_TOOL_BARREL,
@@ -120,3 +122,5 @@ public:
 	//the tools are owned and deleted through CMillingTool pointers (the document, the tool dialog)
 	virtual ~CMillingTool(void);
 };
+
+} // namespace kin5ax

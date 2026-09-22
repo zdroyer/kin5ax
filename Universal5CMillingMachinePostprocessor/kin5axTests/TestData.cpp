@@ -8,6 +8,8 @@
 #include <windows.h>
 #endif
 
+using namespace kin5ax;
+
 namespace fs = std::filesystem;
 
 //the folder of the test exe; the only platform-dependent query of the tests (the chain files are

@@ -8,6 +8,8 @@
 #include "ProgressCallback.h"
 
 //Statistics of one CCLDataPostprocessor::Process run
+namespace kin5ax {
+
 class CCLDataPostprocessingResult
 {
 public:
@@ -64,3 +66,5 @@ public:
 protected:
 	CPostprocessorSettings m_oSettings;
 };
+
+} // namespace kin5ax

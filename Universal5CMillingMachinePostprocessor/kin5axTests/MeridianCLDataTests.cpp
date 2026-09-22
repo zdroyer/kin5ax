@@ -8,6 +8,8 @@
 #include "CLDataPostprocessor.h"
 #include "MillingToolBall.h"
 
+using namespace kin5ax;
+
 static const double dRADIUS = 0.05;
 static const size_t nPOINTS = 9;
 

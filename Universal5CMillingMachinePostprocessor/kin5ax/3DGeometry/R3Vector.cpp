@@ -6,6 +6,8 @@
 
 
 
+namespace kin5ax {
+
 const CR3Vector &CR3Vector::operator+=(const CR3Vector &v){
 	m_dX+=v.m_dX;
 	m_dY+=v.m_dY;
@@ -56,3 +58,5 @@ int CR3Vector::operator==(const CR3Vector &v) const
 			are_equal(m_dY,v.m_dY)&&
 			are_equal(m_dZ,v.m_dZ)); 
 }
+
+} // namespace kin5ax

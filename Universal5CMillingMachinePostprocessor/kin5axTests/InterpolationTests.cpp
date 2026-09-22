@@ -4,6 +4,8 @@
 #include "gtest/gtest.h"
 #include "CLDataPostprocessor.h"
 
+using namespace kin5ax;
+
 typedef std::vector<std::pair<double,CR3CaughtVector> > tLocations;
 
 static CPostprocessorSettings Limits(double dPosition, double dOrientationDegrees)

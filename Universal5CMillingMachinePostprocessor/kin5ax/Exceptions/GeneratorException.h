@@ -1,5 +1,7 @@
 #pragma once
 
+namespace kin5ax {
+
 class CGeneratorException
 {
 public:
@@ -46,3 +48,5 @@ protected:
 #define MY_THROW(exception, text) throw exception(text,__FILE__,__LINE__,__FUNCTION__)
 
 
+
+} // namespace kin5ax

@@ -3,6 +3,8 @@
 #include "ArgsMyException.h"
 
 
+namespace kin5ax {
+
 CMillingToolBall::CMillingToolBall
 	(double dRz
 	,double dR
@@ -76,3 +78,5 @@ bool CMillingToolBall::IsInOZCuttingSpace(const CR3Point &p) const
 	double dSq = p.GetX()*p.GetX()+p.GetY()*p.GetY();
 	return dSq<=m_dRzSquare+dEPSILON;
 }
+
+} // namespace kin5ax

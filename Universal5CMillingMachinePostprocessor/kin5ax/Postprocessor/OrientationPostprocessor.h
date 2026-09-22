@@ -5,6 +5,8 @@
 #include "PostprocessorSettings.h"
 
 
+namespace kin5ax {
+
 class COrientationPostprocessor
 {
 public:
@@ -68,3 +70,5 @@ protected:
 
 
 };
+
+} // namespace kin5ax

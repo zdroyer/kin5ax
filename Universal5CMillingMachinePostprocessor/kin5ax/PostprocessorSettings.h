@@ -1,5 +1,7 @@
 #pragma once
 
+namespace kin5ax {
+
 enum ALPHA1_METHOD{
 	ALPHA1_AXIS_MULTIPLICATION=0,
 	ALPHA1_CONIC_METHOD=1
@@ -76,3 +78,5 @@ public:
 		return sResult;
 	}
 };
+
+} // namespace kin5ax

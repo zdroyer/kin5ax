@@ -2,6 +2,8 @@
 #include "5CPostprocessor.h"
 #include "string_tools.h"
 
+namespace kin5ax {
+
 extern CR3Vector r3vOZ;
 
 C5CPostprocessor::C5CPostprocessor(const CChain &oChain, const CPostprocessorSettings &oSettings)
@@ -318,3 +320,5 @@ std::vector<tChainConfigurationVector> C5CPostprocessor::SolveSingularOrientatio
 	return vResult;
 }
 
+
+} // namespace kin5ax

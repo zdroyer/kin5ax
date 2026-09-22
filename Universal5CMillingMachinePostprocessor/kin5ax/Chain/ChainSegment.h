@@ -5,6 +5,8 @@
 
 #include "Rotation.h"
 
+namespace kin5ax {
+
 enum CHAIN_SEGMENT_TYPE{
 	CHAIN_SEGMENT_REVOLUTE_LINK=1,
 	CHAIN_SEGMENT_PRISMATIC_LINK=2,
@@ -82,3 +84,5 @@ public:
 	std::string toXML(void) const;
 	std::string GetTypeName() const;
 };
+
+} // namespace kin5ax

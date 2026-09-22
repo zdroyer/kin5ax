@@ -2,6 +2,8 @@
 #include "SimulationData.h"
 #include "string_tools.h"
 
+namespace kin5ax {
+
 CSimulationData::CSimulationData(size_t n)
 :m_nEmptySolutionsCount(0)
 ,m_nActualSolution(0)
@@ -234,3 +236,5 @@ size_t CSimulationData::GetEmptySolutionsCount(void)
 {
 	return m_nEmptySolutionsCount;
 }
+
+} // namespace kin5ax

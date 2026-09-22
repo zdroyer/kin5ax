@@ -4,6 +4,8 @@
 #include "ProgressCallback.h"
 
 
+namespace kin5ax {
+
 class CSimulationData
 {
 
@@ -37,3 +39,5 @@ public:
 	tChainConfigurationVector GetLastNonemptyConfigurationSet() const;
 	size_t GetEmptySolutionsCount(void);
 };
+
+} // namespace kin5ax

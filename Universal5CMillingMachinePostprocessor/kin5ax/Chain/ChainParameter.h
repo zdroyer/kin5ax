@@ -6,6 +6,8 @@
 #include "double_tools.h"
 #include "string_tools.h"
 
+namespace kin5ax {
+
 enum CHAIN_PARAMETER_TYPE{
 	CHAIN_PARAMETER_SINGLE_NUMBER=1,
 	CHAIN_PARAMETER_ANY_NUMBER=-1,
@@ -132,3 +134,5 @@ protected:
 };
 
 typedef std::vector<CChainParameter> tChainParameterVector;
+
+} // namespace kin5ax

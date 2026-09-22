@@ -2,6 +2,8 @@
 #include "MillingTool.h"
 
 
+namespace kin5ax {
+
 extern CR3Vector r3vOZ;
 
 CMillingTool::CMillingTool
@@ -108,3 +110,5 @@ CUT_TYPE CMillingTool::IsCut(const CR3Point &r3pP) const
 	return cutType;
 }
 
+
+} // namespace kin5ax

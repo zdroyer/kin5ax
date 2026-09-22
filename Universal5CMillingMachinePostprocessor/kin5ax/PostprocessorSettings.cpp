@@ -2,6 +2,8 @@
 #include "PostprocessorSettings.h"
 #include "double_tools.h"
 
+namespace kin5ax {
+
 CPostprocessorSettings::CPostprocessorSettings(void)
 :m_nAlpha1Method(ALPHA1_AXIS_MULTIPLICATION)
 ,m_nAlpha2Method(ALPHA2_AXIS_MULTIPLICATION)
@@ -32,3 +34,5 @@ double CPostprocessorSettings::InterpolationSteps(double dDistance, double dAngl
 		dSteps = dMAX_INTERPOLATION_STEPS;
 	return dSteps;
 }
+
+} // namespace kin5ax

@@ -4,6 +4,8 @@
 #include "R3Vector.h"
 
 
+namespace kin5ax {
+
 class CR3Point  
 {
 friend std::ostream & operator<<(std::ostream &out, const CR3Point &p);
@@ -217,3 +219,5 @@ public:
 
 };
 
+
+} // namespace kin5ax

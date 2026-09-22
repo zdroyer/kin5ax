@@ -10,6 +10,8 @@
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
+namespace kin5ax {
+
 CScale::CScale():CTransformation(1)
 {}
 
@@ -36,3 +38,5 @@ CScale CScale::Inverted() const
 	return CScale(1.0/M[0][0],1.0/M[1][1],1.0/M[2][2]);
 }
 
+
+} // namespace kin5ax

@@ -4,6 +4,8 @@
 #include "ChainConfiguration.h"
 
 
+namespace kin5ax {
+
 class CPositionPostprocessor
 {
 protected:
@@ -28,3 +30,5 @@ public:
 
 
 };
+
+} // namespace kin5ax

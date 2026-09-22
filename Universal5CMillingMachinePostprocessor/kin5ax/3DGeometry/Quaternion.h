@@ -1,6 +1,8 @@
 #pragma once
 #include "R3Vector.h"
 
+namespace kin5ax {
+
 class CQuaternion  
 {
 friend  CQuaternion operator* (const CQuaternion &a, const CQuaternion &b);
@@ -64,3 +66,5 @@ public:
 	}
 
 };
+
+} // namespace kin5ax

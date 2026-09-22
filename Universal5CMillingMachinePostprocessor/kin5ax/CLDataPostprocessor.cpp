@@ -3,6 +3,8 @@
 #include "5CPostprocessor.h"
 #include "string_tools.h"
 
+namespace kin5ax {
+
 CCLDataPostprocessor::CCLDataPostprocessor(const CPostprocessorSettings &oSettings)
 :m_oSettings(oSettings)
 {
@@ -157,3 +159,5 @@ void CCLDataPostprocessor::InterpolateLocation
 	}
 	result.push_back(std::pair<double,CR3CaughtVector>(1.0,CR3CaughtVector(v2,p2)));
 }
+
+} // namespace kin5ax

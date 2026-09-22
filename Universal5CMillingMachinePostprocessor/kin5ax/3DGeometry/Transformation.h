@@ -6,6 +6,8 @@
 
 
 
+namespace kin5ax {
+
 class CTransformation : public CM4x4
 {
 
@@ -58,3 +60,5 @@ public:
 
 };
 
+
+} // namespace kin5ax

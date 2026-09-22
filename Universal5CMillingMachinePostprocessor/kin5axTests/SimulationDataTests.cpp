@@ -4,6 +4,8 @@
 #include "SimulationData.h"
 
 //one configuration with a single linear parameter
+using namespace kin5ax;
+
 static CChainConfiguration Config(double dValue)
 {
 	CChainConfiguration oConfig(1);

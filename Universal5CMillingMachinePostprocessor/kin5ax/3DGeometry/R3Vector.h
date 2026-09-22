@@ -3,6 +3,8 @@
 #include "DivByZeroMyException.h"
 #include "string_tools.h"
 
+namespace kin5ax {
+
 class CR3Vector  
 {
 	double m_dX,m_dY,m_dZ;
@@ -194,3 +196,5 @@ public:
 
 
 CR3Vector operator *(double d, const CR3Vector &v);
+
+} // namespace kin5ax

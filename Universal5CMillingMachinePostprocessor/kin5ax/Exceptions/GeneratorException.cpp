@@ -1,6 +1,8 @@
 #include "../stdafx.h"
 #include "GeneratorException.h"
 
+namespace kin5ax {
+
 CGeneratorException::CGeneratorException(void)
 {
 }
@@ -66,3 +68,5 @@ void CGeneratorException::ShowMessageInBox(HWND hwnd) const
 }
 
 //*/
+
+} // namespace kin5ax

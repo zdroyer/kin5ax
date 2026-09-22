@@ -6,6 +6,8 @@
 #include "R3Vector.h"
 #include "ChainParameter.h"
 
+using namespace kin5ax;
+
 TEST(StringPrintf, FormatsAnyLength)
 {
 	EXPECT_EQ("",string_printf(""));

@@ -5,6 +5,8 @@
 #include "CutterLocationData.h"
 
 //writes the text as it is (binary: the line ends are not touched) and loads it
+using namespace kin5ax;
+
 static void LoadText(CCutterLocationData &oData, const std::string &sText, const char *szName="kin5axTests_parsing.cld")
 {
 	std::string sFileName = TempFilePath(szName);

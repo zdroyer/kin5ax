@@ -3,6 +3,8 @@
 #include "5CPostprocessor.h"
 #include <random>
 
+using namespace kin5ax;
+
 static double AngleDifference(double d1, double d2)
 {
 	double d = fmod(fabs(d1-d2),d2Pi);

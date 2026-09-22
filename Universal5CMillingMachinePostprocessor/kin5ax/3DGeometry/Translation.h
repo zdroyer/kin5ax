@@ -2,6 +2,8 @@
 #include "Transformation.h"
 
 
+namespace kin5ax {
+
 class CTranslation : public CTransformation  
 {
 	
@@ -13,3 +15,5 @@ public:
 	CTranslation(const CR3Vector & v);
 
 };
+
+} // namespace kin5ax

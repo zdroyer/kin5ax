@@ -5,6 +5,8 @@
 #include "Transformation.h"
 
 
+namespace kin5ax {
+
 class CScale : public CTransformation  
 {
 public:
@@ -17,3 +19,5 @@ public:
 	~CScale();
 };
 
+
+} // namespace kin5ax

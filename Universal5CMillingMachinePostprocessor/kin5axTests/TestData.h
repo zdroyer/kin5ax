@@ -17,4 +17,4 @@ std::string GetTestName(const std::string &sFilePath);
 std::string TempFilePath(const std::string &sName);
 
 //reads a chain the same way as the application does (CChainXmlReader of kin5ax)
-CChain LoadChain(const std::string &sFilePath);
+kin5ax::CChain LoadChain(const std::string &sFilePath);

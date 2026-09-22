@@ -3,6 +3,8 @@
 #include "ArgsMyException.h"
 
 
+namespace kin5ax {
+
 CMillingToolCylinder::CMillingToolCylinder
 	(double dRz
 	,double dR
@@ -45,3 +47,5 @@ bool CMillingToolCylinder::IsInOZCuttingSpace(const CR3Point &p) const
 		return false;
 	return true;
 }
+
+} // namespace kin5ax

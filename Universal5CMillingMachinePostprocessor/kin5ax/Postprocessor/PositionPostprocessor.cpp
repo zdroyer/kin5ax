@@ -3,6 +3,8 @@
 #include "ArgsMyException.h"
 
 
+namespace kin5ax {
+
 extern CR3Vector r3vOZ;
 
 CPositionPostprocessor::CPositionPostprocessor(void)
@@ -63,3 +65,5 @@ std::vector<CChainConfiguration> CPositionPostprocessor::Solve(const CR3Point& r
 	}
 	return vConfiguration;
 }
+
+} // namespace kin5ax

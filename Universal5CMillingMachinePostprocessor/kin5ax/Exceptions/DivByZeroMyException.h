@@ -1,6 +1,8 @@
 #pragma once
 #include "GeneratorException.h"
 
+namespace kin5ax {
+
 class CDivByZeroMyException:
 	public CGeneratorException
 {
@@ -15,3 +17,5 @@ class CDivByZeroMyException:
 			m_sExceptionDescription = std::string("Division by zero");
 		}
 };
+
+} // namespace kin5ax

@@ -4,6 +4,8 @@
 #include "r3point.h"
 #include "rotation.h"
 
+using namespace kin5ax;
+
 size_t WriteSphereCLData(const std::string &sFileName, double dR, double dD)
 {
 	FILE * pFile = fopen(sFileName.c_str(),"w");

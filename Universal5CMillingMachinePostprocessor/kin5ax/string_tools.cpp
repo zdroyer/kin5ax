@@ -6,6 +6,8 @@
 //static string sRNL("\r\n");
 
 
+namespace kin5ax {
+
 std::string string_printf(const char *szFormat, ...)
 {
 	va_list args;
@@ -47,3 +49,5 @@ std::string xml_escape(const std::string &s)
 	}
 	return sResult;
 }
+
+} // namespace kin5ax

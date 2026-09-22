@@ -10,6 +10,8 @@
 //////////////////////////////////////////////////////////////////////
 
 
+namespace kin5ax {
+
 CTranslation::~CTranslation()
 {
 
@@ -52,3 +54,5 @@ CTransformation CTranslation::Inverted() const
 }
 
 
+
+} // namespace kin5ax

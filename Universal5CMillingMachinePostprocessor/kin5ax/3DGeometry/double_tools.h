@@ -1,5 +1,7 @@
 #pragma once
 
+namespace kin5ax {
+
 static double dEPSILON = 1E-15;
 static double dPi = 3.1415926535897932384626433832795;
 static double dPiDiv2 = 1.5707963267948966192313216916398;
@@ -84,3 +86,5 @@ inline bool is_not_in_0_1(double d, double dTolerance=dEPSILON)
 		return true;
 	return false;
 }
+
+} // namespace kin5ax

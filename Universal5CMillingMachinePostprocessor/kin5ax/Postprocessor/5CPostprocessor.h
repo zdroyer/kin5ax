@@ -6,6 +6,8 @@
 #include "MillingTool.h"
 
 
+namespace kin5ax {
+
 typedef std::pair<CChainConfiguration,CR3CaughtVector> tChainConfigurationWithResult;
 
 
@@ -51,3 +53,5 @@ protected:
 
 
 };
+
+} // namespace kin5ax

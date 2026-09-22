@@ -9,6 +9,8 @@
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
+namespace kin5ax {
+
 CQuaternion::CQuaternion(const double init)
 { 	q[0]=q[1]=q[2]=q[3]=init; }
 
@@ -132,3 +134,5 @@ std::ostream & operator << (std::ostream &o, const CQuaternion &a)
  		return fmod(2.0*ac,2.0*3.14/*360.0*/);
 //*/
 	}
+
+} // namespace kin5ax

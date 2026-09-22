@@ -7,6 +7,8 @@
 #include "CLDataPostprocessor.h"
 #include "MillingToolBall.h"
 
+using namespace kin5ax;
+
 static const double dSPHERE_RADIUS = 0.05;
 static const double dLOCATIONS_DISTANCE = 0.01;
 

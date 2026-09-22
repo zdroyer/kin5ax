@@ -1,6 +1,8 @@
 #pragma once
 #include "GeneratorException.h"
 
+namespace kin5ax {
+
 class CArgsMyException:
 	public CGeneratorException 
 {
@@ -15,3 +17,5 @@ class CArgsMyException:
 			m_sExceptionDescription = std::string("Invalid function argument(s)");
 		}
 };
+
+} // namespace kin5ax

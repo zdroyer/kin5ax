@@ -1,6 +1,8 @@
 #pragma once
 #include "Transformation.h"
 
+namespace kin5ax {
+
 class CRotation : public CTransformation  
 {
 
@@ -28,3 +30,5 @@ public:
 	CRotation(const CTransformation &t);
 
 };
+
+} // namespace kin5ax

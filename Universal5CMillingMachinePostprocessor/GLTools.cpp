@@ -3,7 +3,7 @@
 
 
 
-extern CR3Vector r3vOZ;
+namespace kin5ax { extern CR3Vector r3vOZ; }
 
 CGLTools::CGLTools(void)
 

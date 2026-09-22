@@ -5,6 +5,8 @@
 #include "Translation.h"
 #include "R3Box.h"
 
+namespace kin5ax {
+
 extern CR3Vector r3vOZ;
 
 CChainSegment::CChainSegment(CHAIN_SEGMENT_TYPE type
@@ -327,3 +329,5 @@ int CChainSegment::GetHighlightedPartIndex() const
 {
 	return m_nHighlightedPart;
 }
+
+} // namespace kin5ax

@@ -7,6 +7,8 @@
 #include "string_tools.h"
 #include "5CPostprocessor.h"
 
+using namespace kin5ax;
+
 class ChainFileTest : public ::testing::TestWithParam<std::string>
 {
 protected:

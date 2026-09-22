@@ -3,6 +3,8 @@
 #include "string_tools.h"
 
 
+namespace kin5ax {
+
 extern CR3Vector r3vOZ;
 extern CR3Point r3pZero;
 
@@ -758,3 +760,5 @@ void CChain::ComputeAndSetError(CChainConfiguration &oConfig, const CR3CaughtVec
 	oConfig.SetErrors(d_E(cv.m_p,cvComputed.m_p),(cv.m_v.GetUnitVector()-cvComputed.m_v).GetLength());
 	SetParameters(old);    
 }
+
+} // namespace kin5ax

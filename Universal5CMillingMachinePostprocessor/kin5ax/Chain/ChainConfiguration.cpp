@@ -5,6 +5,8 @@
 #include "string_tools.h"
 
 
+namespace kin5ax {
+
 CChainConfiguration::CChainConfiguration(int nParametersCount)
 :m_vParametersVectors(nParametersCount,CChainParameter(DISTANCE_UNIT))
 ,m_dOrientationErrorVectorLength(0.0)
@@ -166,3 +168,5 @@ void CChainConfiguration::ZeroAll()
 	}
 
 }
+
+} // namespace kin5ax

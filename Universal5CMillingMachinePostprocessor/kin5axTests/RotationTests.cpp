@@ -3,6 +3,8 @@
 #include "gtest/gtest.h"
 #include "rotation.h"
 
+using namespace kin5ax;
+
 static const double dTOLERANCE = 1E-12;
 
 static double Determinant3x3(const CTransformation &t)

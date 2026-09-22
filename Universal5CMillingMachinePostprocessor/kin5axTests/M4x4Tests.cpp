@@ -3,6 +3,8 @@
 #include "gtest/gtest.h"
 #include "M4x4.h"
 
+using namespace kin5ax;
+
 TEST(M4x4, GetAtAndSetAtReachEveryElement)
 {
 	CM4x4 m(1.0);

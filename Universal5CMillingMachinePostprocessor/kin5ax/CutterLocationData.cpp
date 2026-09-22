@@ -2,6 +2,8 @@
 #include "CutterLocationData.h"
 
 //case-insensitive comparison of the first n characters (the keywords GOTO/ and MSYS/)
+namespace kin5ax {
+
 static int strncmp_nocase(const char *a, const char *b, size_t n)
 {
 	for(size_t i=0;i<n;i++){
@@ -215,3 +217,5 @@ const char *CCutterLocationData::GetLineText(size_t index) const
 		MY_THROW(CArgsMyException,"Invalid line number");
 	return &(m_vData[m_vLines[index].m_nIndexOfString]);
 }
+
+} // namespace kin5ax

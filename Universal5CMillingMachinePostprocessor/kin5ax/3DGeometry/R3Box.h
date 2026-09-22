@@ -3,6 +3,8 @@
 
 #include "R3Point.h"
 
+namespace kin5ax {
+
 class CR3Box
 {
 protected:
@@ -143,3 +145,5 @@ public:
 	~CR3Box(void){}
 	
 };
+
+} // namespace kin5ax

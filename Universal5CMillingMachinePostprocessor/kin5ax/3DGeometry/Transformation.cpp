@@ -10,6 +10,8 @@
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
+namespace kin5ax {
+
 CR3Vector r3vOX(1.0,0.0,0.0),r3vOY(0.0,1.0,0.0),r3vOZ(0.0,0.0,1.0);
 CR3Point r3pZero(0.0);
 
@@ -93,3 +95,5 @@ CTransformation CTransformation::Inverted() const
 }
 
 
+
+} // namespace kin5ax
