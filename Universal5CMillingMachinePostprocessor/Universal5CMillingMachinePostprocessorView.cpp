@@ -78,9 +78,6 @@ void CUniversal5CMillingMachinePostprocessorView::OnDraw(CDC* pDC)
 	glMatrixMode(GL_MODELVIEW);		
 	pDoc->Render3D(m_o3DViewManipulator.IsInAction());
 
-	glColor3d(1.0,0.0,0.0);
-	GLUquadricObj *pq =  gluNewQuadric();
-
 	SwapBuffers(*pDC);
 	m_o3DViewManipulator.Paint(*pDC);
 }
