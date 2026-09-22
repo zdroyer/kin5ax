@@ -41,6 +41,71 @@ TEST_P(BoxEdgeTest, EveryEdgeOfTheOtherBoxIsTested)
 
 INSTANTIATE_TEST_CASE_P(Edges, BoxEdgeTest, ::testing::Range(0,12));
 
+// ---------------------------------------------------------------- box against a line segment
+
+TEST(BoxAgainstSegment, EndpointInsideOrOutside)
+{
+	CR3Box oBox(0.0,1.0,0.0,1.0,0.0,1.0);
+	EXPECT_TRUE(oBox.HasIntersectionWithLineSegment(CR3Point(0.5,0.5,0.5),CR3Point(5.0,5.0,5.0)));
+	EXPECT_FALSE(oBox.HasIntersectionWithLineSegment(CR3Point(2.0,0.5,0.5),CR3Point(5.0,0.5,0.5)));
+	EXPECT_FALSE(oBox.HasIntersectionWithLineSegment(CR3Point(2.0,2.0,2.0),CR3Point(2.0,2.0,2.0)))<<"a point outside";
+	EXPECT_TRUE(oBox.HasIntersectionWithLineSegment(CR3Point(1.0,1.0,1.0),CR3Point(2.0,2.0,2.0)))<<"touches the corner";
+}
+
+//the segment passes through the box; neither endpoint is inside; all directions of travel
+TEST(BoxAgainstSegment, PassesThroughInEveryDirection)
+{
+	CR3Box oBox(0.0,1.0,0.0,1.0,0.0,1.0);
+	const CR3Point a(-1.0,0.2,0.3), b(2.0,0.6,0.7);	//through the box along +X
+	EXPECT_TRUE(oBox.HasIntersectionWithLineSegment(a,b));
+	EXPECT_TRUE(oBox.HasIntersectionWithLineSegment(b,a))<<"the same segment, travelled in -X";
+	//a diagonal that enters through the x=1 face and leaves through the y=0 face, travelled in -X and -Y
+	const CR3Point c(2.0,1.5,0.5), d(0.2,-0.5,0.5);		//inside for t in [0.56,0.75]
+	EXPECT_TRUE(oBox.HasIntersectionWithLineSegment(d,c));
+	EXPECT_TRUE(oBox.HasIntersectionWithLineSegment(c,d))<<"KnownBugs #6";
+	const CR3Point e(2.0,1.5,0.5), f(0.2,-0.6,0.5);		//inside for t in [0.56,0.71]
+	EXPECT_TRUE(oBox.HasIntersectionWithLineSegment(e,f));
+	EXPECT_TRUE(oBox.HasIntersectionWithLineSegment(f,e));
+	//a diagonal that passes just outside the corner (1,0,z): x<=1 needs t>=0.67, y>=0 needs t<=0.55
+	const CR3Point g(2.0,1.2,0.5), h(0.5,-1.0,0.5);
+	EXPECT_FALSE(oBox.HasIntersectionWithLineSegment(g,h));
+	EXPECT_FALSE(oBox.HasIntersectionWithLineSegment(h,g));
+}
+
+//random segments against the box, compared with a fine sampling of the segment
+TEST(BoxAgainstSegment, AgreesWithPointSampling)
+{
+	CR3Box oBox(-0.5,0.5,-0.3,0.3,-0.2,0.2);
+	srand(508);
+	int nHits=0;
+	for(int n=0;n<2000;n++){
+		double r[6];
+		for(int i=0;i<6;i++)
+			r[i] = 2.0*(double)rand()/(double)RAND_MAX-1.0;
+		CR3Point p1(r[0],r[1],r[2]), p2(r[3],r[4],r[5]);
+		bool bInside=false, bNear=false;
+		const int nSTEPS=400;
+		for(int i=0;i<=nSTEPS;i++){
+			double t = (double)i/nSTEPS;
+			CR3Point p = p1 + (p2-p1)*t;
+			if(oBox.Contains(p))
+				bInside=true;
+			CR3Box oGrown(oBox);
+			oGrown.ExpandXYZ(0.01,0.01,0.01);
+			if(oGrown.Contains(p))
+				bNear=true;
+		}
+		bool bHit = oBox.HasIntersectionWithLineSegment(p1,p2);
+		if(bInside)
+			EXPECT_TRUE(bHit)<<"case "<<n<<": "<<p1.toString()<<" - "<<p2.toString();
+		if(!bNear)
+			EXPECT_FALSE(bHit)<<"case "<<n<<": "<<p1.toString()<<" - "<<p2.toString();
+		if(bHit) nHits++;
+	}
+	EXPECT_GT(nHits,100);
+	EXPECT_LT(nHits,1900);
+}
+
 TEST(BoxAgainstBox, SeparatedBoxesDoNotIntersect)
 {
 	CR3Box a(0.0,1.0,0.0,1.0,0.0,1.0), b(2.0,3.0,0.0,1.0,0.0,1.0);

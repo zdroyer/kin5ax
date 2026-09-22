@@ -183,6 +183,21 @@ bool CR3Box::HasIntersectionWithSphere(const CR3Point &p, const double &dR) cons
 	} 
 	return false;
 }
+//the part of the segment p1+t*(p2-p1), t in [dT1,dT2], that lies in the slab dMin<=coordinate<=dMax;
+//false when nothing of it is left. d1, d2 - the coordinate at p1 and p2.
+static bool clip_to_slab(double d1, double d2, double dMin, double dMax, double &dT1, double &dT2)
+{
+	double dD = d2-d1;
+	if(is_zero(dD))
+		return is_between_or_equal(d1,dMin,dMax);
+	double dTNear = (dMin-d1)/dD, dTFar = (dMax-d1)/dD;
+	if(dTNear>dTFar)
+		swap(dTNear,dTFar);
+	if(dTNear>dT1) dT1 = dTNear;
+	if(dTFar<dT2) dT2 = dTFar;
+	return dT1<=dT2+dEPSILON;
+}
+
 bool CR3Box::HasIntersectionWithLineSegment(const CR3Point &p1, const CR3Point &p2) const
 {
 	if(IsEmpty())
@@ -191,65 +206,12 @@ bool CR3Box::HasIntersectionWithLineSegment(const CR3Point &p1, const CR3Point &
 		return true;
 	if(p1==p2)
 		return false;
-	if(p1.GetX()>m_dMaxX+dEPSILON && p2.GetX()>m_dMaxX+dEPSILON)
-		return false;
-	if(p1.GetX()<m_dMinX-dEPSILON && p2.GetX()<m_dMinX-dEPSILON)
-		return false;
-	if(p1.GetY()>m_dMaxY+dEPSILON && p2.GetY()>m_dMaxY+dEPSILON)
-		return false;
-	if(p1.GetY()<m_dMinY-dEPSILON && p2.GetY()<m_dMinY-dEPSILON)
-		return false;
-	if(p1.GetZ()>m_dMaxZ+dEPSILON && p2.GetZ()>m_dMaxZ+dEPSILON)
-		return false;
-	if(p1.GetZ()<m_dMinZ-dEPSILON && p2.GetZ()<m_dMinZ-dEPSILON)
-		return false;
-	CR3Point pp1(p1), pp2(p2);
-//	CR3Vector v = (p2-p1).GetUnitVector();
-	
-	double dTMin,dTMax;
-	//x plane
-	if(are_not_equal(pp1.GetX(),pp2.GetX())){
-		dTMin = (m_dMinX-pp1.GetX())/(pp2.GetX()-pp1.GetX());		
-		dTMax = (m_dMaxX-pp1.GetX())/(pp2.GetX()-pp1.GetX());		
-		CR3Point pTmp = pp1;
-		if(is_in_0_1(dTMin))
-			pp1.SetXYZ(m_dMinX
-						,pTmp.GetY()*(1.0-dTMin)+pp2.GetY()*dTMin
-						,pTmp.GetZ()*(1.0-dTMin)+pp2.GetZ()*dTMin);
-		if(is_in_0_1(dTMax))
-			pp2.SetXYZ(m_dMaxX
-						,pTmp.GetY()*(1.0-dTMax)+pp2.GetY()*dTMax
-						,pTmp.GetZ()*(1.0-dTMax)+pp2.GetZ()*dTMax);
-	}
-	if(are_not_equal(pp1.GetY(),pp2.GetY())){
-		dTMin = (m_dMinY-pp1.GetY())/(pp2.GetY()-pp1.GetY());		
-		dTMax = (m_dMaxY-pp1.GetY())/(pp2.GetY()-pp1.GetY());		
-		CR3Point pTmp = pp1;
-		if(is_in_0_1(dTMin))
-			pp1.SetXYZ(pTmp.GetX()*(1.0-dTMin)+pp2.GetX()*dTMin
-						,m_dMinY
-						,pTmp.GetZ()*(1.0-dTMin)+pp2.GetZ()*dTMin);
-		if(is_in_0_1(dTMax))
-			pp2.SetXYZ(pTmp.GetX()*(1.0-dTMax)+pp2.GetX()*dTMax
-						,m_dMaxY
-						,pTmp.GetZ()*(1.0-dTMax)+pp2.GetZ()*dTMax);
-	}
-	if(are_not_equal(pp1.GetZ(),pp2.GetZ())){
-		dTMin = (m_dMinZ-pp1.GetZ())/(pp2.GetZ()-pp1.GetZ());		
-		dTMax = (m_dMaxZ-pp1.GetZ())/(pp2.GetZ()-pp1.GetZ());		
-		CR3Point pTmp = pp1;
-		if(is_in_0_1(dTMin))
-			pp1.SetXYZ(pTmp.GetX()*(1.0-dTMin)+pp2.GetX()*dTMin
-						,pTmp.GetY()*(1.0-dTMin)+pp2.GetY()*dTMin
-						,m_dMinZ);
-		if(is_in_0_1(dTMax))
-			pp2.SetXYZ(pTmp.GetX()*(1.0-dTMax)+pp2.GetX()*dTMax
-						,pTmp.GetY()*(1.0-dTMax)+pp2.GetY()*dTMax
-						,m_dMaxZ);
-	}
-	if(this->Contains(pp1)||this->Contains(pp2)||this->Contains(average(pp1,pp2)))
-		return true;
-	return false;
+	//the segment is cut by the three slabs of the box (Liang-Barsky); a slab in which the segment
+	//is parallel just tests the coordinate. What is left, if anything, is the part inside the box.
+	double dT1=0.0, dT2=1.0;
+	return clip_to_slab(p1.GetX(),p2.GetX(),m_dMinX-dEPSILON,m_dMaxX+dEPSILON,dT1,dT2)
+		&& clip_to_slab(p1.GetY(),p2.GetY(),m_dMinY-dEPSILON,m_dMaxY+dEPSILON,dT1,dT2)
+		&& clip_to_slab(p1.GetZ(),p2.GetZ(),m_dMinZ-dEPSILON,m_dMaxZ+dEPSILON,dT1,dT2);
 }
 
 bool CR3Box::HasIntersectionWithBox(const CR3Box &box, const CTransformation &tr,const CTransformation &tr_inv) const
