@@ -12,6 +12,7 @@
 #include "ChainRendererGL.h"
 #include "ChainXmlReader.h"
 #include "ChainJson.h"
+#include "ChainFcm.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -28,6 +29,8 @@ IMPLEMENT_DYNCREATE(CUniversal5CMillingMachinePostprocessorDoc, CDocument)
 
 CUniversal5CMillingMachinePostprocessorDoc::CHAIN_FILE_READER
 	CUniversal5CMillingMachinePostprocessorDoc::s_nextReader = CUniversal5CMillingMachinePostprocessorDoc::CHAIN_FILE_READER_MSXML;
+CFcmOptions CUniversal5CMillingMachinePostprocessorDoc::s_fcmOptions;
+CFcmReport CUniversal5CMillingMachinePostprocessorDoc::s_fcmReport;
 
 BEGIN_MESSAGE_MAP(CUniversal5CMillingMachinePostprocessorDoc, CDocument)
 END_MESSAGE_MAP()
@@ -116,6 +119,9 @@ BOOL CUniversal5CMillingMachinePostprocessorDoc::OnOpenDocument(LPCTSTR lpszPath
 				break;
 			case CHAIN_FILE_READER_JSON:
 				m_oChain = CChainJsonReader::ReadFile(std::string(lpszPathName));
+				break;
+			case CHAIN_FILE_READER_FCM:
+				m_oChain = CChainFcmReader::ReadFile(std::string(lpszPathName),s_fcmOptions,s_fcmReport);
 				break;
 			default:
 				m_oChain = CChainXmlReader::ReadFile(std::string(lpszPathName));

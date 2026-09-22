@@ -29,6 +29,8 @@ public:
 	afx_msg void OnFileOpenJson();
 	void OpenWith(int nReader, LPCTSTR lpszPathName);
 	afx_msg void OnFileSaveAsJson();
+	afx_msg void OnFileImportFcm();
+	afx_msg void OnFileExportFcm();
 	DECLARE_MESSAGE_MAP()
 };
 

@@ -5,6 +5,7 @@
 #pragma once
 #include "gltools.h"
 #include "chain.h"
+#include "ChainFcm.h"
 #include "5CPostprocessor.h"
 #include "material.h"
 #include "CutterLocationData.h"
@@ -49,8 +50,13 @@ public:
 	CCutterLocationData m_oCutterLocationData;
 	C5CPostprocessor *m_pPostprocessor;
 	//which reader the next OnOpenDocument uses; set by the application before OpenDocumentFile
-	enum CHAIN_FILE_READER { CHAIN_FILE_READER_MSXML, CHAIN_FILE_READER_PUGIXML, CHAIN_FILE_READER_JSON };
+	enum CHAIN_FILE_READER { CHAIN_FILE_READER_MSXML, CHAIN_FILE_READER_PUGIXML, CHAIN_FILE_READER_JSON
+							,CHAIN_FILE_READER_FCM };
 	static CHAIN_FILE_READER s_nextReader;
+	//the conventions the .fcm reader cannot read from the file, and what the last import could
+	//not carry across
+	static kin5ax::CFcmOptions s_fcmOptions;
+	static kin5ax::CFcmReport s_fcmReport;
 	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
 	virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);
 	C5CPostprocessor * GetPostprocessor(void);
