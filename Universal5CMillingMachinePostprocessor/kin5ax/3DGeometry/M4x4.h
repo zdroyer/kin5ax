@@ -14,13 +14,13 @@ public:
 	{	return GetAt(i,j);	}
 
 	inline double GetAt(int i, int j) const
-	{	if(i>3 || i<0 || j>3 || i<0)
+	{	if(i>3 || i<0 || j>3 || j<0)
 			MY_THROW(CArgsMyException,"Invalid index scope");
 		return M[i][j];
 	}
 
 	inline void SetAt(int i, int j, double d)
-	{	if(i>3 || i<0 || j>3 || i<0)
+	{	if(i>3 || i<0 || j>3 || j<0)
 			MY_THROW(CArgsMyException,"Invalid index scope");
 		M[i][j] = d;
 	}

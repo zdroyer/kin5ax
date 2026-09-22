@@ -68,7 +68,7 @@ Nothing here was observed at run time unless a test is named.
 | 26 | `MillingTool.h` | `~CMillingTool` is not virtual, the tool is deleted through a `CMillingTool*`. | open |
 | 27 | `CutterLocationData.h` | Owns `char *m_pData` without copy constructor/assignment (a copied object crashed the test run); `LoadFile` throws without `_close`; `GetLine` uses `index>size`. Now a `vector<char>`, `fopen`/`fread`, `>=`. | **fixed** 47f7760 |
 | 28 | `ChainSegment.cpp` | `SetPartCollision` uses `n>size`; `HasPartInCollision` prints a leading ", "; `toXML` does not escape the name. | open |
-| 29 | `M4x4.h` `GetAt`/`SetAt` | `i<0` tested twice, `j<0` never. | open |
+| 29 | `M4x4.h` `GetAt`/`SetAt` | `i<0` tested twice, `j<0` never. Tests: `M4x4Tests.cpp` (the negative column cases threw nothing before the fix). | **fixed** 047ec84 |
 | 30 | `Chain.cpp` `CheckAndCorrectSegmentsNames` | `j=0` inside the `for(...;j++)` restarts at 1: duplicate names can survive. | open |
 | 31 | `Chain.cpp` `GetActualParameter` | Off by one for the material holder part (unused function). | open |
 | 32 | `5CPostprocessor.cpp` `SolveSingularOrientation` | `vFirst.front()` on an empty vector when no input is solvable (not reachable from the current caller). | open |

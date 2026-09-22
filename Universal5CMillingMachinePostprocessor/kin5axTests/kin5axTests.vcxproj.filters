@@ -12,6 +12,7 @@
     <ClCompile Include="ChainTests.cpp" />
     <ClCompile Include="CLDataParsingTests.cpp" />
     <ClCompile Include="CLDataTests.cpp" />
+    <ClCompile Include="M4x4Tests.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MeridianCLDataTests.cpp" />
     <ClCompile Include="MillingToolTests.cpp" />
