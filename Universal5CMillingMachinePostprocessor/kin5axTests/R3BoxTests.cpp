@@ -1,5 +1,5 @@
 // CR3Box: intersection with another box (every edge is tested) and with a cylinder about OZ.
-#include "../stdafx.h"
+#include "stdafx.h"
 #include "gtest/gtest.h"
 #include "r3box.h"
 #include "rotation.h"

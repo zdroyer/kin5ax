@@ -1,50 +1,57 @@
-#include "../stdafx.h"
+#include "stdafx.h"
 #include "TestData.h"
 #include "ChainXmlReader.h"
+#include <filesystem>
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <windows.h>
+#endif
 
-static const char cSEPARATOR = 92;	//backslash
+namespace fs = std::filesystem;
 
-static void AppendFiles(const string &sFolder, const string &sPattern, vector<string> &vFiles)
+//the folder of the test exe; the only platform-dependent query of the tests (the chain files are
+//listed while the parameterised tests are instantiated, before main() and its argv[0])
+static fs::path ExeDir()
 {
-	WIN32_FIND_DATA oData;
-	HANDLE hFind = FindFirstFile((sFolder+sPattern).c_str(),&oData);
-	if(hFind==INVALID_HANDLE_VALUE)
-		return;
-	do{
-		if(!(oData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
-			vFiles.push_back(sFolder+oData.cFileName);
-	}while(FindNextFile(hFind,&oData));
-	FindClose(hFind);
+#ifdef _WIN32
+	char szPath[4096];
+	DWORD nLength = GetModuleFileNameA(NULL,szPath,sizeof(szPath));
+	return fs::path(string(szPath,nLength)).parent_path();
+#else
+	return fs::read_symlink("/proc/self/exe").parent_path();
+#endif
 }
 
 string GetTestChainsDir()
 {
-	char szPath[MAX_PATH];
-	GetModuleFileName(NULL,szPath,MAX_PATH);
-	string sFolder(szPath);
-	size_t n = sFolder.find_last_of(cSEPARATOR);
-	sFolder = (n==string::npos) ? string("") : sFolder.substr(0,n+1);
-	return sFolder+"TestChains"+cSEPARATOR;
+	fs::path oDir = ExeDir()/"TestChains";
+	return oDir.string()+(char)fs::path::preferred_separator;
 }
 
 vector<string> GetChainFiles()
 {
 	vector<string> vFiles;
-	AppendFiles(GetTestChainsDir(),"*.kc",vFiles);
+	std::error_code oError;	//a missing folder gives an empty list, not an exception
+	for(const fs::directory_entry &oEntry : fs::directory_iterator(GetTestChainsDir(),oError))
+		if(oEntry.is_regular_file() && oEntry.path().extension()==".kc")
+			vFiles.push_back(oEntry.path().string());
 	sort(vFiles.begin(),vFiles.end());
 	return vFiles;
 }
 
 string GetTestName(const string &sFilePath)
 {
-	size_t nBegin = sFilePath.find_last_of(cSEPARATOR);
-	nBegin = (nBegin==string::npos) ? 0 : nBegin+1;
-	size_t nEnd = sFilePath.find_last_of(46);	//dot
-	string sName = sFilePath.substr(nBegin,(nEnd==string::npos || nEnd<nBegin) ? string::npos : nEnd-nBegin);
+	string sName = fs::path(sFilePath).stem().string();
 	for(size_t i=0;i<sName.size();i++)
 		if(!isalnum((unsigned char)sName[i]))
-			sName[i]=95;	//underscore
+			sName[i]='_';
 	return sName;
+}
+
+string TempFilePath(const string &sName)
+{
+	return (fs::temp_directory_path()/sName).string();
 }
 
 CChain LoadChain(const string &sFilePath)

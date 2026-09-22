@@ -1,6 +1,6 @@
 // CL-data along a meridian over the north pole: 9 cutter locations, the middle one on the pole
 // with the tool axis (0,0,1) - the path crosses the singular orientation of most machines.
-#include "../stdafx.h"
+#include "stdafx.h"
 #include "gtest/gtest.h"
 #include "TestData.h"
 #include "SphereCLDataGenerator.h"
@@ -11,16 +11,9 @@
 static const double dRADIUS = 0.05;
 static const size_t nPOINTS = 9;
 
-static string MeridianTempFilePath(const string &sName)
-{
-	char szFolder[MAX_PATH];
-	GetTempPath(MAX_PATH,szFolder);
-	return string(szFolder)+sName;
-}
-
 TEST(MeridianCLData, HasThePoleInTheMiddle)
 {
-	string sFileName = MeridianTempFilePath("kin5axTests_meridian.cld");
+	string sFileName = TempFilePath("kin5axTests_meridian.cld");
 	ASSERT_EQ(nPOINTS,WriteMeridianCLData(sFileName,dRADIUS,nPOINTS));
 	EXPECT_EQ((size_t)0,WriteMeridianCLData(sFileName+"_",dRADIUS,10))<<"more than 9 points or an even number must be refused";
 	try{
@@ -91,7 +84,7 @@ static void GetBiggestSteps(const CSimulationData &oSimulationData, double &dMax
 
 TEST_P(MeridianCLDataOnChainTest, IsPostprocessedOverThePole)
 {
-	string sCLDataFile = MeridianTempFilePath("kin5axTests_meridian_"+GetTestName(GetParam())+".cld");
+	string sCLDataFile = TempFilePath("kin5axTests_meridian_"+GetTestName(GetParam())+".cld");
 	ASSERT_EQ(nPOINTS,WriteMeridianCLData(sCLDataFile,dRADIUS,nPOINTS));
 	try{
 		CChain oChain = LoadChain(GetParam());

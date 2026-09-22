@@ -1,5 +1,5 @@
 // Tests run once for every kinematic chain (.kc) file of kin5axTests/TestChains.
-#include "../stdafx.h"
+#include "stdafx.h"
 #include "gtest/gtest.h"
 #include "TestData.h"
 #include "SolverRoundTrip.h"

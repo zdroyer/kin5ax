@@ -1,6 +1,6 @@
 // CMillingTool::IsCut: the cut volume must follow the position and the orientation of the tool.
 // The tool is placed by its reference point, which lies on the tool axis m_dReferencePointZ above the tip.
-#include "../stdafx.h"
+#include "stdafx.h"
 #include "gtest/gtest.h"
 #include "MillingToolBall.h"
 #include "rotation.h"

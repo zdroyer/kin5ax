@@ -1,4 +1,4 @@
-#include "../stdafx.h"
+#include "stdafx.h"
 #include "SphereCLDataGenerator.h"
 #include "r3vector.h"
 #include "r3point.h"

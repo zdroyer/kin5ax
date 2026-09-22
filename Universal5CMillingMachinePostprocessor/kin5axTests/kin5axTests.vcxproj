@@ -30,32 +30,24 @@
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v143</PlatformToolset>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <!-- MFC only because the tests are compiled with the stdafx.h of the application -->
-    <UseOfMfc>Dynamic</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v143</PlatformToolset>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <!-- MFC only because the tests are compiled with the stdafx.h of the application -->
-    <UseOfMfc>Dynamic</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v143</PlatformToolset>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <!-- MFC only because the tests are compiled with the stdafx.h of the application -->
-    <UseOfMfc>Dynamic</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v143</PlatformToolset>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <!-- MFC only because the tests are compiled with the stdafx.h of the application -->
-    <UseOfMfc>Dynamic</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -82,8 +74,9 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir);$(SolutionDir)kin5ax;$(SolutionDir)kin5ax\Exceptions;$(SolutionDir)kin5ax\3DGeometry;$(SolutionDir)kin5ax\Chain;$(SolutionDir)kin5ax\Postprocessor;$(SolutionDir)kin5ax\MillingTool;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..\kin5ax;$(ProjectDir)..\kin5ax\Exceptions;$(ProjectDir)..\kin5ax\3DGeometry;$(ProjectDir)..\kin5ax\Chain;$(ProjectDir)..\kin5ax\Postprocessor;$(ProjectDir)..\kin5ax\MillingTool;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_CONSOLE;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <!-- Debug equals the runtime library of kin5ax.lib; the Release library is /MT, so the tests are built in Debug only -->
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
@@ -99,8 +92,9 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir);$(SolutionDir)kin5ax;$(SolutionDir)kin5ax\Exceptions;$(SolutionDir)kin5ax\3DGeometry;$(SolutionDir)kin5ax\Chain;$(SolutionDir)kin5ax\Postprocessor;$(SolutionDir)kin5ax\MillingTool;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..\kin5ax;$(ProjectDir)..\kin5ax\Exceptions;$(ProjectDir)..\kin5ax\3DGeometry;$(ProjectDir)..\kin5ax\Chain;$(ProjectDir)..\kin5ax\Postprocessor;$(ProjectDir)..\kin5ax\MillingTool;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_CONSOLE;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <!-- Debug equals the runtime library of kin5ax.lib; the Release library is /MT, so the tests are built in Debug only -->
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
@@ -116,8 +110,9 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir);$(SolutionDir)kin5ax;$(SolutionDir)kin5ax\Exceptions;$(SolutionDir)kin5ax\3DGeometry;$(SolutionDir)kin5ax\Chain;$(SolutionDir)kin5ax\Postprocessor;$(SolutionDir)kin5ax\MillingTool;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..\kin5ax;$(ProjectDir)..\kin5ax\Exceptions;$(ProjectDir)..\kin5ax\3DGeometry;$(ProjectDir)..\kin5ax\Chain;$(ProjectDir)..\kin5ax\Postprocessor;$(ProjectDir)..\kin5ax\MillingTool;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_CONSOLE;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <!-- Debug equals the runtime library of kin5ax.lib; the Release library is /MT, so the tests are built in Debug only -->
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
@@ -133,8 +128,9 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir);$(SolutionDir)kin5ax;$(SolutionDir)kin5ax\Exceptions;$(SolutionDir)kin5ax\3DGeometry;$(SolutionDir)kin5ax\Chain;$(SolutionDir)kin5ax\Postprocessor;$(SolutionDir)kin5ax\MillingTool;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..\kin5ax;$(ProjectDir)..\kin5ax\Exceptions;$(ProjectDir)..\kin5ax\3DGeometry;$(ProjectDir)..\kin5ax\Chain;$(ProjectDir)..\kin5ax\Postprocessor;$(ProjectDir)..\kin5ax\MillingTool;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_CONSOLE;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <!-- Debug equals the runtime library of kin5ax.lib; the Release library is /MT, so the tests are built in Debug only -->
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>

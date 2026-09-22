@@ -1,5 +1,5 @@
 // CSimulationData::FindShortestPath against a brute force search on small synthetic solution sets.
-#include "../stdafx.h"
+#include "stdafx.h"
 #include "gtest/gtest.h"
 #include "SimulationData.h"
 

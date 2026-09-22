@@ -1,5 +1,5 @@
 // CL-data tests: a generated hemisphere file is read back and postprocessed for every chain.
-#include "../stdafx.h"
+#include "stdafx.h"
 #include "gtest/gtest.h"
 #include "TestData.h"
 #include "SphereCLDataGenerator.h"
@@ -9,13 +9,6 @@
 
 static const double dSPHERE_RADIUS = 0.05;
 static const double dLOCATIONS_DISTANCE = 0.01;
-
-static string TempFilePath(const string &sName)
-{
-	char szFolder[MAX_PATH];
-	GetTempPath(MAX_PATH,szFolder);
-	return string(szFolder)+sName;
-}
 
 static size_t CountLines(const string &sFileName)
 {

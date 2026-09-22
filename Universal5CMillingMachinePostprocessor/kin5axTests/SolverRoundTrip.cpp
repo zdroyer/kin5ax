@@ -1,4 +1,4 @@
-#include "../stdafx.h"
+#include "stdafx.h"
 #include "SolverRoundTrip.h"
 #include "5CPostprocessor.h"
 #include <random>
