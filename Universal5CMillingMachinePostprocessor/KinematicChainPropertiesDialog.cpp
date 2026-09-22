@@ -34,6 +34,7 @@ CKinematicChainPropertiesDialog::CKinematicChainPropertiesDialog(CWnd* pParent /
 	, m_dParameterEnd(0)
 	, m_sSegmentName(_T(""))
 	, m_pActiveSegment(0)
+	, m_nActivePart(-1)
 {
 }
 
@@ -434,7 +435,7 @@ CChainSegment CKinematicChainPropertiesDialog::GetChainSegmentFromDialogData(voi
 				(type==CHAIN_SEGMENT_REVOLUTE_LINK ? degrees_to_radians(m_dParameterMinimum):m_dParameterMinimum),
 				(type==CHAIN_SEGMENT_REVOLUTE_LINK ? degrees_to_radians(m_dParameterMaximum):m_dParameterMaximum));
 	segment.SetPartVector(m_vBoxes);
-	segment.HighlightPart((int)m_nActivePart);
+	segment.HighlightPart(m_nActivePart);
 	if(segment.GetType()==CHAIN_SEGMENT_REVOLUTE_LINK)
 		segment.SetParameterValue(degrees_to_radians( m_dParameterValue));	//the dialog holds degrees, the segment radians
 	else
@@ -771,16 +772,16 @@ void CKinematicChainPropertiesDialog::OnEnKillfocusEditSegmentName()
 
 void CKinematicChainPropertiesDialog::OnLbnSelchangeListParts()
 {
-	m_nActivePart = m_listboxSegmentParts.GetCurSel();
+	m_nActivePart = m_listboxSegmentParts.GetCurSel();	//LB_ERR (-1) when nothing is selected
 	if(m_pActiveSegment)
-		m_pActiveSegment->HighlightPart((int)m_nActivePart);
+		m_pActiveSegment->HighlightPart(m_nActivePart);
 	m_pDoc->UpdateAllViews(NULL);
 }
 
 void CKinematicChainPropertiesDialog::OnLbnDblclkListParts()
 {
 	OnLbnSelchangeListParts();
-	if(m_pActiveSegment){
+	if(m_pActiveSegment && m_nActivePart>=0 && m_nActivePart<(int)m_vBoxes.size()){
 		CBoxDialog dlg;
 		dlg.SetBox(m_vBoxes[m_nActivePart]);
 		dlg.SetWindowAndBoxForUpdates(GetParent(),m_pActiveSegment->GetActivePartPointer());
@@ -801,12 +802,12 @@ void CKinematicChainPropertiesDialog::OnBnClickedButtonAddPart()
 		CBoxDialog dlg;
 		dlg.SetWindowAndBoxForUpdates(GetParent(),m_pActiveSegment->GetActivePartPointer());
 		if(dlg.DoModal()==IDOK){
-			m_nActivePart = m_vBoxes.size()-1;
+			m_nActivePart = (int)m_vBoxes.size()-1;
 			m_vBoxes = m_pActiveSegment->GetPartVector();
 		} else {
 			m_vBoxes.pop_back();
 			m_pActiveSegment->SetPartVector(m_vBoxes);
-			m_pActiveSegment->HighlightPart((int)m_nActivePart);
+			m_pActiveSegment->HighlightPart(m_nActivePart);
 		}
 		UpdateSegmentPartsList();
 	}
@@ -821,22 +822,20 @@ void CKinematicChainPropertiesDialog::UpdateSegmentPartsList(void)
 			s+=size_to_string(i+1);
 			m_listboxSegmentParts.AddString(s.c_str());
 		}
-		m_listboxSegmentParts.SetCurSel((int)m_nActivePart);
+		m_listboxSegmentParts.SetCurSel(m_nActivePart);
 		m_pActiveSegment->SetPartVector(m_vBoxes);
-		m_pActiveSegment->HighlightPart((int)m_nActivePart);
+		m_pActiveSegment->HighlightPart(m_nActivePart);
 		m_pDoc->UpdateAllViews(NULL);
 	} 
 }
 void CKinematicChainPropertiesDialog::OnBnClickedButtonDeletePart()
 {
 	if(m_pActiveSegment){
-		if(m_nActivePart<m_vBoxes.size()){
-			vector<CR3Box>::iterator it = m_vBoxes.begin();
-			for(size_t i =0; it != m_vBoxes.end();i++,it++)
-				if(i==m_nActivePart)
-					break;
-			m_vBoxes.erase(it);
-			m_nActivePart = max(0,m_nActivePart-1);
+		if(m_nActivePart>=0 && m_nActivePart<(int)m_vBoxes.size()){
+			m_vBoxes.erase(m_vBoxes.begin()+m_nActivePart);
+			//the selection stays at the same place, or on the new last box, or nowhere
+			if(m_nActivePart>=(int)m_vBoxes.size())
+				m_nActivePart = (int)m_vBoxes.size()-1;
 			UpdateSegmentPartsList();
 		}
 	}

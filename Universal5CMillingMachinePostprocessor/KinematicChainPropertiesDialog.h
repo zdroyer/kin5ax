@@ -131,7 +131,7 @@ public:
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	
 	vector<CR3Box> m_vBoxes;
-	size_t m_nActivePart;
+	int m_nActivePart;	//index into m_vBoxes, -1 when no box is selected
 protected:
 	void UpdateParameterSliderUnits(void);
 	void UpdateSegmentPartsList(void);
