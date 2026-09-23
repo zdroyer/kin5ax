@@ -86,6 +86,9 @@ test of all boxes and of the tool.
 - **CL data** (in): APT-like text, one location per line, `GOTO/x,y,z,i,j,k`; `MSYS/` lines
   are recognised, anything else is reported as an error line and skipped. Parsed by
   `CCutterLocationData` (locale independent, CRLF tolerant).
+- **.fcm** (in and out): the machine definition of the FreeCAD CAM workbench, a different
+  description of the same machine. `CChainFcmReader` and `CChainFcmWriter`; see the section
+  below, because the two files cannot hold the same things.
 - **G-code** (out): one `N.. G1 X.. Y.. Z.. A.. B..` block per location from
   `CSimulationData::ExportToGCode`; the caller maps the five joints to the axis letters,
   angles in degrees or radians. No feed rates, no tool changes, no rollover handling.
@@ -116,12 +119,103 @@ test of all boxes and of the tool.
   (zero determinant) give no solution and are logged; real machines limit the joints so it
   does not occur.
 
+## The FreeCAD bridge (*.fcm)
+
+`CChainFcmReader` and `CChainFcmWriter`, in the application under Chain > Import (FreeCAD .fcm)
+and Export (FreeCAD .fcm).
+
+**The two descriptions.** An .fcm file names every axis and gives its joint as an origin and a
+direction in the machine base frame with every axis at zero; `role` sorts the axes into the head
+(tool) and the table (workpiece) branch, `parent` and `sequence` order them, and at the home
+position the tool frame and the workpiece frame both coincide with the base frame. kin5ax gives
+every segment a constant transformation relative to the one before it, moves along or about the
+local OZ, and closes each branch with a terminal segment.
+
+Importing walks the axes and asks, for each one, where its joint sits in the frame of the
+previous segment: the translation is the origin seen from there, the rotation is the one that
+takes OZ onto the direction of the joint. Every such rotation is carried by the whole rest of the
+branch, so the terminal segment is the inverse of everything accumulated before it, which is what
+puts both frames back on the base frame at home. Exporting does the opposite: the forward
+kinematics of the model at zero gives each joint its origin and its OZ, and everything is
+expressed relative to the workpiece frame at home, which becomes the base frame of the file.
+
+### What the converter and the library have in common
+
+The uploaded `kcconv.cpp` carries its own geometry and its own model. All of it already exists
+here, so nothing of it was taken as code; only the mapping above is new.
+
+| kcconv | already in kin5ax |
+|---|---|
+| `Vec3` | `CR3Vector` |
+| `Mat3::axisAngle` | `CRotation(axis, angle)` |
+| `Mat3::between` | `CRotation(v0, v1)` |
+| `Mat3::toAxisAngle` | `CRotation::GetAxis` and `GetAngle` (usable at 0 and 180 degrees since this branch) |
+| `Frame`, its product and its inverse | `CTransformation`, `CChainSegment::GetConstantTransformation` and its inverted form |
+| `Joint`, `Branch` | `CChainSegment` and the two segment vectors of `CChain` |
+| `kcTransform`, `branchToKc`, `kcBranchToModel`, `modelToKc` | `CChain` itself; the .kc.json side is `CChainJsonReader` and `CChainJsonWriter` |
+| `loadJson`, `saveJson` | nlohmann/json, vendored in `3rdParty/nlohmann/` |
+| `--flip-table-linear`, `--flip-table-rotary` | `CFcmOptions` |
+| the warnings on stderr | `CFcmReport`, shown by the application |
+
+### What does not fit through, and what to do about it
+
+Nothing is dropped in silence: every item below is added to the `CFcmReport` that the reader and
+the writer fill, and the export also writes it into `machine.kinematics.notes`.
+
+**The terminal transformations.** An .fcm machine has none: at home both frames are the base
+frame. Importing therefore loses nothing, and exporting can always give away one of the two,
+because the base frame of the file is chosen to be the workpiece frame at home. What is left is
+the tool frame, and it has to be the base frame as well:
+
+- *A rotation about the tool axis* is not reported and costs nothing. A milling tool is
+  symmetric about its axis.
+- *A shift along the tool axis* is what all eight sample machines have, between 0.1 and 0.4 of a
+  unit. It is a tool length: carry it in the tool length offset of the post (G43, or the tool
+  table), or give the milling tool a reference point height that accounts for it. The report
+  prints the vector.
+- *A shift across the tool axis* is a work offset: carry it in G54 to G59, or move the zero of
+  the linear joints of the chain by the same amount and export again.
+- *A tool axis that is not +Z at home* means the zero position of the chain is not the home
+  position of the machine. Change the constant rotation of the joint that tilts the tool so that
+  its parameter is zero when the tool stands upright, then export again. A machine that cannot
+  bring its tool upright at all cannot be written as an .fcm file.
+
+**Collision boxes** have no place in an .fcm file and are dropped. Keep the .kc or .kc.json as
+the master copy of the machine and treat the .fcm as an export.
+
+**Joint limits** are always present in an .fcm axis and optional in a chain. A segment without
+limits is written with the full range (a turn either way, or a thousand units) and reported;
+give the segment its limits before exporting, or narrow them in FreeCAD afterwards.
+
+**Axis names** are the keys of the axes object, so two segments of the same name make the export
+refuse the chain, and a name that is not a single upper-case letter is reported because the
+FreeCAD post-processors expect X, Y, Z, A, B or C.
+
+**Everything in an axis that is not kinematics** (`max_velocity`, `solution_preference`,
+`allow_flip`, `wrap_strategy`) and the `toolheads` and `postprocessor` sections are dropped on
+import, each one reported by name. On export, `CFcmOptions::m_sTemplateFilePath` names an
+existing .fcm whose other sections are kept as they are, so a file can be round-tripped through
+the chain without losing them.
+
+**A base frame of its own** in `machine.kinematics.base_frame` is ignored on import and
+reported: the joints are read exactly as they stand in the file.
+
+### The one convention that has to be checked against the machine
+
+The direction of a table axis. The value in the file is taken as the value of the joint
+parameter of the model, with no negation, and the solver's own sign convention for the workpiece
+branch does the rest. If a machine counts one of its table axes the other way round, set
+`m_bNegateTableLinearAxes` or `m_bNegateTableRotaryAxes` in `CFcmOptions`. To find out: import
+the machine, set one table axis to a known value, and compare the tool position the model
+computes with the one FreeCAD shows for the same value. The same check settles the other
+assumption, that the tool axis points along +Z at the home position.
+
 ## Main classes
 
 | area | classes |
 |---|---|
 | geometry (`3DGeometry/`) | `CR3Point`, `CR3Vector`, `CR3CaughtVector` (position + axis), `CM4x4`, `CTransformation`, `CTranslation`, `CRotation`, `CScale`, `CQuaternion`, `CR3Box` (collision boxes, exact box/box, box/segment, box/sphere, box/cylinder tests) |
-| machine (`Chain/`) | `CChain` (two segment vectors, forward kinematics, limits, collisions, XML out), `CChainSegment`, `CChainParameter` (value, unit, type single/any/none), `CChainConfiguration` (the five joint values, distance, equivalents), `CChainXmlReader` |
+| machine (`Chain/`) | `CChain` (two segment vectors, forward kinematics, limits, collisions, XML out), `CChainSegment`, `CChainParameter` (value, unit, type single/any/none), `CChainConfiguration` (the five joint values, distance, equivalents), `CChainXmlReader`, `CChainJsonReader`, `CChainFcmReader` and the writers |
 | tool (`MillingTool/`) | `CMillingTool` and `CMillingToolBall`, `CMillingToolCylinder`: cut volume for the voxel simulation and collision solid |
 | solver (`Postprocessor/`) | `COrientationPostprocessor` (the angles), `CPositionPostprocessor` (the shifts), `C5CPostprocessor` (signs, limits, collisions, singular sections) |
 | batch | `CCutterLocationData`, `CCLDataPostprocessor` (+ `CCLDataPostprocessingResult`), `CSimulationData` (solution sets, shortest path, G-code), `CPostprocessorSettings`, `CProgressCallback` |

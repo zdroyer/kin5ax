@@ -155,6 +155,7 @@
     <ClCompile Include="Chain\ChainXmlReader.cpp" />
     <ClCompile Include="Chain\ChainXmlReaderPugixml.cpp" />
     <ClCompile Include="Chain\ChainJson.cpp" />
+    <ClCompile Include="Chain\ChainFcm.cpp" />
     <ClCompile Include="MillingTool\MillingTool.cpp" />
     <ClCompile Include="MillingTool\MillingToolBall.cpp" />
     <ClCompile Include="MillingTool\MillingToolCylinder.cpp" />
@@ -187,6 +188,7 @@
     <ClInclude Include="Chain\Chain.h" />
     <ClInclude Include="Chain\ChainXmlReader.h" />
     <ClInclude Include="Chain\ChainJson.h" />
+    <ClInclude Include="Chain\ChainFcm.h" />
     <ClInclude Include="Chain\ChainConfiguration.h" />
     <ClInclude Include="Chain\ChainSegment.h" />
     <ClInclude Include="Chain\ChainParameter.h" />

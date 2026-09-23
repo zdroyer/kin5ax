@@ -21,6 +21,7 @@ public:
 
 	CRotation operator * (const CRotation &b) const;
 	double GetAngle() const;
+	double GetCosineOfAngle() const;
 	CR3Vector GetAxis() const;
 	void GetEulerAngles(double &alpha, double &beta, double &gamma) const; 
 	CRotation();

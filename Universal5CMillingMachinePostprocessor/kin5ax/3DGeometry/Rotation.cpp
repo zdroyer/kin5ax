@@ -110,23 +110,49 @@ CRotation::CRotation(const CR3Vector &r3vV0, const CR3Vector &r3vV1)
 	memcpy(M,r.M,16*sizeof(double));
 }
 
-CR3Vector CRotation::GetAxis() const 
+//The axis of the rotation as a unit vector, together with GetAngle a representation of it.
+//A rotation by zero has no axis of its own: OZ is returned, and the angle is zero anyway.
+CR3Vector CRotation::GetAxis() const
 {
-	//double c = (M[0][0]+M[1][1]+M[2][2]-1)/2.0;
-//	double s=2.0*sqrt(1-c*c);
+	//the antisymmetric part is 2*sin(angle)*axis, which vanishes at zero and at half a turn
 	CR3Vector res( (M[1][2]-M[2][1]), ((M[2][0]-M[0][2])),((M[0][1]-M[1][0])));
-/*	if(fabs(res.GetLength())<1E-12)
-		return CR3Vector(0,0,1);
-//*/
-	return res;
+	if(res.GetLength()>1E-9)
+		return res.GetUnitVector();
+	if(GetCosineOfAngle()>0.0)
+		return CR3Vector(0.0,0.0,1.0);		//no rotation: every axis does
+	//half a turn: the matrix is 2*n*n^T - I, so n[i]*n[i] = (M[i][i]+1)/2 and n[i]*n[j] = M[j][i]/2
+	int nLargest = 0;
+	for(int i=1;i<3;i++)
+		if(M[i][i]>M[nLargest][nLargest])
+			nLargest = i;
+	double dLargest = sqrt(std::max(0.0,(M[nLargest][nLargest]+1.0)/2.0));
+	if(dLargest<1E-12)
+		return CR3Vector(0.0,0.0,1.0);		//not a rotation matrix
+	double d[3] = {0.0,0.0,0.0};
+	d[nLargest] = dLargest;
+	for(int j=0;j<3;j++)
+		if(j!=nLargest)
+			d[j] = M[j][nLargest]/(2.0*dLargest);
+	return CR3Vector(d[0],d[1],d[2]).GetUnitVector();
 }
 
+//the cosine of the angle of the rotation, clamped: rounding can push the trace of a product
+//of rotations above 3, and acos of anything above 1 is not a number
+double CRotation::GetCosineOfAngle() const
+{
+	double dCos = (M[0][0]+M[1][1]+M[2][2]-1.0)/2.0;
+	if(dCos>1.0)
+		return 1.0;
+	if(dCos<-1.0)
+		return -1.0;
+	return dCos;
+}
+
+//the angle of the rotation in degrees, between 0 and 180
 double CRotation::GetAngle() const
-{	
+{
 	static const double d = 90.0/asin(1.0);
-	double ac = acos((M[0][0]+M[1][1]+M[2][2]-1)/2.0); 
-	ac *= d;
-	return ac;
+	return acos(GetCosineOfAngle())*d;
 }
 
 

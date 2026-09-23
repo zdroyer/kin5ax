@@ -8,6 +8,7 @@
 
 #include "Universal5CMillingMachinePostprocessorDoc.h"
 #include "ChainJson.h"
+#include "ChainFcm.h"
 #include "Universal5CMillingMachinePostprocessorView.h"
 
 #ifdef _DEBUG
@@ -25,6 +26,8 @@ BEGIN_MESSAGE_MAP(CUniversal5CMillingMachinePostprocessorApp, CWinApp)
 	ON_COMMAND(ID_FILE_OPEN_PUGIXML, OnFileOpenPugixml)
 	ON_COMMAND(ID_FILE_OPEN_JSON, OnFileOpenJson)
 	ON_COMMAND(ID_FILE_SAVE_AS_JSON, OnFileSaveAsJson)
+	ON_COMMAND(ID_FILE_IMPORT_FCM, OnFileImportFcm)
+	ON_COMMAND(ID_FILE_EXPORT_FCM, OnFileExportFcm)
 END_MESSAGE_MAP()
 
 
@@ -183,4 +186,51 @@ void CUniversal5CMillingMachinePostprocessorApp::OnFileSaveAsJson()
 	} catch (CGeneratorException &e){
 		AfxMessageBox(e.Message().c_str());
 	}
+}
+
+//An .fcm file and a kinematic chain cannot hold the same things; the conversion says what it
+//had to leave behind instead of dropping it silently.
+static void ShowFcmReport(const CFcmReport &oReport, const char *szWhat)
+{
+	if(oReport.IsExact())
+		return;
+	AfxMessageBox((std::string(szWhat)+":\n\n- "+oReport.ToString("\n\n- ")).c_str());
+}
+
+//Chain > Import (FreeCAD .fcm): the machine of a FreeCAD CAM machine file
+void CUniversal5CMillingMachinePostprocessorApp::OnFileImportFcm()
+{
+	CFileDialog dlg(TRUE,"fcm",NULL,OFN_HIDEREADONLY|OFN_FILEMUSTEXIST,
+		"FreeCAD machine (*.fcm)|*.fcm|All files (*.*)|*.*||");
+	if(dlg.DoModal()!=IDOK)
+		return;
+	CUniversal5CMillingMachinePostprocessorDoc::s_fcmReport.Clear();
+	OpenWith(CUniversal5CMillingMachinePostprocessorDoc::CHAIN_FILE_READER_FCM,dlg.GetPathName());
+	ShowFcmReport(CUniversal5CMillingMachinePostprocessorDoc::s_fcmReport
+		,"The machine was read from the file, with these remarks");
+}
+
+//Chain > Export (FreeCAD .fcm): the chain of the active document as a FreeCAD machine
+void CUniversal5CMillingMachinePostprocessorApp::OnFileExportFcm()
+{
+	CFrameWnd *pFrame = (CFrameWnd*)AfxGetMainWnd();
+	CUniversal5CMillingMachinePostprocessorDoc *pDoc = pFrame ?
+		(CUniversal5CMillingMachinePostprocessorDoc*)pFrame->GetActiveDocument() : NULL;
+	if(!pDoc){
+		AfxMessageBox("No kinematic chain to export");
+		return;
+	}
+	CFileDialog dlg(FALSE,"fcm",NULL,OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT,
+		"FreeCAD machine (*.fcm)|*.fcm|All files (*.*)|*.*||");
+	if(dlg.DoModal()!=IDOK)
+		return;
+	CFcmOptions oOptions;
+	CFcmReport oReport;
+	try{
+		CChainFcmWriter::WriteFile(pDoc->m_oChain,std::string(dlg.GetPathName()),oOptions,oReport);
+	} catch (CGeneratorException &e){
+		AfxMessageBox(e.Message().c_str());
+		return;
+	}
+	ShowFcmReport(oReport,"The machine was written to the file, with these remarks");
 }

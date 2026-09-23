@@ -800,6 +800,9 @@ BEGIN
         MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
         MENUITEM "Save As (JSO&N)...",          ID_FILE_SAVE_AS_JSON
         MENUITEM SEPARATOR
+        MENUITEM "&Import (FreeCAD .fcm)...",   ID_FILE_IMPORT_FCM
+        MENUITEM "&Export (FreeCAD .fcm)...",   ID_FILE_EXPORT_FCM
+        MENUITEM SEPARATOR
         MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
         MENUITEM "&Properties\tCtrl+P",         ID_CHAIN_PROPERTIES
@@ -969,6 +972,8 @@ BEGIN
     ID_FILE_OPEN_PUGIXML    "Open a kinematic chain with the pugixml reader\nOpen (pugixml)"
     ID_FILE_OPEN_JSON       "Open a kinematic chain from a JSON file\nOpen (JSON)"
     ID_FILE_SAVE_AS_JSON    "Save the kinematic chain as a JSON file\nSave As (JSON)"
+    ID_FILE_IMPORT_FCM      "Read a machine from a FreeCAD CAM machine file\nImport (.fcm)"
+    ID_FILE_EXPORT_FCM      "Write the machine as a FreeCAD CAM machine file\nExport (.fcm)"
     ID_FILE_CLOSE           "Close the active document\nClose"
     ID_FILE_SAVE            "Save the active document\nSave"
     ID_FILE_SAVE_AS         "Save the active document with a new name\nSave As"
