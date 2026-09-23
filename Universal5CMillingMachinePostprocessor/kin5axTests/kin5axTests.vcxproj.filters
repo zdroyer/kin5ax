@@ -63,5 +63,23 @@
     <None Include="TestChains\WM508MT2_AB_MillTurn.kc">
       <Filter>TestChains</Filter>
     </None>
+    <None Include="TestChains\SHW_UniForce7000_AC_ForkHead.kc">
+      <Filter>TestChains</Filter>
+    </None>
+    <None Include="TestChains\SHW_UniForce7000_AC_ForkHead.kc.json">
+      <Filter>TestChains</Filter>
+    </None>
+    <None Include="TestChains\Reiden_RX10_A_SwivelHead_C_RotaryTable.kc">
+      <Filter>TestChains</Filter>
+    </None>
+    <None Include="TestChains\Reiden_RX10_A_SwivelHead_C_RotaryTable.kc.json">
+      <Filter>TestChains</Filter>
+    </None>
+    <None Include="TestChains\Mazak_VTC800-30SR_B_SwivelHead_C_RotaryTable.kc">
+      <Filter>TestChains</Filter>
+    </None>
+    <None Include="TestChains\Mazak_VTC800-30SR_B_SwivelHead_C_RotaryTable.kc.json">
+      <Filter>TestChains</Filter>
+    </None>
   </ItemGroup>
 </Project>

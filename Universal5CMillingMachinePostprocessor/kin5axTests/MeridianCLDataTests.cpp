@@ -117,7 +117,10 @@ TEST_P(MeridianCLDataOnChainTest, IsPostprocessedOverThePole)
 		//chosen depends on the last bits of the arithmetic (x64: 90 deg, Win32: 180 deg for WM308S2).
 		//More than one such turn in a single step would be a real jump.
 		EXPECT_LE(radians_to_degrees(dMaxAngleStep),180.0+1E-6);
-		EXPECT_LT(dMaxShiftStep,0.01);
+		//a linear axis follows the tilt of the tool by the lever arm times the angle step: 12 mm per
+		//degree for the 0.7 m fork head of the SHW model, the longest in the set. A rotary jumping
+		//by half a turn instead would move it by twice the lever arm, so 2 cm still tells them apart.
+		EXPECT_LT(dMaxShiftStep,0.02);
 		RecordProperty("problems",(int)oResult.m_nTotalProblemsCount);
 		RecordProperty("solved",(int)nSolved);
 		RecordProperty("max_angle_step_mdeg",(int)(1000.0*radians_to_degrees(dMaxAngleStep)));

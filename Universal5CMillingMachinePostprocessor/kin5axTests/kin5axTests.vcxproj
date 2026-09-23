@@ -179,6 +179,12 @@
     <None Include="TestChains\BC_TiltRotaryTable_XYonTable.kc" />
     <None Include="TestChains\WM308S2_BC_SwivelHead_RotaryTable.kc" />
     <None Include="TestChains\WM508MT2_AB_MillTurn.kc" />
+    <None Include="TestChains\SHW_UniForce7000_AC_ForkHead.kc" />
+    <None Include="TestChains\SHW_UniForce7000_AC_ForkHead.kc.json" />
+    <None Include="TestChains\Reiden_RX10_A_SwivelHead_C_RotaryTable.kc" />
+    <None Include="TestChains\Reiden_RX10_A_SwivelHead_C_RotaryTable.kc.json" />
+    <None Include="TestChains\Mazak_VTC800-30SR_B_SwivelHead_C_RotaryTable.kc" />
+    <None Include="TestChains\Mazak_VTC800-30SR_B_SwivelHead_C_RotaryTable.kc.json" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\kin5ax\kin5ax.vcxproj">
@@ -192,7 +198,7 @@
   <!-- the test data is read from TestChains next to the test exe -->
   <Target Name="CopyTestChains" AfterTargets="Build">
     <ItemGroup>
-      <_TestChain Include="@(None)" Condition="'%(Extension)'=='.kc'" />
+      <_TestChain Include="@(None)" Condition="'%(Extension)'=='.kc' Or '%(Extension)'=='.json'" />
     </ItemGroup>
     <Copy SourceFiles="@(_TestChain)" DestinationFolder="$(OutDir)TestChains" SkipUnchangedFiles="true" />
   </Target>

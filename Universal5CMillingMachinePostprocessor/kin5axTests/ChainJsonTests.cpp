@@ -284,4 +284,22 @@ TEST_P(ChainJsonFile, WritingIsStable)
 	EXPECT_EQ(sFirst,sSecond)<<"a document read and written again must not change";
 }
 
+//a machine that comes in both forms (X.kc and X.kc.json next to it) is the same machine in both
+TEST_P(ChainJsonFile, TheKcJsonBesideTheKcIsTheSameMachine)
+{
+	std::string sJsonPath = GetParam()+".json";
+	FILE *pFile = fopen(sJsonPath.c_str(),"rb");
+	if(!pFile)
+		return;		//this machine has no JSON twin
+	fclose(pFile);
+	std::string sFromXml, sFromJson;
+	try{
+		sFromXml = CChainXmlReader::ReadFile(GetParam()).toXML();
+		sFromJson = CChainJsonReader::ReadFile(sJsonPath).toXML();
+	} catch (CGeneratorException &e){
+		FAIL()<<"exception: "<<e.Message()<<" ("<<e.GetThrowingPlace()<<")";
+	}
+	EXPECT_EQ(sFromXml,sFromJson)<<sJsonPath;
+}
+
 INSTANTIATE_TEST_CASE_P(Files, ChainJsonFile, ::testing::ValuesIn(GetChainFiles()), ChainJsonFileName());

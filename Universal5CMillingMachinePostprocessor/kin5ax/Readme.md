@@ -37,7 +37,9 @@ transformations from the workpiece frame to the tool frame (the paper's re-index
 The file is XML validated by the DTD embedded in every file (`kc.dtd`); angles in the file are
 degrees, inside the library radians; lengths are whatever unit the file uses.
 
-Example machines in `kin5axTests/TestChains/` (all are round-trip tested by the suite):
+Example machines in `kin5axTests/TestChains/` (all are round-trip tested by the suite; the last
+three also come as `.kc.json`, built from catalogue travels and swivel ranges, with the head and pivot
+offsets estimated and marked so in their `author` field):
 
 | file | machine |
 |---|---|
@@ -47,6 +49,9 @@ Example machines in `kin5axTests/TestChains/` (all are round-trip tested by the 
 | `BC_TiltRotaryTable.kc`, `..._XYonTable.kc` | B/C table; the second one with X and Y under the table |
 | `WM308S2_BC_SwivelHead_RotaryTable.kc` | swivel head (B) plus rotary table (C) |
 | `WM508MT2_AB_MillTurn.kc` | mill-turn: A and B in the head, the workpiece on prismatic axes |
+| `SHW_UniForce7000_AC_ForkHead.kc` | SHW UniForce 7000: travelling column with a continuous fork milling head (C about the ram, A tilt), fixed clamping plate, no table axis at all |
+| `Reiden_RX10_A_SwivelHead_C_RotaryTable.kc` | Reiden RX10: Z and the A swivel head (vertical to horizontal) above an X/Y cross table carrying the C rotary table |
+| `Mazak_VTC800-30SR_B_SwivelHead_C_RotaryTable.kc` | Mazak VTC-800/30SR: travelling column with the B swivel head, a C rotary table on the fixed long table |
 
 ## The inverse problem in short
 
