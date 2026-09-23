@@ -25,6 +25,8 @@ extern CGLTools oGLTools;
 
 IMPLEMENT_DYNCREATE(CUniversal5CMillingMachinePostprocessorDoc, CDocument)
 
+bool CUniversal5CMillingMachinePostprocessorDoc::s_bOpenWithPugixml = false;
+
 BEGIN_MESSAGE_MAP(CUniversal5CMillingMachinePostprocessorDoc, CDocument)
 END_MESSAGE_MAP()
 
@@ -106,7 +108,10 @@ BOOL CUniversal5CMillingMachinePostprocessorDoc::OnOpenDocument(LPCTSTR lpszPath
 //	if (!CDocument::OnOpenDocument(lpszPathName))
 //		return FALSE;
 	try{
-		m_oChain = CChainXmlReader::ReadFile(std::string(lpszPathName));
+		if(s_bOpenWithPugixml)
+			m_oChain = CChainXmlReaderPugixml::ReadFile(std::string(lpszPathName));
+		else
+			m_oChain = CChainXmlReader::ReadFile(std::string(lpszPathName));
 	} catch (CGeneratorException &e){
 		AfxMessageBox(e.Message().c_str());
 		return FALSE;

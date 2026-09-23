@@ -132,6 +132,32 @@ std::string CChain::toXML() const
 	result +="</"+std::string(CHAIN_XML_ROOT_NODE_TYPE_NAME)+">\n";
 	return result;
 }
+void CChain::CheckStructure() const
+{
+	if(m_vToolPart.empty())
+		MY_THROW(CGeneratorException,"the tool part has no segment");
+	if(m_vMaterialHolderPart.empty())
+		MY_THROW(CGeneratorException,"the material holder part has no segment");
+	if(m_vToolPart.back().GetType()!=CHAIN_SEGMENT_TOOL)
+		MY_THROW(CGeneratorException,"the last segment of the tool part must be the TOOL segment, '"
+			+m_vToolPart.back().GetName()+"' is a "+m_vToolPart.back().GetTypeName());
+	if(m_vMaterialHolderPart.back().GetType()!=CHAIN_SEGMENT_MATERIAL_HOLDER)
+		MY_THROW(CGeneratorException,"the last segment of the material holder part must be the MATERIAL_HOLDER segment, '"
+			+m_vMaterialHolderPart.back().GetName()+"' is a "+m_vMaterialHolderPart.back().GetTypeName());
+	const std::vector<CChainSegment> *pvParts[2] = {&m_vToolPart,&m_vMaterialHolderPart};
+	for(size_t p=0;p<2;p++){
+		const std::vector<CChainSegment> &v = *pvParts[p];
+		for(size_t i=0;i<v.size();i++){
+			bool bLast = (i+1==v.size());
+			if(!bLast && (v[i].GetType()==CHAIN_SEGMENT_TOOL || v[i].GetType()==CHAIN_SEGMENT_MATERIAL_HOLDER))
+				MY_THROW(CGeneratorException,"segment '"+v[i].GetName()+"': a "+v[i].GetTypeName()
+					+" segment may appear only once, at the end of its part");
+			if(v[i].IsParameterConstrained() && v[i].m_dParameterValueMinimum>v[i].m_dParameterValueMaximum)
+				MY_THROW(CGeneratorException,"segment '"+v[i].GetName()+"': the minimum of the parameter is above the maximum");
+		}
+	}
+}
+
 void CChain::AddSegmentAfterActiveSegment(const CChainSegment & oSegment)
 {
 	/*

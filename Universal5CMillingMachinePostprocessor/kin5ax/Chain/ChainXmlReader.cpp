@@ -163,10 +163,13 @@ static CChain ReadChain(MSXML2::IXMLDOMElementPtr pDocElement, const std::string
 	oChain.m_vToolPart = ReadPart(pDocElement,"tool_part");
 	oChain.m_vMaterialHolderPart = ReadPart(pDocElement,"material_holder_part");
 	oChain.SetFileName(sFileName);
-	//zero parameters for all regular links (SetParameters accepts only a chain ended with the tool and the material holder)
-	size_t nLinks = oChain.GetNumberOfRegularLinks();
-	if(nLinks+2 == oChain.m_vToolPart.size()+oChain.m_vMaterialHolderPart.size())
-		oChain.SetParameters(CChainConfiguration((int)nLinks));
+	try{
+		oChain.CheckStructure();
+	} catch (CGeneratorException &e){
+		MY_THROW(CGeneratorException,sFileName+": "+e.Message());
+	}
+	//zero parameters for all regular links
+	oChain.SetParameters(CChainConfiguration((int)oChain.GetNumberOfRegularLinks()));
 	return oChain;
 }
 

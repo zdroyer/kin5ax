@@ -70,9 +70,11 @@ test of all boxes and of the tool.
 
 ## Data
 
-- **.kc** (in): the machine, see above. Read by `CChainXmlReader` (MSXML on Windows; the
-  interface is std-only, the reader is the file to swap for a portable parser), written by
-  `CChain::toXML`.
+- **.kc** (in): the machine, see above. Two readers with the same interface: `CChainXmlReader`
+  (MSXML on Windows, the inline DTD validated by the parser) and `CChainXmlReaderPugixml`
+  (pugixml, vendored in `3rdParty/pugixml/`, portable; no DTD, the reader checks the elements,
+  attributes and numbers itself and names the line of every problem). Both end with
+  `CChain::CheckStructure`. Written by `CChain::toXML`.
 - **CL data** (in): APT-like text, one location per line, `GOTO/x,y,z,i,j,k`; `MSYS/` lines
   are recognised, anything else is reported as an error line and skipped. Parsed by
   `CCutterLocationData` (locale independent, CRLF tolerant).
@@ -142,7 +144,7 @@ Tracked one by one in `../KnownBugs.md`; the open items that matter most:
 - A tool on a `TOOL` segment without boxes is never collision-tested (#38).
 - Working tolerance: one global epsilon of 1e-15, effectively exact comparison at
   millimetre scale (#23, #56).
-- Portability: the XML reader is MSXML (Windows only); the planned Linux port also needs the
-  `<io.h>` include removed and a few case-sensitive include names fixed (#60).
+- Portability: the planned Linux port needs the `<io.h>` include removed and a few
+  case-sensitive include names fixed (#60); the MSXML reader is Windows only, the pugixml one is not.
 - Not thread-safe: static working variables in the solver (#46).
 - No feed rate, tool change or machine-specific words in the G-code; no DLL build yet.

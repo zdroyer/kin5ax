@@ -153,6 +153,7 @@
     <ClCompile Include="Chain\ChainConfiguration.cpp" />
     <ClCompile Include="Chain\ChainSegment.cpp" />
     <ClCompile Include="Chain\ChainXmlReader.cpp" />
+    <ClCompile Include="Chain\ChainXmlReaderPugixml.cpp" />
     <ClCompile Include="MillingTool\MillingTool.cpp" />
     <ClCompile Include="MillingTool\MillingToolBall.cpp" />
     <ClCompile Include="MillingTool\MillingToolCylinder.cpp" />
@@ -164,6 +165,7 @@
     <ClCompile Include="PostprocessorSettings.cpp" />
     <ClCompile Include="SimulationData.cpp" />
     <ClCompile Include="string_tools.cpp" />
+    <ClCompile Include="3rdParty\pugixml\pugixml.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="3DGeometry\double_tools.h" />
@@ -199,9 +201,12 @@
     <ClInclude Include="SimulationData.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="string_tools.h" />
+    <ClInclude Include="3rdParty\pugixml\pugixml.hpp" />
+    <ClInclude Include="3rdParty\pugixml\pugiconfig.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Readme.md" />
+    <None Include="3rdParty\pugixml\LICENSE.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
