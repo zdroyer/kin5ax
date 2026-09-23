@@ -48,8 +48,9 @@ public:
 	CChain m_oChain;
 	CCutterLocationData m_oCutterLocationData;
 	C5CPostprocessor *m_pPostprocessor;
-	//set by the application before OpenDocumentFile: the next OnOpenDocument uses CChainXmlReaderPugixml
-	static bool s_bOpenWithPugixml;
+	//which reader the next OnOpenDocument uses; set by the application before OpenDocumentFile
+	enum CHAIN_FILE_READER { CHAIN_FILE_READER_MSXML, CHAIN_FILE_READER_PUGIXML, CHAIN_FILE_READER_JSON };
+	static CHAIN_FILE_READER s_nextReader;
 	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
 	virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);
 	C5CPostprocessor * GetPostprocessor(void);

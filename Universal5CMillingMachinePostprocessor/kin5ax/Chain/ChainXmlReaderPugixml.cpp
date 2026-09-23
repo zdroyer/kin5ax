@@ -201,11 +201,16 @@ CChain CChainXmlReaderPugixml::ReadFile(const std::string &sFilePath)
 		MY_THROW(CGeneratorException,"XML error in "+sFilePath+": no root node");
 	if(strcmp(root.name(),CHAIN_XML_ROOT_NODE_TYPE_NAME)!=0)
 		ctx.Fail(root,"invalid root node "+Tag(root)+", expected <"+CHAIN_XML_ROOT_NODE_TYPE_NAME+">");
-	CheckAttributes(ctx,root,{},{"name"});
+	CheckAttributes(ctx,root,{},{"name","machine","author","modified"});
 	CheckChildren(ctx,root,{"tool_part","material_holder_part"});
 
 	//the default segments of a new chain are replaced below
 	CChain oChain;
+	//all absent: empty
+	oChain.SetName(root.attribute("name").value());
+	oChain.SetMachine(root.attribute("machine").value());
+	oChain.SetAuthor(root.attribute("author").value());
+	oChain.SetModified(root.attribute("modified").value());
 	oChain.m_vToolPart = ReadPart(ctx,root,"tool_part");
 	oChain.m_vMaterialHolderPart = ReadPart(ctx,root,"material_holder_part");
 	oChain.SetFileName(sFilePath);

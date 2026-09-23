@@ -154,6 +154,7 @@
     <ClCompile Include="Chain\ChainSegment.cpp" />
     <ClCompile Include="Chain\ChainXmlReader.cpp" />
     <ClCompile Include="Chain\ChainXmlReaderPugixml.cpp" />
+    <ClCompile Include="Chain\ChainJson.cpp" />
     <ClCompile Include="MillingTool\MillingTool.cpp" />
     <ClCompile Include="MillingTool\MillingToolBall.cpp" />
     <ClCompile Include="MillingTool\MillingToolCylinder.cpp" />
@@ -185,6 +186,7 @@
     <ClInclude Include="Exceptions\MemoryMyException.h" />
     <ClInclude Include="Chain\Chain.h" />
     <ClInclude Include="Chain\ChainXmlReader.h" />
+    <ClInclude Include="Chain\ChainJson.h" />
     <ClInclude Include="Chain\ChainConfiguration.h" />
     <ClInclude Include="Chain\ChainSegment.h" />
     <ClInclude Include="Chain\ChainParameter.h" />
@@ -203,10 +205,13 @@
     <ClInclude Include="string_tools.h" />
     <ClInclude Include="3rdParty\pugixml\pugixml.hpp" />
     <ClInclude Include="3rdParty\pugixml\pugiconfig.hpp" />
+    <ClInclude Include="3rdParty\nlohmann\json.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Readme.md" />
+    <None Include="kc.schema.json" />
     <None Include="3rdParty\pugixml\LICENSE.md" />
+    <None Include="3rdParty\nlohmann\LICENSE.MIT" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

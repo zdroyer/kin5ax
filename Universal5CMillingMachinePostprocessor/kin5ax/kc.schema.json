@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kin5ax/kc.schema.json",
+  "title": "kin5ax kinematic chain",
+  "description": "A 5C milling machine: two branches from a common base, the tool branch ending in the tool, the workpiece branch ending in the workpiece holder. The JSON form of the .kc file; written and read by kin5ax (CChainJsonWriter, CChainJsonReader).",
+  "type": "object",
+  "required": ["format", "version", "tool_branch", "workpiece_branch"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema":  { "type": "string" },
+    "format":   { "const": "kin5ax-chain" },
+    "version":  { "type": "integer", "const": 1 },
+    "name":     { "type": "string", "description": "Name of the model, e.g. \"BC tilt-rotary table\"." },
+    "machine":  { "type": "string", "description": "Brand and model of the real machine, e.g. \"SHW UniSpeed 3500\"." },
+    "author":   { "type": "string" },
+    "modified": { "type": "string", "description": "Last modification, ISO 8601, e.g. \"2026-09-22\" or \"2026-09-22T14:30:00Z\"." },
+    "tool_branch": {
+      "type": "object",
+      "required": ["links", "tool"],
+      "additionalProperties": false,
+      "properties": {
+        "links": { "$ref": "#/$defs/links" },
+        "tool":  { "$ref": "#/$defs/terminal",
+                   "description": "End of the tool branch: the frame in which the tool axis is OZ." }
+      }
+    },
+    "workpiece_branch": {
+      "type": "object",
+      "required": ["links", "workpiece_holder"],
+      "additionalProperties": false,
+      "properties": {
+        "links":            { "$ref": "#/$defs/links" },
+        "workpiece_holder": { "$ref": "#/$defs/terminal",
+                              "description": "End of the workpiece branch: the frame the workpiece is given in." }
+      }
+    }
+  },
+
+  "$defs": {
+    "links": {
+      "type": "array",
+      "minItems": 0,
+      "description": "Joints from the base outwards; may be empty.",
+      "items": { "$ref": "#/$defs/link" }
+    },
+    "link": {
+      "type": "object",
+      "required": ["type", "name", "translation", "rotation"],
+      "additionalProperties": false,
+      "properties": {
+        "type":        { "enum": ["rotary", "linear"],
+                         "description": "rotary turns about the local OZ, linear slides along it." },
+        "name":        { "type": "string", "minLength": 1 },
+        "translation": { "$ref": "#/$defs/vector3" },
+        "rotation":    { "$ref": "#/$defs/rotation" },
+        "limits":      { "$ref": "#/$defs/limits" },
+        "boxes":       { "$ref": "#/$defs/boxes" }
+      }
+    },
+    "terminal": {
+      "type": "object",
+      "required": ["name", "translation", "rotation"],
+      "additionalProperties": false,
+      "description": "End of a branch: a constant transformation with collision solids, not a joint.",
+      "properties": {
+        "name":        { "type": "string", "minLength": 1 },
+        "translation": { "$ref": "#/$defs/vector3" },
+        "rotation":    { "$ref": "#/$defs/rotation" },
+        "boxes":       { "$ref": "#/$defs/boxes" }
+      }
+    },
+    "vector3": {
+      "type": "array", "minItems": 3, "maxItems": 3,
+      "items": { "type": "number" }
+    },
+    "rotation": {
+      "type": "object",
+      "required": ["axis", "angle_deg"],
+      "additionalProperties": false,
+      "description": "Constant rotation of the segment, applied before its translation.",
+      "properties": {
+        "axis":      { "$ref": "#/$defs/vector3",
+                       "description": "Need not be a unit vector; may be zero only when angle_deg is zero." },
+        "angle_deg": { "type": "number" }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "required": ["min", "max"],
+      "additionalProperties": false,
+      "description": "Joint range; absent means unconstrained. Degrees for a rotary link, length units for a linear one. min must not be above max.",
+      "properties": {
+        "min": { "type": "number" },
+        "max": { "type": "number" }
+      }
+    },
+    "boxes": {
+      "type": "array",
+      "description": "Collision solids, in the frame after the constant transformation of the segment.",
+      "items": {
+        "type": "object",
+        "required": ["min", "max"],
+        "additionalProperties": false,
+        "properties": {
+          "min": { "$ref": "#/$defs/vector3" },
+          "max": { "$ref": "#/$defs/vector3" }
+        }
+      }
+    }
+  }
+}

@@ -311,3 +311,106 @@ TEST_P(PugixmlChainFile, SavedChainReadsBackIdentically)
 }
 
 INSTANTIATE_TEST_CASE_P(Files, PugixmlChainFile, ::testing::ValuesIn(GetChainFiles()), PugixmlChainFileName());
+
+//---- the name of the machine (the 'name' attribute of the root), kept by CChain since this commit
+TEST(ChainName, IsReadByBothReaders)
+{
+	CChain oPugi;
+	ASSERT_EQ(std::string(),PugiError(Template(),&oPugi));
+	EXPECT_EQ("template",oPugi.GetName());
+
+	std::string sFilePath = WriteTemp("kin5axTests_name.kc",Template());
+	CChain oMsxml;
+	try{
+		oMsxml = CChainXmlReader::ReadFile(sFilePath);
+	} catch (CGeneratorException &e){
+		ADD_FAILURE()<<e.Message();
+	}
+	remove(sFilePath.c_str());
+	EXPECT_EQ("template",oMsxml.GetName());
+}
+
+TEST(ChainName, SurvivesTheXmlRoundTripAndIsEscaped)
+{
+	CChain oChain;
+	ASSERT_EQ(std::string(),PugiError(Replaced(Template(),"name=\"template\""
+		,"name=\"A &quot;quoted&quot; &lt;name&gt; &amp; more\""),&oChain));
+	EXPECT_EQ("A \"quoted\" <name> & more",oChain.GetName());
+
+	std::string sFilePath = WriteTemp("kin5axTests_name_roundtrip.kc",oChain.toXML());
+	std::string sReloaded;
+	try{
+		sReloaded = CChainXmlReaderPugixml::ReadFile(sFilePath).GetName();
+	} catch (CGeneratorException &e){
+		ADD_FAILURE()<<e.Message();
+	}
+	remove(sFilePath.c_str());
+	EXPECT_EQ(oChain.GetName(),sReloaded);
+}
+
+TEST(ChainName, AbsentNameIsEmptyAndNothingIsWritten)
+{
+	CChain oChain;
+	ASSERT_EQ(std::string(),PugiError(Replaced(Template()," name=\"template\"",""),&oChain));
+	EXPECT_EQ(std::string(),oChain.GetName());
+	EXPECT_EQ(std::string::npos,oChain.toXML().find("<kinematic_chain name="))<<"no name attribute for an unnamed chain";
+}
+
+//---- machine, author and last modification: free text beside the name
+static std::string WithMetadata()
+{
+	return Replaced(Template(),"name=\"template\""
+		,"name=\"template\" machine=\"SHW UniSpeed 3500\" author=\"P. Zdroik\" modified=\"2026-09-22\"");
+}
+
+TEST(ChainMetadata, IsReadByBothReaders)
+{
+	CChain oPugi;
+	ASSERT_EQ(std::string(),PugiError(WithMetadata(),&oPugi));
+	EXPECT_EQ("SHW UniSpeed 3500",oPugi.GetMachine());
+	EXPECT_EQ("P. Zdroik",oPugi.GetAuthor());
+	EXPECT_EQ("2026-09-22",oPugi.GetModified());
+
+	std::string sFilePath = WriteTemp("kin5axTests_metadata.kc",WithMetadata());
+	CChain oMsxml;
+	try{
+		oMsxml = CChainXmlReader::ReadFile(sFilePath);
+	} catch (CGeneratorException &e){
+		ADD_FAILURE()<<e.Message();
+	}
+	remove(sFilePath.c_str());
+	EXPECT_EQ("SHW UniSpeed 3500",oMsxml.GetMachine());
+	EXPECT_EQ("P. Zdroik",oMsxml.GetAuthor());
+	EXPECT_EQ("2026-09-22",oMsxml.GetModified());
+}
+
+TEST(ChainMetadata, SurvivesTheXmlRoundTrip)
+{
+	CChain oChain;
+	ASSERT_EQ(std::string(),PugiError(WithMetadata(),&oChain));
+	std::string sFilePath = WriteTemp("kin5axTests_metadata_roundtrip.kc",oChain.toXML());
+	CChain oReloaded;
+	try{
+		oReloaded = CChainXmlReaderPugixml::ReadFile(sFilePath);
+	} catch (CGeneratorException &e){
+		ADD_FAILURE()<<e.Message();
+	}
+	remove(sFilePath.c_str());
+	EXPECT_EQ(oChain.GetName(),oReloaded.GetName());
+	EXPECT_EQ(oChain.GetMachine(),oReloaded.GetMachine());
+	EXPECT_EQ(oChain.GetAuthor(),oReloaded.GetAuthor());
+	EXPECT_EQ(oChain.GetModified(),oReloaded.GetModified());
+}
+
+TEST(ChainMetadata, AbsentFieldsAreEmptyAndNothingIsWritten)
+{
+	CChain oChain;
+	ASSERT_EQ(std::string(),PugiError(Template(),&oChain));
+	EXPECT_EQ(std::string(),oChain.GetMachine());
+	EXPECT_EQ(std::string(),oChain.GetAuthor());
+	EXPECT_EQ(std::string(),oChain.GetModified());
+	std::string sXml = oChain.toXML();
+	EXPECT_EQ(std::string::npos,sXml.find(" machine=\""));
+	EXPECT_EQ(std::string::npos,sXml.find(" author=\""));
+	EXPECT_EQ(std::string::npos,sXml.find(" modified=\""));
+}
