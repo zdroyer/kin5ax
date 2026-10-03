@@ -102,6 +102,9 @@
     <ClCompile Include="Simulation\Material.cpp">
       <Filter>Simulation</Filter>
     </ClCompile>
+    <ClCompile Include="Simulation\MaterialSimulation.cpp">
+      <Filter>Simulation</Filter>
+    </ClCompile>
     <ClCompile Include="Postprocessor\OrientationPostprocessor.cpp">
       <Filter>Postprocessor</Filter>
     </ClCompile>
@@ -200,6 +203,9 @@
       <Filter>Postprocessor</Filter>
     </ClInclude>
     <ClInclude Include="Simulation\Material.h">
+      <Filter>Simulation</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\MaterialSimulation.h">
       <Filter>Simulation</Filter>
     </ClInclude>
     <ClInclude Include="Postprocessor\OrientationPostprocessor.h">

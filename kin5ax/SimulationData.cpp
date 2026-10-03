@@ -77,6 +77,11 @@ size_t CSimulationData::GetSize() const
 {
 	return m_vSolutions.size();
 }
+
+bool CSimulationData::HasSolution(size_t n) const
+{
+	return n<m_vSolutions.size() && !m_vSolutions[n].empty();
+}
 void CSimulationData::ReserveMemory(size_t n)
 {
 	m_vSolutions.reserve(n);

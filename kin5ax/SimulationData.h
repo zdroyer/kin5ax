@@ -23,6 +23,8 @@ public:
 						bool bRadians) const;
 	const CChainConfiguration &operator[](size_t n) const;
 	size_t GetSize() const;
+	//true when the location has at least one solution (operator[] throws for the others)
+	bool HasSolution(size_t n) const;
 	void ReserveMemory(size_t n);
 	void AddConfigurationSet(const tChainConfigurationVector &vConfigurations);
 	//oSettings: the weights of the distance between two configurations; pProgress may be NULL.

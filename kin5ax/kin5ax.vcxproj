@@ -162,6 +162,7 @@
     <ClCompile Include="Postprocessor\5CPostprocessor.cpp" />
     <ClCompile Include="Postprocessor\SolveReport.cpp" />
     <ClCompile Include="Simulation\Material.cpp" />
+    <ClCompile Include="Simulation\MaterialSimulation.cpp" />
     <ClCompile Include="Postprocessor\OrientationPostprocessor.cpp" />
     <ClCompile Include="Postprocessor\PositionPostprocessor.cpp" />
     <ClCompile Include="CLDataPostprocessor.cpp" />
@@ -201,6 +202,7 @@
     <ClInclude Include="Postprocessor\5CPostprocessor.h" />
     <ClInclude Include="Postprocessor\SolveReport.h" />
     <ClInclude Include="Simulation\Material.h" />
+    <ClInclude Include="Simulation\MaterialSimulation.h" />
     <ClInclude Include="Postprocessor\OrientationPostprocessor.h" />
     <ClInclude Include="Postprocessor\PositionPostprocessor.h" />
     <ClInclude Include="CLDataPostprocessor.h" />

@@ -8,6 +8,7 @@
 #include "settingsdialog.h"
 #include ".\mainfrm.h"
 #include "string_tools.h"
+#include "MaterialSimulation.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -375,8 +376,7 @@ UINT simulationFunction(LPVOID pParam )
 		AfxEndThread(1,TRUE);
 	}
 
-	CChainConfiguration oChainConfig;
-	pDoc->m_oSimulationData.ResetConfigurationsIterator();
+	CMaterialSimulation oSimulation(pDoc->m_oChain,*pDoc->m_pMillingTool,pDoc->m_oSimulationData,pDoc->m_oMaterial);
 	for(size_t i=0;;i++){
 		if(oConfiguration.m_bStopSimulation){
 			pView->Invalidate(FALSE);
@@ -389,14 +389,8 @@ UINT simulationFunction(LPVOID pParam )
 			i=0;
 			pView->SendNotifyMessage(WM_PAINT,0,0);
 		}
-		if(!pDoc->m_oSimulationData.NextConfiguration(oChainConfig))
+		if(!oSimulation.Step())
 			break;
-		else{
-			pDoc->m_oChain.SetParameters(oChainConfig);
-			CR3CaughtVector cv = pDoc->m_oChain.GetActualToolPositionAndOrientation();
-			pDoc->m_pMillingTool->SetPositionAndOrientation(cv.m_p,cv.m_v);
-			pDoc->m_oMaterial.MachineCut(*pDoc->m_pMillingTool);
-		}
 		Sleep(oConfiguration.m_nSimulationInterval);
 	}
 	pView->GetParent()->SendNotifyMessage(WM_APP,0,0);
