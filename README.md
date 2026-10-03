@@ -48,7 +48,7 @@ fast, exact, machine-aware judge of the toolpath. That judge is this library. Se
 | directory | what | platform |
 |---|---|---|
 | [`kin5ax/`](kin5ax/) | the library: C++17, standard library only (pugixml and nlohmann/json vendored), no Windows dependency | written for Linux, Windows, macOS; compiled with MSVC so far |
-| [`kin5axTests/`](kin5axTests/) | GoogleTest suite, 609 tests, with 11 machine models under `TestChains/` | same |
+| [`kin5axTests/`](kin5axTests/) | GoogleTest suite, 619 tests, with 11 machine models under `TestChains/` | same |
 | [`Universal5CMillingMachinePostprocessor/`](Universal5CMillingMachinePostprocessor/) | MFC application: kinematic chain editor, 3D viewer, single-location solver with a step-by-step log, batch postprocessing of CL files, voxel material simulation | Windows |
 
 Machine models shipped and round-trip tested (catalogue travels and swivel ranges; head and
@@ -114,14 +114,15 @@ The library reference, the machine model and the file formats are in [`kin5ax/RE
 
 The library was written in 2004 and revived in September 2026 on Visual Studio 2022 / x64,
 using agentic coding tools throughout: a scan of the code produced 65 numbered findings
-([`KnownBugs.md`](KnownBugs.md)); 42 are fixed, each with a test and a commit; 23 are open
+([`KnownBugs.md`](KnownBugs.md)); 43 are fixed, each with a test and a commit; 22 are open
 and triaged by effect. Everything in that file was found by reading the code, not by a machine
 crash, so read it before trusting an edge case.
 
 What works and is tested: the default solving path (`alpha1 then alpha2`, axis method) on all
 11 machines with random round trips and hemisphere/meridian paths; limits, equivalents,
 collision boxes, singular-section interpolation, trajectory selection, G-code export, the three
-file formats and every path between them, independence from the numeric locale of the process.
+file formats and every path between them, independence from the numeric locale of the process,
+the voxel material and the cutting simulation (library code, the application only draws and drives it).
 
 What is not: the two non-default orientation methods are wrong on some chains (#39, #22);
 rotary axes are not unwound, so C359→C1 is scored as 2° but programmed as a 358° sweep (#25,

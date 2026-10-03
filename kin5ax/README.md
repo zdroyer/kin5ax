@@ -169,6 +169,7 @@ the tool axis points along +Z at home.
 | tool (`MillingTool/`) | `CMillingTool`, `CMillingToolBall`, `CMillingToolCylinder`: one solid each for the voxel cut volume and for collisions |
 | solver (`Postprocessor/`) | `COrientationPostprocessor` (the angles), `CPositionPostprocessor` (the shifts), `C5CPostprocessor` (signs, limits, collisions, singular sections), `CSolveReport` and `SOLVE_STATUS` |
 | batch | `CCutterLocationData`, `CCLDataPostprocessor` (+ `CCLDataPostprocessingResult`), `CSimulationData` (solution sets, shortest path, G-code), `CPostprocessorSettings`, `CProgressCallback` |
+| simulation (`Simulation/`) | `CMaterial` (the voxel block: material, surface, removed; the cut of the tool at its position; volumes), `CMaterialSimulation` (the trajectory replayed on the chain, the tool following, the material cut; `Step`, `Run` with progress and stop; no thread of its own) |
 | support | `CGeneratorException` (a `std::exception`) and subclasses with the `MY_THROW` macro (file, line, function), `string_tools`, `double_tools` |
 
 ## Tolerances, units, threads, locale

@@ -126,6 +126,16 @@ size_t CMaterial::GetVoxelCount(VOXEL_COLOR color) const
 	return n;
 }
 
+double CMaterial::GetTotalVolume() const
+{
+	return (double)(m_nX*m_nY*m_nZ)*GetVoxelVolume();
+}
+
+double CMaterial::GetRemovedVolume() const
+{
+	return (double)GetVoxelCount(VOXEL_BLACK)*GetVoxelVolume();
+}
+
 const std::vector<CR3Point> &CMaterial::GetSurfaceVoxels()
 {
 	if(m_bGraysShouldBeUpdated)

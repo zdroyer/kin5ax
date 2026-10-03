@@ -124,6 +124,11 @@ inline bool ShouldBeGray(size_t nX, size_t nY, size_t nZ) const
 	void GetDimensions(size_t &nX, size_t &nY, size_t &nZ) const;
 	//how many voxels have the colour
 	size_t GetVoxelCount(VOXEL_COLOR color) const;
+	//the volume of one voxel, of the whole block and of what has been removed (whole voxels), in the
+	//length unit of the material cubed
+	double GetVoxelVolume() const { return m_dPrecision*m_dPrecision*m_dPrecision; }
+	double GetTotalVolume() const;
+	double GetRemovedVolume() const;
 	//the surface voxels (material next to a removed voxel or to the outside), brought up to date first;
 	//for the renderers and, later, the mesh extraction
 	const std::vector<CR3Point> &GetSurfaceVoxels();

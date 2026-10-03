@@ -420,8 +420,12 @@ void CMainFrame::RunSimulationSteps()
 	CView *pView = GetActiveView();
 	for(size_t i=0;i<nSteps;i++){
 		if(!m_pSimulation->Step()){
+			CUniversal5CMillingMachinePostprocessorDoc* pDoc = (CUniversal5CMillingMachinePostprocessorDoc*)GetActiveDocument();
+			double dRemoved = pDoc ? pDoc->m_oMaterial.GetRemovedVolume() : 0.0;
+			double dTotal = pDoc ? pDoc->m_oMaterial.GetTotalVolume() : 0.0;
 			m_dlgSimulationDialog.OnBnClickedButtonStop();	//kills the timer, frees the simulation, repaints, resets the button
-			MessageBox("Milling simulation finished");
+			MessageBox(("Milling simulation finished\nRemoved "+double_to_string(dRemoved)+" of "+double_to_string(dTotal)
+				+" (length unit cubed), "+fixed_to_string(dTotal>0.0 ? 100.0*dRemoved/dTotal : 0.0,2)+" %").c_str());
 			return;
 		}
 		m_nStepsSinceRepaint++;

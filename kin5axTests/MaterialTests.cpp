@@ -119,3 +119,17 @@ TEST(Material, GenerateBoxReplacesTheBlock)
 	EXPECT_EQ((size_t)125,o.GetVoxelCount(VOXEL_WHITE)+o.GetVoxelCount(VOXEL_GRAY));
 	EXPECT_EQ((size_t)125-27,o.GetSurfaceVoxels().size());
 }
+
+TEST(Material, VolumesAreWholeVoxels)
+{
+	CMaterial o = Cube();
+	EXPECT_DOUBLE_EQ(1.25E-7,o.GetVoxelVolume());
+	EXPECT_DOUBLE_EQ(1E-3,o.GetTotalVolume());
+	EXPECT_DOUBLE_EQ(0.0,o.GetRemovedVolume());
+	CMillingToolBall oTool(0.01,0.01,0.05,0.0);
+	oTool.SetPositionAndOrientation(CR3Point(0.0,0.0,0.05),CR3Vector(0.0,0.0,1.0));
+	o.MachineCut(oTool);
+	EXPECT_DOUBLE_EQ((double)o.GetVoxelCount(VOXEL_BLACK)*1.25E-7,o.GetRemovedVolume());
+	EXPECT_GT(o.GetRemovedVolume(),117*1.25E-7)<<"half a ball and a 40 mm cylinder of radius 10 mm, blurred by a voxel";
+	EXPECT_LT(o.GetRemovedVolume(),0.3*o.GetTotalVolume());
+}
