@@ -55,7 +55,8 @@ public:
 		,int nDetailedReportContents
 		,CProgressCallback *pProgress);
 
-	//linear interpolation between two cutter locations, as dense as the settings demand;
+	//interpolation between two cutter locations, as dense as the settings demand: the position moves on a straight
+	//line, the tool axis turns at a constant rate in the plane of both axes;
 	//result: pairs of (0..1 parameter, location), the last one is always (1.0, second location)
 	void InterpolateLocation
 		( const CR3Point &p1

@@ -134,6 +134,14 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 	return oResult;
 }
 
+//a unit vector perpendicular to the unit vector u: u x (the coordinate axis u is least aligned with)
+static CR3Vector PerpendicularUnitVector(const CR3Vector &u)
+{
+	double dX = fabs(u.GetX()), dY = fabs(u.GetY()), dZ = fabs(u.GetZ());
+	CR3Vector axis = (dX<=dY && dX<=dZ) ? CR3Vector(1.0,0.0,0.0) : (dY<=dZ ? CR3Vector(0.0,1.0,0.0) : CR3Vector(0.0,0.0,1.0));
+	return u.vectorProduct(axis).GetUnitVector();
+}
+
 void CCLDataPostprocessor::InterpolateLocation
 	( const CR3Point &p1
 	, const CR3Vector &v1
@@ -151,11 +159,19 @@ void CCLDataPostprocessor::InterpolateLocation
 		result.push_back(std::pair<double,CR3CaughtVector>(1.0,CR3CaughtVector(v2,p2)));
 		return;
 	} 
+	//the axis turns at a constant rate from u1 towards u2 in the plane of both: u(a) = u1 cos a + w sin a,
+	//w the unit vector perpendicular to u1 in that plane (any perpendicular one when the axes are antiparallel,
+	//KnownBugs #42: the normalised linear blend was the zero vector half way, and not uniform in between)
+	CR3Vector u1 = v1.GetUnitVector(), u2 = v2.GetUnitVector();
+	double dAngle = u1.UndirectedUnitVectorsAngle(u2);
+	CR3Vector w = u2 - u1*(u1*u2);
+	w = w.IsZero(1E-9) ? PerpendicularUnitVector(u1) : w.GetUnitVector();
 	double t;
 	result.reserve((size_t)fabs(dInv));
 	for(double i=1.0;i<dInv-0.001; i++){
 		t = i/dInv;
-		result.push_back(std::pair<double,CR3CaughtVector>(t,CR3CaughtVector(((v2*t)+(v1*(1.0-t))).GetUnitVector(),(p2*t)+(p1*(1.0-t)))));
+		CR3Vector u = u1*cos(t*dAngle) + w*sin(t*dAngle);
+		result.push_back(std::pair<double,CR3CaughtVector>(t,CR3CaughtVector(u,(p2*t)+(p1*(1.0-t)))));
 	}
 	result.push_back(std::pair<double,CR3CaughtVector>(1.0,CR3CaughtVector(v2,p2)));
 }
