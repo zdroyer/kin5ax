@@ -96,7 +96,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\kin5ax;.\kin5ax\Exceptions;.\kin5ax\3DGeometry;.\kin5ax\Chain;.\kin5ax\Postprocessor;.\kin5ax\MillingTool;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\kin5ax;..\kin5ax\Exceptions;..\kin5ax\3DGeometry;..\kin5ax\Chain;..\kin5ax\Postprocessor;..\kin5ax\MillingTool;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -126,7 +126,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\kin5ax;.\kin5ax\Exceptions;.\kin5ax\3DGeometry;.\kin5ax\Chain;.\kin5ax\Postprocessor;.\kin5ax\MillingTool;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\kin5ax;..\kin5ax\Exceptions;..\kin5ax\3DGeometry;..\kin5ax\Chain;..\kin5ax\Postprocessor;..\kin5ax\MillingTool;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -156,7 +156,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>.\kin5ax;.\kin5ax\Exceptions;.\kin5ax\3DGeometry;.\kin5ax\Chain;.\kin5ax\Postprocessor;.\kin5ax\MillingTool;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\kin5ax;..\kin5ax\Exceptions;..\kin5ax\3DGeometry;..\kin5ax\Chain;..\kin5ax\Postprocessor;..\kin5ax\MillingTool;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -190,7 +190,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>.\kin5ax;.\kin5ax\Exceptions;.\kin5ax\3DGeometry;.\kin5ax\Chain;.\kin5ax\Postprocessor;.\kin5ax\MillingTool;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\kin5ax;..\kin5ax\Exceptions;..\kin5ax\3DGeometry;..\kin5ax\Chain;..\kin5ax\Postprocessor;..\kin5ax\MillingTool;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -303,7 +303,7 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="kin5ax\kin5ax.vcxproj">
+    <ProjectReference Include="..\kin5ax\kin5ax.vcxproj">
       <Project>{4f41f3d9-8186-5e04-babd-7851ed77ea44}</Project>
     </ProjectReference>
   </ItemGroup>

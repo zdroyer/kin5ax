@@ -21,7 +21,7 @@ if ($bad -eq 0) {
 }
 if ($Start -and $bad -eq 0) {
   foreach ($cfg in "Debug","Release") {
-    $p = Start-Process "$root\x64\$cfg\Universal5CMillingMachinePostprocessor.exe" -ArgumentList "`"$root\3CWithSphericalWrist_withBoxes.kc`"" -WorkingDirectory $root -PassThru
+    $p = Start-Process "$root\x64\$cfg\Universal5CMillingMachinePostprocessor.exe" -ArgumentList "`"$root\Universal5CMillingMachinePostprocessor\3CWithSphericalWrist_withBoxes.kc`"" -WorkingDirectory $root -PassThru
     Start-Sleep -Seconds 4; $p.Refresh()
     if ($p.HasExited) { "START ${cfg}: exited early, code $($p.ExitCode)"; $bad++ }
     else { "START ${cfg}: running, responding=$($p.Responding), '$($p.MainWindowTitle)'"; $p.CloseMainWindow() | Out-Null; Start-Sleep 2; $p.Refresh(); if (-not $p.HasExited) { $p.Kill() } }
