@@ -102,6 +102,15 @@ TEST(FindShortestPath, PicksTheSecondSolutionOfTheFirstSet)
 	ExpectShortest(v);
 }
 
+//KnownBugs #43: with exactly two sets no choice was made, both indexes stayed 0
+TEST(FindShortestPath, TwoSetsOnly)
+{
+	std::vector<tChainConfigurationVector> v;
+	v.push_back(Set(0.0,5.0));
+	v.push_back(Set(5.1,0.1));	//the shortest path is 0.0 -> 0.1: indexes 0 and 1
+	ExpectShortest(v);
+}
+
 TEST(FindShortestPath, LastSetsAreEmpty)
 {
 	std::vector<tChainConfigurationVector> v;

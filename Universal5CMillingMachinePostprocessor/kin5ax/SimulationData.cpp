@@ -114,7 +114,7 @@ void CSimulationData::FindShortestPath(const CPostprocessorSettings &oSettings, 
 	ReportProgress(pProgress,0.0);
 	for(size_t k =0; k< m_vIndexes.size();k++)
 		m_vIndexes[k]=0;
-	if(m_vIndexes.size()<3){
+	if(m_vIndexes.size()<2){	//one set: nothing to choose (two are enough, KnownBugs #43)
 		ReportProgress(pProgress,1.0);
 		return;
 	}
