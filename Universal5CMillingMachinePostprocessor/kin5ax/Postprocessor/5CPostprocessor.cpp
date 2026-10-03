@@ -199,8 +199,8 @@ tChainConfigurationVector C5CPostprocessor::SolveTheoretically(const CR3Point  r
 		return std::vector<CChainConfiguration>(0);
 	}
 
-	static CR3Vector r3vT1, r3vT2,r3vT3;
-	static CR3Point r3pP1;
+	CR3Vector r3vT1, r3vT2,r3vT3;	//not static: one postprocessor per thread (KnownBugs #46)
+	CR3Point r3pP1;
 	std::vector<CChainConfiguration> vShifts;
 	std::vector<CChainConfiguration> vResult2;
 	for(size_t i = 0; i<vRotations.size(); i++){
