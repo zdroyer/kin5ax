@@ -43,7 +43,7 @@ Nothing here was observed at run time unless a test is named.
 | 16 | `PostprocessingDialog.cpp`, `OnOpenDocument` | No try/catch around calls that throw `CGeneratorException`/`_com_error`: the application terminates. `OnOpenDocument` got its catch with the reader move (2605ba7); `OnBnClickedStart` now catches around `Process`/`FindShortestPath` and refuses to start without a milling tool. | verified | **fixed** 869424a |
 | 17 | `CLDataPostprocessor.cpp` `InterpolateLocation` + dialog | A zero interpolation limit (also while typing "0.01") gives an endless loop; no locations gives 0/0. | reported | **fixed** 1447c0b |
 | 18 | `R3Point.cpp` `toString` | 35-byte static buffer, overflows with coordinates of 4+ digits (mm files). | reported | **fixed** ce75f65 |
-| 19 | `MainFrm.cpp` simulation thread | Pause+Stop leaves a suspended thread; tool/material replaced under the worker; pointer nulled after a blind Sleep; exit during simulation. | reported | open |
+| 19 | `MainFrm.cpp` simulation thread | Pause+Stop leaves a suspended thread; tool/material replaced under the worker; pointer nulled after a blind Sleep; exit during simulation. Now a UI timer drives CMaterialSimulation (kin5ax/Simulation): no worker thread, no flag, no Sleep; the tool dialog stops the simulation before replacing the tool. | verified | **fixed** 887bc07 |
 | 20 | `MainFrm.cpp:380` | Refresh period 0 ends the simulation after one step. | verified | **fixed** b6ee4e1 |
 
 ## Solver
