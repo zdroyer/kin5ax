@@ -22,6 +22,9 @@
     <Filter Include="3rdParty\nlohmann">
       <UniqueIdentifier>{2E6A8C41-7B93-4D10-95C7-0E4D2A8B6F33}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Simulation">
+      <UniqueIdentifier>{6D2E9A3B-4C71-4F58-9B0E-1A7C5D3E8F44}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Exceptions">
       <UniqueIdentifier>{40482F10-7A8C-5289-815F-774F638BFBFA}</UniqueIdentifier>
     </Filter>
@@ -95,6 +98,9 @@
     </ClCompile>
     <ClCompile Include="Postprocessor\SolveReport.cpp">
       <Filter>Postprocessor</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\Material.cpp">
+      <Filter>Simulation</Filter>
     </ClCompile>
     <ClCompile Include="Postprocessor\OrientationPostprocessor.cpp">
       <Filter>Postprocessor</Filter>
@@ -192,6 +198,9 @@
     </ClInclude>
     <ClInclude Include="Postprocessor\SolveReport.h">
       <Filter>Postprocessor</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\Material.h">
+      <Filter>Simulation</Filter>
     </ClInclude>
     <ClInclude Include="Postprocessor\OrientationPostprocessor.h">
       <Filter>Postprocessor</Filter>

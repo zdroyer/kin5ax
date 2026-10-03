@@ -1,7 +1,7 @@
 #pragma once
 
 #include "chain.h"
-#include "material.h"
+#include "Material.h"
 #include "CutterLocationData.h"
 
 //OpenGL rendering of CChain with the material, the tool and the tool trajectory

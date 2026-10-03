@@ -7,7 +7,7 @@
 #include "chain.h"
 #include "ChainFcm.h"
 #include "5CPostprocessor.h"
-#include "material.h"
+#include "Material.h"
 #include "CutterLocationData.h"
 #include "millingtool.h"
 #include "simulationdata.h"

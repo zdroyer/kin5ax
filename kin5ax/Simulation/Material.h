@@ -1,8 +1,15 @@
 #pragma once
 
-#include "r3point.h"
-#include "r3vector.h"
-#include "millingtool.h"
+#include "R3Point.h"
+#include "R3Vector.h"
+#include "R3Box.h"
+#include "MillingTool.h"
+
+//The voxel material of the cutting simulation: a block of cubic voxels, each one of three colours -
+//WHITE material, GRAY material on the surface (next to a removed voxel or to the outside), BLACK removed.
+//MachineCut removes what the milling tool covers at its current position and orientation.
+//Rendering is CMaterialRendererGL of the application; the model knows no OpenGL.
+namespace kin5ax {
 
 typedef std::vector<unsigned char> uchar_vector;
 typedef std::vector<uchar_vector> uchar_matrix;
@@ -113,6 +120,10 @@ inline bool ShouldBeGray(size_t nX, size_t nY, size_t nZ) const
 	~CMaterial(void);
 	//the voxel size
 	double GetPrecision() const { return m_dPrecision; }
+	//the number of voxels along X, Y, Z
+	void GetDimensions(size_t &nX, size_t &nY, size_t &nZ) const;
+	//how many voxels have the colour
+	size_t GetVoxelCount(VOXEL_COLOR color) const;
 	//the surface voxels (material next to a removed voxel or to the outside), brought up to date first;
 	//for the renderers and, later, the mesh extraction
 	const std::vector<CR3Point> &GetSurfaceVoxels();
@@ -144,3 +155,5 @@ inline bool ShouldBeGray(size_t nX, size_t nY, size_t nZ) const
 							   ,size_t &nMinK, size_t &nMaxK
 							   ,CR3Box &box) const;
 };
+
+} // namespace kin5ax

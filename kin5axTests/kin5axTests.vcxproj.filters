@@ -23,6 +23,7 @@
     <ClCompile Include="M4x4Tests.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MeridianCLDataTests.cpp" />
+    <ClCompile Include="MaterialTests.cpp" />
     <ClCompile Include="MillingToolTests.cpp" />
     <ClCompile Include="ProgressTests.cpp" />
     <ClCompile Include="R3BoxTests.cpp" />

@@ -1,5 +1,7 @@
-#include "StdAfx.h"
-#include ".\material.h"
+#include "../stdafx.h"
+#include "Material.h"
+
+namespace kin5ax {
 
 
 
@@ -106,6 +108,24 @@ void CMaterial::GenerateBox(double dXSize,
 
 
 
+void CMaterial::GetDimensions(size_t &nX, size_t &nY, size_t &nZ) const
+{
+	nX = m_nX;
+	nY = m_nY;
+	nZ = m_nZ;
+}
+
+size_t CMaterial::GetVoxelCount(VOXEL_COLOR color) const
+{
+	size_t n = 0;
+	for(size_t i=0;i<m_nX;i++)
+		for(size_t j=0;j<m_nY;j++)
+			for(size_t k=0;k<m_nZ;k++)
+				if(Is(color,i,j,k))
+					n++;
+	return n;
+}
+
 const std::vector<CR3Point> &CMaterial::GetSurfaceVoxels()
 {
 	if(m_bGraysShouldBeUpdated)
@@ -163,7 +183,7 @@ size_t CMaterial::MinimumIndex(double d, double dSize, size_t nMax) const
 		return 0;
 	if(d>=dSize)
 		return nMax;
-    return (size_t)abs(floor(d/m_dPrecision));
+    return (size_t)fabs(floor(d/m_dPrecision));
 }
 size_t CMaterial::MaximumIndex(double d, double dSize, size_t nMax) const
 {
@@ -171,5 +191,7 @@ size_t CMaterial::MaximumIndex(double d, double dSize, size_t nMax) const
 		return 0;
 	if(d>=dSize)
 		return nMax;
-    return (size_t)abs(ceil(d/m_dPrecision));
+    return (size_t)fabs(ceil(d/m_dPrecision));
 }
+
+} // namespace kin5ax

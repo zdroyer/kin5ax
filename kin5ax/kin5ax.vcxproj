@@ -72,7 +72,7 @@
       <Optimization>Disabled</Optimization>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <!-- only the library folders: the application root (MFC stdafx.h) must stay invisible here -->
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Exceptions;$(ProjectDir)3DGeometry;$(ProjectDir)Chain;$(ProjectDir)Postprocessor;$(ProjectDir)MillingTool;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Exceptions;$(ProjectDir)3DGeometry;$(ProjectDir)Chain;$(ProjectDir)Postprocessor;$(ProjectDir)MillingTool;$(ProjectDir)Simulation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_LIB;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <!-- must equal the runtime library of the application in the same configuration -->
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -89,7 +89,7 @@
       <Optimization>Disabled</Optimization>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <!-- only the library folders: the application root (MFC stdafx.h) must stay invisible here -->
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Exceptions;$(ProjectDir)3DGeometry;$(ProjectDir)Chain;$(ProjectDir)Postprocessor;$(ProjectDir)MillingTool;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Exceptions;$(ProjectDir)3DGeometry;$(ProjectDir)Chain;$(ProjectDir)Postprocessor;$(ProjectDir)MillingTool;$(ProjectDir)Simulation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_LIB;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <!-- must equal the runtime library of the application in the same configuration -->
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -107,7 +107,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <!-- only the library folders: the application root (MFC stdafx.h) must stay invisible here -->
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Exceptions;$(ProjectDir)3DGeometry;$(ProjectDir)Chain;$(ProjectDir)Postprocessor;$(ProjectDir)MillingTool;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Exceptions;$(ProjectDir)3DGeometry;$(ProjectDir)Chain;$(ProjectDir)Postprocessor;$(ProjectDir)MillingTool;$(ProjectDir)Simulation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_LIB;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <!-- must equal the runtime library of the application in the same configuration -->
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -125,7 +125,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <!-- only the library folders: the application root (MFC stdafx.h) must stay invisible here -->
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Exceptions;$(ProjectDir)3DGeometry;$(ProjectDir)Chain;$(ProjectDir)Postprocessor;$(ProjectDir)MillingTool;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Exceptions;$(ProjectDir)3DGeometry;$(ProjectDir)Chain;$(ProjectDir)Postprocessor;$(ProjectDir)MillingTool;$(ProjectDir)Simulation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_LIB;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <!-- must equal the runtime library of the application in the same configuration -->
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -161,6 +161,7 @@
     <ClCompile Include="MillingTool\MillingToolCylinder.cpp" />
     <ClCompile Include="Postprocessor\5CPostprocessor.cpp" />
     <ClCompile Include="Postprocessor\SolveReport.cpp" />
+    <ClCompile Include="Simulation\Material.cpp" />
     <ClCompile Include="Postprocessor\OrientationPostprocessor.cpp" />
     <ClCompile Include="Postprocessor\PositionPostprocessor.cpp" />
     <ClCompile Include="CLDataPostprocessor.cpp" />
@@ -199,6 +200,7 @@
     <ClInclude Include="MillingTool\MillingToolCylinder.h" />
     <ClInclude Include="Postprocessor\5CPostprocessor.h" />
     <ClInclude Include="Postprocessor\SolveReport.h" />
+    <ClInclude Include="Simulation\Material.h" />
     <ClInclude Include="Postprocessor\OrientationPostprocessor.h" />
     <ClInclude Include="Postprocessor\PositionPostprocessor.h" />
     <ClInclude Include="CLDataPostprocessor.h" />
