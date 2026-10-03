@@ -150,3 +150,51 @@ TEST(SolveReport, AnUnreachableOrientationIsReported)
 	EXPECT_EQ(SOLVE_STATUS_NO_ORIENTATION,oReport.Status())<<sLog;
 	EXPECT_EQ((size_t)0,oReport.m_nOrientationSolutions);
 }
+
+//---- the toggles of the settings (C ABI item 3)
+TEST_P(SolveReportChain, CollisionsOffNeedNoTool)
+{
+	CChain oChain = Load();
+	ASSERT_TRUE(oChain.Is5CChain());
+	CPostprocessorSettings oSettings;
+	oSettings.m_bCheckCollisions = false;
+	C5CPostprocessor oPostprocessor(oChain,oSettings);
+	std::mt19937 oGenerator(3);
+	for(int s=0;s<50;s++){
+		CChainConfiguration oSet = RandomJointValues(oChain,oGenerator);
+		oChain.SetParameters(oSet);
+		CR3CaughtVector cv = oChain.GetActualToolPositionAndOrientation();
+		CSolveReport oReport;
+		std::string sLog;
+		tChainConfigurationVector v = oPostprocessor.Solve(cv.m_p,cv.m_v,oChain,(CMillingTool*)NULL,sLog,oReport);
+		EXPECT_EQ(oReport.m_nWithinLimits,oReport.m_nCollisionFree)<<"nothing is rejected for a collision";
+		EXPECT_EQ(SOLVE_STATUS_SOLVED,oReport.Status())<<"the drawn pose is inside the limits: "<<oSet.toString()<<"\n"<<sLog;
+		EXPECT_EQ(v.size(),oReport.m_nCollisionFree);
+	}
+}
+
+TEST_P(SolveReportChain, LimitsOffReachAKilometreAway)
+{
+	CChain oChain = Load();
+	ASSERT_TRUE(oChain.Is5CChain());
+	CMillingToolBall oTool(0.016,0.016,0.064,0.016);
+	CPostprocessorSettings oSettings;
+	oSettings.m_bCheckLimits = false;
+	C5CPostprocessor oPostprocessor(oChain,oSettings);
+	CSolveReport oReport;
+	std::string sLog;
+	tChainConfigurationVector v = oPostprocessor.Solve(CR3Point(1000.0,0.0,0.0),CR3Vector(0.0,0.0,1.0),oChain,oTool,sLog,oReport);
+	EXPECT_EQ(oReport.m_nTheoreticalSolutions,oReport.m_nWithinLimits)<<"nothing is rejected for a limit";
+	EXPECT_EQ(SOLVE_STATUS_SOLVED,oReport.Status())<<sLog;
+	EXPECT_FALSE(v.empty());
+}
+
+TEST_P(SolveReportChain, CollisionsOnWithoutAToolThrow)
+{
+	CChain oChain = Load();
+	ASSERT_TRUE(oChain.Is5CChain());
+	C5CPostprocessor oPostprocessor(oChain,CPostprocessorSettings());
+	CSolveReport oReport;
+	std::string sLog;
+	EXPECT_THROW(oPostprocessor.Solve(CR3Point(0.0,0.0,0.0),CR3Vector(0.0,0.0,1.0),oChain,(CMillingTool*)NULL,sLog,oReport),CGeneratorException);
+}

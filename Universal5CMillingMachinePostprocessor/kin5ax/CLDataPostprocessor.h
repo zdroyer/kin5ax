@@ -47,7 +47,8 @@ public:
 	CCLDataPostprocessor(const CPostprocessorSettings &oSettings);
 	~CCLDataPostprocessor(void);
 
-	//oChain, oTool: their actual parameters/position are changed during solving
+	//oChain, oTool: their actual parameters/position are changed during solving (the tool may be NULL
+	//when the settings do not check collisions)
 	//oSimulationData: its contents are replaced
 	//pDetailedReport: NULL or an open text file for the log of the problems
 	//nDetailedReportContents: 0 - all problems, 1 - those with less than 2 solutions (with the solutions),
@@ -56,6 +57,14 @@ public:
 	CCLDataPostprocessingResult Process
 		(CChain &oChain
 		,CMillingTool &oTool
+		,CCutterLocationData &oData
+		,CSimulationData &oSimulationData
+		,FILE *pDetailedReport
+		,int nDetailedReportContents
+		,CProgressCallback *pProgress);
+	CCLDataPostprocessingResult Process
+		(CChain &oChain
+		,CMillingTool *pTool
 		,CCutterLocationData &oData
 		,CSimulationData &oSimulationData
 		,FILE *pDetailedReport

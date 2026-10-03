@@ -32,6 +32,18 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 	,int nDetailedReportContents
 	,CProgressCallback *pProgress)
 {
+	return Process(oChain,&oTool,oData,oSimulationData,pDetailedReport,nDetailedReportContents,pProgress);
+}
+
+CCLDataPostprocessingResult CCLDataPostprocessor::Process
+	(CChain &oChain
+	,CMillingTool *pTool
+	,CCutterLocationData &oData
+	,CSimulationData &oSimulationData
+	,FILE *pDetailedReport
+	,int nDetailedReportContents
+	,CProgressCallback *pProgress)
+{
 	CCLDataPostprocessingResult oResult;
 	FILE *pFile = pDetailedReport;
 	C5CPostprocessor oPostprocessor(oChain,m_oSettings);
@@ -60,7 +72,7 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 				(vIntermediateLocations[j].second.m_p
 				,vIntermediateLocations[j].second.m_v
 				,oChain
-				,oTool
+				,pTool
 				,sLog
 				,oReport);
 			if(vSolutions.size() && vSolutions[0].IsAmbiguous()){
@@ -72,7 +84,7 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 				vAmbiguousCollection.push_back(vIntermediateLocations[j].second);
 				if(j+1>=vIntermediateLocations.size() && !data.HasMoreLocations()){
 					std::string sSingularSolutionLog="";
-					std::vector<tChainConfigurationVector> vUnambiguous = oPostprocessor.SolveSingularOrientation(vAmbiguousCollection,oChain,oTool,sSingularSolutionLog);
+					std::vector<tChainConfigurationVector> vUnambiguous = oPostprocessor.SolveSingularOrientation(vAmbiguousCollection,oChain,pTool,sSingularSolutionLog);
 					for(size_t q=0;q<vUnambiguous.size();q++){
 						oSimulationData.AddConfigurationSet(vUnambiguous[q]);
 						oResult.m_vStatuses.push_back(vUnambiguous[q].empty() ? SOLVE_STATUS_SINGULAR_UNSOLVED : SOLVE_STATUS_SOLVED);
@@ -85,7 +97,7 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 				if(bCollectingAmbiguousSolutions){
 					vAmbiguousCollection.push_back(vIntermediateLocations[j].second);
 					std::string sSingularSolutionLog="";
-					std::vector<tChainConfigurationVector> vUnambiguous = oPostprocessor.SolveSingularOrientation(vAmbiguousCollection,oChain,oTool,sSingularSolutionLog);
+					std::vector<tChainConfigurationVector> vUnambiguous = oPostprocessor.SolveSingularOrientation(vAmbiguousCollection,oChain,pTool,sSingularSolutionLog);
 					for(size_t q=0;q<vUnambiguous.size();q++){
 						oSimulationData.AddConfigurationSet(vUnambiguous[q]);
 						oResult.m_vStatuses.push_back(vUnambiguous[q].empty() ? SOLVE_STATUS_SINGULAR_UNSOLVED : SOLVE_STATUS_SOLVED);

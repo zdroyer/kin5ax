@@ -21,16 +21,20 @@ public:
 	~C5CPostprocessor(void);
 	std::vector<tChainConfigurationWithResult> SolveWithLocations(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,CMillingTool &oMillingTool,std::string &sLog);
 	//all configurations that reach the cutter location (reference point r3pPosition, tool axis r3vOrientation),
-	//are within the joint limits and do not collide; sLog tells what was found and rejected in words,
-	//oReport in numbers (and SOLVE_STATUS Status() why the result is empty)
+	//are within the joint limits (when the settings check them) and do not collide (when the settings check
+	//collisions; the tool may then be NULL, otherwise a NULL tool throws). sLog tells what was found and
+	//rejected in words, oReport in numbers (and SOLVE_STATUS Status() why the result is empty)
 	tChainConfigurationVector Solve(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,CMillingTool &oMillingTool,std::string &sLog);
 	tChainConfigurationVector Solve(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,CMillingTool &oMillingTool,std::string &sLog, CSolveReport &oReport);
+	tChainConfigurationVector Solve(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,CMillingTool *pMillingTool,std::string &sLog, CSolveReport &oReport);
 	tChainConfigurationVector SolveWithKnownAlpha1(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,std::string &sLog,std::vector<double> vAlpha1,CMillingTool &oMillingTool);
+	tChainConfigurationVector SolveWithKnownAlpha1(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,std::string &sLog,std::vector<double> vAlpha1,CMillingTool *pMillingTool);
 
 	//the cutter locations of a section where the orientation is singular (alpha1 free): alpha1 is interpolated
 	//between the solutions before and after the section. One solution set per solved location; none when no
-	//location of the section can be solved.
+	//location of the section can be solved. The tool as in Solve.
 	std::vector<tChainConfigurationVector> SolveSingularOrientation(const std::vector<CR3CaughtVector> &vInput, CChain &oChain,CMillingTool &oMillingTool,std::string &sLog);
+	std::vector<tChainConfigurationVector> SolveSingularOrientation(const std::vector<CR3CaughtVector> &vInput, CChain &oChain,CMillingTool *pMillingTool,std::string &sLog);
 
 protected:
 	//the configurations before the limits and the collisions; pReport (may be NULL) receives the counts

@@ -12,6 +12,8 @@ CPostprocessorSettings::CPostprocessorSettings(void)
 ,m_dMaxPositionDifference(1E-2)
 ,m_dAngleDistanceCoefficientRadians(1.0)
 ,m_dDisplacementCoefficient(10.0)
+,m_bCheckLimits(true)
+,m_bCheckCollisions(true)
 {
 	m_dMaxOrientationDifferenceRadians = degrees_to_radians(m_dMaxOrientationDifferenceDegrees);
 }

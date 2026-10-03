@@ -83,11 +83,24 @@ tChainConfigurationVector C5CPostprocessor::Solve(const CR3Point  r3pPosition, c
 
 tChainConfigurationVector C5CPostprocessor::Solve(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,CMillingTool &oMillingTool, std::string &sLog, CSolveReport &oReport)
 {
+	return Solve(r3pPosition,r3vOrientation,oChain,&oMillingTool,sLog,oReport);
+}
+
+tChainConfigurationVector C5CPostprocessor::Solve(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,CMillingTool *pMillingTool, std::string &sLog, CSolveReport &oReport)
+{
+	if(m_oSettings.m_bCheckCollisions && !pMillingTool)
+		MY_THROW(CArgsMyException,"The collision check needs a milling tool (switch the check off in the settings to solve without one)");
 	oReport.Clear();
 	tChainConfigurationVector  vResult = SolveTheoretically(r3pPosition,r3vOrientation,oChain,sLog,&oReport);
-	vResult = ApplyParameterConstraints(vResult,oChain,sLog);
+	if(m_oSettings.m_bCheckLimits)
+		vResult = ApplyParameterConstraints(vResult,oChain,sLog);
+	else
+		sLog+="joint limits not checked\n";
 	oReport.m_nWithinLimits = vResult.size();
-	vResult = ApplyCollisionDetection(vResult,oChain,oMillingTool,sLog);
+	if(m_oSettings.m_bCheckCollisions)
+		vResult = ApplyCollisionDetection(vResult,oChain,*pMillingTool,sLog);
+	else
+		sLog+="collisions not checked\n";
 	oReport.m_nCollisionFree = vResult.size();
 	for(size_t i=0;i<vResult.size();i++)
 		if(vResult[i].IsAmbiguous())
@@ -145,9 +158,15 @@ tChainConfigurationVector C5CPostprocessor::ApplyCollisionDetection(const tChain
 
 tChainConfigurationVector C5CPostprocessor::SolveWithKnownAlpha1(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,std::string &sLog,std::vector<double> vAlpha1,CMillingTool &oMillingTool)
 {
+	return SolveWithKnownAlpha1(r3pPosition,r3vOrientation,oChain,sLog,vAlpha1,&oMillingTool);
+}
+
+tChainConfigurationVector C5CPostprocessor::SolveWithKnownAlpha1(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,std::string &sLog,std::vector<double> vAlpha1,CMillingTool *pMillingTool)
+{
 	if(vAlpha1.size()==0)
 		vAlpha1.push_back(0.0);
-	tChainConfigurationVector vSolutions = Solve(r3pPosition,r3vOrientation,oChain,oMillingTool,sLog);
+	CSolveReport oReport;
+	tChainConfigurationVector vSolutions = Solve(r3pPosition,r3vOrientation,oChain,pMillingTool,sLog,oReport);
 	tChainConfigurationVector vSolutions2;
 	tChainConfigurationVector vResult;
 	vResult.reserve(4);
@@ -249,12 +268,18 @@ tChainConfigurationVector C5CPostprocessor::SolveTheoretically(const CR3Point  r
 
 std::vector<tChainConfigurationVector> C5CPostprocessor::SolveSingularOrientation(const std::vector<CR3CaughtVector> &vInput, CChain &oChain,CMillingTool &oMillingTool,std::string &sLog)
 {
+	return SolveSingularOrientation(vInput,oChain,&oMillingTool,sLog);
+}
+
+std::vector<tChainConfigurationVector> C5CPostprocessor::SolveSingularOrientation(const std::vector<CR3CaughtVector> &vInput, CChain &oChain,CMillingTool *pMillingTool,std::string &sLog)
+{
+	CSolveReport oReport;
 	std::vector<tChainConfigurationVector> vResult;
 	if(vInput.size()==0)
 		return vResult; 
 	if(vInput.size()==1){
 		sLog+="Only one cutter location for hypothetical singular solution:\n";
-		tChainConfigurationVector v = Solve(vInput[0].m_p,vInput[0].m_v,oChain,oMillingTool,sLog);
+		tChainConfigurationVector v = Solve(vInput[0].m_p,vInput[0].m_v,oChain,pMillingTool,sLog,oReport);
 		for(size_t i=0;i<v.size();i++){
 			if(v[i].IsAmbiguous())
 				v[i].SetAmbiguousParameter(0.0);
@@ -268,7 +293,7 @@ std::vector<tChainConfigurationVector> C5CPostprocessor::SolveSingularOrientatio
 	size_t nBegin=0;
 
 	for(;nBegin<vInput.size();nBegin++){
-		vFirst = Solve(vInput[nBegin].m_p,vInput[nBegin].m_v,oChain,oMillingTool,sFirstLog);
+		vFirst = Solve(vInput[nBegin].m_p,vInput[nBegin].m_v,oChain,pMillingTool,sFirstLog,oReport);
 		if(vFirst.size())
 			break;
 	}
@@ -284,7 +309,7 @@ std::vector<tChainConfigurationVector> C5CPostprocessor::SolveSingularOrientatio
 
 	size_t nEnd = vInput.size();
 	for(;nEnd>nBegin;nEnd--){
-		vLast = Solve(vInput[nEnd-1].m_p,vInput[nEnd-1].m_v,oChain,oMillingTool,sLastLog);
+		vLast = Solve(vInput[nEnd-1].m_p,vInput[nEnd-1].m_v,oChain,pMillingTool,sLastLog,oReport);
 		if(vLast.size())
 			break;
 	}	
@@ -331,7 +356,7 @@ std::vector<tChainConfigurationVector> C5CPostprocessor::SolveSingularOrientatio
 				vAlpha1.push_back(dA);
 			}
 		}
-		vResult.push_back(SolveWithKnownAlpha1(vInput[i].m_p,vInput[i].m_v,oChain,sIntermediateLog,vAlpha1,oMillingTool));
+		vResult.push_back(SolveWithKnownAlpha1(vInput[i].m_p,vInput[i].m_v,oChain,sIntermediateLog,vAlpha1,pMillingTool));
 	}
 	return vResult;
 }

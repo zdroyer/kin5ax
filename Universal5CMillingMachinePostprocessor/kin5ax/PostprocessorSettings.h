@@ -43,6 +43,11 @@ public:
 	double m_dAngleDistanceCoefficientRadians;
 	double m_dDisplacementCoefficient;
 
+	//the checks of C5CPostprocessor::Solve: the joint limits of the chain, and the collisions of the chain
+	//with itself and with the milling tool; with the collision check off no tool is needed to solve
+	bool m_bCheckLimits;
+	bool m_bCheckCollisions;
+
 	std::string GetComputationMethod(const std::string &sEndLine="\n") const
 	{
 		std::string sResult;
