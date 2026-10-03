@@ -249,31 +249,31 @@ std::string CChainSegment::toXML(void) const
 	sResult += "\" name=\""+xml_escape(GetName())+"\" " ;
 	if(m_bParameterIsConstrained){
 		if(m_type==CHAIN_SEGMENT_PRISMATIC_LINK){
-			sResult += "parameter_value_minimum=\""+double_to_string(m_dParameterValueMinimum)+"\" ";
-			sResult += "parameter_value_maximum=\""+double_to_string(m_dParameterValueMaximum)+"\" ";
+			sResult += "parameter_value_minimum=\""+double_to_string_exact(m_dParameterValueMinimum)+"\" ";
+			sResult += "parameter_value_maximum=\""+double_to_string_exact(m_dParameterValueMaximum)+"\" ";
 		} else {
-			sResult += "parameter_value_minimum=\""+double_to_string(radians_to_degrees(m_dParameterValueMinimum))+"\" ";
-			sResult += "parameter_value_maximum=\""+double_to_string(radians_to_degrees(m_dParameterValueMaximum))+"\" ";
+			sResult += "parameter_value_minimum=\""+double_to_string_exact(radians_to_degrees(m_dParameterValueMinimum))+"\" ";
+			sResult += "parameter_value_maximum=\""+double_to_string_exact(radians_to_degrees(m_dParameterValueMaximum))+"\" ";
 
 		}
 	}
 	sResult += ">\n";
 	sResult += "<initial_translation x=\"";
-	sResult += double_to_string(m_r3vConstTranslation.GetX());
+	sResult += double_to_string_exact(m_r3vConstTranslation.GetX());
 	sResult += "\" y=\"";
-	sResult += double_to_string(m_r3vConstTranslation.GetY());
+	sResult += double_to_string_exact(m_r3vConstTranslation.GetY());
 	sResult += "\" z=\"";
-	sResult += double_to_string(m_r3vConstTranslation.GetZ());
+	sResult += double_to_string_exact(m_r3vConstTranslation.GetZ());
 	sResult += "\"/>\n";
 
 	sResult +="<initial_rotation x=\"";
-	sResult +=double_to_string(m_r3vConstRevoluteAxis.GetX());
+	sResult +=double_to_string_exact(m_r3vConstRevoluteAxis.GetX());
 	sResult +="\" y=\"";
-	sResult +=double_to_string(m_r3vConstRevoluteAxis.GetY());
+	sResult +=double_to_string_exact(m_r3vConstRevoluteAxis.GetY());
 	sResult +="\" z=\"";
-	sResult +=double_to_string(m_r3vConstRevoluteAxis.GetZ());
+	sResult +=double_to_string_exact(m_r3vConstRevoluteAxis.GetZ());
 	sResult +="\" alpha=\"";
-	sResult +=double_to_string(m_dConstRevoluteAngle);
+	sResult +=double_to_string_exact(m_dConstRevoluteAngle);
 	sResult +="\"/>\n";
 	if(m_vParts.size()){
 		for(size_t i=0;i<m_vParts.size();i++){

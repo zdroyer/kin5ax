@@ -30,6 +30,20 @@ TEST(StringPrintf, NumberConversions)
 	EXPECT_EQ("-2.5\r\n",double_to_string(-2.5,true));
 }
 
+//the chain files: every double must come back unchanged (KnownBugs #65: %.8G lost the digits of 1/sqrt(3))
+TEST(StringTools, DoubleToStringExactReadsBack)
+{
+	EXPECT_EQ("0.1",double_to_string_exact(0.1));
+	EXPECT_EQ("-30",double_to_string_exact(-30.0));
+	EXPECT_EQ("0.57735026919",double_to_string_exact(0.57735026919));
+	EXPECT_EQ("-29.999999999999996",double_to_string_exact(-29.999999999999996));
+	double dValues[] = {0.0, 1.0/3.0, -1.0/7.0, 1.0/sqrt(3.0), 1.23456789E20, 2.5E-12, radians_to_degrees(degrees_to_radians(-30.0))};
+	for(double d : dValues){
+		std::string s = double_to_string_exact(d);
+		EXPECT_EQ(d,strtod(s.c_str(),NULL))<<s;
+	}
+}
+
 //KnownBugs #18: a 35-byte static buffer overflowed with coordinates of 4 and more digits
 TEST(ToString, PointWithBigCoordinates)
 {

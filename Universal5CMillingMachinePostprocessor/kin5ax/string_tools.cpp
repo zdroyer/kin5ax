@@ -1,6 +1,7 @@
 #pragma once 
 #include "stdafx.h"
 #include "string_tools.h"
+#include <charconv>
 
 //static string sNL("\n");
 //static string sRNL("\r\n");
@@ -31,6 +32,13 @@ std::string size_to_string(size_t n, bool bEndWithNewLineAndR){
 }
 std::string double_to_string(double d, bool bEndWithNewLineAndR){
 	return string_printf(bEndWithNewLineAndR ? "%.8G\r\n" : "%.8G",d);
+}
+
+std::string double_to_string_exact(double d)
+{
+	char szBuffer[64];
+	std::to_chars_result oResult = std::to_chars(szBuffer,szBuffer+sizeof(szBuffer),d);
+	return std::string(szBuffer,oResult.ptr);
 }
 
 std::string xml_escape(const std::string &s)

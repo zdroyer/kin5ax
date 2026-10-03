@@ -11,6 +11,9 @@ static std::string sRNL("\r\n");
 std::string string_printf(const char *szFormat, ...);
 std::string size_to_string(size_t n, bool bEndWithNewLineAndR=false);
 std::string double_to_string(double d, bool bEndWithNewLineAndR=false);
+//the shortest decimal form that reads back to the same double (for the chain files; %.8G of
+//double_to_string loses digits, e.g. 0.57735026919 -> 0.57735027)
+std::string double_to_string_exact(double d);
 //the text with the five XML markup characters (& < > " ') replaced by their entities: safe inside an attribute value
 std::string xml_escape(const std::string &s);
 
