@@ -18,9 +18,12 @@ public:
 		:m_nTotalProblemsCount(0)
 		,m_dMaxPositionError(-1.0)
 		,m_dMaxOrientationErrorVectorLength(-1.0)
+		,m_bCancelled(false)
 	{}
 	//solved problems: the cutter locations of the file and the interpolated ones
 	size_t m_nTotalProblemsCount;
+	//the progress callback said stop: the simulation data holds the locations solved so far
+	bool m_bCancelled;
 
 	//the biggest errors of the returned solutions (-1.0: no solution at all) with their inputs
 	double m_dMaxPositionError;

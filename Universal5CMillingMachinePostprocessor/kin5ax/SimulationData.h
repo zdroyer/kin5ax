@@ -25,8 +25,9 @@ public:
 	size_t GetSize() const;
 	void ReserveMemory(size_t n);
 	void AddConfigurationSet(const tChainConfigurationVector &vConfigurations);
-	//oSettings: the weights of the distance between two configurations; pProgress may be NULL
-	void FindShortestPath(const CPostprocessorSettings &oSettings, CProgressCallback *pProgress);
+	//oSettings: the weights of the distance between two configurations; pProgress may be NULL.
+	//Returns false when pProgress->Continue() stopped the search: every index is 0 then, as before the search
+	bool FindShortestPath(const CPostprocessorSettings &oSettings, CProgressCallback *pProgress);
 	void DeleteContents();
 	bool NextConfiguration(CChainConfiguration &oChainConfiguration);
 	void ResetConfigurationsIterator();

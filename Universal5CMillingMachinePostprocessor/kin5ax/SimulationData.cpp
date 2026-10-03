@@ -103,20 +103,24 @@ tChainConfigurationVector CSimulationData::GetLastNonemptyConfigurationSet() con
 
 typedef std::vector<size_t> tSizeTVector;
 
-static void ReportProgress(CProgressCallback *pProgress, double dFraction)
+//reports the progress and asks whether to go on (true without a callback)
+static bool ReportProgress(CProgressCallback *pProgress, double dFraction)
 {
-	if(pProgress)
-		pProgress->SetProgress(dFraction);
+	if(!pProgress)
+		return true;
+	pProgress->SetProgress(dFraction);
+	return pProgress->Continue();
 }
 
-void CSimulationData::FindShortestPath(const CPostprocessorSettings &oSettings, CProgressCallback *pProgress)
+bool CSimulationData::FindShortestPath(const CPostprocessorSettings &oSettings, CProgressCallback *pProgress)
 {
-	ReportProgress(pProgress,0.0);
 	for(size_t k =0; k< m_vIndexes.size();k++)
 		m_vIndexes[k]=0;
+	if(!ReportProgress(pProgress,0.0))
+		return false;
 	if(m_vIndexes.size()<2){	//one set: nothing to choose (two are enough, KnownBugs #43)
 		ReportProgress(pProgress,1.0);
-		return;
+		return true;
 	}
 	std::vector<tSizeTVector> vvClosestNeighbourIndexes(m_vSolutions.size(),tSizeTVector());
 	vvClosestNeighbourIndexes.reserve(m_vSolutions.size());
@@ -162,7 +166,8 @@ void CSimulationData::FindShortestPath(const CPostprocessorSettings &oSettings, 
 	double dProgressCoef = 0.9;
 
 	while(j<m_vSolutions.size()){
-		ReportProgress(pProgress,(double)j*dProgressCoef/(double)m_vSolutions.size());
+		if(!ReportProgress(pProgress,(double)j*dProgressCoef/(double)m_vSolutions.size()))
+			return false;
 		vDistances1 = vDistances2;
 		vDistances2.erase(vDistances2.begin(),vDistances2.end());
 		vDistances2.reserve(m_vSolutions[j].size());
@@ -215,7 +220,11 @@ void CSimulationData::FindShortestPath(const CPostprocessorSettings &oSettings, 
 		m_vIndexes[i]=nInd;
 		size_t nNext = i;	//the nearest non-empty set after m
 		for(size_t m=i; m-->0; ){
-			ReportProgress(pProgress,dProgressCoef+(1.0-dProgressCoef)*(double)(i-m)/(double)(i+1));
+			if(!ReportProgress(pProgress,dProgressCoef+(1.0-dProgressCoef)*(double)(i-m)/(double)(i+1))){
+				for(size_t k =0; k< m_vIndexes.size();k++)
+					m_vIndexes[k]=0;
+				return false;
+			}
 			if(m_vSolutions[m].empty())
 				continue;	//the index of an empty set stays 0, such sets are skipped everywhere
 			m_vIndexes[m]=vvClosestNeighbourIndexes[nNext][m_vIndexes[nNext]];
@@ -223,7 +232,8 @@ void CSimulationData::FindShortestPath(const CPostprocessorSettings &oSettings, 
 		}
 	}
 	ReportProgress(pProgress,1.0);
-}		
+	return true;
+}
 
 void CSimulationData::DeleteContents()
 {

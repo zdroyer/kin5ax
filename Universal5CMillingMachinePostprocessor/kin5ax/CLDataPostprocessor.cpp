@@ -65,6 +65,10 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 	CR3CaughtVector lastInput(CR3Vector(0.0),CR3Point(0.0));
 	CSolveReport oReport;
 	for(int i=0; data.GetNextLocation(p2,v2);i++){
+		if(pProgress && !pProgress->Continue()){
+			oResult.m_bCancelled = true;
+			break;
+		}
 		InterpolateLocation(p1,v1,p2,v2,vIntermediateLocations);
 		for(size_t j=0;j<vIntermediateLocations.size();j++){
 			sLog="";
@@ -160,6 +164,8 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 		p1=p2;
 		v1=v2;
 	}
+	if(pProgress && !oResult.m_bCancelled)
+		pProgress->SetProgress(1.0);
 	return oResult;
 }
 
