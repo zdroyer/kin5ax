@@ -761,8 +761,8 @@ void CChain::DetectCollisions(CMillingTool &oMillingTool)
 		trToIInv =trToIInv * m_vMaterialHolderPart[i].GetConstantTransformation();
 		for(size_t k=0; k<m_vToolPart.size();k++){
 			const std::vector<CR3Box> &boxes2 = m_vToolPart[k].GetPartVector();
-			if(boxes2.empty())
-				continue;
+			if(boxes2.empty() && m_vToolPart[k].GetType()!=CHAIN_SEGMENT_TOOL)
+				continue;	//a TOOL segment without boxes still carries the milling tool (KnownBugs #38)
 			CTransformation tr = trToI;
 			CTransformation trInv = trToIInv;
 			for(size_t l = 0; l<k; l++){
@@ -798,8 +798,8 @@ void CChain::DetectCollisions(CMillingTool &oMillingTool)
 		CTransformation trVariableInv = m_vToolPart[i].GetInvertedVariablePartTransformation(m_vToolPart[i].m_dActualParameterValue);
 		for(size_t k=i+1; k<m_vToolPart.size();k++){
 			const std::vector<CR3Box> &boxes2 = m_vToolPart[k].GetPartVector();
-			if(boxes2.empty())
-				continue;
+			if(boxes2.empty() && m_vToolPart[k].GetType()!=CHAIN_SEGMENT_TOOL)
+				continue;	//a TOOL segment without boxes still carries the milling tool (KnownBugs #38)
 			CTransformation tr = trVariable;
 			CTransformation trInv = trVariableInv;
 			for(size_t l = i+1;l<k;l++){

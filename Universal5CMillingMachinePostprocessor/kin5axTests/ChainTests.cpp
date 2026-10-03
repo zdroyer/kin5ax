@@ -4,6 +4,7 @@
 #include "TestData.h"
 #include "SolverRoundTrip.h"
 #include "MillingToolBall.h"
+#include "ChainJson.h"
 #include "string_tools.h"
 #include "5CPostprocessor.h"
 
@@ -214,6 +215,84 @@ TEST_P(ChainFileTest, SingularSectionOutOfReachGivesNoSolution)
 	} catch (CGeneratorException &e){
 		FAIL()<<"exception: "<<e.Message()<<" ("<<e.GetThrowingPlace()<<")";
 	}
+}
+
+//KnownBugs #38: the milling tool was tested against the boxes of the machine only when the TOOL segment itself
+//had a box. A chain of two straight branches: the tool frame and the holder frame are both the base frame, so a box
+//around the origin holds the tip of the tool (a ball of radius 0.016, tip at the origin, axis along OZ).
+static std::string ChainWithBoxlessTool(const std::string &sLinkBoxes, const std::string &sHolderBoxes)
+{
+	std::string s = R"KC({
+  "format": "kin5ax-chain",
+  "version": 1,
+  "name": "boxless tool",
+  "tool_branch": {
+    "links": [
+      { LINK_BOXES "type": "linear", "name": "Z",
+        "translation": [0, 0, 0],
+        "rotation": { "axis": [0, 0, 1], "angle_deg": 0 } }
+    ],
+    "tool": { "name": "tool", "translation": [0, 0, 0], "rotation": { "axis": [0, 0, 1], "angle_deg": 0 } }
+  },
+  "workpiece_branch": {
+    "links": [
+      { "type": "rotary", "name": "C",
+        "translation": [0, 0, 0],
+        "rotation": { "axis": [0, 0, 1], "angle_deg": 0 } }
+    ],
+    "workpiece_holder": { HOLDER_BOXES "name": "holder", "translation": [0, 0, 0],
+        "rotation": { "axis": [0, 0, 1], "angle_deg": 0 } }
+  }
+}
+)KC";
+	s.replace(s.find("LINK_BOXES"),10,sLinkBoxes);
+	s.replace(s.find("HOLDER_BOXES"),12,sHolderBoxes);
+	return s;
+}
+
+static const char *szBOX_AT_THE_TOOL = "\"boxes\": [ { \"min\": [-0.05, -0.05, -0.05], \"max\": [0.05, 0.05, 0.05] } ],";
+static const char *szBOX_FAR_ABOVE = "\"boxes\": [ { \"min\": [1, 1, 1], \"max\": [1.1, 1.1, 1.1] } ],";
+static const char *szBOX_FAR_BELOW = "\"boxes\": [ { \"min\": [-1.1, -1.1, -1.1], \"max\": [-1, -1, -1] } ],";
+
+//the chain of the document and the collision report of the default tool at the home position
+static bool Collides(const std::string &sJson, CChain &oChain, std::string &sLog)
+{
+	try{
+		oChain = CChainJsonReader::Parse(sJson);
+	} catch (CGeneratorException &e){
+		ADD_FAILURE()<<"exception: "<<e.Message();
+		return false;
+	}
+	EXPECT_TRUE(oChain.m_vToolPart.back().GetPartVector().empty())<<"the TOOL segment must have no box";
+	CMillingToolBall oTool(0.016,0.016,0.064,0.016);
+	return oChain.HasCollision(oTool,sLog);
+}
+
+TEST(Collisions, BoxlessToolClearOfTheMachine)
+{
+	CChain oChain;
+	std::string sLog;
+	EXPECT_FALSE(Collides(ChainWithBoxlessTool(szBOX_FAR_ABOVE,szBOX_FAR_BELOW),oChain,sLog))<<sLog;
+}
+
+TEST(Collisions, BoxlessToolInABoxOfTheWorkpieceHolder)
+{
+	CChain oChain;
+	std::string sLog;
+	EXPECT_TRUE(Collides(ChainWithBoxlessTool(szBOX_FAR_ABOVE,szBOX_AT_THE_TOOL),oChain,sLog));
+	EXPECT_TRUE(oChain.m_vMaterialHolderPart.back().IsPartInCollision(0));
+	EXPECT_FALSE(oChain.m_vToolPart[0].IsPartInCollision(0));
+	EXPECT_NE(std::string::npos,sLog.find("box_1"))<<sLog;
+}
+
+TEST(Collisions, BoxlessToolInABoxOfItsOwnBranch)
+{
+	CChain oChain;
+	std::string sLog;
+	EXPECT_TRUE(Collides(ChainWithBoxlessTool(szBOX_AT_THE_TOOL,szBOX_FAR_BELOW),oChain,sLog));
+	EXPECT_TRUE(oChain.m_vToolPart[0].IsPartInCollision(0));
+	EXPECT_FALSE(oChain.m_vMaterialHolderPart.back().IsPartInCollision(0));
+	EXPECT_NE(std::string::npos,sLog.find("box_1"))<<sLog;
 }
 
 INSTANTIATE_TEST_CASE_P(AllChains, ChainFileTest, ::testing::ValuesIn(GetChainFiles()), ChainFileTestName());
