@@ -14,3 +14,10 @@ Universa.*/
 
 # NuGet packages, restored on build
 packages/
+
+# Visual Studio IDE caches and user state
+*.ncb
+*.suo
+*.aps
+*.ipch
+ipch/
