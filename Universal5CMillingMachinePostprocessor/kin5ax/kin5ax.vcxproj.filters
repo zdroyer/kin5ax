@@ -72,6 +72,9 @@
     <ClCompile Include="Chain\ChainXmlReader.cpp">
       <Filter>Chain</Filter>
     </ClCompile>
+    <ClCompile Include="Chain\ChainFileReader.cpp">
+      <Filter>Chain</Filter>
+    </ClCompile>
     <ClCompile Include="Chain\ChainJson.cpp">
       <Filter>Chain</Filter>
     </ClCompile>
@@ -152,6 +155,9 @@
       <Filter>Chain</Filter>
     </ClInclude>
     <ClInclude Include="Chain\ChainXmlReader.h">
+      <Filter>Chain</Filter>
+    </ClInclude>
+    <ClInclude Include="Chain\ChainFileReader.h">
       <Filter>Chain</Filter>
     </ClInclude>
     <ClInclude Include="Chain\ChainJson.h">

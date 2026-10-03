@@ -80,6 +80,9 @@ test of all boxes and of the tool.
   attributes and numbers itself and names the line of every problem), then `CChain::CheckStructure`.
   Written by `CChain::toXML`. The MSXML reader was removed once the format path tests had shown
   both readers equal on every chain.
+- `CChainFileReader::ReadFile` opens either of the two: by the extension (`.kc`, `.json`, any
+  case), else by the first non-blank character of the file. The application's single Open goes
+  through it.
 - **.kc.json** (in and out): the same machine in JSON, described by `kc.schema.json`
   (draft 2020-12). The tool and the workpiece holder are members of their branch instead of
   entries in the segment list and carry no type and no limits; a joint is `"rotary"` or

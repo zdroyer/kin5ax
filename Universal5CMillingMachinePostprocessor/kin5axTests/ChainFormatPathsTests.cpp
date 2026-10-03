@@ -8,6 +8,7 @@
 #include "TestData.h"
 #include "ChainXmlReader.h"
 #include "ChainJson.h"
+#include "ChainFileReader.h"
 
 using namespace kin5ax;
 
@@ -122,6 +123,13 @@ TEST_P(XmlChainFile, XmlWrittenByAnyReaderIsReadByEveryReader)
 	}
 }
 
+//the application opens a chain through CChainFileReader, which must pick the XML reader here
+TEST_P(XmlChainFile, TheFileReaderPicksXml)
+{
+	EXPECT_EQ(CChainFileReader::FORMAT_XML,CChainFileReader::FormatOf(GetParam()));
+	EXPECT_NO_CHAIN_EXCEPTION(ExpectSameChain(Image(ReadXml(GetParam())),Image(CChainFileReader::ReadFile(GetParam()))));
+}
+
 TEST_P(XmlChainFile, JsonWrittenFromAnyReaderReadsBack)
 {
 	for(const CReader &oSource : vXML_READERS){
@@ -159,6 +167,12 @@ TEST_P(JsonChainFile, JsonReadsBackThroughJson)
 		CChain oChain = ReadJson(GetParam());
 		ExpectSameChain(Image(oChain),Image(ThroughJson(oChain)));
 	});
+}
+
+TEST_P(JsonChainFile, TheFileReaderPicksJson)
+{
+	EXPECT_EQ(CChainFileReader::FORMAT_JSON,CChainFileReader::FormatOf(GetParam()));
+	EXPECT_NO_CHAIN_EXCEPTION(ExpectSameChain(Image(ReadJson(GetParam())),Image(CChainFileReader::ReadFile(GetParam()))));
 }
 
 TEST_P(JsonChainFile, XmlWrittenFromJsonIsReadByEveryReader)
@@ -202,3 +216,58 @@ TEST_P(JsonChainFile, TheKcTwinIsTheSameMachineForEveryReader)
 }
 
 INSTANTIATE_TEST_CASE_P(Files, JsonChainFile, ::testing::ValuesIn(GetJsonChainFiles()), FormatPathName());
+
+//---- CChainFileReader on files whose extension says nothing: the content decides
+namespace {
+
+std::string ReadWholeFile(const std::string &sFilePath)
+{
+	FILE *pFile = fopen(sFilePath.c_str(),"rb");
+	EXPECT_TRUE(pFile!=NULL)<<sFilePath;
+	std::string s;
+	if(pFile){
+		char szBuffer[4096];
+		size_t n;
+		while((n = fread(szBuffer,1,sizeof(szBuffer),pFile))>0)
+			s.append(szBuffer,n);
+		fclose(pFile);
+	}
+	return s;
+}
+
+} // namespace
+
+TEST(ChainFileReader, TheExtensionDecidesInAnyCase)
+{
+	EXPECT_EQ(CChainFileReader::FORMAT_XML,CChainFileReader::FormatOf("machine.kc"));
+	EXPECT_EQ(CChainFileReader::FORMAT_XML,CChainFileReader::FormatOf("C:/chains/MACHINE.KC"));
+	EXPECT_EQ(CChainFileReader::FORMAT_JSON,CChainFileReader::FormatOf("machine.kc.json"));
+	EXPECT_EQ(CChainFileReader::FORMAT_JSON,CChainFileReader::FormatOf("machine.JSON"));
+	EXPECT_EQ(CChainFileReader::FORMAT_XML,CChainFileReader::FormatOf("no_such_file.chain"))<<"unreadable: the XML reader reports it";
+}
+
+TEST(ChainFileReader, TheContentDecidesWhenTheExtensionDoesNot)
+{
+	ASSERT_GE(GetChainFiles().size(),(size_t)1);
+	ASSERT_GE(GetJsonChainFiles().size(),(size_t)1);
+	std::string sXmlPath = TempFilePath("kin5axTests_sniff_xml.chain"), sJsonPath = TempFilePath("kin5axTests_sniff_json.chain");
+	WriteText(sXmlPath,ReadWholeFile(GetChainFiles()[0]));
+	WriteText(sJsonPath,"  \r\n\t"+ReadWholeFile(GetJsonChainFiles()[0]));	//blanks before the brace
+	EXPECT_EQ(CChainFileReader::FORMAT_XML,CChainFileReader::FormatOf(sXmlPath));
+	EXPECT_EQ(CChainFileReader::FORMAT_JSON,CChainFileReader::FormatOf(sJsonPath));
+	EXPECT_NO_CHAIN_EXCEPTION(ExpectSameChain(Image(ReadXml(GetChainFiles()[0])),Image(CChainFileReader::ReadFile(sXmlPath))));
+	EXPECT_NO_CHAIN_EXCEPTION(ExpectSameChain(Image(ReadJson(GetJsonChainFiles()[0])),Image(CChainFileReader::ReadFile(sJsonPath))));
+	remove(sXmlPath.c_str());
+	remove(sJsonPath.c_str());
+}
+
+TEST(ChainFileReader, AMissingFileIsReportedWithItsName)
+{
+	std::string sError;
+	try{
+		CChainFileReader::ReadFile("no_such_chain.kc.json");
+	} catch (CGeneratorException &e){
+		sError = e.Message();
+	}
+	EXPECT_NE(std::string::npos,sError.find("no_such_chain.kc.json"))<<sError;
+}

@@ -50,8 +50,8 @@ public:
 	CCutterLocationData m_oCutterLocationData;
 	C5CPostprocessor *m_pPostprocessor;
 	//which reader the next OnOpenDocument uses; set by the application before OpenDocumentFile
-	//(KC: the .kc file through CChainXmlReader, the default)
-	enum CHAIN_FILE_READER { CHAIN_FILE_READER_KC, CHAIN_FILE_READER_JSON, CHAIN_FILE_READER_FCM };
+	//(FILE: a .kc or a .kc.json, CChainFileReader tells them apart; the default. FCM: the import)
+	enum CHAIN_FILE_READER { CHAIN_FILE_READER_FILE, CHAIN_FILE_READER_FCM };
 	static CHAIN_FILE_READER s_nextReader;
 	//the conventions the .fcm reader cannot read from the file, and what the last import could
 	//not carry across

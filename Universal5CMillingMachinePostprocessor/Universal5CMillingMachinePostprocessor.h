@@ -25,7 +25,6 @@ public:
 
 // Implementation
 	afx_msg void OnAppAbout();
-	afx_msg void OnFileOpenJson();
 	void OpenWith(int nReader, LPCTSTR lpszPathName);
 	afx_msg void OnFileSaveAsJson();
 	afx_msg void OnFileImportFcm();

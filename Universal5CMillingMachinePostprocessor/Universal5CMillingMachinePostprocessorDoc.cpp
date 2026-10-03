@@ -10,7 +10,7 @@
 #include "millingtoolball.h"
 #include "mainfrm.h"
 #include "ChainRendererGL.h"
-#include "ChainXmlReader.h"
+#include "ChainFileReader.h"
 #include "ChainJson.h"
 #include "ChainFcm.h"
 
@@ -28,7 +28,7 @@ extern CGLTools oGLTools;
 IMPLEMENT_DYNCREATE(CUniversal5CMillingMachinePostprocessorDoc, CDocument)
 
 CUniversal5CMillingMachinePostprocessorDoc::CHAIN_FILE_READER
-	CUniversal5CMillingMachinePostprocessorDoc::s_nextReader = CUniversal5CMillingMachinePostprocessorDoc::CHAIN_FILE_READER_KC;
+	CUniversal5CMillingMachinePostprocessorDoc::s_nextReader = CUniversal5CMillingMachinePostprocessorDoc::CHAIN_FILE_READER_FILE;
 CFcmOptions CUniversal5CMillingMachinePostprocessorDoc::s_fcmOptions;
 CFcmReport CUniversal5CMillingMachinePostprocessorDoc::s_fcmReport;
 
@@ -114,14 +114,11 @@ BOOL CUniversal5CMillingMachinePostprocessorDoc::OnOpenDocument(LPCTSTR lpszPath
 //		return FALSE;
 	try{
 		switch(s_nextReader){
-			case CHAIN_FILE_READER_JSON:
-				m_oChain = CChainJsonReader::ReadFile(std::string(lpszPathName));
-				break;
 			case CHAIN_FILE_READER_FCM:
 				m_oChain = CChainFcmReader::ReadFile(std::string(lpszPathName),s_fcmOptions,s_fcmReport);
 				break;
-			default:
-				m_oChain = CChainXmlReader::ReadFile(std::string(lpszPathName));
+			default:	//.kc or .kc.json, the reader tells them apart
+				m_oChain = CChainFileReader::ReadFile(std::string(lpszPathName));
 				break;
 		}
 	} catch (CGeneratorException &e){
@@ -148,7 +145,9 @@ BOOL CUniversal5CMillingMachinePostprocessorDoc::OnSaveDocument(LPCTSTR lpszPath
 		MessageBox(0,lpszPathName,"Cannot open file to write",MB_OK);
 		return FALSE;
 	}
-	std::string sXML = m_oChain.toXML();
+	//the form follows the name: a document opened from a .kc.json is saved as JSON
+	std::string sXML = CChainFileReader::FormatOf(std::string(lpszPathName))==CChainFileReader::FORMAT_JSON
+		? CChainJsonWriter::ToJson(m_oChain) : m_oChain.toXML();
 	int nResult = fputs(sXML.c_str(),file);
 	fclose(file);
 	m_oChain.SetFileName(std::string(lpszPathName));

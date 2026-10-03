@@ -23,7 +23,6 @@ BEGIN_MESSAGE_MAP(CUniversal5CMillingMachinePostprocessorApp, CWinApp)
 	// Standard file based document commands
 	ON_COMMAND(ID_FILE_NEW, CWinApp::OnFileNew)
 	ON_COMMAND(ID_FILE_OPEN, CWinApp::OnFileOpen)
-	ON_COMMAND(ID_FILE_OPEN_JSON, OnFileOpenJson)
 	ON_COMMAND(ID_FILE_SAVE_AS_JSON, OnFileSaveAsJson)
 	ON_COMMAND(ID_FILE_IMPORT_FCM, OnFileImportFcm)
 	ON_COMMAND(ID_FILE_EXPORT_FCM, OnFileExportFcm)
@@ -143,17 +142,7 @@ void CUniversal5CMillingMachinePostprocessorApp::OpenWith(int nReader, LPCTSTR l
 		(CUniversal5CMillingMachinePostprocessorDoc::CHAIN_FILE_READER)nReader;
 	OpenDocumentFile(lpszPathName);
 	CUniversal5CMillingMachinePostprocessorDoc::s_nextReader =
-		CUniversal5CMillingMachinePostprocessorDoc::CHAIN_FILE_READER_KC;
-}
-
-//Chain > Open (JSON): a chain from its JSON form (kin5ax/kc.schema.json)
-void CUniversal5CMillingMachinePostprocessorApp::OnFileOpenJson()
-{
-	CFileDialog dlg(TRUE,"json",NULL,OFN_HIDEREADONLY|OFN_FILEMUSTEXIST,
-		"Kinematic chain, JSON (*.kc.json;*.json)|*.kc.json;*.json|All files (*.*)|*.*||");
-	if(dlg.DoModal()!=IDOK)
-		return;
-	OpenWith(CUniversal5CMillingMachinePostprocessorDoc::CHAIN_FILE_READER_JSON,dlg.GetPathName());
+		CUniversal5CMillingMachinePostprocessorDoc::CHAIN_FILE_READER_FILE;
 }
 
 //Chain > Save As (JSON): the chain of the active document, its XML file untouched
