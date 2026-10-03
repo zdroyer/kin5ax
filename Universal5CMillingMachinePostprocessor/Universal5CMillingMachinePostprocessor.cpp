@@ -23,7 +23,6 @@ BEGIN_MESSAGE_MAP(CUniversal5CMillingMachinePostprocessorApp, CWinApp)
 	// Standard file based document commands
 	ON_COMMAND(ID_FILE_NEW, CWinApp::OnFileNew)
 	ON_COMMAND(ID_FILE_OPEN, CWinApp::OnFileOpen)
-	ON_COMMAND(ID_FILE_OPEN_PUGIXML, OnFileOpenPugixml)
 	ON_COMMAND(ID_FILE_OPEN_JSON, OnFileOpenJson)
 	ON_COMMAND(ID_FILE_SAVE_AS_JSON, OnFileSaveAsJson)
 	ON_COMMAND(ID_FILE_IMPORT_FCM, OnFileImportFcm)
@@ -144,17 +143,7 @@ void CUniversal5CMillingMachinePostprocessorApp::OpenWith(int nReader, LPCTSTR l
 		(CUniversal5CMillingMachinePostprocessorDoc::CHAIN_FILE_READER)nReader;
 	OpenDocumentFile(lpszPathName);
 	CUniversal5CMillingMachinePostprocessorDoc::s_nextReader =
-		CUniversal5CMillingMachinePostprocessorDoc::CHAIN_FILE_READER_MSXML;
-}
-
-//Chain > Open (pugixml): the same as Open, read by the portable reader of kin5ax
-void CUniversal5CMillingMachinePostprocessorApp::OnFileOpenPugixml()
-{
-	CFileDialog dlg(TRUE,"kc",NULL,OFN_HIDEREADONLY|OFN_FILEMUSTEXIST,
-		"Kinematic chain files (*.kc)|*.kc|All files (*.*)|*.*||");
-	if(dlg.DoModal()!=IDOK)
-		return;
-	OpenWith(CUniversal5CMillingMachinePostprocessorDoc::CHAIN_FILE_READER_PUGIXML,dlg.GetPathName());
+		CUniversal5CMillingMachinePostprocessorDoc::CHAIN_FILE_READER_KC;
 }
 
 //Chain > Open (JSON): a chain from its JSON form (kin5ax/kc.schema.json)

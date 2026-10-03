@@ -28,7 +28,7 @@ extern CGLTools oGLTools;
 IMPLEMENT_DYNCREATE(CUniversal5CMillingMachinePostprocessorDoc, CDocument)
 
 CUniversal5CMillingMachinePostprocessorDoc::CHAIN_FILE_READER
-	CUniversal5CMillingMachinePostprocessorDoc::s_nextReader = CUniversal5CMillingMachinePostprocessorDoc::CHAIN_FILE_READER_MSXML;
+	CUniversal5CMillingMachinePostprocessorDoc::s_nextReader = CUniversal5CMillingMachinePostprocessorDoc::CHAIN_FILE_READER_KC;
 CFcmOptions CUniversal5CMillingMachinePostprocessorDoc::s_fcmOptions;
 CFcmReport CUniversal5CMillingMachinePostprocessorDoc::s_fcmReport;
 
@@ -114,9 +114,6 @@ BOOL CUniversal5CMillingMachinePostprocessorDoc::OnOpenDocument(LPCTSTR lpszPath
 //		return FALSE;
 	try{
 		switch(s_nextReader){
-			case CHAIN_FILE_READER_PUGIXML:
-				m_oChain = CChainXmlReaderPugixml::ReadFile(std::string(lpszPathName));
-				break;
 			case CHAIN_FILE_READER_JSON:
 				m_oChain = CChainJsonReader::ReadFile(std::string(lpszPathName));
 				break;

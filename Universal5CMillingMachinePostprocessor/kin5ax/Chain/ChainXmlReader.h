@@ -16,7 +16,4 @@ public:
 	static CChain ReadFile(const std::string &sFilePath);
 };
 
-//the former name of the portable reader, until the application stops choosing a reader
-typedef CChainXmlReader CChainXmlReaderPugixml;
-
 } // namespace kin5ax

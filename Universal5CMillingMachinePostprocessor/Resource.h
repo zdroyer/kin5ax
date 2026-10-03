@@ -219,7 +219,6 @@
 #define ID_SHOW_LINKS_PARTS             32845
 #define ID_BUTTON32847                  32847
 #define ID_SHOW_TOOL_BOUNDING_BOX       32849
-#define ID_FILE_OPEN_PUGIXML            32850
 #define ID_FILE_OPEN_JSON               32851
 #define ID_FILE_SAVE_AS_JSON            32852
 #define ID_FILE_IMPORT_FCM              32853
