@@ -1,12 +1,22 @@
 #pragma once
 
+#include <exception>
+#include <string>
+
 namespace kin5ax {
 
-class CGeneratorException
+//The base of every exception of kin5ax, a std::exception for the hosts that know nothing else:
+//what() is the message. MY_THROW adds the file, the line and the function that threw.
+class CGeneratorException : public std::exception
 {
 public:
 	CGeneratorException(void);
 	virtual ~CGeneratorException(void);
+	virtual const char *what() const noexcept;
+	//the kind of the exception, set by the derived classes ("Division by zero", ...)
+	const std::string & GetDescription(void) const;
+	//"Function: " and the name of the throwing method
+	const std::string & GetThrowingMethod(void) const;
 
 
 	// Standardowy konstruktor jaki powinien byæ wykorzystywany przy wyrzucaniu wyj¹tku

@@ -18,9 +18,7 @@ CGeneratorException::CGeneratorException(const std::string & message // komunika
 										  ,const std::string & methodName) // nazwa metody wyrzucaj¹cej: __FUNCTION__ 										  
 {
 	m_sMessage = std::string(message);
-	char str[50];
-	::sprintf(str,", Line: %d\0:",lineNumber);
-	m_sThrowingPlace = std::string("File: ") + fileName + std::string(str);
+	m_sThrowingPlace = "File: " + fileName + ", Line: " + std::to_string(lineNumber);
 	m_sThrowingMethod = std::string("Function: ")+methodName;
 	//m_sThrowingModule = string("Ten komunikat nie powinien siê nigdy pokazaæ \nnie wyrzucamy wyj¹tku klasy CGeneratorException \nprosze poprawiæ kod.");	
 
@@ -36,6 +34,21 @@ CGeneratorException::CGeneratorException(const std::string & message // komunika
 const std::string & CGeneratorException::Message(void) const
 {
 	return m_sMessage;
+}
+
+const char *CGeneratorException::what() const noexcept
+{
+	return m_sMessage.c_str();
+}
+
+const std::string & CGeneratorException::GetDescription(void) const
+{
+	return m_sExceptionDescription;
+}
+
+const std::string & CGeneratorException::GetThrowingMethod(void) const
+{
+	return m_sThrowingMethod;
 }
 
 // Modu³ programu, z którego zosta³ wyrzucony wyj¹tek

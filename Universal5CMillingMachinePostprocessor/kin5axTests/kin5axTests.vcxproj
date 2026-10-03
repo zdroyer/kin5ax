@@ -152,6 +152,7 @@
     <ClCompile Include="ChainFormatPathsTests.cpp" />
     <ClCompile Include="CLDataParsingTests.cpp" />
     <ClCompile Include="CLDataTests.cpp" />
+    <ClCompile Include="ExceptionsTests.cpp" />
     <ClCompile Include="InterpolationTests.cpp" />
     <ClCompile Include="LocaleTests.cpp" />
     <ClCompile Include="M4x4Tests.cpp" />

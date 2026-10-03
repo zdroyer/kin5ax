@@ -14,7 +14,7 @@ class CMemoryMyException : public CGeneratorException
 								,const std::string & methodName) // nazwa metody wyrzucaj¹cej: __FUNCTION__ 
 								:CGeneratorException(message,fileName,lineNumber,methodName)
 		{
-			m_sExceptionDescription = std::string("Invalid function argument(s)");
+			m_sExceptionDescription = std::string("Memory allocation failed");
 		}
 };
 

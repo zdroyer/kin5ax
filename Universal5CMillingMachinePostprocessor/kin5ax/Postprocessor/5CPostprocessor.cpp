@@ -189,7 +189,7 @@ tChainConfigurationVector C5CPostprocessor::SolveWithKnownAlpha1(const CR3Point 
 			m_oPositionPostprocessor.SetAxesAndOffset(r3vT1,r3vT2,r3vT3,r3pP1);
 			vShifts = m_oPositionPostprocessor.Solve(r3pPosition);
 
-		} catch (CGeneratorException e){
+		} catch (CGeneratorException &e){
 			sLog+=(" Error occurred during position solving for rotation no."+size_to_string(i+1)+":"+vSolutions2[i].toString()+"\n");
 			sLog+=("  "+e.Message());
 			continue;
@@ -227,7 +227,7 @@ tChainConfigurationVector C5CPostprocessor::SolveTheoretically(const CR3Point  r
 			vRotations.back()[m_nSecondRotationIndex] = vAngles[i][1];
 			vRotations.back()[m_nSecondRotationIndex].ApplySign(m_vSigns[m_nSecondRotationIndex]);	
 		}
-	} catch (CGeneratorException e){
+	} catch (CGeneratorException &e){
 		sLog+=("Error occurred during orientation solving:\n"+e.Message());
 		return std::vector<CChainConfiguration>(0);
 	}
@@ -243,7 +243,7 @@ tChainConfigurationVector C5CPostprocessor::SolveTheoretically(const CR3Point  r
 			m_oPositionPostprocessor.SetAxesAndOffset(r3vT1,r3vT2,r3vT3,r3pP1);
 			vShifts = m_oPositionPostprocessor.Solve(r3pPosition);
 
-		} catch (CGeneratorException e){
+		} catch (CGeneratorException &e){
 			sLog+=(" Error occurred during position solving for rotation no."+size_to_string(i+1)+":"+vRotations[i].toString()+"\n");
 			sLog+=("  "+e.Message());
 			continue;

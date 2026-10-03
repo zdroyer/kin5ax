@@ -131,7 +131,7 @@ void CCLDataFileDialog::LoadCLFile(const CString &sFilePath,const CString &sFile
 		try{
 			m_pDoc->m_oCutterLocationData.LoadFile(m_sOpenedFilePath.GetBuffer(m_sOpenedFilePath.GetLength()),m_sOpenedFileTitle.GetBuffer(m_sOpenedFileTitle.GetLength()));				
 			FillListBox(m_bShowOnlyErrors);
-		} catch (CGeneratorException e){
+		} catch (CGeneratorException &e){
 			MessageBox(e.Message().c_str());
 		}
 
