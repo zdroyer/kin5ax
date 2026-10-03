@@ -8,6 +8,8 @@
 #include "materialblockdialog.h"
 #include "cldatafiledialog.h"
 #include "simulationdialog.h"
+#include "MaterialSimulation.h"
+#include <memory>
 
 class CMainFrame : public CFrameWnd
 {
@@ -38,7 +40,14 @@ protected:  // control bar embedded members
 	CStatusBar  m_wndStatusBar;
 	CToolBar    m_wndToolBar;
 	bool m_bSimulationDialogVisible;	
-	CWinThread *m_pSimulationThread;
+	//the cutting simulation of the active document, alive from Start to Stop; driven by a UI timer
+	//(one thread in the application: nothing is shared with a worker)
+	std::unique_ptr<kin5ax::CMaterialSimulation> m_pSimulation;
+	UINT m_nSimulationTimerInterval;	//the interval the timer runs with, re-armed when the setting changes
+	size_t m_nStepsSinceRepaint;
+	//a timer tick: one location (or a few when the interval is below the timer resolution), a repaint
+	//every refresh period, the end of the trajectory
+	void RunSimulationSteps();
 
 // Generated message map functions
 protected:
@@ -80,7 +89,7 @@ public:
 	void PauseSimulation(void);
 	void StopAndResetSimulation(void);
 	afx_msg void OnSimulationDialog();
-	afx_msg LRESULT OnAppMessage(WPARAM w,LPARAM l);
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg void OnShowLinksParts();
 	afx_msg void OnShowToolBoundingBox();
 };

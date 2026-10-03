@@ -23,7 +23,6 @@ CApplicationConfiguration::CApplicationConfiguration(void)
 ,m_bShowBaseFrame(true)
 ,m_dInputPrecision(dEPSILON)
 ,m_nRefreshPeriod(20)
-,m_bStopSimulation(false)
 ,m_nSimulationInterval(0)
 ,m_bShowToolBoundingBox(false)
 {

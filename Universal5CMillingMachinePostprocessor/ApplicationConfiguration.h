@@ -29,7 +29,6 @@ public:
 	bool m_bShowBase;
 	bool m_bShowBaseFrame;
 
-	bool m_bStopSimulation;
 
 	double m_dInputPrecision;
 	double m_dUnit;

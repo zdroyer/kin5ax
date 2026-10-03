@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "Universal5CMillingMachinePostprocessor.h"
 #include "MillingToolPropertiesDialog.h"
+#include "MainFrm.h"
 
 
 #include "millingtoolball.h"
@@ -32,6 +33,7 @@ CMillingToolPropertiesDialog::CMillingToolPropertiesDialog(CWnd* pParent /*=NULL
 void CMillingToolPropertiesDialog::UpdateMillingTool()
 {
 	assert(m_pDoc);
+	((CMainFrame*)AfxGetMainWnd())->StopAndResetSimulation();	//the simulation refers to the tool being replaced
 	m_wndMillingToolPreview.SetMillingTool(0);
 	if(m_pDoc->m_pMillingTool != m_pOldTool)
 		delete m_pDoc->m_pMillingTool;
@@ -157,6 +159,7 @@ void CMillingToolPropertiesDialog::SetActiveDocument(CUniversal5CMillingMachineP
 void CMillingToolPropertiesDialog::OnBnClickedCancel()
 {
 	if(m_pOldTool != m_pDoc->m_pMillingTool){
+		((CMainFrame*)AfxGetMainWnd())->StopAndResetSimulation();
 		delete m_pDoc->m_pMillingTool;
 		m_pDoc->m_pMillingTool = m_pOldTool;
 	}

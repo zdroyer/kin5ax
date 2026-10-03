@@ -44,7 +44,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_POSTPROCESSOR_CLDATAFILE, OnPostprocessorCldatafile)
 	ON_WM_SHOWWINDOW()
 	ON_COMMAND(ID_SIMULATION_DIALOG, OnSimulationDialog)
-	ON_MESSAGE(WM_APP,OnAppMessage)
+	ON_WM_TIMER()
 	ON_COMMAND(ID_SHOW_LINKS_PARTS, OnShowLinksParts)
 	ON_COMMAND(ID_SHOW_TOOL_BOUNDING_BOX, OnShowToolBoundingBox)
 END_MESSAGE_MAP()
@@ -62,15 +62,14 @@ static UINT indicators[] =
 
 CMainFrame::CMainFrame()
 :m_bSimulationDialogVisible(false)
-,m_pSimulationThread(0)
+,m_nSimulationTimerInterval(0)
+,m_nStepsSinceRepaint(0)
 {
 
 }
 
 CMainFrame::~CMainFrame()
 {
-	oConfiguration.m_bStopSimulation = true;
-	Sleep(100);
 	::CoUninitialize();
 }
 
@@ -355,77 +354,84 @@ void CMainFrame::OnPostprocessorCldatafile()
 
 }
 
-UINT simulationFunction(LPVOID pParam )
-{
-	CUniversal5CMillingMachinePostprocessorDoc* pDoc = (CUniversal5CMillingMachinePostprocessorDoc*)pParam;
-	size_t i=0;
-	if(!pDoc)
-		AfxEndThread(1,TRUE);
-	if(!pDoc->m_pMillingTool){
-		MessageBox(0,"Cannot start simulation - no milling tool defined","Error",MB_OK);
-		AfxEndThread(1,TRUE);
-	}
-	if(!pDoc->m_oChain.Is5CChain()){
-		MessageBox(0,"Cannot start simulation - this is not valid 5C chain model","Error",MB_OK);
-		AfxEndThread(1,TRUE);
-	}
-	POSITION pos = pDoc->GetFirstViewPosition();
-	CView *pView = pDoc->GetNextView(pos);
-	if(pView==0){
-		MessageBox(0,"Cannot start simulation - invalid document object","Error",MB_OK);
-		AfxEndThread(1,TRUE);
-	}
-
-	CMaterialSimulation oSimulation(pDoc->m_oChain,*pDoc->m_pMillingTool,pDoc->m_oSimulationData,pDoc->m_oMaterial);
-	for(size_t i=0;;i++){
-		if(oConfiguration.m_bStopSimulation){
-			pView->Invalidate(FALSE);
-			pView->GetParent()->SendNotifyMessage(WM_APP,1,0);
-			AfxEndThread(0,TRUE);
-			return 0;
-		}
-		// a refresh period of 0 means no repaint during the simulation
-		if(oConfiguration.m_nRefreshPeriod && i>=oConfiguration.m_nRefreshPeriod){
-			i=0;
-			pView->SendNotifyMessage(WM_PAINT,0,0);
-		}
-		if(!oSimulation.Step())
-			break;
-		Sleep(oConfiguration.m_nSimulationInterval);
-	}
-	pView->GetParent()->SendNotifyMessage(WM_APP,0,0);
-	AfxEndThread(0,TRUE);
-	return 0;
-}
+//The simulation runs on the UI thread: a timer tick does one location of the trajectory, or a few when
+//the interval is below the timer resolution, repaints the view every refresh period and reports the end.
+static const UINT_PTR nSIMULATION_TIMER = 1;
 
 bool CMainFrame::StartSimulation(void)
 {
-	oConfiguration.m_bStopSimulation=false;
-	if(m_pSimulationThread){
-		m_pSimulationThread->ResumeThread();	
-		return true;
-	}
 	CUniversal5CMillingMachinePostprocessorDoc* pDoc = (CUniversal5CMillingMachinePostprocessorDoc*)GetActiveDocument();
-	if(pDoc->m_oSimulationData.GetSize()==0){
-		MessageBox("No data fo simulation\nRead and solve CL-DATA file first");
+	if(!pDoc)
 		return false;
+	if(!m_pSimulation){
+		if(!pDoc->m_pMillingTool){
+			MessageBox("Cannot start simulation - no milling tool defined");
+			return false;
+		}
+		if(!pDoc->m_oChain.Is5CChain()){
+			MessageBox("Cannot start simulation - this is not a valid 5C chain model");
+			return false;
+		}
+		if(pDoc->m_oSimulationData.GetSize()==0){
+			MessageBox("No data for simulation\nRead and solve CL-DATA file first");
+			return false;
+		}
+		m_pSimulation.reset(new CMaterialSimulation(pDoc->m_oChain,*pDoc->m_pMillingTool,pDoc->m_oSimulationData,pDoc->m_oMaterial));
+		m_nStepsSinceRepaint = 0;
 	}
-	m_pSimulationThread = AfxBeginThread(simulationFunction,(LPVOID)pDoc,THREAD_PRIORITY_BELOW_NORMAL);	
+	m_nSimulationTimerInterval = (UINT)oConfiguration.m_nSimulationInterval;
+	SetTimer(nSIMULATION_TIMER,std::max(m_nSimulationTimerInterval,(UINT)1),NULL);
 	return true;
 }
 
 void CMainFrame::PauseSimulation(void)
 {
-	if(m_pSimulationThread)
-		m_pSimulationThread->SuspendThread();
-
+	KillTimer(nSIMULATION_TIMER);
 }
 
 void CMainFrame::StopAndResetSimulation(void)
 {
-	oConfiguration.m_bStopSimulation=true;
-	Sleep(200);
-	m_pSimulationThread=0;
+	KillTimer(nSIMULATION_TIMER);
+	m_pSimulation.reset();
+	Invalidate();
+}
+
+void CMainFrame::OnTimer(UINT_PTR nIDEvent)
+{
+	if(nIDEvent==nSIMULATION_TIMER)
+		RunSimulationSteps();
+	CFrameWnd::OnTimer(nIDEvent);
+}
+
+void CMainFrame::RunSimulationSteps()
+{
+	if(!m_pSimulation){
+		KillTimer(nSIMULATION_TIMER);
+		return;
+	}
+	//the interval may have been changed in the dialog while running
+	if(m_nSimulationTimerInterval!=(UINT)oConfiguration.m_nSimulationInterval){
+		m_nSimulationTimerInterval = (UINT)oConfiguration.m_nSimulationInterval;
+		SetTimer(nSIMULATION_TIMER,std::max(m_nSimulationTimerInterval,(UINT)1),NULL);
+	}
+	//below the timer resolution (about 16 ms) several locations per tick keep the speed the interval asks for
+	const UINT nTimerResolution = 16;
+	const size_t nSteps = m_nSimulationTimerInterval>=nTimerResolution ? 1 : nTimerResolution/std::max(m_nSimulationTimerInterval,(UINT)1);
+	CView *pView = GetActiveView();
+	for(size_t i=0;i<nSteps;i++){
+		if(!m_pSimulation->Step()){
+			m_dlgSimulationDialog.OnBnClickedButtonStop();	//kills the timer, frees the simulation, repaints, resets the button
+			MessageBox("Milling simulation finished");
+			return;
+		}
+		m_nStepsSinceRepaint++;
+		//a refresh period of 0 means no repaint during the simulation
+		if(pView && oConfiguration.m_nRefreshPeriod && m_nStepsSinceRepaint>=oConfiguration.m_nRefreshPeriod){
+			m_nStepsSinceRepaint = 0;
+			pView->Invalidate(FALSE);
+			pView->UpdateWindow();
+		}
+	}
 }
 
 
@@ -447,18 +453,6 @@ void CMainFrame::OnSimulationDialog()
 	}
 	m_bSimulationDialogVisible= (!m_bSimulationDialogVisible);
 }
-
-LRESULT CMainFrame::OnAppMessage(WPARAM w,LPARAM l)
-{
-	m_dlgSimulationDialog.OnBnClickedButtonStop();
-	if(w==0)
-		MessageBox("Milling simulation finished");
-	else
-		MessageBox("Milling simulation aborded by user");
-	Invalidate();
-	return 0;
-}
-
 
 void CMainFrame::OnShowLinksParts()
 {
