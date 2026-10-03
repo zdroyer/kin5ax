@@ -36,15 +36,14 @@ int CSimulationData::ExportToGCode(
 				a1=radians_to_degrees(a1);
 				a2=radians_to_degrees(a2);
 			}
-			int res = fprintf(pFile,"N%zu G1 X%lf Y%lf Z%lf %c%lf %c%lf\n"
-							,10*n
-							,oConfig[nXIndex].GetValue()
-							,oConfig[nYIndex].GetValue()
-							,oConfig[nZIndex].GetValue()
-							,cAngle1Char
-							,a1
-							,cAngle2Char	
-							,a2);
+			//the numbers with the point as decimal separator whatever the locale (fprintf would follow it)
+			std::string sLine = "N"+size_to_string(10*n)
+				+" G1 X"+fixed_to_string(oConfig[nXIndex].GetValue(),6)
+				+" Y"+fixed_to_string(oConfig[nYIndex].GetValue(),6)
+				+" Z"+fixed_to_string(oConfig[nZIndex].GetValue(),6)
+				+" "+std::string(1,cAngle1Char)+fixed_to_string(a1,6)
+				+" "+std::string(1,cAngle2Char)+fixed_to_string(a2,6)+"\n";
+			int res = fputs(sLine.c_str(),pFile);
 			if(res <0)
 				return res;
 			n++;

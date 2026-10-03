@@ -169,12 +169,6 @@ void CChainSegment::SetParameterValue(double dValue)
 }
 
 
-double string_to_double(const std::string &s)
-{
-	double d;
-	sscanf(s.c_str(),"%lG",&d);
-	return d;
-}
 
 
 

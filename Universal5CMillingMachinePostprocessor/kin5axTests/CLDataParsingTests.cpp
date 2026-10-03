@@ -143,3 +143,12 @@ TEST(CLDataParsing, IteratorSkipsTheBadLines)
 	EXPECT_FALSE(oData.GetNextLocation(p,v));
 	EXPECT_NEAR(sqrt(27.0),oData.GetTrajectoryLength(),1E-12);
 }
+
+//KnownBugs #48 (part): inf and nan passed strtod and reached the solver
+TEST(CLDataParsing, InfiniteAndNotANumberAreErrors)
+{
+	CCutterLocationData oData;
+	LoadText(oData,"GOTO/1,2,3,0,0,inf\nGOTO/1,2,-nan,0,0,1\nGOTO/1,2,3,0,0,1\nGOTO/1e400,2,3,0,0,1\n");
+	EXPECT_EQ((size_t)1,oData.GetLocationsCount());
+	EXPECT_EQ((size_t)3,oData.GetErrorsCount());
+}

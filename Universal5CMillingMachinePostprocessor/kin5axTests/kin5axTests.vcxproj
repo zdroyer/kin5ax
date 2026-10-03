@@ -153,6 +153,7 @@
     <ClCompile Include="CLDataParsingTests.cpp" />
     <ClCompile Include="CLDataTests.cpp" />
     <ClCompile Include="InterpolationTests.cpp" />
+    <ClCompile Include="LocaleTests.cpp" />
     <ClCompile Include="M4x4Tests.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MeridianCLDataTests.cpp" />

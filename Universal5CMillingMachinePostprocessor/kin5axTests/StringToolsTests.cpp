@@ -30,6 +30,14 @@ TEST(StringPrintf, NumberConversions)
 	EXPECT_EQ("-2.5\r\n",double_to_string(-2.5,true));
 }
 
+TEST(StringTools, FixedToString)
+{
+	EXPECT_EQ("0.500000",fixed_to_string(0.5,6));
+	EXPECT_EQ("-12.25",fixed_to_string(-12.25,2));
+	EXPECT_EQ("3",fixed_to_string(3.4,0));
+	EXPECT_EQ("1000000.000000",fixed_to_string(1E6,6));
+}
+
 //the chain files: every double must come back unchanged (KnownBugs #65: %.8G lost the digits of 1/sqrt(3))
 TEST(StringTools, DoubleToStringExactReadsBack)
 {

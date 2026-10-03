@@ -10,7 +10,10 @@ static std::string sRNL("\r\n");
 //printf into a string of the needed length (no fixed buffer, no shared buffer)
 std::string string_printf(const char *szFormat, ...);
 std::string size_to_string(size_t n, bool bEndWithNewLineAndR=false);
+//8 significant digits in the general form (as %.8G), the point as decimal separator whatever the locale
 std::string double_to_string(double d, bool bEndWithNewLineAndR=false);
+//nDecimals digits after the point (as %.*f), the point as decimal separator whatever the locale
+std::string fixed_to_string(double d, int nDecimals);
 //the shortest decimal form that reads back to the same double (for the chain files; %.8G of
 //double_to_string loses digits, e.g. 0.57735026919 -> 0.57735027)
 std::string double_to_string_exact(double d);

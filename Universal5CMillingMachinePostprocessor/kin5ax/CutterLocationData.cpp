@@ -1,4 +1,6 @@
 #include "stdafx.h"
+#include <charconv>
+#include <cmath>
 #include "CutterLocationData.h"
 
 //case-insensitive comparison of the first n characters (the keywords GOTO/ and MSYS/)
@@ -58,8 +60,6 @@ void CCutterLocationData::LoadFile(const std::string & sFileName, const std::str
 
 	m_sFileName = sFileName;
 	m_sFileTitle = sFileTitle;
-	std::string sOldLocale(setlocale(LC_NUMERIC,NULL));
-	setlocale(LC_NUMERIC,"C");	//the decimal separator of the file is the point
 	m_nErrors=0;
 	m_nActual=0;
 	m_nLocations=0;
@@ -87,20 +87,20 @@ void CCutterLocationData::LoadFile(const std::string & sFileName, const std::str
 			m_nErrors++;
 		i = nNext;
 	}
-	setlocale(LC_NUMERIC,sOldLocale.c_str());
 	SetTransformation(m_m4x4P,m_m4x4V,false);
 }
 
 size_t CCutterLocationData::ReadDouble(const char *s,double &d) const
 {
-	if(*s==0)
+	//std::from_chars: the point is the decimal separator whatever the locale of the process; it takes
+	//no plus sign, so that one is skipped here. No number, out of range, inf or nan: nothing read.
+	const char *szBegin = s;
+	if(*s=='+')
+		s++;
+	std::from_chars_result oResult = std::from_chars(s,s+strlen(s),d);
+	if(oResult.ec!=std::errc() || !std::isfinite(d))
 		return 0;
-	char *end;
-	errno = 0;	//strtod only sets it, never clears it
-	d = strtod(s,&end);
-	if(errno==ERANGE && fabs(d)==HUGE_VAL)
-		return 0;
-	return (size_t)(end-s);
+	return (size_t)(oResult.ptr-szBegin);
 }
 
 size_t CCutterLocationData::ReadDelims(const char *s) const

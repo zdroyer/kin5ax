@@ -30,7 +30,20 @@ std::string size_to_string(size_t n, bool bEndWithNewLineAndR){
 	return string_printf(bEndWithNewLineAndR ? "%zu\r\n" : "%zu",n);
 }
 std::string double_to_string(double d, bool bEndWithNewLineAndR){
-	return string_printf(bEndWithNewLineAndR ? "%.8G\r\n" : "%.8G",d);
+	char szBuffer[64];
+	std::to_chars_result oResult = std::to_chars(szBuffer,szBuffer+sizeof(szBuffer),d,std::chars_format::general,8);
+	std::string s(szBuffer,oResult.ptr);
+	for(size_t i=0;i<s.size();i++)
+		if(s[i]=='e')
+			s[i]='E';
+	return bEndWithNewLineAndR ? s+"\r\n" : s;
+}
+
+std::string fixed_to_string(double d, int nDecimals)
+{
+	char szBuffer[400];	//1e308 with decimals still fits
+	std::to_chars_result oResult = std::to_chars(szBuffer,szBuffer+sizeof(szBuffer),d,std::chars_format::fixed,nDecimals);
+	return std::string(szBuffer,oResult.ptr);
 }
 
 std::string double_to_string_exact(double d)
