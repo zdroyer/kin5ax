@@ -72,9 +72,6 @@
     <ClCompile Include="Chain\ChainXmlReader.cpp">
       <Filter>Chain</Filter>
     </ClCompile>
-    <ClCompile Include="Chain\ChainXmlReaderPugixml.cpp">
-      <Filter>Chain</Filter>
-    </ClCompile>
     <ClCompile Include="Chain\ChainJson.cpp">
       <Filter>Chain</Filter>
     </ClCompile>

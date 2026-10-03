@@ -1,5 +1,5 @@
 // Every path through the readers and the writers of the chain file formats, on every test chain.
-//   XML (.kc):       readers CChainXmlReader (MSXML) and CChainXmlReaderPugixml, writer CChain::toXML
+//   XML (.kc):       reader CChainXmlReader (pugixml), writer CChain::toXML
 //   JSON (.kc.json): reader CChainJsonReader, writer CChainJsonWriter
 // A chain that went through any sequence of them must still be the same chain: the same XML text,
 // the same JSON text and the same descriptive data as the chain read directly from the file.
@@ -20,11 +20,11 @@ struct CReader
 	CChain (*pfnReadFile)(const std::string &sFilePath);
 };
 
-CChain ReadMsxml(const std::string &sFilePath)	{ return CChainXmlReader::ReadFile(sFilePath); }
-CChain ReadPugixml(const std::string &sFilePath){ return CChainXmlReaderPugixml::ReadFile(sFilePath); }
+CChain ReadXml(const std::string &sFilePath)	{ return CChainXmlReader::ReadFile(sFilePath); }
 CChain ReadJson(const std::string &sFilePath)	{ return CChainJsonReader::ReadFile(sFilePath); }
 
-const CReader vXML_READERS[] = { {"msxml",&ReadMsxml}, {"pugixml",&ReadPugixml} };
+//one XML reader today (the MSXML one was removed after these tests had shown both equal on every path)
+const CReader vXML_READERS[] = { {"xml",&ReadXml} };
 const CReader oJSON_READER = {"json",&ReadJson};
 
 //what every writer makes of the chain, plus the descriptive data: equal images = the same chain

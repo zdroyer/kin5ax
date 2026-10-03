@@ -1,5 +1,5 @@
-// The two .kc readers: CChainXmlReaderPugixml (portable, explicit checks) against CChainXmlReader
-// (MSXML) on every test chain, and the checks of the pugixml reader on deliberately broken files.
+// The .kc reader CChainXmlReader (pugixml): its checks on deliberately broken files, and every test
+// chain read, written back and read again.
 #include "stdafx.h"
 #include "gtest/gtest.h"
 #include "TestData.h"
@@ -68,7 +68,7 @@ static std::string PugiError(const std::string &sContent, CChain *pChain = NULL)
 	std::string sFilePath = WriteTemp("kin5axTests_pugixml.kc",sContent);
 	std::string sError;
 	try{
-		CChain oChain = CChainXmlReaderPugixml::ReadFile(sFilePath);
+		CChain oChain = CChainXmlReader::ReadFile(sFilePath);
 		if(pChain)
 			*pChain = oChain;
 	} catch (CGeneratorException &e){
@@ -115,7 +115,7 @@ TEST(PugixmlReader, MissingFileIsReported)
 {
 	std::string sError;
 	try{
-		CChainXmlReaderPugixml::ReadFile(TempFilePath("kin5axTests_no_such_chain.kc"));
+		CChainXmlReader::ReadFile(TempFilePath("kin5axTests_no_such_chain.kc"));
 	} catch (CGeneratorException &e){
 		sError = e.Message();
 	}
@@ -258,22 +258,7 @@ TEST(PugixmlReader, MissingTransformationIsReported)
 	EXPECT_ERROR_CONTAINS(sError,"line 4");
 }
 
-//the structure check is shared: the MSXML reader rejects the same chains
-TEST(MsxmlReader, AppliesTheStructureCheck)
-{
-	std::string s = Replaced(Template(),"<segment type=\"REVOLUTE_LINK\" name=\"B\"","<segment type=\"TOOL\" name=\"B\"");
-	std::string sFilePath = WriteTemp("kin5axTests_msxml_structure.kc",s);
-	std::string sError;
-	try{
-		CChainXmlReader::ReadFile(sFilePath);
-	} catch (CGeneratorException &e){
-		sError = e.Message();
-	}
-	remove(sFilePath.c_str());
-	EXPECT_ERROR_CONTAINS(sError,"TOOL");
-}
-
-//---- every test chain: both readers give the same chain, and a saved chain reads back identically
+//---- every test chain: a saved chain reads back identically
 class PugixmlChainFile : public ::testing::TestWithParam<std::string> {};
 
 struct PugixmlChainFileName
@@ -282,27 +267,14 @@ struct PugixmlChainFileName
 	{ return GetTestName(oInfo.param); }
 };
 
-TEST_P(PugixmlChainFile, EqualsTheMsxmlReader)
-{
-	std::string sPugi, sMsxml;
-	try{
-		sPugi = CChainXmlReaderPugixml::ReadFile(GetParam()).toXML();
-		sMsxml = CChainXmlReader::ReadFile(GetParam()).toXML();
-	} catch (CGeneratorException &e){
-		FAIL()<<"exception: "<<e.Message()<<" ("<<e.GetThrowingPlace()<<")";
-	}
-	EXPECT_FALSE(sPugi.empty());
-	EXPECT_EQ(sMsxml,sPugi);
-}
-
 TEST_P(PugixmlChainFile, SavedChainReadsBackIdentically)
 {
 	std::string sFilePath = TempFilePath("kin5axTests_pugixml_roundtrip.kc");
 	std::string sFirst, sSecond;
 	try{
-		sFirst = CChainXmlReaderPugixml::ReadFile(GetParam()).toXML();
+		sFirst = CChainXmlReader::ReadFile(GetParam()).toXML();
 		WriteTemp("kin5axTests_pugixml_roundtrip.kc",sFirst);
-		sSecond = CChainXmlReaderPugixml::ReadFile(sFilePath).toXML();
+		sSecond = CChainXmlReader::ReadFile(sFilePath).toXML();
 	} catch (CGeneratorException &e){
 		FAIL()<<"exception: "<<e.Message()<<" ("<<e.GetThrowingPlace()<<")";
 	}
@@ -313,21 +285,11 @@ TEST_P(PugixmlChainFile, SavedChainReadsBackIdentically)
 INSTANTIATE_TEST_CASE_P(Files, PugixmlChainFile, ::testing::ValuesIn(GetChainFiles()), PugixmlChainFileName());
 
 //---- the name of the machine (the 'name' attribute of the root), kept by CChain since this commit
-TEST(ChainName, IsReadByBothReaders)
+TEST(ChainName, IsRead)
 {
-	CChain oPugi;
-	ASSERT_EQ(std::string(),PugiError(Template(),&oPugi));
-	EXPECT_EQ("template",oPugi.GetName());
-
-	std::string sFilePath = WriteTemp("kin5axTests_name.kc",Template());
-	CChain oMsxml;
-	try{
-		oMsxml = CChainXmlReader::ReadFile(sFilePath);
-	} catch (CGeneratorException &e){
-		ADD_FAILURE()<<e.Message();
-	}
-	remove(sFilePath.c_str());
-	EXPECT_EQ("template",oMsxml.GetName());
+	CChain oChain;
+	ASSERT_EQ(std::string(),PugiError(Template(),&oChain));
+	EXPECT_EQ("template",oChain.GetName());
 }
 
 TEST(ChainName, SurvivesTheXmlRoundTripAndIsEscaped)
@@ -340,7 +302,7 @@ TEST(ChainName, SurvivesTheXmlRoundTripAndIsEscaped)
 	std::string sFilePath = WriteTemp("kin5axTests_name_roundtrip.kc",oChain.toXML());
 	std::string sReloaded;
 	try{
-		sReloaded = CChainXmlReaderPugixml::ReadFile(sFilePath).GetName();
+		sReloaded = CChainXmlReader::ReadFile(sFilePath).GetName();
 	} catch (CGeneratorException &e){
 		ADD_FAILURE()<<e.Message();
 	}
@@ -363,25 +325,13 @@ static std::string WithMetadata()
 		,"name=\"template\" machine=\"SHW UniSpeed 3500\" author=\"P. Zdroik\" modified=\"2026-09-22\"");
 }
 
-TEST(ChainMetadata, IsReadByBothReaders)
+TEST(ChainMetadata, IsRead)
 {
-	CChain oPugi;
-	ASSERT_EQ(std::string(),PugiError(WithMetadata(),&oPugi));
-	EXPECT_EQ("SHW UniSpeed 3500",oPugi.GetMachine());
-	EXPECT_EQ("P. Zdroik",oPugi.GetAuthor());
-	EXPECT_EQ("2026-09-22",oPugi.GetModified());
-
-	std::string sFilePath = WriteTemp("kin5axTests_metadata.kc",WithMetadata());
-	CChain oMsxml;
-	try{
-		oMsxml = CChainXmlReader::ReadFile(sFilePath);
-	} catch (CGeneratorException &e){
-		ADD_FAILURE()<<e.Message();
-	}
-	remove(sFilePath.c_str());
-	EXPECT_EQ("SHW UniSpeed 3500",oMsxml.GetMachine());
-	EXPECT_EQ("P. Zdroik",oMsxml.GetAuthor());
-	EXPECT_EQ("2026-09-22",oMsxml.GetModified());
+	CChain oChain;
+	ASSERT_EQ(std::string(),PugiError(WithMetadata(),&oChain));
+	EXPECT_EQ("SHW UniSpeed 3500",oChain.GetMachine());
+	EXPECT_EQ("P. Zdroik",oChain.GetAuthor());
+	EXPECT_EQ("2026-09-22",oChain.GetModified());
 }
 
 TEST(ChainMetadata, SurvivesTheXmlRoundTrip)
@@ -391,7 +341,7 @@ TEST(ChainMetadata, SurvivesTheXmlRoundTrip)
 	std::string sFilePath = WriteTemp("kin5axTests_metadata_roundtrip.kc",oChain.toXML());
 	CChain oReloaded;
 	try{
-		oReloaded = CChainXmlReaderPugixml::ReadFile(sFilePath);
+		oReloaded = CChainXmlReader::ReadFile(sFilePath);
 	} catch (CGeneratorException &e){
 		ADD_FAILURE()<<e.Message();
 	}

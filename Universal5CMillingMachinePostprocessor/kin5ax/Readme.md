@@ -75,11 +75,11 @@ test of all boxes and of the tool.
 
 ## Data
 
-- **.kc** (in): the machine, see above. Two readers with the same interface: `CChainXmlReader`
-  (MSXML on Windows, the inline DTD validated by the parser) and `CChainXmlReaderPugixml`
-  (pugixml, vendored in `3rdParty/pugixml/`, portable; no DTD, the reader checks the elements,
-  attributes and numbers itself and names the line of every problem). Both end with
-  `CChain::CheckStructure`. Written by `CChain::toXML`.
+- **.kc** (in): the machine, see above. Read by `CChainXmlReader` (pugixml, vendored in
+  `3rdParty/pugixml/`, portable; the inline DTD is not validated, the reader checks the elements,
+  attributes and numbers itself and names the line of every problem), then `CChain::CheckStructure`.
+  Written by `CChain::toXML`. The MSXML reader was removed once the format path tests had shown
+  both readers equal on every chain.
 - **.kc.json** (in and out): the same machine in JSON, described by `kc.schema.json`
   (draft 2020-12). The tool and the workpiece holder are members of their branch instead of
   entries in the segment list and carry no type and no limits; a joint is `"rotary"` or
@@ -252,6 +252,5 @@ Tracked one by one in `../KnownBugs.md`; the open items that matter most:
 - Working tolerance: one global epsilon of 1e-15, effectively exact comparison at
   millimetre scale (#23, #56).
 - Portability: the planned Linux port needs the `<io.h>` include removed and a few
-  case-sensitive include names fixed (#60); the MSXML reader is Windows only, the pugixml one is not.
-- Not thread-safe: static working variables in the solver (#46).
+  case-sensitive include names fixed (#60).
 - No feed rate, tool change or machine-specific words in the G-code; no DLL build yet.
