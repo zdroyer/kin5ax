@@ -60,6 +60,7 @@ public:
 	double m_dActualMaxPositionDifference;
 	double m_dActualMaxOrientationDifferenceDegrees;
 	size_t m_nTotalProblemsCount;
+	std::vector<size_t> m_vProblemsByStatus;	//indexed by kin5ax::SOLVE_STATUS
 	std::string m_sReportFile;
     
 	void GenerateAndShowReport(void);

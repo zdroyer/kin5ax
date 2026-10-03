@@ -5,6 +5,15 @@
 
 namespace kin5ax {
 
+size_t CCLDataPostprocessingResult::CountOf(SOLVE_STATUS status) const
+{
+	size_t n = 0;
+	for(size_t i=0;i<m_vStatuses.size();i++)
+		if(m_vStatuses[i]==status)
+			n++;
+	return n;
+}
+
 CCLDataPostprocessor::CCLDataPostprocessor(const CPostprocessorSettings &oSettings)
 :m_oSettings(oSettings)
 {
@@ -42,6 +51,7 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 	std::vector<CR3CaughtVector> vAmbiguousCollection;
 	vAmbiguousCollection.reserve(50);
 	CR3CaughtVector lastInput(CR3Vector(0.0),CR3Point(0.0));
+	CSolveReport oReport;
 	for(int i=0; data.GetNextLocation(p2,v2);i++){
 		InterpolateLocation(p1,v1,p2,v2,vIntermediateLocations);
 		for(size_t j=0;j<vIntermediateLocations.size();j++){
@@ -51,7 +61,8 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 				,vIntermediateLocations[j].second.m_v
 				,oChain
 				,oTool
-				,sLog);
+				,sLog
+				,oReport);
 			if(vSolutions.size() && vSolutions[0].IsAmbiguous()){
 				if(!bCollectingAmbiguousSolutions){
 					vAmbiguousCollection.erase(vAmbiguousCollection.begin(),vAmbiguousCollection.end());
@@ -62,8 +73,10 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 				if(j+1>=vIntermediateLocations.size() && !data.HasMoreLocations()){
 					std::string sSingularSolutionLog="";
 					std::vector<tChainConfigurationVector> vUnambiguous = oPostprocessor.SolveSingularOrientation(vAmbiguousCollection,oChain,oTool,sSingularSolutionLog);
-					for(size_t q=0;q<vUnambiguous.size();q++)
+					for(size_t q=0;q<vUnambiguous.size();q++){
 						oSimulationData.AddConfigurationSet(vUnambiguous[q]);
+						oResult.m_vStatuses.push_back(vUnambiguous[q].empty() ? SOLVE_STATUS_SINGULAR_UNSOLVED : SOLVE_STATUS_SOLVED);
+					}
 					if(pFile)
 						fprintf(pFile,"%s\n",sSingularSolutionLog.c_str());
 					bCollectingAmbiguousSolutions=false;
@@ -73,13 +86,16 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 					vAmbiguousCollection.push_back(vIntermediateLocations[j].second);
 					std::string sSingularSolutionLog="";
 					std::vector<tChainConfigurationVector> vUnambiguous = oPostprocessor.SolveSingularOrientation(vAmbiguousCollection,oChain,oTool,sSingularSolutionLog);
-					for(size_t q=0;q<vUnambiguous.size();q++)
+					for(size_t q=0;q<vUnambiguous.size();q++){
 						oSimulationData.AddConfigurationSet(vUnambiguous[q]);
+						oResult.m_vStatuses.push_back(vUnambiguous[q].empty() ? SOLVE_STATUS_SINGULAR_UNSOLVED : SOLVE_STATUS_SOLVED);
+					}
 					if(pFile)
 						fprintf(pFile,"%s\n",sSingularSolutionLog.c_str());
 					bCollectingAmbiguousSolutions=false;
 				} 
                 oSimulationData.AddConfigurationSet(vSolutions);
+				oResult.m_vStatuses.push_back(oReport.Status());
 			}
 			lastInput.m_p = vIntermediateLocations[j].second.m_p;
 			lastInput.m_v = vIntermediateLocations[j].second.m_v;
@@ -100,7 +116,8 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 			}
 			
 			if(pFile){
-				std::string s = "XYZ:"+vIntermediateLocations[j].second.m_p.toString()+", IJK:"+vIntermediateLocations[j].second.m_v.toString()+", location no. "+size_to_string(i+1);
+				std::string s = "XYZ:"+vIntermediateLocations[j].second.m_p.toString()+", IJK:"+vIntermediateLocations[j].second.m_v.toString()+", location no. "+size_to_string(i+1)
+					+" - "+SolveStatusName(oReport.Status());
 				std::string s2="";
 
 				for(size_t k=0;k<vSolutions.size();k++){

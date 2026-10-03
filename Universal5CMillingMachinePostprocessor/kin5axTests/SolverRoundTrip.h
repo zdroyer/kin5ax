@@ -4,6 +4,7 @@
 
 #include "Chain.h"
 #include "MillingTool.h"
+#include <random>
 
 struct CSolverRoundTripResult
 {
@@ -20,3 +21,6 @@ struct CSolverRoundTripResult
 };
 
 CSolverRoundTripResult RunSolverRoundTrip(kin5ax::CChain &oChain, kin5ax::CMillingTool &oTool, size_t nSamples, double dTolerance);
+
+//random joint values inside the limits of the chain (unlimited: +-0.1 or +-180 deg)
+kin5ax::CChainConfiguration RandomJointValues(const kin5ax::CChain &oChain, std::mt19937 &oGenerator);

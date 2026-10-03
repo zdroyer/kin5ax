@@ -93,6 +93,9 @@
     <ClCompile Include="Postprocessor\5CPostprocessor.cpp">
       <Filter>Postprocessor</Filter>
     </ClCompile>
+    <ClCompile Include="Postprocessor\SolveReport.cpp">
+      <Filter>Postprocessor</Filter>
+    </ClCompile>
     <ClCompile Include="Postprocessor\OrientationPostprocessor.cpp">
       <Filter>Postprocessor</Filter>
     </ClCompile>
@@ -185,6 +188,9 @@
       <Filter>MillingTool</Filter>
     </ClInclude>
     <ClInclude Include="Postprocessor\5CPostprocessor.h">
+      <Filter>Postprocessor</Filter>
+    </ClInclude>
+    <ClInclude Include="Postprocessor\SolveReport.h">
       <Filter>Postprocessor</Filter>
     </ClInclude>
     <ClInclude Include="Postprocessor\OrientationPostprocessor.h">

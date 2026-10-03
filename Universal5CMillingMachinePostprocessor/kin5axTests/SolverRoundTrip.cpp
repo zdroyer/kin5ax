@@ -11,6 +11,23 @@ static double AngleDifference(double d1, double d2)
 	return std::min(d,d2Pi-d);
 }
 
+CChainConfiguration RandomJointValues(const CChain &oChain, std::mt19937 &oGenerator)
+{
+	const int n = (int)oChain.GetNumberOfRegularLinks();
+	CChainConfiguration oSet(n);
+	for(int i=0;i<n;i++){
+		const CChainSegment &oSegment = oChain[i];
+		bool bRevolute = oSegment.GetType()==CHAIN_SEGMENT_REVOLUTE_LINK;
+		double dMin = bRevolute ? -dPi : -0.1, dMax = bRevolute ? dPi : 0.1;
+		if(oSegment.IsParameterConstrained()){
+			dMin = oSegment.m_dParameterValueMinimum;
+			dMax = oSegment.m_dParameterValueMaximum;
+		}
+		oSet[i].SetParameter(std::uniform_real_distribution<double>(dMin,dMax)(oGenerator),bRevolute ? RADIAN : DISTANCE_UNIT);
+	}
+	return oSet;
+}
+
 CSolverRoundTripResult RunSolverRoundTrip(CChain &oChain, CMillingTool &oTool, size_t nSamples, double dTolerance)
 {
 	CSolverRoundTripResult oResult = CSolverRoundTripResult();
@@ -20,18 +37,7 @@ CSolverRoundTripResult RunSolverRoundTrip(CChain &oChain, CMillingTool &oTool, s
 
 	std::mt19937 oGenerator(508);
 	for(size_t s=0;s<nSamples;s++){
-		//random joint values inside the limits (unlimited: +-0.1 or +-180 deg)
-		CChainConfiguration oSet(n);
-		for(int i=0;i<n;i++){
-			const CChainSegment &oSegment = oChain[i];
-			bool bRevolute = oSegment.GetType()==CHAIN_SEGMENT_REVOLUTE_LINK;
-			double dMin = bRevolute ? -dPi : -0.1, dMax = bRevolute ? dPi : 0.1;
-			if(oSegment.IsParameterConstrained()){
-				dMin = oSegment.m_dParameterValueMinimum;
-				dMax = oSegment.m_dParameterValueMaximum;
-			}
-			oSet[i].SetParameter(std::uniform_real_distribution<double>(dMin,dMax)(oGenerator),bRevolute ? RADIAN : DISTANCE_UNIT);
-		}
+		CChainConfiguration oSet = RandomJointValues(oChain,oGenerator);
 		oChain.SetParameters(oSet);
 		std::string sLog;
 		if(oChain.HasCollision(oTool,sLog)){

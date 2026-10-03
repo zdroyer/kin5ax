@@ -6,6 +6,7 @@
 #include "SimulationData.h"
 #include "PostprocessorSettings.h"
 #include "ProgressCallback.h"
+#include "SolveReport.h"
 
 //Statistics of one CCLDataPostprocessor::Process run
 namespace kin5ax {
@@ -28,6 +29,12 @@ public:
 	double m_dMaxOrientationErrorVectorLength;
 	CChainConfiguration m_oMaxOrientationErrorSolution;
 	CR3CaughtVector m_cvMaxOrientationErrorInput;
+
+	//why every solution set handed to the CSimulationData is what it is: one status per set, in the
+	//order of the sets (a location of a singular section counts as SOLVED or SINGULAR_UNSOLVED)
+	std::vector<SOLVE_STATUS> m_vStatuses;
+	//how many sets have the status
+	size_t CountOf(SOLVE_STATUS status) const;
 };
 
 //Batch postprocessing of CL-data: every cutter location (and the locations interpolated

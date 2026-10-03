@@ -25,6 +25,7 @@
     <ClCompile Include="R3BoxTests.cpp" />
     <ClCompile Include="RotationTests.cpp" />
     <ClCompile Include="SimulationDataTests.cpp" />
+    <ClCompile Include="SolveReportTests.cpp" />
     <ClCompile Include="SolverRoundTrip.cpp" />
     <ClCompile Include="SphereCLDataGenerator.cpp" />
     <ClCompile Include="StringToolsTests.cpp" />

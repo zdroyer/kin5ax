@@ -77,9 +77,21 @@ std::vector<tChainConfigurationWithResult> C5CPostprocessor::SolveWithLocations(
 
 tChainConfigurationVector C5CPostprocessor::Solve(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,CMillingTool &oMillingTool, std::string &sLog)
 {
-	tChainConfigurationVector  vResult = SolveTheoretically(r3pPosition,r3vOrientation,oChain,sLog);
+	CSolveReport oReport;
+	return Solve(r3pPosition,r3vOrientation,oChain,oMillingTool,sLog,oReport);
+}
+
+tChainConfigurationVector C5CPostprocessor::Solve(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,CMillingTool &oMillingTool, std::string &sLog, CSolveReport &oReport)
+{
+	oReport.Clear();
+	tChainConfigurationVector  vResult = SolveTheoretically(r3pPosition,r3vOrientation,oChain,sLog,&oReport);
 	vResult = ApplyParameterConstraints(vResult,oChain,sLog);
+	oReport.m_nWithinLimits = vResult.size();
 	vResult = ApplyCollisionDetection(vResult,oChain,oMillingTool,sLog);
+	oReport.m_nCollisionFree = vResult.size();
+	for(size_t i=0;i<vResult.size();i++)
+		if(vResult[i].IsAmbiguous())
+			oReport.m_bAmbiguous = true;
 	sLog+=(size_to_string(vResult.size())+ " solution(s) meet(s) constraints and do(es)n't cause collisions\n");
     return vResult;
 }
@@ -178,7 +190,7 @@ tChainConfigurationVector C5CPostprocessor::SolveWithKnownAlpha1(const CR3Point 
 
 
 }
-tChainConfigurationVector C5CPostprocessor::SolveTheoretically(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,std::string &sLog)
+tChainConfigurationVector C5CPostprocessor::SolveTheoretically(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,std::string &sLog, CSolveReport *pReport)
 {
 	CChainConfiguration oChainConfig(5);
 
@@ -186,6 +198,8 @@ tChainConfigurationVector C5CPostprocessor::SolveTheoretically(const CR3Point  r
 	std::vector<CChainConfiguration> vRotations;
 	try{
 		std::vector<CChainConfiguration> vAngles = m_oOrientationPostprocessor.Solve(r3vV0);
+		if(pReport)
+			pReport->m_nOrientationSolutions = vAngles.size();
 		sLog += ("found "+size_to_string(vAngles.size())+" generic orientation solution\n");
 		for(size_t i=0;i<vAngles.size();i++){
 			vRotations.push_back(CChainConfiguration(5));
@@ -226,6 +240,8 @@ tChainConfigurationVector C5CPostprocessor::SolveTheoretically(const CR3Point  r
 			vResult2.back()[m_nThirdTranslationIndex].ApplySign(m_vSigns[m_nThirdTranslationIndex]);
 		}
 	}
+	if(pReport)
+		pReport->m_nTheoreticalSolutions = vResult2.size();
 	return vResult2;
 }
 

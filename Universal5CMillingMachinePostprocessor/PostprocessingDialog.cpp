@@ -184,6 +184,7 @@ void CPostprocessingDialog::OnBnClickedStart()
 	m_dActualMaxOrientationDifferenceDegrees = oPostprocessorSettings.m_dMaxOrientationDifferenceDegrees;
 	m_dActualMaxPositionDifference = oPostprocessorSettings.m_dMaxPositionDifference;
 	m_nTotalProblemsCount=0;
+	m_vProblemsByStatus.clear();
 
 	m_dMaxOrientationErrorVectorLength=-1.0;
 	m_dMaxPositionError=-1.0;
@@ -217,6 +218,9 @@ void CPostprocessingDialog::OnBnClickedStart()
 			,m_nDetailedReportContents
 			,&oPostprocessingProgress);
 		m_nTotalProblemsCount = oResult.m_nTotalProblemsCount;
+		m_vProblemsByStatus.assign(SOLVE_STATUS_COUNT,0);
+		for(int s=0;s<SOLVE_STATUS_COUNT;s++)
+			m_vProblemsByStatus[s] = oResult.CountOf((SOLVE_STATUS)s);
 		m_dMaxPositionError = oResult.m_dMaxPositionError;
 		m_oMaxPositionErrorSolution = oResult.m_oMaxPositionErrorSolution;
 		m_cvMaxPositionErrorInput = oResult.m_cvMaxPositionErrorInput;
@@ -366,6 +370,12 @@ void CPostprocessingDialog::GenerateAndShowReport(void)
 		m_sReport+=("\tintermediate locations number: "+size_to_string(m_nTotalProblemsCount-oCLData.GetLocationsCount())+sRNL);
 		m_sReport+=("\taverage position difference: "+double_to_string(oCLData.GetTrajectoryLength()/(double)m_nTotalProblemsCount,true));
 		m_sReport+=("\taverage orientation difference: "+double_to_string(radians_to_degrees( oCLData.GetTotalOrientationChangeRadians())/(double)m_nTotalProblemsCount)+" degrees"+sRNL);
+
+		if(m_vProblemsByStatus.size()==SOLVE_STATUS_COUNT){
+			m_sReport+=(sRNL+"Problems by result"+sRNL);
+			for(int s=0;s<SOLVE_STATUS_COUNT;s++)
+				m_sReport+=("\t"+std::string(SolveStatusName((SOLVE_STATUS)s))+": "+size_to_string(m_vProblemsByStatus[s])+sRNL);
+		}
 
 		m_sReport+=(sRNL+"Computation errors"+sRNL);
 		m_sReport+=("\tMaximum position error: "+sRNL);
