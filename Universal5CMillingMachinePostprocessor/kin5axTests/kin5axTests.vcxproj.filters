@@ -9,6 +9,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ChainParameterTests.cpp" />
     <ClCompile Include="ChainTests.cpp" />
     <ClCompile Include="ChainXmlReaderTests.cpp" />
     <ClCompile Include="ChainJsonTests.cpp" />

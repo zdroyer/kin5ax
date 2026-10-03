@@ -118,12 +118,13 @@ public:
 
 
 protected:
+	//the plain difference of two distances, the shorter arc between two angles (in [0,pi])
 	double difference(double d1, double d2) const{
 		double d = fabs(d1-d2);
 		if(m_nUnit == DISTANCE_UNIT) 
 			return d;
-		double dif1 = fabs(d2Pi-d);
-		return std::min(fmod(dif1,d2Pi),fmod(d,d2Pi));
+		d = fmod(d,d2Pi);	//KnownBugs #45: min(fmod(|2pi-d|,2pi),fmod(d,2pi)) was wrong for d in (3pi,4pi)
+		return std::min(d,d2Pi-d);
 	}
 
 	double m_dValue;
