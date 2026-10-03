@@ -2,7 +2,6 @@
 #include ".\material.h"
 
 
-extern CApplicationConfiguration oConfiguration;
 
 CMaterial::CMaterial(double dXSize
 					 ,double dYSize
@@ -11,9 +10,7 @@ CMaterial::CMaterial(double dXSize
 					 ,double dXStart
 					,double dYStart
 					,double dZStart)
-:m_nObserverVectorIndex(0x07)
-,m_bGraysShouldBeUpdated(false)
-,m_dPixelSize(0.0)
+:m_bGraysShouldBeUpdated(false)
 {
 	GenerateBox(dXSize,dYSize,dZSize,dPrecision,dXStart,dYStart,dZStart);
 }
@@ -109,221 +106,11 @@ void CMaterial::GenerateBox(double dXSize,
 
 
 
-void CMaterial::SetObserverVector(const CR3Vector &r3vV)
+const std::vector<CR3Point> &CMaterial::GetSurfaceVoxels()
 {
-	if(r3vV.IsZero())
-		return;
-	unsigned char c = 0x00;
-	if(r3vV.GetX()>0.0)
-		c |= 0x01;
-	if(r3vV.GetY()>0)
-		c |= 0x02;
-	if(r3vV.GetZ()>0)
-		c |= 0x04;
-	m_nObserverVectorIndex = c;    
-}
-
-void CMaterial::Render3D(bool bFastRendering)
-{
-	glColor3d(0.4,0.25,0.1);
-	RenderContour();
-	if(bFastRendering)
-		return;
 	if(m_bGraysShouldBeUpdated)
 		UpdateGrayVoxels();
-	size_t nVoxelPerPixel = (size_t)(m_dPixelSize / (1.73*m_dPrecision));
-	if(nVoxelPerPixel==0)
-		nVoxelPerPixel = 1;
-	size_t nDX=1,nDY=1,nDZ=1;
-	double dDX=(double)nDX, dDY=(double)nDY, dDZ=(double)nDZ;
-	double dHalf = dDX * 0.5 * m_dPrecision;
-
-	double dX0 = m_dXStart; 
-	double dY0 = m_dYStart;
-	double dZ0 = m_dZStart; 
-	double dX1 = m_dXStart+dDX*m_dPrecision; 
-	double dY1 = m_dYStart+dDY*m_dPrecision;
-	double dZ1 = m_dZStart+dDZ*m_dPrecision; 
-
-	double *px0 = &dX0, *py0 = &dY0, *pz0 = &dZ0;
-	double *px1 = &dX1, *py1 = &dY1, *pz1 = &dZ1;
-
-	if(m_nObserverVectorIndex & 0x01){
-		px0 = &dX1;
-		px1 = &dX0;
-	}
-	if(m_nObserverVectorIndex & 0x02 ){
-		py0 = &dY1;
-		py1 = &dY0;
-	}
-	if(m_nObserverVectorIndex & 0x04 ){
-		pz0 = &dZ1;
-		pz1 = &dZ0;
-	}
-	double vx = (*px0)-(*px1);
-	double vy = (*py0)-(*py1);
-	double vz = (*pz0)-(*pz1);
-	glShadeModel(GL_FLAT);
-
-	if(nVoxelPerPixel>3){
-		for(size_t i =0; i<m_vGrayVoxels.size(); i++){
-//			m_vGrayVoxels[i].CopyCoordinates(dX0,dY0,dZ0);
-			glBegin(GL_POINTS);
-				glNormal3d(vx,vy,vz);						
-//				glVertex3d(*px0,*py0,*pz0);
-				glVertex3dv(m_vGrayVoxels[i].toGL3dv());
-			glEnd();						
-		}
-		return;
-	}
-	if(nVoxelPerPixel>1){
-		for(size_t i =0; i<m_vGrayVoxels.size(); i++){
-			m_vGrayVoxels[i].CopyCoordinates(dX0,dY0,dZ0);
-			dX1 = dX0+m_dPrecision;
-			dY1 = dY0+m_dPrecision;
-			dZ1 = dZ0+m_dPrecision;
-			glBegin(GL_POINTS);
-				glNormal3d(vx,0.0,0.0);						
-				glVertex3d(*px0,dY0+dHalf ,dZ0+dHalf);
-
-				glNormal3d(0.0,0.0,vz);
-				glVertex3d(dX0+dHalf,dY0+dHalf,*pz0);
-
-				glNormal3d(0.0,vy,0.0);
-				glVertex3d(dX0+dHalf,*py0,dZ0+dHalf);
-			glEnd();
-		}
-		return;
-	} 
-	for(size_t i =0; i<m_vGrayVoxels.size(); i++){
-		m_vGrayVoxels[i].CopyCoordinates(dX0,dY0,dZ0);
-		dX1 = dX0+m_dPrecision;
-		dY1 = dY0+m_dPrecision;
-		dZ1 = dZ0+m_dPrecision;
-		glBegin(GL_TRIANGLE_FAN);{
-			glNormal3d(vx,0.0,0.0);						
-			glVertex3d(*px0,*py0,*pz0);
-			glVertex3d(*px0,*py0,*pz1);
-			glVertex3d(*px0,*py1,*pz1);
-			glVertex3d(*px0,*py1,*pz0);
-			glNormal3d(0.0,0.0,vz);
-			glVertex3d(*px1,*py1,*pz0);
-			glVertex3d(*px1,*py0,*pz0);
-			glNormal3d(0.0,vy,0.0);
-			glVertex3d(*px1,*py0,*pz1);
-			glVertex3d(*px0,*py0,*pz1);			
-		}glEnd();
-
-	}
-	return;
-	glShadeModel(GL_SMOOTH);
-/* 
-	for(size_t k=0; k < m_nZ; k+=nDZ){
-		size_t nZchars = k/(sizeof(unsigned char)*4);
-		size_t nZbits = 2*(k%(sizeof(unsigned char)*4));
-		unsigned char c = (VOXEL_GRAY<<(unsigned char)nZbits);
-		unsigned char c11 = (0x03<<(unsigned char)nZbits);
-		for(size_t i=0; i< m_nX ;i+=nDX){
-			for(size_t j=0; j< m_nY; j+=nDY){
-				//unsigned char c2 = m_box[i][j][nZchars];
-				if(!((m_box[i][j][nZchars] ^ c)&c11)){
-					if(nVoxelPerPixel>3){
-						glBegin(GL_POINTS);
-							glNormal3d(vx,vy,vz);						
-							glVertex3d(*px0,*py0,*pz0);
-						glEnd();						
-						continue;
-
-					}
-					if(nVoxelPerPixel>1){
-						glBegin(GL_POINTS);
-							glNormal3d(vx,0.0,0.0);						
-							glVertex3d(*px0,dY0+dHalf ,dZ0+dHalf);
-
-							glNormal3d(0.0,0.0,vz);
-							glVertex3d(dX0+dHalf,dY0+dHalf,*pz0);
-
-							glNormal3d(0.0,vy,0.0);
-							glVertex3d(dX0+dHalf,*py0,dZ0+dHalf);
-						glEnd();
-					} else {
-						glBegin(GL_TRIANGLE_FAN);
-							glNormal3d(vx,0.0,0.0);						
-							glVertex3d(*px0,*py0,*pz0);
-							glVertex3d(*px0,*py0,*pz1);
-							glVertex3d(*px0,*py1,*pz1);
-							glVertex3d(*px0,*py1,*pz0);
-							glNormal3d(0.0,0.0,vz);
-							glVertex3d(*px1,*py1,*pz0);
-							glVertex3d(*px1,*py0,*pz0);
-							glNormal3d(0.0,vy,0.0);
-							glVertex3d(*px1,*py0,*pz1);
-							glVertex3d(*px0,*py0,*pz1);			
-						glEnd();
-					}
-				}
-				dY0 = dY1;
-				dY1 = m_dYStart +((double)(j+2)*m_dPrecision);
-			}
-			dY0=m_dYStart;
-			dY1=m_dYStart+(dDY*m_dPrecision);
-			
-			dX0=dX1;
-			dX1=m_dXStart+((double)(i+2)*m_dPrecision);
-		}
-		dX0=m_dXStart;
-		dX1=m_dXStart+(dDX*m_dPrecision);
-		dZ0=dZ1;
-		dZ1=m_dZStart +((double)(k+2)*m_dPrecision);
-	}
-
-	glShadeModel(GL_SMOOTH);
-//*/
-}
-
-void CMaterial::RenderContour() const
-{
-	glColor3d(0.4,0.25,0.1);
-	glDisable(GL_LIGHTING);
-	double dX0 = m_dXStart; 
-	double dY0 = m_dYStart;
-	double dZ0 = m_dZStart; 
-
-	double dX1 = m_dXStart+m_dXSize; 
-	double dY1 = m_dYStart+m_dYSize;
-	double dZ1 = m_dZStart+m_dZSize; 
-
-	glBegin(GL_LINE_LOOP);
-		glVertex3d(dX0,dY0,dZ0);
-		glVertex3d(dX1,dY0,dZ0);
-		glVertex3d(dX1,dY1,dZ0);
-		glVertex3d(dX0,dY1,dZ0);
-	glEnd();
-	glBegin(GL_LINE_LOOP);
-		glVertex3d(dX0,dY0,dZ1);
-		glVertex3d(dX1,dY0,dZ1);
-		glVertex3d(dX1,dY1,dZ1);
-		glVertex3d(dX0,dY1,dZ1);
-	glEnd();
-	glBegin(GL_LINES);
-		glVertex3d(dX0,dY0,dZ1);
-		glVertex3d(dX0,dY0,dZ0);
-
-		glVertex3d(dX1,dY0,dZ1);
-		glVertex3d(dX1,dY0,dZ0);
-
-		glVertex3d(dX1,dY1,dZ1);
-		glVertex3d(dX1,dY1,dZ0);
-
-		glVertex3d(dX0,dY1,dZ1);
-		glVertex3d(dX0,dY1,dZ0);
-	glEnd();
-	glEnable(GL_LIGHTING);
-}
-
-void CMaterial::SetPixelSize(double dPixelSize)
-{
-	m_dPixelSize = dPixelSize;
+	return m_vGrayVoxels;
 }
 
 void CMaterial::MachineCut(CMillingTool & oCutter)

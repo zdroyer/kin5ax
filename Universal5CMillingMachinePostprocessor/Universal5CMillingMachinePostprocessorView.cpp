@@ -73,10 +73,10 @@ void CUniversal5CMillingMachinePostprocessorView::OnDraw(CDC* pDC)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-	pDoc->m_oMaterial.SetObserverVector(m_o3DViewManipulator.GetObserverVector(pDoc->m_oChain.GetActualToMaterialInvertedTransformation()));
-	pDoc->m_oMaterial.SetPixelSize(m_o3DViewManipulator.GetPixelSize(0.0));
-	glMatrixMode(GL_MODELVIEW);		
-	pDoc->Render3D(m_o3DViewManipulator.IsInAction());
+	CR3Vector r3vMaterialObserver = m_o3DViewManipulator.GetObserverVector(pDoc->m_oChain.GetActualToMaterialInvertedTransformation());
+	double dPixelSize = m_o3DViewManipulator.GetPixelSize(0.0);
+	glMatrixMode(GL_MODELVIEW);
+	pDoc->Render3D(m_o3DViewManipulator.IsInAction(),r3vMaterialObserver,dPixelSize);
 
 	SwapBuffers(*pDC);
 	m_o3DViewManipulator.Paint(*pDC);

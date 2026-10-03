@@ -99,11 +99,10 @@ void CUniversal5CMillingMachinePostprocessorDoc::Dump(CDumpContext& dc) const
 
 // CUniversal5CMillingMachinePostprocessorDoc commands
 
-void CUniversal5CMillingMachinePostprocessorDoc::Render3D(bool bFastRendering)
+void CUniversal5CMillingMachinePostprocessorDoc::Render3D(bool bFastRendering, const CR3Vector &r3vMaterialObserver, double dPixelSize)
 {
-	
 	m_oChain.Update(m_pMillingTool);
-	CChainRendererGL::Render(m_oChain,bFastRendering,m_oMaterial,m_pMillingTool,m_oCutterLocationData);
+	CChainRendererGL::Render(m_oChain,bFastRendering,m_oMaterial,r3vMaterialObserver,dPixelSize,m_pMillingTool,m_oCutterLocationData);
 
 }
 

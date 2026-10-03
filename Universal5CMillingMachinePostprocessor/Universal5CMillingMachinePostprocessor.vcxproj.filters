@@ -42,6 +42,9 @@
     <ClCompile Include="R3BoxRendererGL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MaterialRendererGL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="CutterLocationDataRendererGL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -120,6 +123,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="R3BoxRendererGL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialRendererGL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CutterLocationDataRendererGL.h">

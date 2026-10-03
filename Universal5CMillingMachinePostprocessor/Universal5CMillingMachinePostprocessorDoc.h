@@ -44,7 +44,8 @@ protected:
 	DECLARE_MESSAGE_MAP()
 	CGLTools m_oGLTools;
 public:
-	void Render3D(bool bFastRendering);
+	//r3vMaterialObserver (in the material frame) and dPixelSize come from the view, see CMaterialRendererGL::Render
+	void Render3D(bool bFastRendering, const CR3Vector &r3vMaterialObserver, double dPixelSize);
 	// kinametic chain of milling machine
 	CChain m_oChain;
 	CCutterLocationData m_oCutterLocationData;

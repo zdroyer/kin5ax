@@ -224,6 +224,7 @@
     <ClCompile Include="MillingToolRendererGDI.cpp" />
     <ClCompile Include="MillingToolRendererGL.cpp" />
     <ClCompile Include="R3BoxRendererGL.cpp" />
+    <ClCompile Include="MaterialRendererGL.cpp" />
     <ClCompile Include="CutterLocationDataRendererGL.cpp" />
     <ClCompile Include="GLTools.cpp" />
     <ClCompile Include="KinematicChainPropertiesDialog.cpp" />
@@ -257,6 +258,7 @@
     <ClInclude Include="MillingToolRendererGL.h" />
     <ClInclude Include="ProgressCtrlCallback.h" />
     <ClInclude Include="R3BoxRendererGL.h" />
+    <ClInclude Include="MaterialRendererGL.h" />
     <ClInclude Include="CutterLocationDataRendererGL.h" />
     <ClInclude Include="GLTools.h" />
     <ClInclude Include="KinematicChainPropertiesDialog.h" />

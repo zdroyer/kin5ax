@@ -5,12 +5,15 @@
 #include "ChainSegmentRendererGL.h"
 #include "MillingToolRendererGL.h"
 #include "CutterLocationDataRendererGL.h"
+#include "MaterialRendererGL.h"
 
 extern CApplicationConfiguration oConfiguration;
 
 void CChainRendererGL::Render(const CChain &oChain
 					  , bool bFastRendering
 					  , CMaterial &oMaterial
+					  , const CR3Vector &r3vMaterialObserver
+					  , double dPixelSize
 					  , const CMillingTool *pTool
 					  , const CCutterLocationData &oData)
 {
@@ -63,9 +66,9 @@ void CChainRendererGL::Render(const CChain &oChain
 		
 
 	if(oConfiguration.m_bShowMaterial)
-		oMaterial.Render3D(bFastRendering);
+		CMaterialRendererGL::Render(oMaterial,r3vMaterialObserver,dPixelSize,bFastRendering);
 	if(oConfiguration.m_bShowMaterialContour)
-		oMaterial.RenderContour();
+		CMaterialRendererGL::RenderContour(oMaterial);
 	if(oConfiguration.m_bShowToolTrajectory)
 		CCutterLocationDataRendererGL::Render(oData,bFastRendering);
 	glPopMatrix();

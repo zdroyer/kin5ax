@@ -28,14 +28,10 @@ protected:
 	size_t GetBoxCount(double dSize, double dPrecision) const;
 
 
-	unsigned char m_nObserverVectorIndex;
-	double m_dPixelSize;
 	size_t MinimumIndex(double d, double dSize, size_t nMax) const;
 	size_t MaximumIndex(double d, double dSize, size_t nMax) const;
 	std::vector<CR3Point> m_vGrayVoxels;
 public:
-	void SetObserverVector(const CR3Vector &r3vV);
-	void RenderContour() const;
 inline bool Is(VOXEL_COLOR color, size_t nX, size_t nY, size_t nZ) const
 {
 	if(nX>=m_nX ||  nY>=m_nY || nZ>=m_nZ){
@@ -115,6 +111,11 @@ inline bool ShouldBeGray(size_t nX, size_t nY, size_t nZ) const
 		,double dYStart = -0.35
 		,double dZStart = 0.0);
 	~CMaterial(void);
+	//the voxel size
+	double GetPrecision() const { return m_dPrecision; }
+	//the surface voxels (material next to a removed voxel or to the outside), brought up to date first;
+	//for the renderers and, later, the mesh extraction
+	const std::vector<CR3Point> &GetSurfaceVoxels();
 	void ResetMaterial();
 
 	void GenerateBox
@@ -127,7 +128,6 @@ inline bool ShouldBeGray(size_t nX, size_t nY, size_t nZ) const
 		,double dZStart);
 
 
-	void Render3D(bool bFastRendering=false);
 
 	void GetParameters
 			(double &dXSize
@@ -138,7 +138,6 @@ inline bool ShouldBeGray(size_t nX, size_t nY, size_t nZ) const
 			,double &dYStart
 			,double &dZStart) const ;
 
-	void SetPixelSize(double dPixelSize);
 	void MachineCut(CMillingTool & oCutter);
 	void GetIndexesOfBox(size_t &nMinI, size_t &nMaxI
 							   ,size_t &nMinJ, size_t &nMaxJ
