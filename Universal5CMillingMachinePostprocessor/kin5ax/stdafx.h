@@ -2,8 +2,10 @@
 
 #pragma once
 
-#pragma warning(disable:4786)
-#pragma warning(disable:4996)
+#ifdef _MSC_VER
+#pragma warning(disable:4786)	//identifier truncated in the debug information
+#pragma warning(disable:4996)	//the C library functions MSVC calls unsafe (fopen, strerror, ...)
+#endif
 
 #include <assert.h>
 #include <stdio.h>
@@ -14,10 +16,6 @@
 #include <limits.h>
 #include <errno.h>
 #include <locale.h>
-#include <io.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 
 #include <iostream>
 #include <string>

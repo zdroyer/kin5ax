@@ -1,9 +1,9 @@
 // CR3Box: intersection with another box (every edge is tested) and with a cylinder about OZ.
 #include "stdafx.h"
 #include "gtest/gtest.h"
-#include "r3box.h"
-#include "rotation.h"
-#include "translation.h"
+#include "R3Box.h"
+#include "Rotation.h"
+#include "Translation.h"
 
 //gives the tests access to the one-directional edge test
 using namespace kin5ax;

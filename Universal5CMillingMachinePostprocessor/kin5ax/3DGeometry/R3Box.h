@@ -5,6 +5,8 @@
 
 namespace kin5ax {
 
+class CTransformation;
+
 class CR3Box
 {
 protected:

@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "SphereCLDataGenerator.h"
-#include "r3vector.h"
-#include "r3point.h"
-#include "rotation.h"
+#include "R3Vector.h"
+#include "R3Point.h"
+#include "Rotation.h"
 
 using namespace kin5ax;
 

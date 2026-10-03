@@ -254,6 +254,6 @@ Tracked one by one in `../KnownBugs.md`; the open items that matter most:
 - A tool on a `TOOL` segment without boxes is never collision-tested (#38).
 - Working tolerance: one global epsilon of 1e-15, effectively exact comparison at
   millimetre scale (#23, #56).
-- Portability: the planned Linux port needs the `<io.h>` include removed and a few
-  case-sensitive include names fixed (#60).
+- Portability: the library has been compiled with MSVC only so far; the GUI and the tests still
+  have a few include names that differ from the file names in case (#60).
 - No feed rate, tool change or machine-specific words in the G-code; no DLL build yet.

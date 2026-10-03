@@ -1,7 +1,7 @@
 // CRotation: the constructors, the algebra and the rotation that turns one vector into another.
 #include "stdafx.h"
 #include "gtest/gtest.h"
-#include "rotation.h"
+#include "Rotation.h"
 
 using namespace kin5ax;
 
