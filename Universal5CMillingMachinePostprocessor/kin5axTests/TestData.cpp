@@ -31,15 +31,26 @@ std::string GetTestChainsDir()
 	return oDir.string()+(char)fs::path::preferred_separator;
 }
 
-std::vector<std::string> GetChainFiles()
+//the files of GetTestChainsDir() with the given extension (".kc", ".json"), sorted
+static std::vector<std::string> GetFilesWithExtension(const std::string &sExtension)
 {
 	std::vector<std::string> vFiles;
 	std::error_code oError;	//a missing folder gives an empty list, not an exception
 	for(const fs::directory_entry &oEntry : fs::directory_iterator(GetTestChainsDir(),oError))
-		if(oEntry.is_regular_file() && oEntry.path().extension()==".kc")
+		if(oEntry.is_regular_file() && oEntry.path().extension()==sExtension)
 			vFiles.push_back(oEntry.path().string());
 	std::sort(vFiles.begin(),vFiles.end());
 	return vFiles;
+}
+
+std::vector<std::string> GetChainFiles()
+{
+	return GetFilesWithExtension(".kc");
+}
+
+std::vector<std::string> GetJsonChainFiles()
+{
+	return GetFilesWithExtension(".json");
 }
 
 std::string GetTestName(const std::string &sFilePath)

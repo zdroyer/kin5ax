@@ -10,6 +10,9 @@ std::string GetTestChainsDir();
 //full paths of all .kc files of GetTestChainsDir()
 std::vector<std::string> GetChainFiles();
 
+//full paths of all .kc.json files of GetTestChainsDir()
+std::vector<std::string> GetJsonChainFiles();
+
 //file name without folder and extension, reduced to [A-Za-z0-9_] (GoogleTest parameter names)
 std::string GetTestName(const std::string &sFilePath);
 
