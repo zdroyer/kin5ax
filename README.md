@@ -71,17 +71,28 @@ same machine.
 
 ## Build
 
-Visual Studio 2022 (v143, C++17) with MFC. Open
-`Universal5CMillingMachinePostprocessor/Universal5CMillingMachinePostprocessor.sln`, the solution of the
-application, which also holds the library and the tests, or run
+**Library and tests, any platform** (CMake 3.20+, a C++17 compiler; GoogleTest is fetched on the first
+configure):
+
+```sh
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+ctest --test-dir build --output-on-failure
+```
+
+On Windows add the generator, e.g. `-G "Visual Studio 18 2026" -A x64`, and `-C Release` to `ctest`.
+Compiled and tested with MSVC so far; the library has no Windows dependency, a Linux build is next.
+
+**The application** (Windows, Visual Studio 2022 or later with MFC): open
+`Universal5CMillingMachinePostprocessor/Universal5CMillingMachinePostprocessor.sln`, which holds the
+application, the library and the tests as Visual Studio projects, or run
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File kin5axTests/build_and_test.ps1 [-Start]
 ```
 
 which builds Debug and Release x64, runs the tests and, with `-Start`, launches the application.
-The GoogleTest package is restored from NuGet on the first build. A CMake build for the other
-platforms is the first item of the roadmap; the library has no Windows dependency left.
+The GoogleTest package of the Visual Studio test project is restored from NuGet on the first build.
 
 ## Use
 
