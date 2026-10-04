@@ -857,6 +857,7 @@ BEGIN
         MENUITEM "Milling &tool",               ID_SIMULATION_SETUPMILLINGTOOL
 
         MENUITEM "Simulation &dialog",          ID_SIMULATION_DIALOG
+        MENUITEM "Simple simulation (&hemisphere)", ID_SIMULATION_SIMPLE
     END
     POPUP "&Help"
     BEGIN
@@ -970,6 +971,7 @@ BEGIN
     ID_FILE_SAVE_AS_JSON    "Save the kinematic chain as a JSON file\nSave As (JSON)"
     ID_FILE_IMPORT_FCM      "Read a machine from a FreeCAD CAM machine file\nImport (.fcm)"
     ID_FILE_EXPORT_FCM      "Write the machine as a FreeCAD CAM machine file\nExport (.fcm)"
+    ID_SIMULATION_SIMPLE    "Size a hemisphere and a material block for this machine, postprocess the hemisphere and start the simulation\nSimple simulation"
     ID_FILE_CLOSE           "Close the active document\nClose"
     ID_FILE_SAVE            "Save the active document\nSave"
     ID_FILE_SAVE_AS         "Save the active document with a new name\nSave As"

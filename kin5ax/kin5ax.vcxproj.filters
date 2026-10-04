@@ -105,6 +105,12 @@
     <ClCompile Include="Simulation\MaterialSimulation.cpp">
       <Filter>Simulation</Filter>
     </ClCompile>
+    <ClCompile Include="Simulation\SphereCLDataGenerator.cpp">
+      <Filter>Simulation</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation\SimpleSimulation.cpp">
+      <Filter>Simulation</Filter>
+    </ClCompile>
     <ClCompile Include="Postprocessor\OrientationPostprocessor.cpp">
       <Filter>Postprocessor</Filter>
     </ClCompile>
@@ -206,6 +212,12 @@
       <Filter>Simulation</Filter>
     </ClInclude>
     <ClInclude Include="Simulation\MaterialSimulation.h">
+      <Filter>Simulation</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\SphereCLDataGenerator.h">
+      <Filter>Simulation</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation\SimpleSimulation.h">
       <Filter>Simulation</Filter>
     </ClInclude>
     <ClInclude Include="Postprocessor\OrientationPostprocessor.h">

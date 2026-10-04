@@ -1,11 +1,15 @@
 #pragma once
-// CL-data test file: cutter locations on a hemisphere, tool axis normal to the sphere.
-// Based on the console tool SphereCLDGenerator.cpp (its interactive main became a function).
 
-//Writes "GOTO/x,y,z,i,j,k" lines: circles of latitude from the equator (z=0) up to the pole
-//(0,0,dR) with the tool axis (0,0,1) - the singular orientation of the machines with a
-//vertical rotary axis. dD: distance between neighbouring cutter locations.
-//Returns the number of the written locations, 0 if the file cannot be written.
+#include <string>
+
+//CL-data files of test and demonstration tool paths on a sphere, tool axis normal to the sphere.
+//Based on the console tool SphereCLDGenerator.cpp (its interactive main became a function).
+namespace kin5ax {
+
+//Writes "GOTO/x,y,z,i,j,k" lines: circles of latitude from the equator (z=0) up to the pole (0,0,dR)
+//of a hemisphere centred at the origin, with the tool axis (0,0,1) at the pole - the singular
+//orientation of the machines with a vertical rotary axis. dD: distance between neighbouring
+//cutter locations. Returns the number of the written locations, 0 if the file cannot be written.
 size_t WriteSphereCLData(const std::string &sFileName, double dR, double dD);
 
 //Writes nPoints (odd, at most 9 to stay below 10) "GOTO/x,y,z,i,j,k" lines along a meridian of the
@@ -14,3 +18,5 @@ size_t WriteSphereCLData(const std::string &sFileName, double dR, double dD);
 //The path crosses the singular orientation (0,0,1) of the machines with a vertical rotary axis.
 //Returns the number of the written locations, 0 if the file cannot be written.
 size_t WriteMeridianCLData(const std::string &sFileName, double dR, size_t nPoints);
+
+} // namespace kin5ax

@@ -89,6 +89,7 @@ public:
 	void PauseSimulation(void);
 	void StopAndResetSimulation(void);
 	afx_msg void OnSimulationDialog();
+	afx_msg void OnSimulationSimple();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg void OnShowLinksParts();
 	afx_msg void OnShowToolBoundingBox();

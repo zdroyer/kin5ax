@@ -9,6 +9,9 @@
 #include ".\mainfrm.h"
 #include "string_tools.h"
 #include "MaterialSimulation.h"
+#include "SimpleSimulation.h"
+#include "CLDataPostprocessor.h"
+#include <filesystem>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -18,6 +21,7 @@
 // CMainFrame
 
 extern CApplicationConfiguration oConfiguration;
+extern CPostprocessorSettings oPostprocessorSettings;
 
 IMPLEMENT_DYNCREATE(CMainFrame, CFrameWnd)
 
@@ -44,6 +48,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_POSTPROCESSOR_CLDATAFILE, OnPostprocessorCldatafile)
 	ON_WM_SHOWWINDOW()
 	ON_COMMAND(ID_SIMULATION_DIALOG, OnSimulationDialog)
+	ON_COMMAND(ID_SIMULATION_SIMPLE, OnSimulationSimple)
 	ON_WM_TIMER()
 	ON_COMMAND(ID_SHOW_LINKS_PARTS, OnShowLinksParts)
 	ON_COMMAND(ID_SHOW_TOOL_BOUNDING_BOX, OnShowToolBoundingBox)
@@ -438,6 +443,66 @@ void CMainFrame::RunSimulationSteps()
 	}
 }
 
+
+//Simulation > Simple simulation (hemisphere): a hemisphere and a material block sized for the machine
+//(CSimpleSimulationSetup), the hemisphere postprocessed with the current settings and tool, the simulation
+//dialog opened and the simulation started
+void CMainFrame::OnSimulationSimple()
+{
+	CUniversal5CMillingMachinePostprocessorDoc* pDoc = (CUniversal5CMillingMachinePostprocessorDoc*)GetActiveDocument();
+	if(!pDoc)
+		return;
+	if(!pDoc->m_oChain.Is5CChain()){
+		MessageBox("Simple simulation needs a valid 5C chain: three linear and two rotary joints in the two parts");
+		return;
+	}
+	if(!pDoc->m_pMillingTool){
+		MessageBox("Simple simulation needs a milling tool");
+		return;
+	}
+	StopAndResetSimulation();
+	CSimpleSimulationSetup oSetup = CSimpleSimulationSetup::ForMachine(pDoc->m_oChain,*pDoc->m_pMillingTool);
+	std::string sFilePath = (std::filesystem::temp_directory_path()/"kin5ax_simple_simulation.cld").string();
+	size_t nLocations = oSetup.WriteCLData(sFilePath);
+	if(nLocations==0){
+		MessageBox(("Cannot write the hemisphere tool path to "+sFilePath).c_str());
+		return;
+	}
+	CString sTitle;
+	GetWindowText(sTitle);
+	SetWindowText("Simple simulation: postprocessing the hemisphere ...");
+	size_t nSolved = 0;
+	try{
+		pDoc->m_oCutterLocationData.LoadFile(sFilePath,"hemisphere R="+double_to_string(oSetup.m_dRadius));
+		CCLDataPostprocessor oPostprocessor(oPostprocessorSettings);
+		CCLDataPostprocessingResult oResult = oPostprocessor.Process(pDoc->m_oChain,*pDoc->m_pMillingTool
+			,pDoc->m_oCutterLocationData,pDoc->m_oSimulationData,NULL,0,NULL);
+		pDoc->m_oSimulationData.FindShortestPath(oPostprocessorSettings,NULL);
+		nSolved = oResult.CountOf(SOLVE_STATUS_SOLVED);
+	} catch (CGeneratorException &e){
+		SetWindowText(sTitle);
+		MessageBox(e.Message().c_str());
+		return;
+	}
+	SetWindowText(sTitle);
+	pDoc->m_oMaterial.GenerateBox(oSetup.m_dBoxSize,oSetup.m_dBoxSize,oSetup.m_dBoxHeight,oSetup.m_dVoxelSize
+		,oSetup.GetBoxStart(),oSetup.GetBoxStart(),0.0);
+	oConfiguration.m_dUnit = oSetup.m_dBoxSize/0.9;	//the view scale, as the material block dialog sets it
+	pDoc->UpdateAllViews(NULL);
+	std::string sReport = "Hemisphere of radius "+double_to_string(oSetup.m_dRadius)+" (an eighth of the working range "
+		+double_to_string(oSetup.m_dWorkingRange)+"), "+size_to_string(nLocations)+" cutter locations, "
+		+size_to_string(nSolved)+" of them solved on this machine.\n"
+		+"Material block "+double_to_string(oSetup.m_dBoxSize)+" x "+double_to_string(oSetup.m_dBoxSize)+" x "
+		+double_to_string(oSetup.m_dBoxHeight)+" in voxels of "+double_to_string(oSetup.m_dVoxelSize)+".\n"
+		+"The tool path is in "+sFilePath+".\n\nThe simulation starts when you close this message.";
+	MessageBox(sReport.c_str(),"Simple simulation");
+	if(nSolved==0)
+		return;
+	if(!m_bSimulationDialogVisible)
+		OnSimulationDialog();
+	m_dlgSimulationDialog.SetActiveDocument(pDoc);
+	m_dlgSimulationDialog.OnBnClickedButtonPlayPause();
+}
 
 void CMainFrame::OnSimulationDialog()
 {

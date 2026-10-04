@@ -164,16 +164,15 @@
     <ClCompile Include="ProgressTests.cpp" />
     <ClCompile Include="R3BoxTests.cpp" />
     <ClCompile Include="RotationTests.cpp" />
+    <ClCompile Include="SimpleSimulationTests.cpp" />
     <ClCompile Include="SimulationDataTests.cpp" />
     <ClCompile Include="SolveReportTests.cpp" />
     <ClCompile Include="SolverRoundTrip.cpp" />
-    <ClCompile Include="SphereCLDataGenerator.cpp" />
     <ClCompile Include="StringToolsTests.cpp" />
     <ClCompile Include="TestData.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SolverRoundTrip.h" />
-    <ClInclude Include="SphereCLDataGenerator.h" />
     <ClInclude Include="TestData.h" />
   </ItemGroup>
   <ItemGroup>
