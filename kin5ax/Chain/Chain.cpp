@@ -837,6 +837,9 @@ void CChain::DetectCollisions(CMillingTool &oMillingTool)
 					if(oMillingTool.CauseCollision(boxes[j],trTool,trToolInv)){
 						m_vMaterialHolderPart[i].SetPartCollision(j);
 						oMillingTool.AddToCollisionLog((m_vMaterialHolderPart[i].GetName()+", box_"+size_to_string(j+1)));
+					} else if(oMillingTool.CauseNonCuttingCollision(boxes[j],trTool,trToolInv)){
+						m_vMaterialHolderPart[i].SetPartCollision(j);
+						oMillingTool.AddToCollisionLog((m_vMaterialHolderPart[i].GetName()+", box_"+size_to_string(j+1)+" (holder or shank)"));
 					}
 				}
 			}
@@ -876,6 +879,9 @@ void CChain::DetectCollisions(CMillingTool &oMillingTool)
 					if(oMillingTool.CauseCollision(boxes[j],trTool,trToolInv)){
 						m_vToolPart[i].SetPartCollision(j);
 						oMillingTool.AddToCollisionLog((m_vToolPart[i].GetName()+", box_"+size_to_string(j+1)));
+					} else if(oMillingTool.CauseNonCuttingCollision(boxes[j],trTool,trToolInv)){
+						m_vToolPart[i].SetPartCollision(j);
+						oMillingTool.AddToCollisionLog((m_vToolPart[i].GetName()+", box_"+size_to_string(j+1)+" (holder or shank)"));
 					}
 				}
 			}

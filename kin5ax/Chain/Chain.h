@@ -47,8 +47,8 @@ public:
 	//at zero when the chain declares no tool mount. Called by Update and by CCLDataPostprocessor::Process;
 	//call it yourself after changing the tool or the holder of a chain you solve directly.
 	void SetToolAssembly(const CMillingTool &oTool);
-	//Collision test of every box of every segment against the boxes of every other segment, and of the tool against
-	//the boxes of all segments, at the actual parameters. The result is stored in the segments (IsPartInCollision)
+	//Collision test of every box of every segment against the boxes of every other segment, and of the whole tool
+	//assembly (the cutting part, the shank and the holder) against the boxes of all segments, at the actual parameters. The result is stored in the segments (IsPartInCollision)
 	//and in the collision log of the tool; the tool part and the material holder part are both walked from the base.
 	void DetectCollisions(CMillingTool &oMillingTool);
 	CChain(void);
