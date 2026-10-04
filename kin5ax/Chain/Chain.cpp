@@ -11,6 +11,8 @@ extern CR3Point r3pZero;
 
 CChain::CChain(void)
 {
+	m_dToolMountToToolPoint = 0.0;
+	m_bToolMountDeclared = false;
 	m_bIsToolPartActive=true;
 	m_nActiveSegmentIndex=-1;
 
@@ -278,7 +280,7 @@ void CChain::GetTranslationAxesAndOffset(
 			m4x4F = m4x4F * m_vToolPart[i].GetParametrizedTransformation(oConfig[k].GetValue());
 		}		
 	}
-	m4x4F = m4x4F * m_vToolPart.back().GetConstantTransformation();
+	m4x4F = m4x4F * m_vToolPart.back().GetConstantTransformation() * GetToolMountToToolPointTransformation();
 	r3pP1 = m4x4F * CR3Point(0.0);
 
 }
@@ -359,7 +361,48 @@ CTransformation CChain::GetActualToToolTransformation() const
 			m_vToolPart[i].GetParametrizedTransformation(
 				m_vToolPart[i].m_dActualParameterValue);
 	}
-	return m4x4Result;
+	return m4x4Result * GetToolMountToToolPointTransformation();
+}
+
+double CChain::GetToolMountToToolPointDistance() const
+{
+	return m_dToolMountToToolPoint;
+}
+
+void CChain::SetToolMountToToolPointDistance(double dDistance)
+{
+	m_dToolMountToToolPoint = dDistance;
+}
+
+CTransformation CChain::GetToolMountToToolPointTransformation() const
+{
+	return CTransformation(CTranslation(0.0,0.0,-m_dToolMountToToolPoint));
+}
+
+CTransformation CChain::GetToolPointToToolMountTransformation() const
+{
+	return CTransformation(CTranslation(0.0,0.0,m_dToolMountToToolPoint));
+}
+
+bool CChain::IsToolMountDeclared() const
+{
+	return m_bToolMountDeclared;
+}
+
+const CToolHolder & CChain::GetDefaultToolHolder() const
+{
+	return m_oDefaultToolHolder;
+}
+
+void CChain::SetDefaultToolHolder(const CToolHolder &oHolder)
+{
+	m_oDefaultToolHolder = oHolder;
+	m_bToolMountDeclared = true;
+}
+
+void CChain::SetToolAssembly(const CMillingTool &oTool)
+{
+	m_dToolMountToToolPoint = m_bToolMountDeclared ? oTool.GetMountToToolPointDistance() : 0.0;
 }
 
 CR3CaughtVector CChain::GetActualToolPositionAndOrientation() const
@@ -547,6 +590,7 @@ void CChain::Update(CMillingTool *pTool)
 		SetParameters(CChainConfiguration((int)this->GetNumberOfRegularLinks()));
 
 	if(pTool){
+		SetToolAssembly(*pTool);
 		DetectCollisions(*pTool);
 		pTool->SetPositionAndOrientation(GetActualToolPositionAndOrientation());
 	}
@@ -780,8 +824,11 @@ void CChain::DetectCollisions(CMillingTool &oMillingTool)
 				}
 			}
 			if(m_vToolPart[k].GetType()==CHAIN_SEGMENT_TOOL){
+				//the solids of the tool are measured from the tool point, which hangs below the mount
+				CTransformation trTool = tr * GetToolMountToToolPointTransformation();
+				CTransformation trToolInv = GetToolPointToToolMountTransformation() * trInv;
 				for(size_t j=0; j<boxes.size();j++){
-					if(oMillingTool.CauseCollision(boxes[j],tr,trInv)){
+					if(oMillingTool.CauseCollision(boxes[j],trTool,trToolInv)){
 						m_vMaterialHolderPart[i].SetPartCollision(j);
 						oMillingTool.AddToCollisionLog((m_vMaterialHolderPart[i].GetName()+", box_"+size_to_string(j+1)));
 					}
@@ -817,8 +864,10 @@ void CChain::DetectCollisions(CMillingTool &oMillingTool)
 				}
 			}
 			if(m_vToolPart[k].GetType()==CHAIN_SEGMENT_TOOL){
+				CTransformation trTool = tr * GetToolMountToToolPointTransformation();
+				CTransformation trToolInv = GetToolPointToToolMountTransformation() * trInv;
 				for(size_t j=0; j<boxes.size();j++){
-					if(oMillingTool.CauseCollision(boxes[j],tr,trInv)){
+					if(oMillingTool.CauseCollision(boxes[j],trTool,trToolInv)){
 						m_vToolPart[i].SetPartCollision(j);
 						oMillingTool.AddToCollisionLog((m_vToolPart[i].GetName()+", box_"+size_to_string(j+1)));
 					}

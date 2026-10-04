@@ -26,6 +26,27 @@ class CChain
 public:
 	//the actual parameter of segment nIndex of the tool part / the material holder part (0.0 for the tool and the holder)
 	double GetActualParameter(size_t nIndex, bool bToolPart) const;
+
+	//---- the tool mount: the origin of the TOOL terminal, where the tool holder is clamped.
+	//The tool point (the programmed point of the CL data) lies GetToolMountToToolPointDistance() below it,
+	//along the Z axis of the terminal; the forward kinematics, the position solver and the collision test of
+	//the tool all use that distance. It stays zero for a chain file that declares no tool holder, whose TOOL
+	//terminal is the tool point itself, the way the files were written before the holder existed (KnownBugs #68).
+	double GetToolMountToToolPointDistance() const;
+	void SetToolMountToToolPointDistance(double dDistance);
+	//from the frame of the tool mount to the frame of the tool point, and back
+	CTransformation GetToolMountToToolPointTransformation() const;
+	CTransformation GetToolPointToToolMountTransformation() const;
+	//true when the chain file declares a tool mount (the tool_holder of its TOOL segment): only then does the
+	//length of a tool assembly move the tool point away from the terminal
+	bool IsToolMountDeclared() const;
+	//the tool holder of the machine, from the chain file; declaring one declares the tool mount
+	const CToolHolder & GetDefaultToolHolder() const;
+	void SetDefaultToolHolder(const CToolHolder &oHolder);
+	//Takes the distance from the assembly of this tool (holder, shank, cutting part, zero point), or leaves it
+	//at zero when the chain declares no tool mount. Called by Update and by CCLDataPostprocessor::Process;
+	//call it yourself after changing the tool or the holder of a chain you solve directly.
+	void SetToolAssembly(const CMillingTool &oTool);
 	//Collision test of every box of every segment against the boxes of every other segment, and of the tool against
 	//the boxes of all segments, at the actual parameters. The result is stored in the segments (IsPartInCollision)
 	//and in the collision log of the tool; the tool part and the material holder part are both walked from the base.
@@ -75,6 +96,10 @@ public:
 
 	int m_nActiveSegmentIndex;
 	bool m_bIsToolPartActive;
+
+	double m_dToolMountToToolPoint;		//see GetToolMountToToolPointDistance
+	bool m_bToolMountDeclared;
+	CToolHolder m_oDefaultToolHolder;
 
 	void ComputeAndSetError(CChainConfiguration &oConfig, const CR3CaughtVector &cv);
 	CR3CaughtVector m_toolPosition;
