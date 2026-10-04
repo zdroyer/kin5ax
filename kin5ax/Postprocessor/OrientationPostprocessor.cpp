@@ -189,7 +189,6 @@ std::vector<CChainConfiguration> COrientationPostprocessor::Solve(const CR3Vecto
 		MY_THROW(CArgsMyException,"COrientationPostprocessor: Zero length tool orientation vector V0");
 	CR3Vector V0 = r3vV0.GetUnitVector();
 
-	size_t nResultNumber = SolutionsNumber(V0);
 	switch(m_oSettings.m_nAnglesSolvingMethod){
 		case ANGLES_SOLVING_INDEPENDENTLY:
 			return SolveIndependently(V0);
@@ -289,10 +288,7 @@ std::vector<CChainParameter> COrientationPostprocessor::getAlpha1ConeMethod(cons
 }
 std::vector<CChainParameter> COrientationPostprocessor::getAlpha2SquareEquation(const CR3Vector & r3vV0)const
 {
-	static double dPiD2 = acos(0.0);
 	static double dPi = acos(-1.0);
-	static double d2Pi = 2.0*acos(-1.0);
-
 
 	std::vector<CChainParameter> result;
 	double dA = -(2.0*m_r3vN1.GetZ()* (m_r3vN1.scalarProduct( m_r3vV2)) - m_r3vV2.GetZ()- r3vV0.GetZ());

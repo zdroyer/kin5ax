@@ -89,7 +89,6 @@ CR3Box CR3Box::BoxFromCylinder(const CR3Point &p1, const CR3Point &p2,double dR 
 			box.ExpandXYZ(dR,dR,0.0);
 		else{
 			double dZ = fabs(dR * sin(acos(dCosAlpha)));
-			double dXY = dR * dCosAlpha;
 			double dY = sqrt(std::max(0.0,(v.GetX()*v.GetX()*dR*dR-v.GetX()*v.GetX()*dZ*dZ)/(v.GetX()*v.GetX()+v.GetY()*v.GetY())));
 			double dX =dR;
 			if(is_not_zero(v.GetX())){

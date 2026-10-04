@@ -20,8 +20,8 @@ static int strncmp_nocase(const char *a, const char *b, size_t n)
 
 
 CCutterLocationData::CCutterLocationData(void)
-: m_nErrors(0)
-, m_nActual(0)
+: m_nActual(0)
+, m_nErrors(0)
 , m_nLocations(0)
 , m_dTrajectoryLength(0.0)
 , m_dTotalOrientationChangeRadians(0.0)

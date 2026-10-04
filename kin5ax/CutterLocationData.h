@@ -40,9 +40,9 @@ public:
 		CCLLine(CL_LINE_STATUS status,size_t lineNumber,size_t indexOfString,CR3Point p, CR3Vector v)
 			:m_status(status)
 			,m_nLineNumber(lineNumber)
-			,m_nIndexOfString(indexOfString)
 			,m_p(p)
-			,m_v(v){}
+			,m_v(v)
+			,m_nIndexOfString(indexOfString){}
 
 			CCLLine(CL_LINE_STATUS status,size_t lineNumber,size_t indexOfString)
 			:m_status(status)

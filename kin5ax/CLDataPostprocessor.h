@@ -16,9 +16,9 @@ class CCLDataPostprocessingResult
 public:
 	CCLDataPostprocessingResult(void)
 		:m_nTotalProblemsCount(0)
+		,m_bCancelled(false)
 		,m_dMaxPositionError(-1.0)
 		,m_dMaxOrientationErrorVectorLength(-1.0)
-		,m_bCancelled(false)
 	{}
 	//solved problems: the cutter locations of the file and the interpolated ones
 	size_t m_nTotalProblemsCount;

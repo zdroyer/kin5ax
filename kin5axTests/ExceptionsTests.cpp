@@ -70,8 +70,9 @@ TEST(Exceptions, ACopyKeepsTheMessage)
 {
 	try{
 		ThrowArgs();
-	} catch (CGeneratorException e){		//by value on purpose: the copy must be complete
-		EXPECT_EQ("bad argument",e.Message());
-		EXPECT_STREQ("bad argument",e.what());
+	} catch (CGeneratorException &e){
+		CGeneratorException oCopy(e);		//the copy must be complete
+		EXPECT_EQ("bad argument",oCopy.Message());
+		EXPECT_STREQ("bad argument",oCopy.what());
 	}
 }

@@ -78,7 +78,6 @@ inline void SetVoxelColor(size_t nX, size_t nY, size_t nZ, VOXEL_COLOR color){
 	size_t nZ1 = nZ/(sizeof(unsigned char)*4);
 	size_t nZ2 = 2*(nZ%(sizeof(unsigned char)*4));
 
-	unsigned char & rc = m_box[nX][nY][nZ1];
 	
 	unsigned char c = ((0x03 << (unsigned char)nZ2) ^ 0xFF) ;
 	m_box[nX][nY][nZ1] &= c;

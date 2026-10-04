@@ -94,8 +94,9 @@ TEST_P(SolveReportChain, CountsAreConsistentOnRandomPoses)
 		EXPECT_GE(oReport.m_nWithinLimits,oReport.m_nCollisionFree);
 		EXPECT_EQ(v.size(),oReport.m_nCollisionFree);
 		EXPECT_EQ(v.empty(),oReport.Status()!=SOLVE_STATUS_SOLVED);
-		if(!bCollides)
+		if(!bCollides){
 			EXPECT_EQ(SOLVE_STATUS_SOLVED,oReport.Status())<<"a collision-free pose must be solved: "<<oSet.toString()<<"\n"<<sLog;
+		}
 		nByStatus[oReport.Status()]++;
 	}
 	EXPECT_GT(nByStatus[SOLVE_STATUS_SOLVED],(size_t)0);

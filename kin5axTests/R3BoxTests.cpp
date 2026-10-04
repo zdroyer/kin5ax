@@ -98,10 +98,12 @@ TEST(BoxAgainstSegment, AgreesWithPointSampling)
 				bNear=true;
 		}
 		bool bHit = oBox.HasIntersectionWithLineSegment(p1,p2);
-		if(bInside)
+		if(bInside){
 			EXPECT_TRUE(bHit)<<"case "<<n<<": "<<p1.toString()<<" - "<<p2.toString();
-		if(!bNear)
+		}
+		if(!bNear){
 			EXPECT_FALSE(bHit)<<"case "<<n<<": "<<p1.toString()<<" - "<<p2.toString();
+		}
 		if(bHit) nHits++;
 	}
 	EXPECT_GT(nHits,100);
@@ -239,10 +241,12 @@ TEST(BoxAgainstCylinder, AgreesWithPointSampling)
 						bNear=true;
 				}
 		bool bHit = HitsCylinder(oBox,oPose,oBack);
-		if(bInside)
+		if(bInside){
 			EXPECT_TRUE(bHit)<<"case "<<n<<": a point of the box is inside the cylinder";
-		if(!bNear)
+		}
+		if(!bNear){
 			EXPECT_FALSE(bHit)<<"case "<<n<<": no point of the box is even near the cylinder";
+		}
 		if(bHit) nHits++; else nMisses++;
 	}
 	//the random cases must contain both kinds

@@ -16,15 +16,15 @@ CChainSegment::CChainSegment(CHAIN_SEGMENT_TYPE type
 					,bool bParameterIsConstrained
 					,double dParameterMinimum
 					,double dParameterMaximum)
-		:m_type(type)
+		:m_nHighlightedPart(-1)
+		,m_type(type)
 		,m_r3vConstRevoluteAxis(r3vConstRevoluteAxis)
 		,m_dConstRevoluteAngle(dConstRevoluteAngle)
 		,m_r3vConstTranslation(r3vConstTranslation)
 		,m_dActualParameterValue(dParameterMinimum)
-		,m_bParameterIsConstrained(bParameterIsConstrained)
-		,m_dParameterValueMaximum(dParameterMaximum)
 		,m_dParameterValueMinimum(dParameterMinimum)
-		,m_nHighlightedPart(-1)
+		,m_dParameterValueMaximum(dParameterMaximum)
+		,m_bParameterIsConstrained(bParameterIsConstrained)
 {
 	SetType(type);
 }

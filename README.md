@@ -47,7 +47,7 @@ fast, exact, machine-aware judge of the toolpath. That judge is this library. Se
 
 | directory | what | platform |
 |---|---|---|
-| [`kin5ax/`](kin5ax/) | the library: C++17, standard library only (pugixml and nlohmann/json vendored), no Windows dependency | written for Linux, Windows, macOS; compiled with MSVC so far |
+| [`kin5ax/`](kin5ax/) | the library: C++17, standard library only (pugixml and nlohmann/json vendored), no Windows dependency | Windows (MSVC) and Linux (GCC) built and tested; macOS untried |
 | [`kin5axTests/`](kin5axTests/) | GoogleTest suite, 619 tests, with 11 machine models under `TestChains/` | same |
 | [`Universal5CMillingMachinePostprocessor/`](Universal5CMillingMachinePostprocessor/) | MFC application: kinematic chain editor, 3D viewer, single-location solver with a step-by-step log, batch postprocessing of CL files, a rudimentary voxel simulation that checks the geometry of the postprocessor on a hemisphere sized for the machine | Windows |
 
@@ -81,8 +81,9 @@ ctest --test-dir build --output-on-failure
 ```
 
 On Windows add the generator and the toolset of the application project, `-G "Visual Studio 18 2026" -A x64 -T v143`,
-and `-C Release` to `ctest`.
-Compiled and tested with MSVC so far; the library has no Windows dependency, a Linux build is next.
+and `-C Release` to `ctest`. Builds warning-free with MSVC 19.44 (v143) and GCC 15; the tests pass on both.
+In WSL keep the build tree in the Linux file system (`cmake -S /mnt/c/... -B ~/kin5ax-build -G Ninja`): the
+GoogleTest sub-build fails on a mounted Windows drive.
 
 **The application** (Windows, Visual Studio 2022 or later with MFC, CMake on the PATH): open
 `Universal5CMillingMachinePostprocessor/Universal5CMillingMachinePostprocessor.sln`. Its `kin5ax`

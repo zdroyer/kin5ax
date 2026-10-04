@@ -9,8 +9,8 @@ namespace kin5ax {
 
 CChainConfiguration::CChainConfiguration(int nParametersCount)
 :m_vParametersVectors(nParametersCount,CChainParameter(DISTANCE_UNIT))
-,m_dOrientationErrorVectorLength(0.0)
 ,m_dPositionError(0.0)
+,m_dOrientationErrorVectorLength(0.0)
 ,m_bErrorsSet(false)
 {
 

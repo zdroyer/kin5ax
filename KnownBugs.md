@@ -60,6 +60,7 @@ Nothing here was observed at run time unless a test is named.
 |---|---|---|---|
 | 24 | `CSimulationData::FindShortestPath` | The path length is a sum of absolute joint changes: one 180 deg step costs the same as two 90 deg steps on the pole; the choice depends on the last bits (Win32 and x64 differ for WM308S2, see `MeridianCLDataTests.cpp`). | open |
 | 25 | `ChainParameter.h` `difference` + `ExportToGCode` | The angle distance wraps modulo 360 deg, the G-code does not: C359 -> C1 counts as 2 deg but is a 358 deg sweep on an axis without rollover. | open |
+| 69 | `3DGeometry/M4x4.h`, `Transformation.h` | `CTransformation::operator*` (point, vector, transformation) hides the virtual `CM4x4::operator*(const CM4x4&)`; GCC `-Woverloaded-virtual`, silenced in the CMake flags because a using-declaration would change which overload a `transformation * matrix` picks. A virtual operator in a value-type hierarchy; to clean up together with the geometry classes. | verified | open |
 
 ## Minor
 

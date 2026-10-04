@@ -190,7 +190,7 @@ void CChain::AddSegmentAfterActiveSegment(const CChainSegment & oSegment)
 	std::vector<CChainSegment> &vPart = GetActivePart();
 	std::vector<CChainSegment>::iterator it=vPart.begin();
 	for(size_t i=0; i<vPart.size();i++){
-		if(i==m_nActiveSegmentIndex || m_nActiveSegmentIndex<0)
+		if((int)i==m_nActiveSegmentIndex || m_nActiveSegmentIndex<0)
 			break;
 		else 
 			it++;
@@ -224,7 +224,7 @@ void CChain::DeleteActiveSegment()
 	std::vector<CChainSegment> &vPart = GetActivePart();
 	std::vector<CChainSegment>::iterator it=vPart.begin();
 	for(size_t i=0; i<=vPart.size();i++){
-		if(i==m_nActiveSegmentIndex)
+		if((int)i==m_nActiveSegmentIndex)
 			break;
 		else 
 			it++;

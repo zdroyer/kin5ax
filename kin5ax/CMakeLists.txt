@@ -52,5 +52,7 @@ target_include_directories(kin5ax PUBLIC
 target_compile_features(kin5ax PUBLIC cxx_std_17)
 target_compile_options(kin5ax PRIVATE
   $<$<CXX_COMPILER_ID:MSVC>:/W3 /permissive->
-  $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wall>
+  # -Wno-overloaded-virtual: CTransformation::operator* hides the virtual CM4x4::operator*(const CM4x4&);
+  # a design item of the geometry classes (KnownBugs #69), not something to paper over with a using-declaration
+  $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wall -Wno-overloaded-virtual>
 )

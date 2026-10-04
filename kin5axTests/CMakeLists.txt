@@ -43,7 +43,7 @@ target_include_directories(kin5axTests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(kin5axTests PRIVATE kin5ax::kin5ax GTest::gtest)
 target_compile_options(kin5axTests PRIVATE
   $<$<CXX_COMPILER_ID:MSVC>:/W3>
-  $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wall>
+  $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wall -Wno-overloaded-virtual>
 )
 
 # the machine models the tests run on, next to the exe (TestData.cpp: GetTestChainsDir)

@@ -13,14 +13,14 @@ CMillingTool::CMillingTool
 	,double dReferencePointZ)
 :m_dRz(fabs(dRz))
 ,m_dR(fabs(dR))
+,m_dReferencePointZ(dReferencePointZ)
 ,m_dCuttingHeight(fabs(dCuttingHeight))
 ,m_r3pPosition(0.0)
 ,m_r3vOrientation(r3vOZ)
+,m_r3vMoveVector(0.0)
+,m_m4x4ToOZ(CTransformation(1.0))
 ,m_dAxisOZAngle(0.0)
 ,m_dSineAxisOZAngle(0.0)
-,m_m4x4ToOZ(CTransformation(1.0))
-,m_dReferencePointZ(dReferencePointZ)
-,m_r3vMoveVector(0.0)
 {
 	m_dRSquare = m_dR * m_dR;
 	m_dRzSquare = m_dRz * m_dRz;
