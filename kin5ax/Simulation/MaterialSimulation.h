@@ -12,6 +12,8 @@
 //with Step() (one location) or Run() (all remaining locations, with progress and cancellation).
 //The four objects belong to the caller and must outlive the simulation; the chain's parameters and
 //the tool's position are changed by every step.
+//A rudimentary simulation for checking the geometry of the postprocessor: one cut per location, no
+//sweep in between, no feed or time; see CMaterial.
 namespace kin5ax {
 
 class CMaterialSimulation

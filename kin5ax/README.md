@@ -169,7 +169,7 @@ the tool axis points along +Z at home.
 | tool (`MillingTool/`) | `CMillingTool`, `CMillingToolBall`, `CMillingToolCylinder`: one solid each for the voxel cut volume and for collisions |
 | solver (`Postprocessor/`) | `COrientationPostprocessor` (the angles), `CPositionPostprocessor` (the shifts), `C5CPostprocessor` (signs, limits, collisions, singular sections), `CSolveReport` and `SOLVE_STATUS` |
 | batch | `CCutterLocationData`, `CCLDataPostprocessor` (+ `CCLDataPostprocessingResult`), `CSimulationData` (solution sets, shortest path, G-code), `CPostprocessorSettings`, `CProgressCallback` |
-| simulation (`Simulation/`) | `CMaterial` (the voxel block: material, surface, removed; the cut of the tool at its position; volumes), `CMaterialSimulation` (the trajectory replayed on the chain, the tool following, the material cut; `Step`, `Run` with progress and stop; no thread of its own) |
+| simulation (`Simulation/`) | `CMaterial` (the voxel block: material, surface, removed; the cut of the tool at its position; volumes), `CMaterialSimulation` (the trajectory replayed on the chain, the tool following, the material cut; `Step`, `Run` with progress and stop; no thread of its own), `CSimpleSimulationSetup` (a hemisphere job sized for a machine). The simulation is deliberately simple and not efficient: a voxel grid sampled at the voxel corners, no sweep between two locations. It is there to check the geometry of the postprocessor and to see how a machine model moves, not to predict a machined surface. |
 | support | `CGeneratorException` (a `std::exception`) and subclasses with the `MY_THROW` macro (file, line, function), `string_tools`, `double_tools` |
 
 ## Tolerances, units, threads, locale
@@ -201,6 +201,12 @@ solver:
 - The non-default orientation methods are wrong on some chains (#39) and the axis method loses
   the sign on a boundary ratio (#22).
 - A ball tool with height < 2R has disagreeing cut and collision volumes (#49).
+- The zero point of the tool: a ball-nose tool is referenced at its ball centre, a cylindrical one at its
+  tip, and the simulation places the reference point on the programmed point regardless (#66). Behind
+  it is a design limit: the tool frame is the TOOL terminal of the chain file, so a longer tool grows
+  into the machine; the target is a tool holder at the end of the tool branch with the tool protruding
+  from it, and the postprocessor taking tool, holder and chain as input (#68, with subtasks).
+- The generated machine models have their boxes and link positions in the part area (#67).
 - No feed rate, tool change or machine-specific words in the G-code.
 
 ## References

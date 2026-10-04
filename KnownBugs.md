@@ -124,6 +124,18 @@ Four module reviews (3DGeometry, Chain, Postprocessor/SimulationData/CLDataPostp
 | 64 | `ChainSegment.cpp` `GetName` | Returns the fixed label "Tool holder" or "Material holder" for the terminal segments and ignores `m_sName`: the name written in the file is read into the member and then never used, and `toXML` writes the label back, so a name given to the tool or to the holder is lost on the first save. The same happened to the name of the whole chain until 7f8cd4c. Found while writing the JSON reader; the JSON form has the same behaviour. | verified | open |
 | 65 | `string_tools.cpp` `double_to_string`, `CChain::toXML` | `%.8G` in the .kc file: an axis 0.57735026919 read back as 0.57735027, a chain saved as XML was not the chain saved as JSON. The XML writer now uses `double_to_string_exact` (shortest round trip); the logs keep `%.8G`. Found by `ChainFormatPathsTests.cpp`. | verified | **fixed** eb46594 |
 
+## Found with the simple simulation (2026-10-04)
+
+Observed in the application with the hemisphere job of Simulation > Simple simulation. The simulation
+itself is rudimentary (a voxel grid, no sweep between locations) and is there to check the geometry of
+the postprocessor, not to predict a surface; these are findings about the postprocessor and the models.
+
+| # | Where | Defect | Check | Status |
+|---|---|---|---|---|
+| 66 | `CMaterialSimulation`, `CMillingToolBall` | The zero point of a ball-nose tool is the centre of the ball, that of a cylindrical tool the tip. The simulation places the tool's reference point on the programmed point regardless of the tool, so along a surface path a ball tool cuts a ball radius too deep (the hemisphere of the simple simulation). The postprocessor and/or the simulator must take the zero point of the tool into account. | observed | open |
+| 67 | `kin5axTests/TestChains/*.kc`, the generated machine models | The collision boxes and the positions of the links of the generated machines lie in the part area: the cyan visualisation of the moving links covers the tool and the material block. The boxes and the link offsets have to be placed where the structure of the machine really is. | observed | open |
+| 68 | design: the tool and the tool holder | The zero point of the tool is defined by the chain file: the TOOL terminal is the tool frame, so a longer tool grows into the machine instead of protruding from the holder. Target: the tool is attached to a tool holder and protrudes from it according to its overall length; holder and tool together are attached to the end of the tool branch; the zero point of the tool is always its tip (cylinder) or its ball centre (ball nose); the postprocessor takes the tool, the holder and the chain as input. Subtasks: (a) a holder model with length, radius and collision body, and the protrusion of the tool; (b) the tool frame computed by the chain from holder and tool (holder frame, protrusion, zero-point offset) instead of read from the file; (c) the postprocessor and the collision test take tool and holder; (d) the file formats carry the holder, the TOOL terminal keeps the spindle frame only; (e) the tool dialog of the application gets the holder and the overall length; (f) the .fcm bridge maps the tool length to the gauge length. | observed | open |
+
 ## Fixed earlier (for the record)
 
 | Where | Defect | Commit |

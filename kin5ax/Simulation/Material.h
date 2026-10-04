@@ -9,6 +9,10 @@
 //WHITE material, GRAY material on the surface (next to a removed voxel or to the outside), BLACK removed.
 //MachineCut removes what the milling tool covers at its current position and orientation.
 //Rendering is CMaterialRendererGL of the application; the model knows no OpenGL.
+//Deliberately simple and not efficient: the grid is sampled at the voxel corners, there is no sweep between
+//two locations and no hierarchy. It is there to check the geometry of the postprocessor and to see how a
+//machine model moves, not to predict a machined surface. The reference point of the tool, not its zero
+//point, is placed on the programmed point (KnownBugs #66, #68).
 namespace kin5ax {
 
 typedef std::vector<unsigned char> uchar_vector;

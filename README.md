@@ -49,7 +49,7 @@ fast, exact, machine-aware judge of the toolpath. That judge is this library. Se
 |---|---|---|
 | [`kin5ax/`](kin5ax/) | the library: C++17, standard library only (pugixml and nlohmann/json vendored), no Windows dependency | written for Linux, Windows, macOS; compiled with MSVC so far |
 | [`kin5axTests/`](kin5axTests/) | GoogleTest suite, 619 tests, with 11 machine models under `TestChains/` | same |
-| [`Universal5CMillingMachinePostprocessor/`](Universal5CMillingMachinePostprocessor/) | MFC application: kinematic chain editor, 3D viewer, single-location solver with a step-by-step log, batch postprocessing of CL files, voxel material simulation | Windows |
+| [`Universal5CMillingMachinePostprocessor/`](Universal5CMillingMachinePostprocessor/) | MFC application: kinematic chain editor, 3D viewer, single-location solver with a step-by-step log, batch postprocessing of CL files, a rudimentary voxel simulation that checks the geometry of the postprocessor on a hemisphere sized for the machine | Windows |
 
 Machine models shipped and round-trip tested (catalogue travels and swivel ranges; head and
 pivot offsets estimated and marked as such in the file):
@@ -127,7 +127,10 @@ the voxel material and the cutting simulation (library code, the application onl
 What is not: the two non-default orientation methods are wrong on some chains (#39, #22);
 rotary axes are not unwound, so C359→C1 is scored as 2° but programmed as a 358° sweep (#25,
 #40, #59); interpolated singular sections skip the feasibility checks (#21); the working
-tolerance is 1e-15 everywhere (#23, #56). Feed rates, tool changes and machine-specific words
+tolerance is 1e-15 everywhere (#23, #56); the tool frame is the TOOL terminal of the chain file,
+so the zero point of a ball-nose tool (its ball centre) is not honoured and a longer tool grows into
+the machine instead of protruding from a holder (#66, #68); the generated machine models have their
+boxes and link positions in the part area (#67). Feed rates, tool changes and machine-specific words
 are not written to the G-code.
 
 ## Roadmap
