@@ -36,10 +36,14 @@
     ],
     "tool": {
       "name": "Tool holder",
-      "translation": [0.35, 0.0, 0.0],
+      "translation": [0.302, 0.0, 0.0],
       "rotation": {
         "axis": [0.0, -1.0, 0.0],
         "angle_deg": 90.0
+      },
+      "tool_holder": {
+        "length": 0.05,
+        "radius": 0.03
       },
       "boxes": [
         {

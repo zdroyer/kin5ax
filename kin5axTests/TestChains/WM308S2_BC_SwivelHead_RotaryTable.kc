@@ -7,12 +7,17 @@
 >
 <!ELEMENT tool_part (segment+)>
 <!ELEMENT material_holder_part (segment+)>
-<!ELEMENT segment (initial_translation, initial_rotation, box*)>
+<!ELEMENT segment (initial_translation, initial_rotation, tool_holder?, box*)>
 <!ATTLIST segment
 	type CDATA #REQUIRED
 	name CDATA #REQUIRED
 	parameter_value_minimum CDATA #IMPLIED
 	parameter_value_maximum CDATA #IMPLIED
+>
+<!ELEMENT tool_holder EMPTY>
+<!ATTLIST tool_holder
+	length CDATA #REQUIRED
+	radius CDATA #REQUIRED
 >
 <!ELEMENT box EMPTY>
 <!ATTLIST box
@@ -69,9 +74,10 @@
 <box x1="-0.06" x2="0.06" y1="-0.06" y2="0.06" z1="0.05" z2="0.18"  />
 </segment>
 <segment type="TOOL" name="Tool holder" >
-<initial_translation x="0.12" y="0" z="0"/>
+<initial_translation x="0.072" y="0" z="0"/>
 <initial_rotation x="0" y="1" z="0" alpha="-90"/>
 <box x1="-0.035" x2="0.035" y1="-0.035" y2="0.035" z1="0.05" z2="0.22"  />
+<tool_holder length="0.05" radius="0.03"/>
 </segment>
 </tool_part>
 <material_holder_part>

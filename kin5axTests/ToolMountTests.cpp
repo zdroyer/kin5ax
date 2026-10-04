@@ -27,21 +27,24 @@ const double dASSEMBLY_DISTANCE = dCUTTING+dSHANK+dHOLDER_LENGTH-dRADIUS;
 
 } // namespace
 
-TEST(ToolMount, IsNotDeclaredWithoutAHolder)
+TEST(ToolMount, AnUndeclaredMountIgnoresTheAssembly)
 {
 	ASSERT_GE(GetChainFiles().size(),(size_t)1);
 	CChain oChain = LoadChain(GetChainFiles()[0]);
-	EXPECT_FALSE(oChain.IsToolMountDeclared())<<"no chain file declares a holder yet";
-	EXPECT_DOUBLE_EQ(0.0,oChain.GetToolMountToToolPointDistance());
-
+	EXPECT_TRUE(oChain.IsToolMountDeclared())<<"every shipped model declares a tool holder";
 	CMillingToolBall oTool = Assembly();
 	oChain.SetToolAssembly(oTool);
-	EXPECT_DOUBLE_EQ(0.0,oChain.GetToolMountToToolPointDistance())<<"an undeclared mount ignores the assembly";
-
-	oChain.SetDefaultToolHolder(CToolHolder(dHOLDER_LENGTH,dHOLDER_RADIUS));
-	EXPECT_TRUE(oChain.IsToolMountDeclared());
-	oChain.SetToolAssembly(oTool);
 	EXPECT_DOUBLE_EQ(dASSEMBLY_DISTANCE,oChain.GetToolMountToToolPointDistance());
+
+	//a chain built in code declares no mount, so the length of a tool does not move its tool point
+	CChain oPlain;
+	EXPECT_FALSE(oPlain.IsToolMountDeclared());
+	oPlain.SetToolAssembly(oTool);
+	EXPECT_DOUBLE_EQ(0.0,oPlain.GetToolMountToToolPointDistance());
+	oPlain.SetDefaultToolHolder(CToolHolder(dHOLDER_LENGTH,dHOLDER_RADIUS));
+	EXPECT_TRUE(oPlain.IsToolMountDeclared());
+	oPlain.SetToolAssembly(oTool);
+	EXPECT_DOUBLE_EQ(dASSEMBLY_DISTANCE,oPlain.GetToolMountToToolPointDistance());
 }
 
 TEST(ToolMount, TheToolPointMovesDownTheToolAxis)
