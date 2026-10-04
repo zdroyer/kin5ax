@@ -120,6 +120,12 @@ BOOL CUniversal5CMillingMachinePostprocessorDoc::OnOpenDocument(LPCTSTR lpszPath
 				m_oChain = CChainFileReader::ReadFile(std::string(lpszPathName));
 				break;
 		}
+		if(m_pMillingTool){
+			//the machine brings its own tool holder; a tool that has one of its own keeps it
+			if(!m_pMillingTool->m_oHolder.HasBody() && m_oChain.IsToolMountDeclared())
+				m_pMillingTool->m_oHolder = m_oChain.GetDefaultToolHolder();
+			m_oChain.SetToolAssembly(*m_pMillingTool);
+		}
 	} catch (CGeneratorException &e){
 		AfxMessageBox(e.Message().c_str());
 		return FALSE;

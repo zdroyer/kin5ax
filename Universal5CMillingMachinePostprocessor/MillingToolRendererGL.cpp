@@ -14,6 +14,29 @@ void CMillingToolRendererGL::Render(const CMillingTool &oTool)
 			//no 3D model for this tool type
 			break;
 	}
+	RenderNonCuttingPart(oTool);
+}
+
+void CMillingToolRendererGL::RenderNonCuttingPart(const CMillingTool &oTool)
+{
+	if(!oTool.HasNonCuttingPart())
+		return;
+	static GLUquadricObj * pQuadric = gluNewQuadric();
+	glColor3d(0.55,0.55,0.60);
+	glTranslated(0.0,0.0,-oTool.m_dReferencePointZ);		//to the tip
+	if(oTool.m_dNonCuttingLength>0.0 && oTool.m_dRz>0.0){
+		glTranslated(0.0,0.0,oTool.m_dCuttingHeight);
+		gluCylinder(pQuadric,oTool.m_dRz,oTool.m_dRz,oTool.m_dNonCuttingLength,40,40);
+		glTranslated(0.0,0.0,-oTool.m_dCuttingHeight);
+	}
+	if(oTool.m_oHolder.HasBody()){
+		glTranslated(0.0,0.0,oTool.GetToolLength());
+		gluDisk(pQuadric,0.0,oTool.m_oHolder.GetRadius(),40,20);
+		gluCylinder(pQuadric,oTool.m_oHolder.GetRadius(),oTool.m_oHolder.GetRadius()
+			,oTool.m_oHolder.GetLength(),40,40);
+		glTranslated(0.0,0.0,-oTool.GetToolLength());
+	}
+	glTranslated(0.0,0.0,oTool.m_dReferencePointZ);
 }
 
 void CMillingToolRendererGL::RenderBall(const CMillingTool &oTool)

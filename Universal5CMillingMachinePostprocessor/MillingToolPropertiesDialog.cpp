@@ -23,6 +23,9 @@ CMillingToolPropertiesDialog::CMillingToolPropertiesDialog(CWnd* pParent /*=NULL
 	,m_dR(0.012)
 	,m_dCuttingPartEnd(0.040)
 	,m_dReferencePointHeight(0.012)
+	,m_dNonCuttingLength(0.0)
+	,m_dHolderLength(0.0)
+	,m_dHolderRadius(0.0)
 	,m_nToolShapeIndex(0)
 	,m_pOldTool(0)
 	,m_pDoc(0)
@@ -38,20 +41,29 @@ void CMillingToolPropertiesDialog::UpdateMillingTool()
 	if(m_pDoc->m_pMillingTool != m_pOldTool)
 		delete m_pDoc->m_pMillingTool;
 	
+	//the programmed point follows the shape of the tool: the centre of the ball, or the tip (KnownBugs #66)
+	m_dReferencePointHeight = (m_nToolShapeIndex==0) ? fabs(m_dR) : 0.0;
+	CToolHolder oHolder(m_dHolderLength,m_dHolderRadius);
 	switch(m_nToolShapeIndex){
 		//ball
 		case 0:
 			m_pDoc->m_pMillingTool = new CMillingToolBall(m_dRz,m_dR
-				,m_dCuttingPartEnd,m_dReferencePointHeight);
+				,m_dCuttingPartEnd,m_dReferencePointHeight,m_dNonCuttingLength,oHolder);
 		break;
 		//cylinder
 		case 1:
 			m_pDoc->m_pMillingTool = new CMillingToolCylinder(m_dRz,m_dR
-				,m_dCuttingPartEnd,m_dReferencePointHeight);
+				,m_dCuttingPartEnd,m_dReferencePointHeight,m_dNonCuttingLength,oHolder);
 		break;
 		default:
 			m_editH.EnableWindow(TRUE);
 	}
+	if(m_pDoc->m_pMillingTool){
+		//the tool point hangs the length of the assembly below the tool mount of the machine
+		m_dH = m_pDoc->m_pMillingTool->GetAssemblyLength();
+		m_pDoc->m_oChain.SetToolAssembly(*m_pDoc->m_pMillingTool);
+	}
+	UpdateData(FALSE);
 
 	m_wndMillingToolPreview.SetMillingTool(m_pDoc->m_pMillingTool);
 }
@@ -70,6 +82,9 @@ void CMillingToolPropertiesDialog::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_RZ, m_dRz);
 	DDX_Text(pDX, IDC_EDIT_CUTTING_PART_HEIGHT, m_dCuttingPartEnd);
 	DDX_Text(pDX, IDC_EDIT_REFERENCE_POINT_HEIGHT,m_dReferencePointHeight);
+	DDX_Text(pDX, IDC_EDIT_NON_CUTTING_LENGTH, m_dNonCuttingLength);
+	DDX_Text(pDX, IDC_EDIT_HOLDER_LENGTH, m_dHolderLength);
+	DDX_Text(pDX, IDC_EDIT_HOLDER_RADIUS, m_dHolderRadius);
 	DDX_CBIndex(pDX, IDC_COMBO_SHAPE, m_nToolShapeIndex);
 	DDX_Control(pDX, IDC_EDIT_CUTTING_PART_HEIGHT, m_editCuttingPartHeight);
 	DDX_Control(pDX, IDC_EDIT_H, m_editH);
@@ -147,11 +162,18 @@ void CMillingToolPropertiesDialog::SetActiveDocument(CUniversal5CMillingMachineP
 			else
 				m_nToolShapeIndex=1;
 			m_dCuttingPartEnd = m_pOldTool->m_dCuttingHeight;
-			m_dH = 0;
+			m_dH = m_pOldTool->GetAssemblyLength();
 			
 			m_dR = m_pOldTool->m_dR;
 			m_dReferencePointHeight = m_pOldTool->m_dReferencePointZ;
 			m_dRz = m_pOldTool->m_dRz;
+			m_dNonCuttingLength = m_pOldTool->m_dNonCuttingLength;
+			//a tool without a holder of its own takes the one the chain file declares
+			CToolHolder oHolder = m_pOldTool->m_oHolder;
+			if(!oHolder.HasBody() && m_pDoc->m_oChain.IsToolMountDeclared())
+				oHolder = m_pDoc->m_oChain.GetDefaultToolHolder();
+			m_dHolderLength = oHolder.GetLength();
+			m_dHolderRadius = oHolder.GetRadius();
 		}
 	}
 

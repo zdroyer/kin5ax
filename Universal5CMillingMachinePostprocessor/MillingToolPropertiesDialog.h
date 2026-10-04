@@ -40,7 +40,10 @@ public:
 	double m_dRz;
 	double m_dR;
 	double m_dCuttingPartEnd;
-	double m_dReferencePointHeight;
+	double m_dReferencePointHeight;		//derived from the shape: the tip, or the centre of the ball
+	double m_dNonCuttingLength;			//the shank between the cutting part and the holder
+	double m_dHolderLength;
+	double m_dHolderRadius;
 	int m_nToolShapeIndex;
 
 	CMillingTool *m_pOldTool;

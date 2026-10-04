@@ -77,6 +77,8 @@ void CChainRendererGL::Render(const CChain &oChain
 		CChainSegmentRendererGL::Render(oChain.m_vToolPart[i],oChain.m_bIsToolPartActive && i==oChain.m_nActiveSegmentIndex);
 	}
 	if(pTool && oConfiguration.m_bShowTool){
+		//the frame after the segments is the tool mount; the tool hangs below it
+		glTranslated(0.0,0.0,-oChain.GetToolMountToToolPointDistance());
 		CMillingToolRendererGL::Render(*pTool);
 	}
 

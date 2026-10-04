@@ -428,9 +428,16 @@ void CMainFrame::RunSimulationSteps()
 			CUniversal5CMillingMachinePostprocessorDoc* pDoc = (CUniversal5CMillingMachinePostprocessorDoc*)GetActiveDocument();
 			double dRemoved = pDoc ? pDoc->m_oMaterial.GetRemovedVolume() : 0.0;
 			double dTotal = pDoc ? pDoc->m_oMaterial.GetTotalVolume() : 0.0;
+			size_t nGouges = m_pSimulation->GetGougeCount();
+			CR3Point r3pFirstGouge = m_pSimulation->GetFirstGougePoint();
 			m_dlgSimulationDialog.OnBnClickedButtonStop();	//kills the timer, frees the simulation, repaints, resets the button
-			MessageBox(("Milling simulation finished\nRemoved "+double_to_string(dRemoved)+" of "+double_to_string(dTotal)
-				+" (length unit cubed), "+fixed_to_string(dTotal>0.0 ? 100.0*dRemoved/dTotal : 0.0,2)+" %").c_str());
+			std::string sMessage = "Milling simulation finished\nRemoved "+double_to_string(dRemoved)+" of "
+				+double_to_string(dTotal)+" (length unit cubed), "
+				+fixed_to_string(dTotal>0.0 ? 100.0*dRemoved/dTotal : 0.0,2)+" %";
+			if(nGouges)
+				sMessage += ("\nThe shank or the holder of the tool met material at "+size_to_string(nGouges)
+					+" location(s), the first at "+r3pFirstGouge.toString());
+			MessageBox(sMessage.c_str());
 			return;
 		}
 		m_nStepsSinceRepaint++;
