@@ -158,6 +158,12 @@ inline bool ShouldBeGray(size_t nX, size_t nY, size_t nZ) const
 			,double &dZStart) const ;
 
 	void MachineCut(CMillingTool & oCutter);
+	//Is any voxel that is still material inside the non-cutting envelope of the tool, that is in its shank or
+	//in its holder? The cutting part may remove material, those two may not even touch it. The tool must be
+	//placed in the frame of this material (CMaterialSimulation does that). r3pFirst receives the first such
+	//voxel. This is a test of the state the material is in, so only the simulation can make it, not the solver.
+	bool HasMaterialInNonCuttingPart(const CMillingTool &oTool, CR3Point &r3pFirst) const;
+	bool HasMaterialInNonCuttingPart(const CMillingTool &oTool) const;
 	void GetIndexesOfBox(size_t &nMinI, size_t &nMaxI
 							   ,size_t &nMinJ, size_t &nMaxJ
 							   ,size_t &nMinK, size_t &nMaxK

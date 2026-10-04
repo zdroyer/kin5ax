@@ -28,6 +28,7 @@ add_executable(kin5axTests
   InterpolationTests.cpp
   LocaleTests.cpp
   M4x4Tests.cpp
+  MaterialGougeTests.cpp
   MaterialSimulationTests.cpp
   MaterialTests.cpp
   MeridianCLDataTests.cpp

@@ -9,12 +9,36 @@ CMaterialSimulation::CMaterialSimulation(CChain &oChain, CMillingTool &oTool, CS
 ,m_oTrajectory(oTrajectory)
 ,m_oMaterial(oMaterial)
 ,m_nNext(0)
+,m_nGougeCount(0)
+,m_nFirstGougeStep(0)
 {
 }
 
 void CMaterialSimulation::Reset()
 {
 	m_nNext = 0;
+	m_nGougeCount = 0;
+	m_nFirstGougeStep = 0;
+}
+
+size_t CMaterialSimulation::GetGougeCount() const
+{
+	return m_nGougeCount;
+}
+
+bool CMaterialSimulation::HasGouged() const
+{
+	return m_nGougeCount>0;
+}
+
+size_t CMaterialSimulation::GetFirstGougeStep() const
+{
+	return m_nFirstGougeStep;
+}
+
+const CR3Point & CMaterialSimulation::GetFirstGougePoint() const
+{
+	return m_r3pFirstGouge;
 }
 
 bool CMaterialSimulation::Step()
@@ -29,6 +53,15 @@ bool CMaterialSimulation::Step()
 	CR3CaughtVector cv = m_oChain.GetActualToolPositionAndOrientation();
 	m_oTool.SetPositionAndOrientation(cv.m_p,cv.m_v);
 	m_oMaterial.MachineCut(m_oTool);
+	//after the cut of this location: whatever the shank or the holder still touches is a gouge
+	CR3Point r3pGouge;
+	if(m_oMaterial.HasMaterialInNonCuttingPart(m_oTool,r3pGouge)){
+		if(m_nGougeCount==0){
+			m_nFirstGougeStep = m_nNext-1;
+			m_r3pFirstGouge = r3pGouge;
+		}
+		m_nGougeCount++;
+	}
 	return true;
 }
 

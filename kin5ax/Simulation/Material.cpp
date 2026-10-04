@@ -172,6 +172,39 @@ void CMaterial::MachineCut(CMillingTool & oCutter)
 	//todo: collisions
 }
 
+bool CMaterial::HasMaterialInNonCuttingPart(const CMillingTool &oTool, CR3Point &r3pFirst) const
+{
+	if(!oTool.HasNonCuttingPart())
+		return false;
+	CR3Box oEnvelope = oTool.GetNonCuttingPartBoundingBox();
+	if(oEnvelope.IsEmpty())
+		return false;
+	size_t nMinI=0, nMaxI=m_nX;
+	size_t nMinJ=0, nMaxJ=m_nY;
+	size_t nMinK=0, nMaxK=m_nZ;
+	GetIndexesOfBox(nMinI,nMaxI,nMinJ,nMaxJ,nMinK,nMaxK,oEnvelope);
+	for(size_t i = nMinI; i<=nMaxI; i++)
+		for(size_t j = nMinJ; j<=nMaxJ; j++)
+			for(size_t k = nMinK; k<=nMaxK; k++){
+				if(Is(VOXEL_BLACK,i,j,k))
+					continue;	//removed already, or outside the block
+				CR3Point p(m_dXStart+(double)i*m_dPrecision
+						,m_dYStart+(double)j*m_dPrecision
+						,m_dZStart+(double)k*m_dPrecision);
+				if(oTool.IsInNonCuttingPart(p)){
+					r3pFirst = p;
+					return true;
+				}
+			}
+	return false;
+}
+
+bool CMaterial::HasMaterialInNonCuttingPart(const CMillingTool &oTool) const
+{
+	CR3Point p;
+	return HasMaterialInNonCuttingPart(oTool,p);
+}
+
 void CMaterial::GetIndexesOfBox(size_t &nMinI, size_t &nMaxI
 							   ,size_t &nMinJ, size_t &nMaxJ
 							   ,size_t &nMinK, size_t &nMaxK

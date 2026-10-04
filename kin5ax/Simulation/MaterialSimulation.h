@@ -30,6 +30,14 @@ public:
 	//with Continue() == false; false when stopped, true when the trajectory is exhausted.
 	bool Run(CProgressCallback *pProgress);
 
+	//---- gouges: locations where the shank or the holder of the tool met material that was still there.
+	//A gouge does not stop the simulation; the counts tell the caller how bad the trajectory is.
+	size_t GetGougeCount() const;
+	bool HasGouged() const;
+	//the location and the place of the first gouge (only meaningful when GetGougeCount() is not zero)
+	size_t GetFirstGougeStep() const;
+	const CR3Point & GetFirstGougePoint() const;
+
 	//the locations of the trajectory, with and without a solution
 	size_t GetStepCount() const;
 	//the locations passed so far (those without a solution are passed without a cut)
@@ -42,6 +50,9 @@ protected:
 	CSimulationData &m_oTrajectory;
 	CMaterial &m_oMaterial;
 	size_t m_nNext;		//the first location not yet passed
+	size_t m_nGougeCount;
+	size_t m_nFirstGougeStep;
+	CR3Point m_r3pFirstGouge;
 };
 
 } // namespace kin5ax
