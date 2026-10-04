@@ -71,8 +71,9 @@ same machine.
 
 ## Build
 
-Visual Studio 2022 (v143, C++17) with MFC. Open `Universal5CMillingMachinePostprocessor.sln` at
-the root, or run
+Visual Studio 2022 (v143, C++17) with MFC. Open
+`Universal5CMillingMachinePostprocessor/Universal5CMillingMachinePostprocessor.sln`, the solution of the
+application, which also holds the library and the tests, or run
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File kin5axTests/build_and_test.ps1 [-Start]
