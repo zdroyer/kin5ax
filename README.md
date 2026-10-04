@@ -80,19 +80,22 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 ```
 
-On Windows add the generator, e.g. `-G "Visual Studio 18 2026" -A x64`, and `-C Release` to `ctest`.
+On Windows add the generator and the toolset of the application project, `-G "Visual Studio 18 2026" -A x64 -T v143`,
+and `-C Release` to `ctest`.
 Compiled and tested with MSVC so far; the library has no Windows dependency, a Linux build is next.
 
-**The application** (Windows, Visual Studio 2022 or later with MFC): open
-`Universal5CMillingMachinePostprocessor/Universal5CMillingMachinePostprocessor.sln`, which holds the
-application, the library and the tests as Visual Studio projects, or run
+**The application** (Windows, Visual Studio 2022 or later with MFC, CMake on the PATH): open
+`Universal5CMillingMachinePostprocessor/Universal5CMillingMachinePostprocessor.sln`. Its `kin5ax`
+project is a Makefile project that builds the library with CMake into `build/` and the application
+links that `kin5ax.lib`; the source list of the library lives in `kin5ax/CMakeLists.txt` only. The
+tests are CMake only. One script does everything on Windows:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File kin5axTests/build_and_test.ps1 [-Start]
 ```
 
-which builds Debug and Release x64, runs the tests and, with `-Start`, launches the application.
-The GoogleTest package of the Visual Studio test project is restored from NuGet on the first build.
+CMake Debug and Release of library and tests, the test run, both application builds and, with
+`-Start`, a launch of each.
 
 ## Use
 

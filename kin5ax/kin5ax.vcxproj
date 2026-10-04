@@ -1,4 +1,7 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- kin5ax in the Visual Studio solution of the application: a Makefile project that builds the library with
+     CMake (build_with_cmake.cmd, the source list lives in CMakeLists.txt) and publishes build\kin5ax\<Config>\kin5ax.lib.
+     The source items below are for browsing and IntelliSense only; they are not compiled by this project. -->
 <Project DefaultTargets="Build" ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -22,121 +25,53 @@
     <VCProjectVersion>18.0</VCProjectVersion>
     <ProjectGuid>{4F41F3D9-8186-5E04-BABD-7851ED77EA44}</ProjectGuid>
     <RootNamespace>kin5ax</RootNamespace>
-    <Keyword>Win32Proj</Keyword>
-    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <Keyword>MakeFileProj</Keyword>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Makefile</ConfigurationType>
     <PlatformToolset>v143</PlatformToolset>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Makefile</ConfigurationType>
     <PlatformToolset>v143</PlatformToolset>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Makefile</ConfigurationType>
     <PlatformToolset>v143</PlatformToolset>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Makefile</ConfigurationType>
     <PlatformToolset>v143</PlatformToolset>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IntDir>$(ProjectDir)$(Platform)\$(Configuration)\</IntDir>
+  <PropertyGroup>
+    <Kin5axBuildDir Condition="'$(Platform)'=='Win32'">$(ProjectDir)..\build-win32\</Kin5axBuildDir>
+    <Kin5axBuildDir Condition="'$(Platform)'!='Win32'">$(ProjectDir)..\build\</Kin5axBuildDir>
+    <NMakeBuildCommandLine>call "$(ProjectDir)build_with_cmake.cmd" $(Configuration) $(Platform)</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine>call "$(ProjectDir)build_with_cmake.cmd" $(Configuration) $(Platform) rebuild</NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine>call "$(ProjectDir)build_with_cmake.cmd" $(Configuration) $(Platform) clean</NMakeCleanCommandLine>
+    <NMakeOutput>$(Kin5axBuildDir)kin5ax\$(Configuration)\kin5ax.lib</NMakeOutput>
+    <NMakePreprocessorDefinitions>_LIB;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeIncludeSearchPath>$(ProjectDir);$(ProjectDir)Exceptions;$(ProjectDir)3DGeometry;$(ProjectDir)Chain;$(ProjectDir)Postprocessor;$(ProjectDir)MillingTool;$(ProjectDir)Simulation;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <AdditionalOptions>/std:c++17 /permissive-</AdditionalOptions>
+    <OutDir>$(Kin5axBuildDir)kin5ax\$(Configuration)\</OutDir>
+    <IntDir>$(Kin5axBuildDir)kin5ax\$(Configuration)\</IntDir>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IntDir>$(ProjectDir)$(Platform)\$(Configuration)\</IntDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IntDir>$(ProjectDir)$(Platform)\$(Configuration)\</IntDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IntDir>$(ProjectDir)$(Platform)\$(Configuration)\</IntDir>
-  </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <ClCompile>
-      <Optimization>Disabled</Optimization>
-      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <!-- only the library folders: the application root (MFC stdafx.h) must stay invisible here -->
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Exceptions;$(ProjectDir)3DGeometry;$(ProjectDir)Chain;$(ProjectDir)Postprocessor;$(ProjectDir)MillingTool;$(ProjectDir)Simulation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_LIB;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <!-- must equal the runtime library of the application in the same configuration -->
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <Optimization>Disabled</Optimization>
-      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <!-- only the library folders: the application root (MFC stdafx.h) must stay invisible here -->
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Exceptions;$(ProjectDir)3DGeometry;$(ProjectDir)Chain;$(ProjectDir)Postprocessor;$(ProjectDir)MillingTool;$(ProjectDir)Simulation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_LIB;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <!-- must equal the runtime library of the application in the same configuration -->
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <ClCompile>
-      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <!-- only the library folders: the application root (MFC stdafx.h) must stay invisible here -->
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Exceptions;$(ProjectDir)3DGeometry;$(ProjectDir)Chain;$(ProjectDir)Postprocessor;$(ProjectDir)MillingTool;$(ProjectDir)Simulation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_LIB;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <!-- must equal the runtime library of the application in the same configuration -->
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ClCompile>
-      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <!-- only the library folders: the application root (MFC stdafx.h) must stay invisible here -->
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Exceptions;$(ProjectDir)3DGeometry;$(ProjectDir)Chain;$(ProjectDir)Postprocessor;$(ProjectDir)MillingTool;$(ProjectDir)Simulation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_LIB;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <!-- must equal the runtime library of the application in the same configuration -->
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-    </ClCompile>
-  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="CMakeLists.txt" />
+    <None Include="build_with_cmake.cmd" />
+    <None Include="kc.schema.json" />
+  </ItemGroup>
   <ItemGroup>
     <ClCompile Include="3DGeometry\M4x4.cpp" />
     <ClCompile Include="3DGeometry\Quaternion.cpp" />
@@ -161,12 +96,12 @@
     <ClCompile Include="MillingTool\MillingToolCylinder.cpp" />
     <ClCompile Include="Postprocessor\5CPostprocessor.cpp" />
     <ClCompile Include="Postprocessor\SolveReport.cpp" />
+    <ClCompile Include="Postprocessor\OrientationPostprocessor.cpp" />
+    <ClCompile Include="Postprocessor\PositionPostprocessor.cpp" />
     <ClCompile Include="Simulation\Material.cpp" />
     <ClCompile Include="Simulation\MaterialSimulation.cpp" />
     <ClCompile Include="Simulation\SphereCLDataGenerator.cpp" />
     <ClCompile Include="Simulation\SimpleSimulation.cpp" />
-    <ClCompile Include="Postprocessor\OrientationPostprocessor.cpp" />
-    <ClCompile Include="Postprocessor\PositionPostprocessor.cpp" />
     <ClCompile Include="CLDataPostprocessor.cpp" />
     <ClCompile Include="CutterLocationData.cpp" />
     <ClCompile Include="PostprocessorSettings.cpp" />
@@ -203,12 +138,12 @@
     <ClInclude Include="MillingTool\MillingToolCylinder.h" />
     <ClInclude Include="Postprocessor\5CPostprocessor.h" />
     <ClInclude Include="Postprocessor\SolveReport.h" />
+    <ClInclude Include="Postprocessor\OrientationPostprocessor.h" />
+    <ClInclude Include="Postprocessor\PositionPostprocessor.h" />
     <ClInclude Include="Simulation\Material.h" />
     <ClInclude Include="Simulation\MaterialSimulation.h" />
     <ClInclude Include="Simulation\SphereCLDataGenerator.h" />
     <ClInclude Include="Simulation\SimpleSimulation.h" />
-    <ClInclude Include="Postprocessor\OrientationPostprocessor.h" />
-    <ClInclude Include="Postprocessor\PositionPostprocessor.h" />
     <ClInclude Include="CLDataPostprocessor.h" />
     <ClInclude Include="CutterLocationData.h" />
     <ClInclude Include="PostprocessorSettings.h" />
@@ -220,13 +155,5 @@
     <ClInclude Include="3rdParty\pugixml\pugiconfig.hpp" />
     <ClInclude Include="3rdParty\nlohmann\json.hpp" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="Readme.md" />
-    <None Include="kc.schema.json" />
-    <None Include="3rdParty\pugixml\LICENSE.md" />
-    <None Include="3rdParty\nlohmann\LICENSE.MIT" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
 </Project>

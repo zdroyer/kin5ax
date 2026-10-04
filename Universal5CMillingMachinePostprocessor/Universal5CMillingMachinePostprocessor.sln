@@ -6,8 +6,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Universal5CMillingMachinePo
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kin5ax", "..\kin5ax\kin5ax.vcxproj", "{4F41F3D9-8186-5E04-BABD-7851ED77EA44}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kin5axTests", "..\kin5axTests\kin5axTests.vcxproj", "{2DC69E51-938F-56FB-845F-41AE76338733}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -32,14 +30,6 @@ Global
 		{4F41F3D9-8186-5E04-BABD-7851ED77EA44}.Release|Win32.Build.0 = Release|Win32
 		{4F41F3D9-8186-5E04-BABD-7851ED77EA44}.Release|x64.ActiveCfg = Release|x64
 		{4F41F3D9-8186-5E04-BABD-7851ED77EA44}.Release|x64.Build.0 = Release|x64
-		{2DC69E51-938F-56FB-845F-41AE76338733}.Debug|Win32.ActiveCfg = Debug|Win32
-		{2DC69E51-938F-56FB-845F-41AE76338733}.Debug|Win32.Build.0 = Debug|Win32
-		{2DC69E51-938F-56FB-845F-41AE76338733}.Debug|x64.ActiveCfg = Debug|x64
-		{2DC69E51-938F-56FB-845F-41AE76338733}.Debug|x64.Build.0 = Debug|x64
-		{2DC69E51-938F-56FB-845F-41AE76338733}.Release|Win32.ActiveCfg = Release|Win32
-		{2DC69E51-938F-56FB-845F-41AE76338733}.Release|Win32.Build.0 = Release|Win32
-		{2DC69E51-938F-56FB-845F-41AE76338733}.Release|x64.ActiveCfg = Release|x64
-		{2DC69E51-938F-56FB-845F-41AE76338733}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
