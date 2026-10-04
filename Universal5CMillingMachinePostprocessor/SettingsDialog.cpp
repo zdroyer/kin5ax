@@ -48,7 +48,8 @@ END_MESSAGE_MAP()
 void CSettingsDialog::OnBnClickedOk()
 {
 	UpdateData();
-	dEPSILON = m_dInternalPrecision;
+	//m_dInternalPrecision is shown for information: dEPSILON is a constant of the library (KnownBugs #23);
+	//the former assignment only changed the application's private copy and never reached the solver
 	oPostprocessorSettings.m_nAlpha1Method = (ALPHA1_METHOD)m_nAlpha1Method;
 	oPostprocessorSettings.m_nAlpha2Method = (ALPHA2_METHOD)m_nAlpha2Method;
 	oPostprocessorSettings.m_nAnglesSolvingMethod = (ANGLES_SOLVING_METHOD)m_nCalculationOrder;

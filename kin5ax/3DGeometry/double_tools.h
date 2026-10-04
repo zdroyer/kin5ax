@@ -2,10 +2,14 @@
 
 namespace kin5ax {
 
-static double dEPSILON = 1E-15;
-static double dPi = 3.1415926535897932384626433832795;
-static double dPiDiv2 = 1.5707963267948966192313216916398;
-static double d2Pi = 6.283185307179586476925286766559;
+//One definition for the whole program (C++17 inline variables; the former file-static copies, one per
+//translation unit, made the value look adjustable while nothing could change it, KnownBugs #23).
+//dEPSILON is an absolute tolerance far below one ULP at millimetre scale, i.e. an exact comparison in
+//practice (#56); tolerances by kind (length, angle, relative) are the planned replacement.
+inline constexpr double dEPSILON = 1E-15;
+inline constexpr double dPi = 3.1415926535897932384626433832795;
+inline constexpr double dPiDiv2 = 1.5707963267948966192313216916398;
+inline constexpr double d2Pi = 6.283185307179586476925286766559;
 inline bool are_equal(const double &d1, const double d2,double dTolerance=dEPSILON)
 {
 	return fabs(d1-d2)<=dTolerance;
