@@ -10,10 +10,10 @@
       {
         "type": "linear",
         "name": "Z",
-        "translation": [0, 0, 0],
+        "translation": [0.0, 0.0, 0.0],
         "rotation": {
-          "axis": [1, 0, 0],
-          "angle_deg": 0
+          "axis": [1.0, 0.0, 0.0],
+          "angle_deg": 0.0
         },
         "limits": {
           "min": -0.4,
@@ -23,28 +23,28 @@
       {
         "type": "rotary",
         "name": "A",
-        "translation": [0, 0, 0.35],
+        "translation": [0.0, 0.0, 0.35],
         "rotation": {
-          "axis": [0, 1, 0],
-          "angle_deg": 90
+          "axis": [0.0, 1.0, 0.0],
+          "angle_deg": 90.0
         },
         "limits": {
-          "min": -1,
-          "max": 90
+          "min": -1.0,
+          "max": 90.0
         }
       }
     ],
     "tool": {
       "name": "Tool holder",
-      "translation": [0.35, 0, 0],
+      "translation": [0.35, 0.0, 0.0],
       "rotation": {
-        "axis": [0, -1, 0],
-        "angle_deg": 90
+        "axis": [0.0, -1.0, 0.0],
+        "angle_deg": 90.0
       },
       "boxes": [
         {
-          "min": [-0.12, -0.12, 0.08],
-          "max": [0.12, 0.12, 0.45]
+          "min": [-0.02, -0.02, 0.18],
+          "max": [0.02, 0.02, 0.35]
         }
       ]
     }
@@ -54,10 +54,10 @@
       {
         "type": "linear",
         "name": "X",
-        "translation": [0, 0, 0],
+        "translation": [0.0, 0.0, 0.0],
         "rotation": {
-          "axis": [0, 1, 0],
-          "angle_deg": 90
+          "axis": [0.0, 1.0, 0.0],
+          "angle_deg": 90.0
         },
         "limits": {
           "min": -0.5,
@@ -67,10 +67,10 @@
       {
         "type": "linear",
         "name": "Y",
-        "translation": [0, 0, 0],
+        "translation": [0.0, 0.0, 0.0],
         "rotation": {
-          "axis": [-1, 0, 0],
-          "angle_deg": 90
+          "axis": [-1.0, 0.0, 0.0],
+          "angle_deg": 90.0
         },
         "limits": {
           "min": -0.55,
@@ -80,23 +80,23 @@
       {
         "type": "rotary",
         "name": "C",
-        "translation": [0, 0, 0],
+        "translation": [0.0, 0.0, 0.0],
         "rotation": {
-          "axis": [0, -1, 0],
-          "angle_deg": 90
+          "axis": [0.0, -1.0, 0.0],
+          "angle_deg": 90.0
         },
         "limits": {
-          "min": -360,
-          "max": 360
+          "min": -360.0,
+          "max": 360.0
         }
       }
     ],
     "workpiece_holder": {
       "name": "Material holder",
-      "translation": [0, 0, 0],
+      "translation": [0.0, 0.0, 0.0],
       "rotation": {
-        "axis": [0, 0, -1],
-        "angle_deg": 90
+        "axis": [0.0, 0.0, -1.0],
+        "angle_deg": 90.0
       },
       "boxes": [
         {
