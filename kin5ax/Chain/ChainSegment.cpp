@@ -21,6 +21,7 @@ CChainSegment::CChainSegment(CHAIN_SEGMENT_TYPE type
 		,m_r3vConstRevoluteAxis(r3vConstRevoluteAxis)
 		,m_dConstRevoluteAngle(dConstRevoluteAngle)
 		,m_r3vConstTranslation(r3vConstTranslation)
+		,m_bToolHolderDeclared(false)
 		,m_dActualParameterValue(dParameterMinimum)
 		,m_dParameterValueMinimum(dParameterMinimum)
 		,m_dParameterValueMaximum(dParameterMaximum)
@@ -269,6 +270,10 @@ std::string CChainSegment::toXML(void) const
 	sResult +="\" alpha=\"";
 	sResult +=double_to_string_exact(m_dConstRevoluteAngle);
 	sResult +="\"/>\n";
+	if(m_bToolHolderDeclared){
+		sResult += "<tool_holder length=\""+double_to_string_exact(m_oToolHolder.GetLength());
+		sResult += "\" radius=\""+double_to_string_exact(m_oToolHolder.GetRadius())+"\"/>\n";
+	}
 	if(m_vParts.size()){
 		for(size_t i=0;i<m_vParts.size();i++){
 			sResult+=m_vParts[i].toXML();

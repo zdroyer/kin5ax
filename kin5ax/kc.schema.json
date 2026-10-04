@@ -20,8 +20,8 @@
       "additionalProperties": false,
       "properties": {
         "links": { "$ref": "#/$defs/links" },
-        "tool":  { "$ref": "#/$defs/terminal",
-                   "description": "End of the tool branch: the frame in which the tool axis is OZ." }
+        "tool":  { "$ref": "#/$defs/tool_terminal",
+                   "description": "End of the tool branch: the tool mount, the frame in which the tool axis is OZ." }
       }
     },
     "workpiece_branch": {
@@ -67,6 +67,29 @@
         "translation": { "$ref": "#/$defs/vector3" },
         "rotation":    { "$ref": "#/$defs/rotation" },
         "boxes":       { "$ref": "#/$defs/boxes" }
+      }
+    },
+    "tool_terminal": {
+      "type": "object",
+      "required": ["name", "translation", "rotation"],
+      "additionalProperties": false,
+      "description": "End of the tool branch: the tool mount, with the tool holder of the machine and collision solids.",
+      "properties": {
+        "name":        { "type": "string", "minLength": 1 },
+        "translation": { "$ref": "#/$defs/vector3" },
+        "rotation":    { "$ref": "#/$defs/rotation" },
+        "boxes":       { "$ref": "#/$defs/boxes" },
+        "tool_holder": { "$ref": "#/$defs/tool_holder" }
+      }
+    },
+    "tool_holder": {
+      "type": "object",
+      "required": ["length", "radius"],
+      "additionalProperties": false,
+      "description": "The holder between the tool mount and the tool: a cylinder along the OZ of the mount. Its presence makes the terminal the tool mount, so that the tool point hangs the length of holder and tool below it. A radius of zero is a holder without a body: a distance only.",
+      "properties": {
+        "length": { "type": "number", "minimum": 0 },
+        "radius": { "type": "number", "minimum": 0 }
       }
     },
     "vector3": {

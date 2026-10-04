@@ -364,3 +364,55 @@ TEST(ChainMetadata, AbsentFieldsAreEmptyAndNothingIsWritten)
 	EXPECT_EQ(std::string::npos,sXml.find(" author=\""));
 	EXPECT_EQ(std::string::npos,sXml.find(" modified=\""));
 }
+
+//---- the tool holder of the TOOL segment: the chain file declares the tool mount of the machine
+static std::string WithToolHolder()
+{
+	return Replaced(Template(),"</segment>\n</tool_part>"
+		,"<tool_holder length=\"0.05\" radius=\"0.03\"/>\n</segment>\n</tool_part>");
+}
+
+TEST(ToolHolderXml, IsReadFromTheToolSegment)
+{
+	CChain oChain;
+	ASSERT_EQ(std::string(),PugiError(WithToolHolder(),&oChain));
+	EXPECT_TRUE(oChain.IsToolMountDeclared());
+	EXPECT_DOUBLE_EQ(0.05,oChain.GetDefaultToolHolder().GetLength());
+	EXPECT_DOUBLE_EQ(0.03,oChain.GetDefaultToolHolder().GetRadius());
+
+	CChain oPlain;
+	ASSERT_EQ(std::string(),PugiError(Template(),&oPlain));
+	EXPECT_FALSE(oPlain.IsToolMountDeclared())<<"a file without a holder declares no mount";
+	EXPECT_EQ(std::string::npos,oPlain.toXML().find("tool_holder length"))<<"and writes none";
+}
+
+TEST(ToolHolderXml, SurvivesTheRoundTrip)
+{
+	CChain oChain;
+	ASSERT_EQ(std::string(),PugiError(WithToolHolder(),&oChain));
+	EXPECT_NE(std::string::npos,oChain.toXML().find("<tool_holder length=\"0.05\" radius=\"0.03\"/>"));
+	std::string sFilePath = WriteTemp("kin5axTests_tool_holder.kc",oChain.toXML());
+	CChain oReloaded;
+	try{
+		oReloaded = CChainXmlReader::ReadFile(sFilePath);
+	} catch (CGeneratorException &e){
+		ADD_FAILURE()<<e.Message();
+	}
+	remove(sFilePath.c_str());
+	EXPECT_TRUE(oReloaded.IsToolMountDeclared());
+	EXPECT_TRUE(oReloaded.GetDefaultToolHolder()==oChain.GetDefaultToolHolder());
+	EXPECT_EQ(oChain.toXML(),oReloaded.toXML());
+}
+
+TEST(ToolHolderXml, OnlyTheToolSegmentCarriesOne)
+{
+	std::string s = Replaced(Template(),"</segment>\n<segment type=\"REVOLUTE_LINK\" name=\"B\""
+		,"<tool_holder length=\"0.05\" radius=\"0.03\"/>\n</segment>\n<segment type=\"REVOLUTE_LINK\" name=\"B\"");
+	EXPECT_ERROR_CONTAINS(PugiError(s),"TOOL");
+}
+
+TEST(ToolHolderXml, AMissingAttributeIsReported)
+{
+	std::string s = Replaced(WithToolHolder(),"<tool_holder length=\"0.05\" radius=\"0.03\"/>","<tool_holder length=\"0.05\"/>");
+	EXPECT_ERROR_CONTAINS(PugiError(s),"radius");
+}

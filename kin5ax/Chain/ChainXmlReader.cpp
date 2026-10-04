@@ -138,7 +138,14 @@ CChainSegment ReadSegment(const CFileContext &ctx, const pugi::xml_node &node)
 		oSegment.m_dParameterValueMaximum = dMax;
 	}
 
-	CheckChildren(ctx,node,{"initial_translation","initial_rotation","box"});
+	CheckChildren(ctx,node,{"initial_translation","initial_rotation","tool_holder","box"});
+	pugi::xml_node holder = node.child("tool_holder");
+	if(holder){
+		if(oSegment.GetType()!=CHAIN_SEGMENT_TOOL)
+			ctx.Fail(holder,"segment '"+sName+"': only a TOOL segment carries a tool_holder");
+		CheckAttributes(ctx,holder,{"length","radius"},{});
+		oSegment.SetToolHolder(CToolHolder(Number(ctx,holder,"length"),Number(ctx,holder,"radius")));
+	}
 	pugi::xml_node t = SingleChild(ctx,node,"initial_translation");
 	CheckAttributes(ctx,t,{"x","y","z"},{});
 	oSegment.m_r3vConstTranslation = CR3Vector(Number(ctx,t,"x"),Number(ctx,t,"y"),Number(ctx,t,"z"));

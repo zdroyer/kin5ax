@@ -303,3 +303,45 @@ TEST_P(ChainJsonFile, TheKcJsonBesideTheKcIsTheSameMachine)
 }
 
 INSTANTIATE_TEST_CASE_P(Files, ChainJsonFile, ::testing::ValuesIn(GetChainFiles()), ChainJsonFileName());
+
+//---- the tool holder of the tool terminal
+static std::string WithToolHolder()
+{
+	return Replaced(Template(),"\"name\": \"tool\",","\"name\": \"tool\",\n      \"tool_holder\": { \"length\": 0.05, \"radius\": 0.03 },");
+}
+
+TEST(ChainJsonToolHolder, IsReadAndWritten)
+{
+	CChain oChain;
+	ASSERT_EQ(std::string(),JsonError(WithToolHolder(),&oChain));
+	EXPECT_TRUE(oChain.IsToolMountDeclared());
+	EXPECT_DOUBLE_EQ(0.05,oChain.GetDefaultToolHolder().GetLength());
+	EXPECT_DOUBLE_EQ(0.03,oChain.GetDefaultToolHolder().GetRadius());
+
+	std::string sJson = CChainJsonWriter::ToJson(oChain);
+	EXPECT_NE(std::string::npos,sJson.find("tool_holder"));
+	CChain oReloaded;
+	ASSERT_EQ(std::string(),JsonError(sJson,&oReloaded));
+	EXPECT_TRUE(oReloaded.GetDefaultToolHolder()==oChain.GetDefaultToolHolder());
+
+	CChain oPlain;
+	ASSERT_EQ(std::string(),JsonError(Template(),&oPlain));
+	EXPECT_FALSE(oPlain.IsToolMountDeclared());
+	EXPECT_EQ(std::string::npos,CChainJsonWriter::ToJson(oPlain).find("tool_holder"))<<"not written when absent";
+}
+
+TEST(ChainJsonToolHolder, TheWorkpieceHolderCarriesNone)
+{
+	std::string s = Replaced(Template(),"\"name\": \"holder\",","\"name\": \"holder\",\n      \"tool_holder\": { \"length\": 0.05, \"radius\": 0.03 },");
+	std::string sError = JsonError(s);
+	EXPECT_ERROR_CONTAINS(sError,"tool_holder");
+	EXPECT_ERROR_CONTAINS(sError,"workpiece_branch.workpiece_holder");
+}
+
+TEST(ChainJsonToolHolder, AMissingMemberIsNamedByItsPath)
+{
+	std::string s = Replaced(Template(),"\"name\": \"tool\",","\"name\": \"tool\",\n      \"tool_holder\": { \"length\": 0.05 },");
+	std::string sError = JsonError(s);
+	EXPECT_ERROR_CONTAINS(sError,"radius");
+	EXPECT_ERROR_CONTAINS(sError,"tool_branch.tool.tool_holder");
+}

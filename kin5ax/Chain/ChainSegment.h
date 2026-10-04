@@ -2,6 +2,7 @@
 #include "R3Vector.h"
 #include "R3Point.h"
 #include "R3Box.h"
+#include "ToolHolder.h"
 
 #include "Rotation.h"
 
@@ -68,10 +69,19 @@ public:
 	double m_dConstRevoluteAngle;
 	CR3Vector m_r3vConstTranslation;
 
+	CToolHolder m_oToolHolder;
+	bool m_bToolHolderDeclared;
 	double m_dActualParameterValue;
 	double m_dParameterValueMinimum;
 	double m_dParameterValueMaximum;
 	bool m_bParameterIsConstrained;
+
+	//The tool holder of a TOOL segment, from the chain file. Declaring it makes the segment the tool mount:
+	//the tool point then hangs the length of the assembly below the origin of the segment, see
+	//CChain::GetToolMountToToolPointDistance. No other type of segment may carry one.
+	const CToolHolder & GetToolHolder() const { return m_oToolHolder; }
+	bool IsToolHolderDeclared() const { return m_bToolHolderDeclared; }
+	void SetToolHolder(const CToolHolder &oHolder) { m_oToolHolder = oHolder; m_bToolHolderDeclared = true; }
 
 	bool IsParameterConstrained() const;
 	bool IsRegularJoint() const;

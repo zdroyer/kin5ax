@@ -172,11 +172,22 @@ CChainSegment ReadLink(const CContext &ctx, const tJson &j, const std::string &s
 
 CChainSegment ReadTerminal(const CContext &ctx, const tJson &j, const std::string &sPath, CHAIN_SEGMENT_TYPE type)
 {
-	ctx.CheckObject(j,sPath,{"name","translation","rotation"},{"boxes"});
+	//only the end of the tool branch carries the tool holder of the machine
+	if(type==CHAIN_SEGMENT_TOOL)
+		ctx.CheckObject(j,sPath,{"name","translation","rotation"},{"boxes","tool_holder"});
+	else
+		ctx.CheckObject(j,sPath,{"name","translation","rotation"},{"boxes"});
 	CChainSegment oSegment(type,CR3Vector(1.0,0.0,0.0),0.0,CR3Vector(0.0));
 	oSegment.SetType(type);
 	oSegment.m_bParameterIsConstrained = false;
 	ReadCommon(ctx,j,sPath,oSegment);
+	tJson::const_iterator itHolder = j.find("tool_holder");
+	if(itHolder != j.end()){
+		std::string sHolder = sPath+".tool_holder";
+		ctx.CheckObject(*itHolder,sHolder,{"length","radius"},{});
+		oSegment.SetToolHolder(CToolHolder(ctx.Number(ctx.Member(*itHolder,"length",sHolder),sHolder+".length")
+			,ctx.Number(ctx.Member(*itHolder,"radius",sHolder),sHolder+".radius")));
+	}
 	return oSegment;
 }
 
@@ -261,6 +272,12 @@ tJson TerminalToJson(const CChainSegment &oSegment)
 {
 	tJson j;
 	CommonToJson(oSegment,j);
+	if(oSegment.IsToolHolderDeclared()){
+		tJson holder;
+		holder["length"] = oSegment.GetToolHolder().GetLength();
+		holder["radius"] = oSegment.GetToolHolder().GetRadius();
+		j["tool_holder"] = holder;
+	}
 	BoxesToJson(oSegment,j);
 	return j;
 }

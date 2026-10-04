@@ -12,7 +12,6 @@ extern CR3Point r3pZero;
 CChain::CChain(void)
 {
 	m_dToolMountToToolPoint = 0.0;
-	m_bToolMountDeclared = false;
 	m_bIsToolPartActive=true;
 	m_nActiveSegmentIndex=-1;
 
@@ -91,7 +90,7 @@ std::string CChain::toXML() const
 	result += ">\n";
 	result += "<!ELEMENT tool_part (segment+)>\n";
 	result += "<!ELEMENT material_holder_part (segment+)>\n";
-	result += "<!ELEMENT segment (initial_translation, initial_rotation, box*)>\n";
+	result += "<!ELEMENT segment (initial_translation, initial_rotation, tool_holder?, box*)>\n";
 	result += "<!ATTLIST segment\n";
 	result += "	type CDATA #REQUIRED\n";
 	result += "	name CDATA #REQUIRED\n";
@@ -99,6 +98,11 @@ std::string CChain::toXML() const
 //	result += "	default_parameter_value CDATA #REQUIRED\n";
 	result += "	parameter_value_minimum CDATA #IMPLIED\n";
 	result += "	parameter_value_maximum CDATA #IMPLIED\n";
+	result += ">\n";
+	result += "<!ELEMENT tool_holder EMPTY>\n";
+	result += "<!ATTLIST tool_holder\n";
+	result += "	length CDATA #REQUIRED\n";
+	result += "	radius CDATA #REQUIRED\n";
 	result += ">\n";
 	result += "<!ELEMENT box EMPTY>\n";
 	result += "<!ATTLIST box\n";
@@ -386,23 +390,25 @@ CTransformation CChain::GetToolPointToToolMountTransformation() const
 
 bool CChain::IsToolMountDeclared() const
 {
-	return m_bToolMountDeclared;
+	return !m_vToolPart.empty() && m_vToolPart.back().IsToolHolderDeclared();
 }
 
 const CToolHolder & CChain::GetDefaultToolHolder() const
 {
-	return m_oDefaultToolHolder;
+	static const CToolHolder oNone;
+	return m_vToolPart.empty() ? oNone : m_vToolPart.back().GetToolHolder();
 }
 
 void CChain::SetDefaultToolHolder(const CToolHolder &oHolder)
 {
-	m_oDefaultToolHolder = oHolder;
-	m_bToolMountDeclared = true;
+	if(m_vToolPart.empty())
+		MY_THROW(CGeneratorException,"the chain has no TOOL segment to clamp a tool holder to");
+	m_vToolPart.back().SetToolHolder(oHolder);
 }
 
 void CChain::SetToolAssembly(const CMillingTool &oTool)
 {
-	m_dToolMountToToolPoint = m_bToolMountDeclared ? oTool.GetMountToToolPointDistance() : 0.0;
+	m_dToolMountToToolPoint = IsToolMountDeclared() ? oTool.GetMountToToolPointDistance() : 0.0;
 }
 
 CR3CaughtVector CChain::GetActualToolPositionAndOrientation() const

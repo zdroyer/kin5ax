@@ -9,7 +9,7 @@
 >
 <!ELEMENT tool_part (segment+)>
 <!ELEMENT material_holder_part (segment+)>
-<!ELEMENT segment (initial_translation, initial_rotation)>
+<!ELEMENT segment (initial_translation, initial_rotation, tool_holder?, box*)>
 <!ATTLIST segment
 	type %segment_type;  #REQUIRED
 	name CDATA #REQUIRED
@@ -17,6 +17,11 @@
 	default_parameter_value CDATA #REQUIRED
 	parameter_value_minimum CDATA #IMPLIED
 	parameter_value_maximum CDATA #IMPLIED
+>
+<!ELEMENT tool_holder EMPTY>
+<!ATTLIST tool_holder
+	length CDATA #REQUIRED
+	radius CDATA #REQUIRED
 >
 <!ELEMENT initial_translation EMPTY>
 <!ATTLIST initial_translation

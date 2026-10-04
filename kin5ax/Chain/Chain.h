@@ -98,8 +98,6 @@ public:
 	bool m_bIsToolPartActive;
 
 	double m_dToolMountToToolPoint;		//see GetToolMountToToolPointDistance
-	bool m_bToolMountDeclared;
-	CToolHolder m_oDefaultToolHolder;
 
 	void ComputeAndSetError(CChainConfiguration &oConfig, const CR3CaughtVector &cv);
 	CR3CaughtVector m_toolPosition;
