@@ -13,6 +13,10 @@ class CSimpleSimulationSetup
 public:
 	double m_dWorkingRange;		//the shortest travel of a limited linear axis, or the fallback when none is limited
 	double m_dRadius;			//of the hemisphere: centred at the workpiece origin, equator at z = 0, pole at z = radius
+	//The radius the cutter locations are written on: the programmed point of a ball nose tool is the centre of
+	//its ball, so that centre has to travel one ball radius outside the surface for the tool to machine the
+	//hemisphere of m_dRadius and not one ball radius less of it (KnownBugs #66).
+	double m_dCLRadius;
 	double m_dLocationDistance;	//between neighbouring cutter locations
 	double m_dBoxSize;			//the material block: a square of this side around the hemisphere, ...
 	double m_dBoxHeight;		//... from the equator plane up to the pole

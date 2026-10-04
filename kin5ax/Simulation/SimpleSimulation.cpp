@@ -29,6 +29,7 @@ CSimpleSimulationSetup CSimpleSimulationSetup::ForMachine(const CChain &oChain, 
 	o.m_dWorkingRange = WorkingRange(oChain);
 	double dToolRadius = std::max(oTool.m_dR,oTool.m_dRz);
 	o.m_dRadius = std::max(o.m_dWorkingRange/8.0,3.0*dToolRadius);
+	o.m_dCLRadius = o.m_dRadius + oTool.DefaultZeroPointZ();
 	o.m_dLocationDistance = o.m_dRadius/8.0;
 	o.m_dBoxSize = 2.5*o.m_dRadius;
 	o.m_dBoxHeight = o.m_dRadius;
@@ -38,7 +39,7 @@ CSimpleSimulationSetup CSimpleSimulationSetup::ForMachine(const CChain &oChain, 
 
 size_t CSimpleSimulationSetup::WriteCLData(const std::string &sFilePath) const
 {
-	return WriteSphereCLData(sFilePath,m_dRadius,m_dLocationDistance);
+	return WriteSphereCLData(sFilePath,m_dCLRadius,m_dLocationDistance);
 }
 
 } // namespace kin5ax

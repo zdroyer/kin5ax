@@ -48,7 +48,7 @@ fast, exact, machine-aware judge of the toolpath. That judge is this library. Se
 | directory | what | platform |
 |---|---|---|
 | [`kin5ax/`](kin5ax/) | the library: C++17, standard library only (pugixml and nlohmann/json vendored), no Windows dependency | Windows (MSVC) and Linux (GCC) built and tested; macOS untried |
-| [`kin5axTests/`](kin5axTests/) | GoogleTest suite, 619 tests, with 11 machine models under `TestChains/` | same |
+| [`kin5axTests/`](kin5axTests/) | GoogleTest suite, 695 tests, with 11 machine models under `TestChains/` | same |
 | [`Universal5CMillingMachinePostprocessor/`](Universal5CMillingMachinePostprocessor/) | MFC application: kinematic chain editor, 3D viewer, single-location solver with a step-by-step log, batch postprocessing of CL files, a rudimentary voxel simulation that checks the geometry of the postprocessor on a hemisphere sized for the machine | Windows |
 
 Machine models shipped and round-trip tested (catalogue travels and swivel ranges; head and
@@ -130,7 +130,7 @@ The library reference, the machine model and the file formats are in [`kin5ax/RE
 
 The library was written in 2004 and revived in September 2026 on Visual Studio 2022 / x64,
 using agentic coding tools throughout: a scan of the code produced 65 numbered findings
-([`KnownBugs.md`](KnownBugs.md)); 43 are fixed, each with a test and a commit; 22 are open
+([`KnownBugs.md`](KnownBugs.md)); 45 are fixed, each with a test and a commit; 23 are open
 and triaged by effect. Everything in that file was found by reading the code, not by a machine
 crash, so read it before trusting an edge case.
 
@@ -138,16 +138,16 @@ What works and is tested: the default solving path (`alpha1 then alpha2`, axis m
 11 machines with random round trips and hemisphere/meridian paths; limits, equivalents,
 collision boxes, singular-section interpolation, trajectory selection, G-code export, the three
 file formats and every path between them, independence from the numeric locale of the process,
-the voxel material and the cutting simulation (library code, the application only draws and drives it).
+the voxel material and the cutting simulation (library code, the application only draws and drives it),
+the tool assembly of holder, shank and cutting part with its collisions against the machine and
+against the material that is left.
 
 What is not: the two non-default orientation methods are wrong on some chains (#39, #22);
 rotary axes are not unwound, so C359→C1 is scored as 2° but programmed as a 358° sweep (#25,
 #40, #59); interpolated singular sections skip the feasibility checks (#21); the working
-tolerance is 1e-15 everywhere (#23, #56); the tool frame is the TOOL terminal of the chain file,
-so the zero point of a ball-nose tool (its ball centre) is not honoured and a longer tool grows into
-the machine instead of protruding from a holder (#66, #68); the generated machine models have their
-boxes and link positions in the part area (#67). Feed rates, tool changes and machine-specific words
-are not written to the G-code.
+tolerance is 1e-15 everywhere (#23, #56); the generated machine models still have boxes and link
+positions in the part area outside the tool branch (#67). Feed rates, tool changes and
+machine-specific words are not written to the G-code.
 
 ## Roadmap
 

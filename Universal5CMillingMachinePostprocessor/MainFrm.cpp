@@ -501,7 +501,10 @@ void CMainFrame::OnSimulationSimple()
 		+size_to_string(nSolved)+" of them solved on this machine.\n"
 		+"Material block "+double_to_string(oSetup.m_dBoxSize)+" x "+double_to_string(oSetup.m_dBoxSize)+" x "
 		+double_to_string(oSetup.m_dBoxHeight)+" in voxels of "+double_to_string(oSetup.m_dVoxelSize)+".\n"
-		+"The tool path is in "+sFilePath+".\n\nThe simulation starts when you close this message.";
+		+"The tool path is in "+sFilePath+"."
+		+"\nTool assembly "+double_to_string(pDoc->m_pMillingTool->GetAssemblyLength())+" long, its point "
+		+double_to_string(pDoc->m_oChain.GetToolMountToToolPointDistance())+" below the tool mount."
+		+"\n\nThe simulation starts when you close this message.";
 	MessageBox(sReport.c_str(),"Simple simulation");
 	if(nSolved==0)
 		return;

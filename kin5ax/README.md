@@ -25,6 +25,13 @@ A machine is two open kinematic sub-chains fixed to a common base:
 - the **tool part** ends in the spindle (terminal segment of type `TOOL`);
 - the **material holder part** ends in the workpiece frame (terminal `MATERIAL_HOLDER`).
 
+The end of the tool branch is the **tool mount**, the place where the holder of the tool is clamped.
+The tool point, which is the point the CL data programs, hangs the length of the assembly below it:
+the holder (`CToolHolder`, declared by the chain file), the tool, and the zero point of the shape of
+the tool, the tip of a flat end mill or the centre of the ball of a ball nose tool. A chain file that
+declares no holder has its tool point at the mount itself, which is how the files were written before
+the holder existed.
+
 Every segment is a constant transformation (a translation, then a rotation about an axis by an
 angle) followed by its joint motion: a translation along the local Z for a `PRISMATIC_LINK`, a
 rotation about the local Z for a `REVOLUTE_LINK`. A segment carries an offset, a default value,
@@ -70,7 +77,8 @@ become linearly dependent for these angles (possible on some head/head machines)
 reported as no solution.
 
 **Filtering.** Each candidate is checked against the joint limits — including the equivalent
-angles, ± a full turn — and against the collision boxes of all segments and the tool solid.
+angles, ± a full turn — and against the collision boxes of all segments and the three solids of the
+tool assembly: the cutting part, the shank above it and the holder.
 Only candidates passing both are returned. Both checks can be switched off in
 `CPostprocessorSettings` (`m_bCheckLimits`, `m_bCheckCollisions`); with the collision check off
 no tool model is needed to solve.
@@ -166,7 +174,7 @@ the tool axis points along +Z at home.
 |---|---|
 | geometry (`3DGeometry/`) | `CR3Point`, `CR3Vector`, `CR3CaughtVector` (position + axis), `CM4x4`, `CTransformation`, `CTranslation`, `CRotation`, `CScale`, `CQuaternion` (unused), `CR3Box` (collision boxes: exact box/box, box/segment, box/sphere, box/cylinder tests) |
 | machine (`Chain/`) | `CChain` (two segment vectors, forward kinematics, limits, collisions, XML out), `CChainSegment`, `CChainParameter` (value, unit, type single/any/none), `CChainConfiguration` (the five joint values, distance, equivalents), `CChainXmlReader`, `CChainJsonReader`/`Writer`, `CChainFcmReader`/`Writer`, `CChainFileReader` |
-| tool (`MillingTool/`) | `CMillingTool`, `CMillingToolBall`, `CMillingToolCylinder`: one solid each for the voxel cut volume and for collisions |
+| tool (`MillingTool/`) | `CMillingTool`, `CMillingToolBall`, `CMillingToolCylinder`: the cutting part (the cut volume of the simulation and a collision solid), the non-cutting shank and the holder (`CToolHolder`), the lengths they add up to and the distance from the tool mount to the tool point |
 | solver (`Postprocessor/`) | `COrientationPostprocessor` (the angles), `CPositionPostprocessor` (the shifts), `C5CPostprocessor` (signs, limits, collisions, singular sections), `CSolveReport` and `SOLVE_STATUS` |
 | batch | `CCutterLocationData`, `CCLDataPostprocessor` (+ `CCLDataPostprocessingResult`), `CSimulationData` (solution sets, shortest path, G-code), `CPostprocessorSettings`, `CProgressCallback` |
 | simulation (`Simulation/`) | `CMaterial` (the voxel block: material, surface, removed; the cut of the tool at its position; volumes), `CMaterialSimulation` (the trajectory replayed on the chain, the tool following, the material cut; `Step`, `Run` with progress and stop; no thread of its own), `CSimpleSimulationSetup` (a hemisphere job sized for a machine). The simulation is deliberately simple and not efficient: a voxel grid sampled at the voxel corners, no sweep between two locations. It is there to check the geometry of the postprocessor and to see how a machine model moves, not to predict a machined surface. |
@@ -201,12 +209,11 @@ solver:
 - The non-default orientation methods are wrong on some chains (#39) and the axis method loses
   the sign on a boundary ratio (#22).
 - A ball tool with height < 2R has disagreeing cut and collision volumes (#49).
-- The zero point of the tool: a ball-nose tool is referenced at its ball centre, a cylindrical one at its
-  tip, and the simulation places the reference point on the programmed point regardless (#66). Behind
-  it is a design limit: the tool frame is the TOOL terminal of the chain file, so a longer tool grows
-  into the machine; the target is a tool holder at the end of the tool branch with the tool protruding
-  from it, and the postprocessor taking tool, holder and chain as input (#68, with subtasks).
-- The generated machine models have their boxes and link positions in the part area (#67).
+- The holder and the shank are tested against the machine by the solver and against the remaining
+  material by the simulation (a gouge). The solver cannot judge the material, because what is left
+  depends on the trajectory so far.
+- The generated machine models still have boxes and link positions in the part area, now only outside
+  the tool branch (#67).
 - No feed rate, tool change or machine-specific words in the G-code.
 
 ## References

@@ -27,6 +27,7 @@ TEST_P(SimpleSimulationChain, SizesSuitTheMachineAndTheTool)
 	EXPECT_GE(o.m_dRadius,3.0*0.016)<<"at least three tool radii";
 	EXPECT_GE(o.m_dRadius,o.m_dWorkingRange/8.0);
 	EXPECT_LE(o.m_dRadius,std::max(o.m_dWorkingRange/8.0,3.0*0.016)+1E-12);
+	EXPECT_DOUBLE_EQ(o.m_dRadius+0.016,o.m_dCLRadius)<<"the ball centre travels one ball radius outside the surface";
 	EXPECT_GT(o.m_dLocationDistance,0.0);
 	EXPECT_LT(o.m_dLocationDistance,o.m_dRadius);
 	EXPECT_GE(o.m_dBoxSize,2.0*o.m_dRadius)<<"the block holds the hemisphere";
