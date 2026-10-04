@@ -9,12 +9,16 @@ CMillingToolBall::CMillingToolBall
 	(double dRz
 	,double dR
 	,double dCuttingHeight
-	,double dReferencePointZ)
+	,double dReferencePointZ
+	,double dNonCuttingLength
+	,const CToolHolder &oHolder)
 :CMillingTool
 		( dRz
 		, dR
 		, dCuttingHeight
-		, dReferencePointZ)
+		, dReferencePointZ
+		, dNonCuttingLength
+		, oHolder)
 
 {
 	m_type = MILLING_TOOL_BALL;
@@ -77,6 +81,12 @@ bool CMillingToolBall::IsInOZCuttingSpace(const CR3Point &p) const
 		return false;
 	double dSq = p.GetX()*p.GetX()+p.GetY()*p.GetY();
 	return dSq<=m_dRzSquare+dEPSILON;
+}
+
+double CMillingToolBall::DefaultZeroPointZ() const
+{
+	//the programmed point of a ball nose tool is the centre of the ball
+	return m_dR;
 }
 
 } // namespace kin5ax

@@ -8,6 +8,7 @@
 #include "Transformation.h"
 #include "Rotation.h"
 #include "Translation.h"
+#include "ToolHolder.h"
 
 namespace kin5ax {
 
@@ -38,9 +39,15 @@ inline int is_point_in_SNCP(CUT_TYPE type)
 inline int is_point_in_ANCP(CUT_TYPE type)
 { return (type & 0x04);}
 
-//A milling tool: the geometry of its cutting part (the cut volume of the voxel simulation and the collision
-//volume against the machine parts) and its current position and orientation. The tool is placed by its
-//reference point, which lies on the axis m_dReferencePointZ above the tip.
+//A milling tool with its holder: the geometry of the three solids of the assembly and its current position
+//and orientation. Measured along the axis from the tip, in the tip frame of IsInOZCuttingSpace:
+//  the cutting part    0 .. m_dCuttingHeight                     cuts material, must not meet a machine part
+//  the shank           m_dCuttingHeight .. GetToolLength()       must meet neither material nor a machine part
+//  the holder          GetToolLength() .. GetAssemblyLength()    the same, radius of CToolHolder
+//The tool is placed by its reference point (the programmed point of the CL data), which lies on the axis
+//m_dReferencePointZ above the tip; DefaultZeroPointZ is where that point lies for the shape of the tool.
+//The whole assembly hangs GetMountToToolPointDistance() below the tool mount of the machine, which is the
+//origin of the TOOL terminal of the kinematic chain.
 class CMillingTool
 {
 public:
@@ -52,7 +59,9 @@ public:
 
 
 
-	double m_dCuttingHeight;	//length of the tool from the tip, along the axis
+	double m_dCuttingHeight;	//length of the cutting part from the tip, along the axis
+	double m_dNonCuttingLength;	//the shank between the cutting part and the holder
+	CToolHolder m_oHolder;		//between the tool and the tool mount of the machine
 	
 /*
 	double m_dSideNotCuttingBegin;
@@ -81,6 +90,10 @@ protected:
 	//The bounding box (in the world frame) of a cylinder of radius dRadius about the tool axis, from dBegin to dEnd
 	//measured along the axis from the reference point.
 	CR3Box AxialCylinderBoundingBox(double dRadius,double dBegin, double dEnd) const;
+	//Collision of a cylinder of radius dRadius about the tool axis, from dBeginZ to dBeginZ+dLength measured
+	//along the axis from the tip, with a box; the frames are those of CauseCollision. False for an empty cylinder.
+	bool CylinderMeetsBox(const CR3Box &box, double dBeginZ, double dLength, double dRadius
+		,const CTransformation &trToBoxFrame, const CTransformation &trToToolFrame) const;
 
 
 	//The cut volume of the tool in the tool frame of IsCut: the tip at the origin, the axis along +OZ.
@@ -103,6 +116,29 @@ public:
 	//Returns CUT_TYPE_CUT when the point is inside the cutting part, CUT_TYPE_NOT_CUT otherwise.
 	CUT_TYPE IsCut(const CR3Point &r3pP) const;
 
+	//the tool without its holder: the cutting part and the shank
+	double GetToolLength() const;
+	//from the tip to the tool mount: the tool and its holder
+	double GetAssemblyLength() const;
+	//From the tool mount down to the reference point, along the axis: the assembly length less the height of the
+	//reference point above the tip. This is what CChain puts between the TOOL terminal and the tool point.
+	double GetMountToToolPointDistance() const;
+	//Where the programmed point of this shape of tool lies above the tip: the tip itself for a flat end mill,
+	//the centre of the ball for a ball nose tool. The caller decides whether to use it (m_dReferencePointZ).
+	virtual double DefaultZeroPointZ() const = 0;
+
+	//true when the assembly has a shank or a holder with a body
+	bool HasNonCuttingPart() const;
+	//The non-cutting envelope (the shank and the holder) in the tip frame: the tip at the origin, the axis
+	//along +OZ. Nothing of it may cut material or meet a machine part.
+	bool IsInOZNonCuttingSpace(const CR3Point &p) const;
+	//the same test for a point of the world frame, at the current position and orientation
+	bool IsInNonCuttingPart(const CR3Point &r3pP) const;
+	//the bounding box of the non-cutting envelope in the world frame; the default (empty) box when there is none
+	CR3Box GetNonCuttingPartBoundingBox() const;
+	//Collision of the non-cutting envelope with a box of a machine part; the frames are those of CauseCollision.
+	bool CauseNonCuttingCollision(const CR3Box &box, const CTransformation trToBoxFrame, const CTransformation trToToolFrame) const;
+
 
 	//Places the tool: r3pNewPosition is the new place of the reference point (m_dReferencePointZ above the tip),
 	//r3vNewOrientation the new direction of the axis from the tip towards the spindle.
@@ -116,7 +152,9 @@ public:
 		(double dRz
 		,double dR
 		,double dCuttingHeight
-		,double dReferencePointZ);
+		,double dReferencePointZ
+		,double dNonCuttingLength = 0.0
+		,const CToolHolder &oHolder = CToolHolder());
 
 //	virtual void GetBoundingBox(CR3Point &r3pP1, CR3Point &r3pP2) const = 0;
 	//the tools are owned and deleted through CMillingTool pointers (the document, the tool dialog)

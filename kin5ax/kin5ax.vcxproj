@@ -134,6 +134,7 @@
     <ClInclude Include="Chain\ChainSegment.h" />
     <ClInclude Include="Chain\ChainParameter.h" />
     <ClInclude Include="MillingTool\MillingTool.h" />
+    <ClInclude Include="MillingTool\ToolHolder.h" />
     <ClInclude Include="MillingTool\MillingToolBall.h" />
     <ClInclude Include="MillingTool\MillingToolCylinder.h" />
     <ClInclude Include="Postprocessor\5CPostprocessor.h" />

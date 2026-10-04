@@ -14,7 +14,10 @@ public:
 		(double dRz
 		,double dR
 		,double dCuttingHeight
-		,double dReferencePointZ);
+		,double dReferencePointZ
+		,double dNonCuttingLength = 0.0
+		,const CToolHolder &oHolder = CToolHolder());
+	virtual double DefaultZeroPointZ() const;
 	virtual CR3Box GetCuttingPartBoundingBox() const;
 	virtual bool CauseCollision(const CR3Box &box, const CTransformation trToBoxFrame, const CTransformation trToToolFrame) const;
 

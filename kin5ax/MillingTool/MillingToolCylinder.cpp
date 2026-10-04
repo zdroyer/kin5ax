@@ -9,12 +9,16 @@ CMillingToolCylinder::CMillingToolCylinder
 	(double dRz
 	,double dR
 	,double dCuttingHeight
-	,double dReferencePointZ)
+	,double dReferencePointZ
+	,double dNonCuttingLength
+	,const CToolHolder &oHolder)
 :CMillingTool
 		( dRz
 		, 0.0
 		, dCuttingHeight
-		, dReferencePointZ)
+		, dReferencePointZ
+		, dNonCuttingLength
+		, oHolder)
 
 {
 	m_type = MILLING_TOOL_CYLINDER;
@@ -46,6 +50,12 @@ bool CMillingToolCylinder::IsInOZCuttingSpace(const CR3Point &p) const
 	if(dSq>m_dRzSquare+dEPSILON)
 		return false;
 	return true;
+}
+
+double CMillingToolCylinder::DefaultZeroPointZ() const
+{
+	//the programmed point of a flat end mill is its tip
+	return 0.0;
 }
 
 } // namespace kin5ax

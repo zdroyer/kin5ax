@@ -38,6 +38,7 @@ add_executable(kin5axTests
   SimulationDataTests.cpp
   SolveReportTests.cpp
   StringToolsTests.cpp
+  ToolAssemblyTests.cpp
 )
 target_include_directories(kin5axTests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(kin5axTests PRIVATE kin5ax::kin5ax GTest::gtest)
