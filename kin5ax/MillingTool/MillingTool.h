@@ -77,10 +77,8 @@ public:
 protected:
 	CR3Point m_r3pPosition;
 	CR3Vector m_r3vOrientation;
-	CR3Vector m_r3vMoveVector;
 	CTransformation m_m4x4ToOZ;
 
-	const CR3Vector &GetMoveVector() const;
 	CR3Point m_r3pBoundingBoxLLN,m_r3pBoundingBoxRTF;
 	std::string m_sCollisionLog;
 

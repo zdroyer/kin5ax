@@ -33,9 +33,6 @@
     <ClCompile Include="3DGeometry\M4x4.cpp">
       <Filter>3DGeometry</Filter>
     </ClCompile>
-    <ClCompile Include="3DGeometry\Quaternion.cpp">
-      <Filter>3DGeometry</Filter>
-    </ClCompile>
     <ClCompile Include="3DGeometry\R3Box.cpp">
       <Filter>3DGeometry</Filter>
     </ClCompile>
@@ -128,9 +125,6 @@
       <Filter>3DGeometry</Filter>
     </ClInclude>
     <ClInclude Include="3DGeometry\M4x4.h">
-      <Filter>3DGeometry</Filter>
-    </ClInclude>
-    <ClInclude Include="3DGeometry\Quaternion.h">
       <Filter>3DGeometry</Filter>
     </ClInclude>
     <ClInclude Include="3DGeometry\R3Box.h">

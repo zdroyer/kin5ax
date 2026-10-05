@@ -172,7 +172,7 @@ the tool axis points along +Z at home.
 
 | area | classes |
 |---|---|
-| geometry (`3DGeometry/`) | `CR3Point`, `CR3Vector`, `CR3CaughtVector` (position + axis), `CM4x4`, `CTransformation`, `CTranslation`, `CRotation`, `CScale`, `CQuaternion` (unused), `CR3Box` (collision boxes: exact box/box, box/segment, box/sphere, box/cylinder tests) |
+| geometry (`3DGeometry/`) | `CR3Point`, `CR3Vector`, `CR3CaughtVector` (position + axis), `CM4x4`, `CTransformation`, `CTranslation`, `CRotation`, `CScale`, `CR3Box` (collision boxes: exact box/box, box/segment, box/sphere, box/cylinder tests) |
 | machine (`Chain/`) | `CChain` (two segment vectors, forward kinematics, limits, collisions, XML out), `CChainSegment`, `CChainParameter` (value, unit, type single/any/none), `CChainConfiguration` (the five joint values, distance, equivalents), `CChainXmlReader`, `CChainJsonReader`/`Writer`, `CChainFcmReader`/`Writer`, `CChainFileReader` |
 | tool (`MillingTool/`) | `CMillingTool`, `CMillingToolBall`, `CMillingToolCylinder`: the cutting part (the cut volume of the simulation and a collision solid), the non-cutting shank and the holder (`CToolHolder`), the lengths they add up to and the distance from the tool mount to the tool point |
 | solver (`Postprocessor/`) | `COrientationPostprocessor` (the angles), `CPositionPostprocessor` (the shifts), `C5CPostprocessor` (signs, limits, collisions, singular sections), `CSolveReport` and `SOLVE_STATUS` |

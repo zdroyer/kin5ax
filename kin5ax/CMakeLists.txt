@@ -2,7 +2,6 @@
 # Mirrors kin5ax.vcxproj, which the Visual Studio solution of the MFC application still uses.
 add_library(kin5ax STATIC
   3DGeometry/M4x4.cpp
-  3DGeometry/Quaternion.cpp
   3DGeometry/R3Box.cpp
   3DGeometry/R3CaughtVector.cpp
   3DGeometry/R3Point.cpp

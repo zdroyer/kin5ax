@@ -74,7 +74,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="3DGeometry\M4x4.cpp" />
-    <ClCompile Include="3DGeometry\Quaternion.cpp" />
     <ClCompile Include="3DGeometry\R3Box.cpp" />
     <ClCompile Include="3DGeometry\R3CaughtVector.cpp" />
     <ClCompile Include="3DGeometry\R3Point.cpp" />
@@ -112,7 +111,6 @@
   <ItemGroup>
     <ClInclude Include="3DGeometry\double_tools.h" />
     <ClInclude Include="3DGeometry\M4x4.h" />
-    <ClInclude Include="3DGeometry\Quaternion.h" />
     <ClInclude Include="3DGeometry\R3Box.h" />
     <ClInclude Include="3DGeometry\R3CaughtVector.h" />
     <ClInclude Include="3DGeometry\R3Point.h" />
