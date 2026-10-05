@@ -48,7 +48,7 @@ fast, exact, machine-aware judge of the toolpath. That judge is this library. Se
 | directory | what | platform |
 |---|---|---|
 | [`kin5ax/`](kin5ax/) | the library: C++17, standard library only (pugixml and nlohmann/json vendored), no Windows dependency | Windows (MSVC) and Linux (GCC) built and tested; macOS untried |
-| [`kin5axTests/`](kin5axTests/) | GoogleTest suite, 695 tests, with 11 machine models under `TestChains/` | same |
+| [`kin5axTests/`](kin5axTests/) | GoogleTest suite, 699 tests, with 11 machine models under `TestChains/` | same |
 | [`Universal5CMillingMachinePostprocessor/`](Universal5CMillingMachinePostprocessor/) | MFC application: kinematic chain editor, 3D viewer, single-location solver with a step-by-step log, batch postprocessing of CL files, a rudimentary voxel simulation that checks the geometry of the postprocessor on a hemisphere sized for the machine | Windows |
 
 Machine models shipped and round-trip tested (catalogue travels and swivel ranges; head and
@@ -145,7 +145,7 @@ against the material that is left.
 What is not: the two non-default orientation methods are wrong on some chains (#39, #22);
 rotary axes are not unwound, so C359→C1 is scored as 2° but programmed as a 358° sweep (#25,
 #40, #59); interpolated singular sections skip the feasibility checks (#21); the working
-tolerance is 1e-15 everywhere (#23, #56); the generated machine models still have boxes and link
+tolerance is one absolute constant for lengths, angles and degeneracy alike (#56); the generated machine models still have boxes and link
 positions in the part area outside the tool branch (#67). Feed rates, tool changes and
 machine-specific words are not written to the G-code.
 

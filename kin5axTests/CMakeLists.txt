@@ -24,6 +24,7 @@ add_executable(kin5axTests
   ChainTests.cpp
   ChainToolCollisionTests.cpp
   ChainXmlReaderTests.cpp
+  DoubleToolsTests.cpp
   ExceptionsTests.cpp
   InterpolationTests.cpp
   LocaleTests.cpp

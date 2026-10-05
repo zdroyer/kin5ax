@@ -182,9 +182,12 @@ the tool axis points along +Z at home.
 
 ## Tolerances, units, threads, locale
 
-- One global tolerance, `double_tools.h` `dEPSILON = 1e-15`, which is below one ULP for
-  |x| > 8: comparisons are effectively exact at millimetre scale (#23, #56). The precision
-  field of the settings dialog has no effect yet.
+- One global tolerance, `double_tools.h` `dEPSILON = 1e-12`: a picometre at the metre scale of the
+  models, a few hundred of the last bits of a double even at the 8 m travel of the largest one, and
+  three orders below the accuracy the solver demonstrates. It is absolute and serves lengths, angles
+  and degeneracy checks alike, so it is a stopgap: the right value follows the unit of the file, and
+  the plan is a `CTolerances` of length, angle and relative in the settings (#56). The precision
+  field of the settings dialog shows it and cannot change it (#23).
 - Lengths are the unit of the machine file; the CL file must use the same. Angles are degrees in
   files and dialogs, radians inside.
 - `C5CPostprocessor` is safe to use from one thread per instance (the former shared statics are
