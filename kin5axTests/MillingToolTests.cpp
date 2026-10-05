@@ -5,6 +5,7 @@
 #include "gtest/gtest.h"
 #include "MillingToolBall.h"
 #include "MillingToolCylinder.h"
+#include "ArgsMyException.h"
 #include "Rotation.h"
 #include "Translation.h"
 #include <type_traits>
@@ -221,3 +222,77 @@ TEST_P(ToolCollisionTest, CylinderToolCollidesWithItsWholeShape)
 }
 
 INSTANTIATE_TEST_CASE_P(ReferencePoints, ToolCollisionTest, ::testing::Values(0.0,dRADIUS,0.04));
+
+// ---------------------------------------------------------------- the dimensions have to make a tool (#50)
+
+//the dimensions are the point of these tests, not the object: the tool is constructed and dropped
+static void MakeBall(double dRz, double dR, double dCuttingHeight, double dReferencePointZ, double dShank = 0.0)
+{
+	CMillingToolBall oTool(dRz,dR,dCuttingHeight,dReferencePointZ,dShank);
+}
+static void MakeCylinder(double dRz, double dCuttingHeight, double dReferencePointZ, double dShank = 0.0)
+{
+	CMillingToolCylinder oTool(dRz,0.0,dCuttingHeight,dReferencePointZ,dShank);
+}
+
+TEST(MillingToolDimensions, TheToolsOfTheApplicationPass)
+{
+	EXPECT_EQ("",CMillingTool::DimensionProblem(MILLING_TOOL_BALL,0.016,0.016,0.064,0.016,0.0))
+		<<"the default tool of the document";
+	EXPECT_EQ("",CMillingTool::DimensionProblem(MILLING_TOOL_CYLINDER,0.012,0.0,0.040,0.0,0.030))
+		<<"the default fields of the tool dialog, with a shank";
+	EXPECT_NO_THROW(MakeBall(dRADIUS,dRADIUS,dCUTTING_HEIGHT,dRADIUS));
+	EXPECT_NO_THROW(MakeCylinder(dRADIUS,dCUTTING_HEIGHT,0.0));
+}
+
+//they used to be fabs'd, so a tool asked for with -16 mm came back with 16 and no word about it
+TEST(MillingToolDimensions, ANegativeDimensionIsRefusedInsteadOfAbsolutised)
+{
+	EXPECT_THROW(MakeBall(-dRADIUS,dRADIUS,dCUTTING_HEIGHT,0.0),CArgsMyException)<<"Rz";
+	EXPECT_THROW(MakeBall(dRADIUS,-dRADIUS,dCUTTING_HEIGHT,0.0),CArgsMyException)<<"R";
+	EXPECT_THROW(MakeBall(dRADIUS,dRADIUS,-dCUTTING_HEIGHT,0.0),CArgsMyException)<<"the cutting height";
+	EXPECT_THROW(MakeBall(dRADIUS,dRADIUS,dCUTTING_HEIGHT,dRADIUS,-0.01),CArgsMyException)<<"the shank";
+	EXPECT_THROW(MakeCylinder(-dRADIUS,dCUTTING_HEIGHT,0.0),CArgsMyException);
+}
+
+TEST(MillingToolDimensions, ZeroIsNotATool)
+{
+	EXPECT_THROW(MakeBall(0.0,dRADIUS,dCUTTING_HEIGHT,0.0),CArgsMyException)<<"no radius";
+	EXPECT_THROW(MakeBall(dRADIUS,0.0,dCUTTING_HEIGHT,0.0),CArgsMyException)<<"no ball";
+	EXPECT_THROW(MakeBall(dRADIUS,dRADIUS,0.0,0.0),CArgsMyException)<<"no cutting part";
+	EXPECT_THROW(MakeCylinder(0.0,dCUTTING_HEIGHT,0.0),CArgsMyException)<<"no radius";
+	EXPECT_THROW(MakeCylinder(dRADIUS,0.0,0.0),CArgsMyException)<<"no cutting part";
+}
+
+TEST(MillingToolDimensions, TheBallFitsTheToolItIsTheNoseOf)
+{
+	//the check the constructor of the ball nose tool used to carry commented out: a narrower ball leaves
+	//the shank standing out of the nose, and the cut volume (ball, then cylinder from the equator) is wrong
+	EXPECT_THROW(MakeBall(dRADIUS,0.5*dRADIUS,dCUTTING_HEIGHT,0.0),CArgsMyException)<<"R < Rz";
+	EXPECT_NO_THROW(MakeBall(0.5*dRADIUS,dRADIUS,dCUTTING_HEIGHT,dRADIUS))<<"a ball wider than the shank is a tool";
+	//and the ball has to end inside the cutting part
+	EXPECT_THROW(MakeBall(dRADIUS,dRADIUS,0.5*dRADIUS,0.0),CArgsMyException)<<"the ball is taller than the tool";
+	EXPECT_NO_THROW(MakeBall(dRADIUS,dRADIUS,dRADIUS,dRADIUS))<<"a half ball: the cutting part is the ball itself";
+}
+
+TEST(MillingToolDimensions, TheProgrammedPointLiesOnTheTool)
+{
+	EXPECT_THROW(MakeBall(dRADIUS,dRADIUS,dCUTTING_HEIGHT,-dSTEP),CArgsMyException)<<"below the tip";
+	EXPECT_THROW(MakeCylinder(dRADIUS,dCUTTING_HEIGHT,2.0*dCUTTING_HEIGHT),CArgsMyException)<<"above the tool";
+	EXPECT_NO_THROW(MakeCylinder(dRADIUS,dCUTTING_HEIGHT,dCUTTING_HEIGHT))<<"the top of the cutting part";
+	EXPECT_NO_THROW(MakeCylinder(dRADIUS,dCUTTING_HEIGHT,1.5*dCUTTING_HEIGHT,dCUTTING_HEIGHT))
+		<<"a shank makes the tool longer, so a point above the cutting part is on the tool";
+}
+
+//KnownBugs #50: the box of the cutting part was unioned with the box of a solid that is not there, and an
+//empty box used to stretch the union to the world origin
+TEST(MillingToolDimensions, TheBoundingBoxOfTheCuttingPartStaysAroundTheTool)
+{
+	CMillingToolBall oBall(dRADIUS,dRADIUS,dCUTTING_HEIGHT,dRADIUS);
+	oBall.SetPositionAndOrientation(CR3Point(1.0,2.0,3.0),CR3Vector(0.0,0.0,1.0));
+	CR3Box box = oBall.GetCuttingPartBoundingBox();
+	EXPECT_FALSE(box.Contains(CR3Point(0.0,0.0,0.0)))<<"the world origin is metres away from the tool";
+	EXPECT_TRUE(box.Contains(CR3Point(1.0,2.0,3.0)))<<"the programmed point";
+	EXPECT_TRUE(box.Contains(CR3Point(1.0,2.0,3.0-dRADIUS)))<<"the tip";
+	EXPECT_TRUE(box.Contains(CR3Point(1.0,2.0,3.0+dCUTTING_HEIGHT-dRADIUS)))<<"the top of the cutting part";
+}

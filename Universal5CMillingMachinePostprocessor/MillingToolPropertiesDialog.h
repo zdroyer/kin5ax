@@ -15,6 +15,10 @@ public:
 	CMillingToolPropertiesDialog(CWnd* pParent = NULL);   // standard constructor
 	virtual ~CMillingToolPropertiesDialog();
 	void UpdateMillingTool();
+	//the shape the combo box stands for
+	MILLING_TOOL_TYPE ToolType() const;
+	//why the fields of the dialog do not make a tool, or an empty string when they do (KnownBugs #50)
+	std::string ToolDimensionProblem() const;
 	void SetActiveDocument(CUniversal5CMillingMachinePostprocessorDoc *pDoc);
 // Dialog Data
 	enum { IDD = ID_MILLING_TOOL_DIALOG };

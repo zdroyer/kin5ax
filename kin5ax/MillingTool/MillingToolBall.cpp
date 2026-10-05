@@ -22,8 +22,7 @@ CMillingToolBall::CMillingToolBall
 
 {
 	m_type = MILLING_TOOL_BALL;
-	//if(m_dR<m_dRz)
-	//	MY_THROW(CArgsMyException,"R<Rz in ball nose milling tool");
+	CheckDimensions();	//R<Rz among the rest, which this constructor used to carry commented out
 }
 
 /*

@@ -22,6 +22,7 @@ CMillingToolCylinder::CMillingToolCylinder
 
 {
 	m_type = MILLING_TOOL_CYLINDER;
+	CheckDimensions();
 }
 
 bool CMillingToolCylinder::CauseCollision(const CR3Box &box, const CTransformation trToBoxFrame, const CTransformation trToToolFrame) const

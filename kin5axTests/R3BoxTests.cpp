@@ -317,3 +317,23 @@ TEST(R3Box, TheBoxOfACylinderIsExact)
 		}
 	}
 }
+
+//KnownBugs #50: an empty box is the empty set, so it adds nothing to a union. It used to drag the union to
+//the origin, which is where the bounding box of a tool with an empty solid went.
+TEST(R3Box, AnEmptyBoxAddsNothingToAUnion)
+{
+	CR3Box oFarAway(10.0,11.0,20.0,21.0,30.0,31.0);
+	CR3Box oEmpty;
+	ASSERT_TRUE(oEmpty.IsEmpty());
+	EXPECT_TRUE((oFarAway+oEmpty).Contains(CR3Point(10.5,20.5,30.5)))<<"the box itself is still there";
+	EXPECT_FALSE((oFarAway+oEmpty).Contains(CR3Point(0.0,0.0,0.0)))<<"and the origin is not part of it";
+	EXPECT_FALSE((oEmpty+oFarAway).Contains(CR3Point(0.0,0.0,0.0)))<<"in either order";
+	EXPECT_FALSE((oEmpty+oFarAway).Contains(CR3Point(5.0,10.0,15.0)))<<"nor anything on the way";
+	EXPECT_TRUE((oEmpty+CR3Box()).IsEmpty())<<"nothing and nothing is nothing";
+	//two boxes that are there still make the box around both
+	CR3Box oAtTheOrigin(0.0,1.0,0.0,1.0,0.0,1.0);
+	CR3Box oUnion = oAtTheOrigin+oFarAway;
+	EXPECT_TRUE(oUnion.Contains(CR3Point(0.5,0.5,0.5)));
+	EXPECT_TRUE(oUnion.Contains(CR3Point(10.5,20.5,30.5)));
+	EXPECT_TRUE(oUnion.Contains(CR3Point(5.0,10.0,15.0)))<<"the union of two boxes is the box around both";
+}

@@ -33,16 +33,38 @@ CMillingToolPropertiesDialog::CMillingToolPropertiesDialog(CWnd* pParent /*=NULL
 
 }
 
+//The shape the combo box stands for, and the R that shape uses (a flat end mill has none).
+MILLING_TOOL_TYPE CMillingToolPropertiesDialog::ToolType() const
+{
+	return (m_nToolShapeIndex==0) ? MILLING_TOOL_BALL : MILLING_TOOL_CYLINDER;
+}
+
+std::string CMillingToolPropertiesDialog::ToolDimensionProblem() const
+{
+	if(m_nToolShapeIndex!=0 && m_nToolShapeIndex!=1)
+		return "";		//no shape to build: the dimensions are nobody's business yet
+	double dR = (ToolType()==MILLING_TOOL_BALL) ? m_dR : 0.0;
+	return CMillingTool::DimensionProblem(ToolType(),m_dRz,dR,m_dCuttingPartEnd
+		,m_dReferencePointHeight,m_dNonCuttingLength);
+}
+
 void CMillingToolPropertiesDialog::UpdateMillingTool()
 {
 	assert(m_pDoc);
+	//the programmed point follows the shape of the tool: the centre of the ball, or the tip (KnownBugs #66)
+	m_dReferencePointHeight = (m_nToolShapeIndex==0) ? fabs(m_dR) : 0.0;
+	//the fields are read on every keystroke, so a half typed dimension is normal and the tools refuse
+	//dimensions that are not a tool (KnownBugs #50): the document keeps the tool it has until the fields
+	//make one again, and Apply says what is wrong with them
+	if(ToolDimensionProblem().size()){
+		UpdateData(FALSE);
+		return;
+	}
 	((CMainFrame*)AfxGetMainWnd())->StopAndResetSimulation();	//the simulation refers to the tool being replaced
 	m_wndMillingToolPreview.SetMillingTool(0);
 	if(m_pDoc->m_pMillingTool != m_pOldTool)
 		delete m_pDoc->m_pMillingTool;
 	
-	//the programmed point follows the shape of the tool: the centre of the ball, or the tip (KnownBugs #66)
-	m_dReferencePointHeight = (m_nToolShapeIndex==0) ? fabs(m_dR) : 0.0;
 	CToolHolder oHolder(m_dHolderLength,m_dHolderRadius);
 	switch(m_nToolShapeIndex){
 		//ball
@@ -144,6 +166,12 @@ void CMillingToolPropertiesDialog::OnEnChangeEditReferencePointHeight()
 
 void CMillingToolPropertiesDialog::OnBnClickedButtonApply()
 {
+	std::string sProblem = ToolDimensionProblem();
+	if(sProblem.size()){
+		AfxMessageBox((std::string("The dimensions in the dialog do not make a milling tool:\n\n")
+			+sProblem+".\n\nThe tool of the document is unchanged.").c_str());
+		return;
+	}
 	if(m_pOldTool != m_pDoc->m_pMillingTool)
 		delete m_pOldTool;
 	m_pDoc->UpdateAllViews(NULL);

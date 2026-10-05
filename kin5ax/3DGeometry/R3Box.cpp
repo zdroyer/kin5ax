@@ -22,6 +22,12 @@ void CR3Box::ExpandXYZ(double dX, double dY, double dZ)
 
 CR3Box CR3Box::operator + (const CR3Box &b2) const
 {
+	//an empty box is the empty set, so the union with it is the other box; it used to be a box stretched
+	//to the origin, which is where the bounding box of a tool with an empty solid went (KnownBugs #50)
+	if(IsEmpty())
+		return b2;
+	if(b2.IsEmpty())
+		return (*this);
 	return CR3Box(Min(m_dMinX,b2.m_dMinX)
 		,Max(m_dMaxX,b2.m_dMaxX)
 		,Min(m_dMinY,b2.m_dMinY)

@@ -1,5 +1,6 @@
 #include "../stdafx.h"
 #include "MillingTool.h"
+#include "ArgsMyException.h"
 
 
 namespace kin5ax {
@@ -13,18 +14,49 @@ CMillingTool::CMillingTool
 	,double dReferencePointZ
 	,double dNonCuttingLength
 	,const CToolHolder &oHolder)
-:m_dRz(fabs(dRz))
-,m_dR(fabs(dR))
+:m_dRz(dRz)
+,m_dR(dR)
 ,m_dReferencePointZ(dReferencePointZ)
-,m_dCuttingHeight(fabs(dCuttingHeight))
-,m_dNonCuttingLength(fabs(dNonCuttingLength))
+,m_dCuttingHeight(dCuttingHeight)
+,m_dNonCuttingLength(dNonCuttingLength)
 ,m_oHolder(oHolder)
 ,m_r3pPosition(0.0)
 ,m_r3vOrientation(r3vOZ)
 ,m_m4x4ToOZ(CTransformation(1.0))
 {
+	//the dimensions are taken as they are given and checked by the shape (CheckDimensions in the
+	//constructor of the tool), instead of being made positive behind the caller's back (KnownBugs #50)
 	m_dRSquare = m_dR * m_dR;
 	m_dRzSquare = m_dRz * m_dRz;
+}
+
+std::string CMillingTool::DimensionProblem(MILLING_TOOL_TYPE type, double dRz, double dR, double dCuttingHeight
+	,double dReferencePointZ, double dNonCuttingLength)
+{
+	if(dRz<0.0 || dR<0.0 || dCuttingHeight<0.0 || dNonCuttingLength<0.0)
+		return "a dimension is negative";
+	if(is_zero(dRz))
+		return "the tool has no radius (Rz is zero)";
+	if(is_zero(dCuttingHeight))
+		return "the cutting part has no length";
+	if(type==MILLING_TOOL_BALL){
+		if(is_zero(dR))
+			return "a ball nose tool has no ball (R is zero)";
+		if(dR<dRz-dEPSILON)
+			return "the ball is narrower than the shank (R < Rz), so the shank would stand out of the nose";
+		if(dR>dCuttingHeight+dEPSILON)
+			return "the ball is taller than the cutting part (R > the cutting height)";
+	}
+	if(!is_between_or_equal(dReferencePointZ,0.0,dCuttingHeight+dNonCuttingLength))
+		return "the programmed point is not on the tool: its height above the tip is outside 0 .. the length of the tool";
+	return "";
+}
+
+void CMillingTool::CheckDimensions() const
+{
+	std::string sProblem = DimensionProblem(m_type,m_dRz,m_dR,m_dCuttingHeight,m_dReferencePointZ,m_dNonCuttingLength);
+	if(sProblem.size())
+		MY_THROW(CArgsMyException,std::string("These dimensions do not make a milling tool: ")+sProblem);
 }
 
 void CMillingTool::MakeMinMax(double &d1,double &d2) const

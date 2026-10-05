@@ -48,7 +48,7 @@ fast, exact, machine-aware judge of the toolpath. That judge is this library. Se
 | directory | what | platform |
 |---|---|---|
 | [`kin5ax/`](kin5ax/) | the library: C++17, standard library only (pugixml and nlohmann/json vendored), no Windows dependency | Windows (MSVC) and Linux (GCC) built and tested; macOS untried |
-| [`kin5axTests/`](kin5axTests/) | GoogleTest suite, 702 tests, with 11 machine models under `TestChains/` | same |
+| [`kin5axTests/`](kin5axTests/) | GoogleTest suite, 709 tests, with 11 machine models under `TestChains/` | same |
 | [`Universal5CMillingMachinePostprocessor/`](Universal5CMillingMachinePostprocessor/) | MFC application: kinematic chain editor, 3D viewer, single-location solver with a step-by-step log, batch postprocessing of CL files, a rudimentary voxel simulation that checks the geometry of the postprocessor on a hemisphere sized for the machine | Windows |
 
 Machine models shipped and round-trip tested (catalogue travels and swivel ranges; head and
@@ -130,8 +130,8 @@ The library reference, the machine model and the file formats are in [`kin5ax/RE
 
 The library was written in 2004 and revived in September 2026 on Visual Studio 2022 / x64,
 using agentic coding tools throughout: a scan of the code produced 69 numbered findings
-([`KnownBugs.md`](KnownBugs.md)); 50 are fixed, each with a test and a commit; 2 are half fixed
-and 17 are open and triaged by effect. Everything in that file was found by reading the code, not by a machine
+([`KnownBugs.md`](KnownBugs.md)); 51 are fixed, each with a test and a commit; 2 are half fixed
+and 16 are open and triaged by effect. Everything in that file was found by reading the code, not by a machine
 crash, so read it before trusting an edge case.
 
 What works and is tested: the default solving path (`alpha1 then alpha2`, axis method) on all

@@ -91,11 +91,21 @@ protected:
 		,const CTransformation &trToBoxFrame, const CTransformation &trToToolFrame) const;
 
 
+	//Throws CArgsMyException when DimensionProblem has something to say about this tool. Called by the
+	//constructor of each shape, which is where m_type is known.
+	void CheckDimensions() const;
+
 	//The cut volume of the tool in the tool frame of IsCut: the tip at the origin, the axis along +OZ.
 	//Returns true when p is inside the cutting part of the tool.
 	virtual bool IsInOZCuttingSpace(const CR3Point &p) const = 0;
 	void MakeMinMax(double &d1,double &d2) const;
 public:
+	//Why these dimensions do not make a tool of that shape, or an empty string when they do: the dimensions
+	//are no longer made positive behind the caller's back, they are refused (KnownBugs #50). A user interface
+	//that builds a tool out of fields being typed into asks this before it constructs one.
+	static std::string DimensionProblem(MILLING_TOOL_TYPE type, double dRz, double dR, double dCuttingHeight
+		,double dReferencePointZ, double dNonCuttingLength);
+
 	std::string GetCollisionLog() const;
 	void ClearCollisionLog();
 	void AddToCollisionLog(const std::string &s);
