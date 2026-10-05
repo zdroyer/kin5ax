@@ -2,6 +2,10 @@
 #include "stdafx.h"
 #include "gtest/gtest.h"
 #include "M4x4.h"
+#include "Rotation.h"
+#include "Translation.h"
+#include "Scale.h"
+#include "R3Point.h"
 
 using namespace kin5ax;
 
@@ -37,4 +41,31 @@ TEST(M4x4, IndexesOutOfRangeAreRejected)
 	EXPECT_NO_THROW(m.GetAt(3,3));
 	EXPECT_NO_THROW(m.SetAt(3,0,0.0));
 	EXPECT_NO_THROW(m.SetAt(0,3,0.0));
+}
+
+//KnownBugs #52: the inverse of a general transformation used to be the identity, silently
+TEST(Transformation, InvertedSaysItIsNotImplemented)
+{
+	CTransformation t(1.0);
+	EXPECT_THROW(t.Inverted(),CGeneratorException)<<"the identity is not an answer for every transformation";
+	CTransformation tMoved = CTranslation(1.0,2.0,3.0);
+	EXPECT_THROW(tMoved.Inverted(),CGeneratorException);
+	EXPECT_THROW(CM4x4(1.0).Inverted(),CGeneratorException)<<"and the matrix inverse is not implemented either";
+}
+
+//what to use instead: the classes that know their own inverse
+TEST(Transformation, TheKnownInversesAreCorrect)
+{
+	CR3Point p(0.3,-0.7,1.1);
+	CRotation r(CR3Vector(1.0,2.0,-0.5),0.7);
+	CR3Point pBack = CTransformation(r.Inverted()) * (r * p);
+	EXPECT_NEAR(0.0,d_E(p,pBack),1E-12)<<"a rotation inverts to its transpose";
+
+	CTranslation t(1.0,2.0,3.0);
+	pBack = CTransformation(t.Inverted()) * (t * p);
+	EXPECT_NEAR(0.0,d_E(p,pBack),1E-12);
+
+	CScale s(2.0,4.0,0.5);
+	pBack = s.Inverted() * (s * p);
+	EXPECT_NEAR(0.0,d_E(p,pBack),1E-12);
 }

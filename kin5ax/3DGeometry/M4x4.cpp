@@ -68,7 +68,7 @@ void CM4x4::Standardize()
 
 CM4x4 CM4x4::Inverted() const
 {
-	MY_THROW(CGeneratorException,"Inversion of matix not yet implemented");
+	MY_THROW(CGeneratorException,"Inversion of a 4x4 matrix is not implemented");
 }
 
 

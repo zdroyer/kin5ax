@@ -4,6 +4,7 @@
 
 #include "../stdafx.h"
 #include "Transformation.h"
+#include "GeneratorException.h"
 
 
 //////////////////////////////////////////////////////////////////////
@@ -87,11 +88,15 @@ CTransformation CTransformation::T() const
 }
 
 
+//Not implemented, and loud about it since 2026-10-05: it used to return the identity, a wrong answer for
+//every transformation but one, and nothing in the library ever noticed because nothing calls it (KnownBugs
+//#52). The inverses the library needs are built where they are known: CRotation::Inverted (the transpose),
+//CTranslation::Inverted, CScale::Inverted and CChainSegment::GetInverted...Transformation. The day a caller
+//really needs the inverse of an arbitrary transformation, the rigid form (the transposed rotation block with
+//the translation carried through it) belongs here, with a check that the block is orthonormal.
 CTransformation CTransformation::Inverted() const
 {
-	return CTransformation(1);
-	//throw (CMyException("virtual CTransformation.Inverted() called"));
-	return (CTransformation)(CM4x4::Inverted());
+	MY_THROW(CGeneratorException,"CTransformation::Inverted is not implemented: invert the rotation, the translation or the scale it is made of, or ask the chain segment for its inverted transformation");
 }
 
 
