@@ -16,7 +16,6 @@ friend CR3Point average1div3(const CR3Point &closer, const CR3Point &further);
 friend CR3Point throwOver(const CR3Point &p1, const CR3Point &p2);
 friend double d_NY(const CR3Point &p1,  const CR3Point &p2);
 friend double d_E(const CR3Point &p1,  const CR3Point &p2);
-friend double d_MAX(const CR3Point &p1,  const CR3Point &p2);
 protected:
 	double m_dV[3];
 

@@ -23,8 +23,6 @@ CMillingTool::CMillingTool
 ,m_r3vOrientation(r3vOZ)
 ,m_r3vMoveVector(0.0)
 ,m_m4x4ToOZ(CTransformation(1.0))
-,m_dAxisOZAngle(0.0)
-,m_dSineAxisOZAngle(0.0)
 {
 	m_dRSquare = m_dR * m_dR;
 	m_dRzSquare = m_dRz * m_dRz;
@@ -80,8 +78,6 @@ void CMillingTool::SetPositionAndOrientation(const CR3Point &r3pNewPosition, con
 		m_r3vMoveVector = r3pNewPosition-m_r3pPosition;
 	m_r3pPosition.SetPoint(r3pNewPosition);
 	m_r3vOrientation = r3vNewOrientation.GetUnitVector();
-	m_dSineAxisOZAngle = m_r3vOrientation.vectorProduct(r3vOZ).GetLength();
-	m_dAxisOZAngle = atan2(m_dSineAxisOZAngle, m_r3vOrientation.scalarProduct(r3vOZ));
 	//to the frame of IsInOZCuttingSpace (tool axis = OZ, tip = origin): the reference point goes to the origin,
 	//the tool axis is turned to OZ, and only then the tool is lifted by the height of the reference point
 	m_m4x4ToOZ = CTransformation( CTranslation(r3vOZ*m_dReferencePointZ) )
@@ -96,12 +92,10 @@ CR3Box CMillingTool::AxialCylinderBoundingBox(double dRadius,double dBegin, doub
 	if(dRadius==0.0){
 		return CR3Box();
 	}
-	CR3Box box(m_r3pPosition + ( m_r3vOrientation * dBegin )
-		,m_r3pPosition + ( m_r3vOrientation * (dEnd)));
-
-	double dDeltaZ = dRadius * m_dSineAxisOZAngle;
-	box.ExpandXYZ(dRadius,dRadius,dDeltaZ);
-	return box;
+	//exact, since the box of a cylinder is exact now; it used to grow by the radius in X and in Y whatever
+	//the direction of the axis (KnownBugs #55)
+	return CR3Box::BoxFromCylinder(m_r3pPosition + (m_r3vOrientation*dBegin)
+		,m_r3pPosition + (m_r3vOrientation*dEnd),dRadius);
 }
 
 

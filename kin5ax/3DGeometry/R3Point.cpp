@@ -13,14 +13,6 @@
 //////////////////////////////////////////////////////////////////////
 namespace kin5ax {
 
-template<class T>
-T maxI(const T &a, const T &b)
-{
-	if(a>=b)
-		return a;
-	return b;
-}
-
 double d_NY(const CR3Point &p1,  const CR3Point &p2)
 {
 	return (fabs(p1.GetX()-p2.GetX())+fabs(p1.GetY()-p2.GetY())+fabs(p1.GetZ()-p2.GetZ()));
@@ -36,11 +28,6 @@ double d_ESq(const CR3Point &p1,  const CR3Point &p2)
 	return (p1-p2).GetLengthSquare();
 }
 
-double d_MAX(const CR3Point &p1,  const CR3Point &p2)
-{
-	CR3Vector v = p1-p2;
-	return maxI(maxI(v.GetX(),v.GetY()),v.GetZ());
-}
 
 
 CR3Point average(const CR3Point &p1, const CR3Point &p2)

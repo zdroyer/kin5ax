@@ -4,6 +4,9 @@
 #include "R3Box.h"
 #include "Rotation.h"
 #include "Translation.h"
+#include "double_tools.h"
+#include <random>
+#include <algorithm>
 
 //gives the tests access to the one-directional edge test
 using namespace kin5ax;
@@ -252,4 +255,65 @@ TEST(BoxAgainstCylinder, AgreesWithPointSampling)
 	//the random cases must contain both kinds
 	EXPECT_GT(nHits,50);
 	EXPECT_GT(nMisses,50);
+}
+
+//KnownBugs #55: the box of a cylinder about a free axis grew only along Z for a horizontal axis, leaving the
+//whole disc outside the box, and its general branch mixed X and Y up
+TEST(R3Box, TheBoxOfACylinderIsExact)
+{
+	const double dR = 0.2;
+	//along a coordinate axis: the radius across the axis, nothing along it
+	CR3Box oZ = CR3Box::BoxFromCylinder(CR3Point(0.0,0.0,0.0),CR3Point(0.0,0.0,1.0),dR);
+	EXPECT_NEAR(-dR,oZ.GetMinPoint().GetX(),1E-12);
+	EXPECT_NEAR(dR,oZ.GetMaxPoint().GetY(),1E-12);
+	EXPECT_NEAR(0.0,oZ.GetMinPoint().GetZ(),1E-12)<<"the ends are the ends";
+	EXPECT_NEAR(1.0,oZ.GetMaxPoint().GetZ(),1E-12);
+
+	CR3Box oX = CR3Box::BoxFromCylinder(CR3Point(0.0,0.0,0.0),CR3Point(1.0,0.0,0.0),dR);
+	EXPECT_NEAR(0.0,oX.GetMinPoint().GetX(),1E-12);
+	EXPECT_NEAR(1.0,oX.GetMaxPoint().GetX(),1E-12);
+	EXPECT_NEAR(-dR,oX.GetMinPoint().GetY(),1E-12)<<"a horizontal cylinder is as wide as its disc";
+	EXPECT_NEAR(-dR,oX.GetMinPoint().GetZ(),1E-12);
+
+	//a cylinder of no length: the box of the sphere of that radius
+	CR3Box oPoint = CR3Box::BoxFromCylinder(CR3Point(1.0,2.0,3.0),CR3Point(1.0,2.0,3.0),dR);
+	EXPECT_NEAR(1.0-dR,oPoint.GetMinPoint().GetX(),1E-12);
+	EXPECT_NEAR(3.0+dR,oPoint.GetMaxPoint().GetZ(),1E-12);
+
+	//free axes: the box holds the whole surface and is no wider than the surface needs
+	std::mt19937 oGenerator(55);
+	std::uniform_real_distribution<double> oCoordinate(-1.0,1.0);
+	for(int n=0;n<20;n++){
+		CR3Point p1(oCoordinate(oGenerator),oCoordinate(oGenerator),oCoordinate(oGenerator));
+		CR3Point p2(oCoordinate(oGenerator),oCoordinate(oGenerator),oCoordinate(oGenerator));
+		if((p2-p1).GetLength()<0.1)
+			continue;
+		CR3Box oBox = CR3Box::BoxFromCylinder(p1,p2,dR);
+		CR3Vector a = (p2-p1).GetUnitVector();
+		CR3Vector u = a.vectorProduct(CR3Vector(0.0,0.0,1.0));
+		if(u.GetLength()<0.1)
+			u = a.vectorProduct(CR3Vector(1.0,0.0,0.0));
+		u = u.GetUnitVector();
+		CR3Vector w = a.vectorProduct(u).GetUnitVector();
+		double dMin[3] = {1E300,1E300,1E300}, dMax[3] = {-1E300,-1E300,-1E300};
+		for(int i=0;i<=20;i++){
+			for(int j=0;j<72;j++){
+				double t = 0.05*i, dAngle = degrees_to_radians(5.0*j);
+				CR3Point p = p1 + ((p2-p1)*t) + (u*(dR*cos(dAngle))) + (w*(dR*sin(dAngle)));
+				EXPECT_TRUE(oBox.Contains(p))<<"case "<<n<<": "<<p.toString()<<" is outside the box";
+				const double v[3] = {p.GetX(),p.GetY(),p.GetZ()};
+				for(int k=0;k<3;k++){
+					dMin[k] = std::min(dMin[k],v[k]);
+					dMax[k] = std::max(dMax[k],v[k]);
+				}
+			}
+		}
+		//the samples cover the surface, so the box must not be wider than they are by more than a hair
+		const double dBoxMin[3] = {oBox.GetMinPoint().GetX(),oBox.GetMinPoint().GetY(),oBox.GetMinPoint().GetZ()};
+		const double dBoxMax[3] = {oBox.GetMaxPoint().GetX(),oBox.GetMaxPoint().GetY(),oBox.GetMaxPoint().GetZ()};
+		for(int k=0;k<3;k++){
+			EXPECT_NEAR(dMin[k],dBoxMin[k],1E-3)<<"case "<<n<<", coordinate "<<k;
+			EXPECT_NEAR(dMax[k],dBoxMax[k],1E-3)<<"case "<<n<<", coordinate "<<k;
+		}
+	}
 }

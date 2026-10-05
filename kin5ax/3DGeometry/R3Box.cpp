@@ -76,27 +76,18 @@ CR3Box CR3Box::BoxFromOZBox(double dXSize, double dYSize, double dZ)
 }
 CR3Box CR3Box::BoxFromCylinder(const CR3Point &p1, const CR3Point &p2,double dR )
 {
-
 	CR3Vector v = p2-p1;
 	if(v.IsZero())
 		return CR3Box(p1,dR);
-	CR3Box box(p1,p2);	
-	double dCosAlpha = v.GetUnitVector().scalarProduct(r3vOZ);
-	if(is_zero(dCosAlpha)){
-		box.ExpandXYZ(0.0,0.0,dR);
-	} else {
-		if(are_equal(fabs(dCosAlpha),1.0))
-			box.ExpandXYZ(dR,dR,0.0);
-		else{
-			double dZ = fabs(dR * sin(acos(dCosAlpha)));
-			double dY = sqrt(std::max(0.0,(v.GetX()*v.GetX()*dR*dR-v.GetX()*v.GetX()*dZ*dZ)/(v.GetX()*v.GetX()+v.GetY()*v.GetY())));
-			double dX =dR;
-			if(is_not_zero(v.GetX())){
-				dX = v.GetY()*dY/v.GetX();
-			}
-			box.ExpandXYZ(dX,dY,dZ);
-		}				
-	}
+	//The support of the cylinder along a coordinate axis e is the support of its two end points plus the one
+	//of a disc of radius dR perpendicular to the axis a, which is dR*|e-(a.e)a| = dR*sqrt(1-(a.e)^2): the box
+	//of the two ends grown by that much in each coordinate, and not at all along the axis itself.
+	//It grew only along Z for a horizontal axis and mixed X and Y up for a free one (KnownBugs #55).
+	CR3Vector a = v.GetUnitVector();
+	CR3Box box(p1,p2);
+	box.ExpandXYZ(dR*sqrt(std::max(0.0,1.0-a.GetX()*a.GetX()))
+		,dR*sqrt(std::max(0.0,1.0-a.GetY()*a.GetY()))
+		,dR*sqrt(std::max(0.0,1.0-a.GetZ()*a.GetZ())));
 	return box;
 }
 bool CR3Box::IsEmpty() const

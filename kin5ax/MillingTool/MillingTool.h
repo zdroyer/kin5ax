@@ -83,9 +83,6 @@ protected:
 	const CR3Vector &GetMoveVector() const;
 	CR3Point m_r3pBoundingBoxLLN,m_r3pBoundingBoxRTF;
 	std::string m_sCollisionLog;
-	//in radians
-	double m_dAxisOZAngle;
-	double m_dSineAxisOZAngle;
 
 	//The bounding box (in the world frame) of a cylinder of radius dRadius about the tool axis, from dBegin to dEnd
 	//measured along the axis from the reference point.
