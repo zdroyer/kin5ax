@@ -85,6 +85,12 @@ and `-C Release` to `ctest`. Builds warning-free with MSVC 19.44 (v143) and GCC 
 In WSL keep the build tree in the Linux file system (`cmake -S /mnt/c/... -B ~/kin5ax-build -G Ninja`): the
 GoogleTest sub-build fails on a mounted Windows drive.
 
+**Continuous integration**: [`.github/workflows/library-linux.yml`](.github/workflows/library-linux.yml)
+configures, builds and tests the library on Linux on a self-hosted runner, in Release and in Debug, on every
+push and pull request; the GoogleTest report of each configuration is kept as an artifact. The runner needs
+git, CMake, a C++17 compiler and a connection to github.com for the GoogleTest fetch, and the labels
+`self-hosted` and `linux`.
+
 **The application** (Windows, Visual Studio 2022 or later with MFC, CMake on the PATH): open
 `Universal5CMillingMachinePostprocessor/Universal5CMillingMachinePostprocessor.sln`. Its `kin5ax`
 project is a Makefile project that builds the library with CMake into `build/` and the application
@@ -151,7 +157,7 @@ machine-specific words are not written to the G-code.
 
 ## Roadmap
 
-1. Linux/macOS build (CMake, CI).
+1. macOS build; Linux is built and tested on every push (GitHub Actions, self-hosted runner).
 2. A C ABI (`kin5axc`) and a `kin5ax-post` command-line tool with a JSON machinability report.
 3. Rollover-aware axis model (#25) and the singular-section feasibility check (#21).
 4. Python bindings for use from FreeCAD and from agent tools.

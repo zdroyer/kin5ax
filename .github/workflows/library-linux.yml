@@ -1,0 +1,58 @@
+# Compiles the kin5ax library and runs its GoogleTest suite on Linux, on a self-hosted runner.
+# The MFC application is Windows only and is not built here; the library has no Windows dependency.
+#
+# What the runner needs: git, CMake 3.20 or newer, a C++17 compiler (GCC 15 is what the suite is kept
+# warning-free on) and a connection to github.com, because GoogleTest 1.15.2 comes through FetchContent.
+# The runner must be registered with the labels in `runs-on` below.
+name: kin5ax library (Linux)
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# the self-hosted runner is one machine: a new push to the same branch replaces the build in progress
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.build_type }}
+    runs-on: [self-hosted, linux]
+    strategy:
+      fail-fast: false       # a Debug failure is worth seeing even when Release fails too
+      matrix:
+        build_type: [Release, Debug]   # Debug keeps the asserts of the library in
+    env:
+      BUILD_DIR: build-${{ matrix.build_type }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: The tools of the runner
+        run: |
+          cmake --version
+          c++ --version
+
+      - name: Configure
+        run: cmake -S . -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+
+      - name: Build
+        run: cmake --build "$BUILD_DIR" --parallel "$(nproc)"
+
+      - name: Test
+        run: ctest --test-dir "$BUILD_DIR" --output-on-failure
+        env:
+          # the suite writes its report beside the log, for the artifact below
+          GTEST_OUTPUT: xml:${{ github.workspace }}/test-results/
+
+      - name: Keep the test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.build_type }}
+          path: test-results/
+          if-no-files-found: warn
