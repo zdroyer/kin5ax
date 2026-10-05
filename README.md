@@ -87,8 +87,10 @@ GoogleTest sub-build fails on a mounted Windows drive.
 
 **Continuous integration**: [`.github/workflows/library-linux.yml`](.github/workflows/library-linux.yml)
 configures, builds and tests the library on Linux on a self-hosted runner, in Release and in Debug, on every
-push and pull request; the GoogleTest report of each configuration is kept as an artifact. The runner needs
-git, CMake, a C++17 compiler and a connection to github.com for the GoogleTest fetch, and the labels
+push and pull request. The suite is one CTest test, so `ctest` runs verbose and every GoogleTest case is in
+the log; the summary page of the run gets the total, the failures and a count and a time per test suite, and
+the GoogleTest report and the ctest log of each configuration are kept as artifacts. The runner needs git,
+CMake, a C++17 compiler and a connection to github.com for the GoogleTest fetch, and the labels
 `self-hosted` and `linux`.
 
 **The application** (Windows, Visual Studio 2022 or later with MFC, CMake on the PATH): open

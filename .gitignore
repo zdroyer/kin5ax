@@ -25,3 +25,6 @@ ipch/
 # CMake build trees
 build/
 build-*/
+
+# the log of a local ctest run, as the CI workflow writes it
+ctest-*.log

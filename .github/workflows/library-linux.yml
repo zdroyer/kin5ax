@@ -29,6 +29,7 @@ jobs:
         build_type: [Release, Debug]   # Debug keeps the asserts of the library in
     env:
       BUILD_DIR: build-${{ matrix.build_type }}
+      CTEST_LOG: ctest-${{ matrix.build_type }}.log
     steps:
       - uses: actions/checkout@v4
 
@@ -43,16 +44,54 @@ jobs:
       - name: Build
         run: cmake --build "$BUILD_DIR" --parallel "$(nproc)"
 
+      # The whole suite is one CTest test (one executable), so --verbose is what puts the 709 cases of
+      # GoogleTest in the log instead of a single "Passed" line. `shell: bash` brings -o pipefail with it,
+      # so a failure of ctest is still a failure of the step after the pipe through tee.
       - name: Test
-        run: ctest --test-dir "$BUILD_DIR" --output-on-failure
+        shell: bash
+        run: ctest --test-dir "$BUILD_DIR" --verbose | tee "$CTEST_LOG"
         env:
           # the suite writes its report beside the log, for the artifact below
           GTEST_OUTPUT: xml:${{ github.workspace }}/test-results/
+
+      # The log is long; this is the glance: the total, what failed, and a test count and time per suite.
+      - name: Summary of the test run
+        if: always()
+        shell: bash
+        run: |
+          if [ ! -f "$CTEST_LOG" ]; then
+            echo "no ctest log to summarise"
+            exit 0
+          fi
+          # ctest --verbose prefixes every line of the test with its number ("1: ")
+          plain() { sed -E "s/^[[:space:]]*[0-9]+: //" "$CTEST_LOG"; }
+          {
+            echo "## ${{ matrix.build_type }}"
+            echo
+            plain | grep -E "^\[==========\] .* ran\." | tail -1 | sed -E "s/^\[==========\] /**/; s/$/**/"
+            echo
+            if plain | grep -qE "^\[  FAILED  \] .*\."; then
+              echo "### Failed"
+              echo
+              plain | grep -E "^\[  FAILED  \] .*\." \
+                | sed -E "s/^\[  FAILED  \] /- /; s/ \([0-9]+ ms\)$//" | sort -u
+              echo
+            fi
+            echo "<details><summary>Test suites</summary>"
+            echo
+            echo "| suite | tests | ms |"
+            echo "|---|--:|--:|"
+            plain | awk '/^\[----------\] [0-9]+ test[s]? from .*total\)$/ { ms=$6; sub(/^\(/,"",ms); printf "| `%s` | %s | %s |\n", $5, $2, ms }'
+            echo
+            echo "</details>"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Keep the test report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ matrix.build_type }}
-          path: test-results/
+          path: |
+            test-results/
+            ctest-${{ matrix.build_type }}.log
           if-no-files-found: warn
