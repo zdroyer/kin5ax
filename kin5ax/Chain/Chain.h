@@ -12,6 +12,13 @@
 
 namespace kin5ax {
 
+//Which of the two branches of the chain. Both are stored from the base outwards: index 0 is the segment
+//sitting on the machine base, the last segment is the terminal of the branch.
+enum CHAIN_PART{
+	CHAIN_PART_TOOL,			//ends with the TOOL segment, whose origin is the tool mount
+	CHAIN_PART_MATERIAL_HOLDER	//ends with the MATERIAL_HOLDER segment, whose origin is the material frame
+};
+
 enum CHAIN_CONSTRAINTS_RESULT{
 	CHAIN_CONSTRAINTS_MET,
 	CHAIN_CONSTRAINTS_SHIFTS_EXCEEDED,
@@ -95,7 +102,7 @@ public:
 	std::string m_sFileName;
 
 	int m_nActiveSegmentIndex;
-	bool m_bIsToolPartActive;
+	CHAIN_PART m_nActivePart;
 
 	double m_dToolMountToToolPoint;		//see GetToolMountToToolPointDistance
 
@@ -112,7 +119,10 @@ public:
 	CChainSegment * GetActiveSegment();
 	void ZeroAllParameters();
 	std::vector<CChainSegment> & GetActivePart();
-	void SetActiveSegment(bool bIsToolPartActive, int mActiveSegmentIndex);
+	void SetActiveSegment(CHAIN_PART part, int nActiveSegmentIndex);
+	//the segments of one branch, in the order they are stored (base first)
+	std::vector<CChainSegment> & GetPart(CHAIN_PART part);
+	const std::vector<CChainSegment> & GetPart(CHAIN_PART part) const;
 	void SetName(const std::string &sName);
 	std::string GetName() const;
 	void SetMachine(const std::string &sMachine);

@@ -12,13 +12,13 @@ extern CR3Point r3pZero;
 CChain::CChain(void)
 {
 	m_dToolMountToToolPoint = 0.0;
-	m_bIsToolPartActive=true;
+	m_nActivePart=CHAIN_PART_TOOL;
 	m_nActiveSegmentIndex=-1;
 
-	SetActiveSegment(false,-1);
+	SetActiveSegment(CHAIN_PART_MATERIAL_HOLDER,-1);
 	AddSegmentAfterActiveSegment(CChainSegment(CHAIN_SEGMENT_MATERIAL_HOLDER,CR3Vector(1.0,0.0,0.0),0.0,CR3Vector(0.0,0.0,0.0)));
 
-	SetActiveSegment(true,-1);
+	SetActiveSegment(CHAIN_PART_TOOL,-1);
 	AddSegmentAfterActiveSegment(CChainSegment(CHAIN_SEGMENT_TOOL,CR3Vector(1.0,0.0,0.0),0.0,CR3Vector(0.0,0.0,0.5)));
 	m_sFileName = "<chain not saved>";
 }
@@ -569,9 +569,9 @@ void CChain::SetParameters(const CChainConfiguration & oConfig){
 }
 
 
-void CChain::SetActiveSegment(bool bIsToolPartActive, int nActiveSegmentIndex)
+void CChain::SetActiveSegment(CHAIN_PART part, int nActiveSegmentIndex)
 {
-	m_bIsToolPartActive = bIsToolPartActive;
+	m_nActivePart = part;
 	if(nActiveSegmentIndex >= (int)GetActivePart().size())
 		nActiveSegmentIndex = (int)GetActivePart().size()-1;
 	if(nActiveSegmentIndex<0)
@@ -581,7 +581,19 @@ void CChain::SetActiveSegment(bool bIsToolPartActive, int nActiveSegmentIndex)
 
  std::vector<CChainSegment> & CChain::GetActivePart() 
 {
-	if(m_bIsToolPartActive)
+	return GetPart(m_nActivePart);
+}
+
+std::vector<CChainSegment> & CChain::GetPart(CHAIN_PART part)
+{
+	if(part==CHAIN_PART_TOOL)
+		return m_vToolPart;
+	return m_vMaterialHolderPart;
+}
+
+const std::vector<CChainSegment> & CChain::GetPart(CHAIN_PART part) const
+{
+	if(part==CHAIN_PART_TOOL)
 		return m_vToolPart;
 	return m_vMaterialHolderPart;
 }
