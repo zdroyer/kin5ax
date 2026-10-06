@@ -23,6 +23,29 @@ size_t CCLDataPostprocessingResult::CountOf(LOCATION_ORIGIN origin) const
 	return n;
 }
 
+//Hands the solution sets of a singular section over, one per location the section was responsible for.
+//SolveSingularOrientation returns a set only for the locations it could use - it starts at the first one
+//it can solve and stops at the last - so the locations it dropped are padded with empty sets here.
+//Without the padding the simulation data and the records were shorter than the number of locations
+//solved, and nothing said which locations had gone missing (KnownBugs #70).
+static void AddSingularSectionSets(CCLDataPostprocessingResult &oResult, CSimulationData &oSimulationData
+	,const std::vector<tChainConfigurationVector> &vUnambiguous, size_t nOwedLocations
+	,size_t nFileLocation, size_t nFileLine)
+{
+	size_t nPushed = 0;
+	for(;nPushed<vUnambiguous.size();nPushed++){
+		oSimulationData.AddConfigurationSet(vUnambiguous[nPushed]);
+		oResult.m_vLocations.push_back(CSolvedLocation(
+			vUnambiguous[nPushed].empty() ? SOLVE_STATUS_SINGULAR_UNSOLVED : SOLVE_STATUS_SOLVED
+			,LOCATION_SINGULAR_SECTION,nFileLocation,nFileLine));
+	}
+	for(;nPushed<nOwedLocations;nPushed++){
+		oSimulationData.AddConfigurationSet(tChainConfigurationVector());
+		oResult.m_vLocations.push_back(CSolvedLocation(SOLVE_STATUS_SINGULAR_UNSOLVED
+			,LOCATION_SINGULAR_SECTION,nFileLocation,nFileLine));
+	}
+}
+
 CCLDataPostprocessor::CCLDataPostprocessor(const CPostprocessorSettings &oSettings)
 :m_oSettings(oSettings)
 {
@@ -108,12 +131,10 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 				if(j+1>=vIntermediateLocations.size() && !data.HasMoreLocations()){
 					std::string sSingularSolutionLog="";
 					std::vector<tChainConfigurationVector> vUnambiguous = oPostprocessor.SolveSingularOrientation(vAmbiguousCollection,oChain,pTool,sSingularSolutionLog);
-					for(size_t q=0;q<vUnambiguous.size();q++){
-						oSimulationData.AddConfigurationSet(vUnambiguous[q]);
-						oResult.m_vLocations.push_back(CSolvedLocation(
-							vUnambiguous[q].empty() ? SOLVE_STATUS_SINGULAR_UNSOLVED : SOLVE_STATUS_SOLVED
-							,LOCATION_SINGULAR_SECTION,nSectionLocation,nSectionLine));
-					}
+					//the first location of the collection is the one solved before the section and has its
+					//record already; every other one is ambiguous and waiting for its set
+					AddSingularSectionSets(oResult,oSimulationData,vUnambiguous
+						,vAmbiguousCollection.size()-1,nSectionLocation,nSectionLine);
 					if(pFile)
 						fprintf(pFile,"%s\n",sSingularSolutionLog.c_str());
 					bCollectingAmbiguousSolutions=false;
@@ -123,12 +144,11 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 					vAmbiguousCollection.push_back(vIntermediateLocations[j].second);
 					std::string sSingularSolutionLog="";
 					std::vector<tChainConfigurationVector> vUnambiguous = oPostprocessor.SolveSingularOrientation(vAmbiguousCollection,oChain,pTool,sSingularSolutionLog);
-					for(size_t q=0;q<vUnambiguous.size();q++){
-						oSimulationData.AddConfigurationSet(vUnambiguous[q]);
-						oResult.m_vLocations.push_back(CSolvedLocation(
-							vUnambiguous[q].empty() ? SOLVE_STATUS_SINGULAR_UNSOLVED : SOLVE_STATUS_SOLVED
-							,LOCATION_SINGULAR_SECTION,nSectionLocation,nSectionLine));
-					}
+					//the first location of the collection had its record before the section, and the last one is
+					//this location, which gets its own a few lines below
+					AddSingularSectionSets(oResult,oSimulationData,vUnambiguous
+						,vAmbiguousCollection.size()>=2 ? vAmbiguousCollection.size()-2 : 0
+						,nSectionLocation,nSectionLine);
 					if(pFile)
 						fprintf(pFile,"%s\n",sSingularSolutionLog.c_str());
 					bCollectingAmbiguousSolutions=false;

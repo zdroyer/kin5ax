@@ -20,7 +20,9 @@ public:
 		,m_dMaxPositionError(-1.0)
 		,m_dMaxOrientationErrorVectorLength(-1.0)
 	{}
-	//solved problems: the cutter locations of the file and the interpolated ones
+	//Solved problems: the cutter locations of the file and the interpolated ones. Equals the length of
+	//m_vLocations and the size of the CSimulationData - every location solved has one record and one
+	//(possibly empty) solution set (KnownBugs #70).
 	size_t m_nTotalProblemsCount;
 	//the progress callback said stop: the simulation data holds the locations solved so far
 	bool m_bCancelled;

@@ -6,6 +6,8 @@
 #include "CutterLocationData.h"
 #include "CLDataPostprocessor.h"
 #include "MillingToolBall.h"
+#include "SphereCLDataGenerator.h"
+#include "5CPostprocessor.h"
 #include <algorithm>
 
 using namespace kin5ax;
@@ -146,4 +148,74 @@ TEST(SolvedLocation, TheNamesOfTheOrigins)
 	EXPECT_EQ(LOCATION_FROM_FILE,o.m_nOrigin);
 	EXPECT_EQ((size_t)0,o.m_nFileLocation);
 	EXPECT_EQ((size_t)0,o.m_nFileLine);
+}
+
+// ---------------------------------------------------------------- KnownBugs #70
+
+//A meridian over the north pole crosses the singular orientation of most machines, so the
+//singular-section solver runs. It returns a set only for the locations it can use - it starts at the
+//first one it can solve and stops at the last - and the sets it does not return used to be simply
+//missing: fewer records and fewer solution sets than locations solved, with nothing saying which ones
+//had gone. Every location solved keeps its record now, the dropped ones with an empty set.
+TEST(SolvedLocation, ASingularSectionLeavesNoLocationWithoutARecord)
+{
+	std::vector<std::string> vChains = GetChainFiles();
+	ASSERT_GE(vChains.size(),(size_t)1);
+	std::string sFilePath = TempFilePath("kin5axTests_meridian_records.cld");
+	const size_t nPoints = 9;
+	ASSERT_EQ(nPoints,WriteMeridianCLData(sFilePath,0.05,nPoints));
+	size_t nSingularTotal = 0;
+	for(size_t c=0;c<vChains.size();c++){
+		CChain oChain = LoadChain(vChains[c]);
+		CMillingToolBall oTool(0.016,0.016,0.064,0.016);
+		CCutterLocationData oData;
+		oData.LoadFile(sFilePath,"meridian");
+		ASSERT_EQ(nPoints,oData.GetLocationsCount());
+		CPostprocessorSettings oSettings;
+		oSettings.m_bCheckCollisions = false;
+		CSimulationData oSimulationData;
+		CCLDataPostprocessor oPostprocessor(oSettings);
+		CCLDataPostprocessingResult oResult = oPostprocessor.Process(oChain,oTool,oData,oSimulationData,NULL,0,NULL);
+		const std::string sWhere = GetTestName(vChains[c]);
+		EXPECT_EQ(oResult.m_nTotalProblemsCount,oResult.m_vLocations.size())
+			<<sWhere<<": every location solved has a record";
+		EXPECT_EQ(oSimulationData.GetSize(),oResult.m_vLocations.size())
+			<<sWhere<<": and one solution set, empty or not";
+		//a location of the file is either a record of its own or one of the locations of a section
+		EXPECT_GE(oResult.CountOf(LOCATION_FROM_FILE)+oResult.CountOf(LOCATION_SINGULAR_SECTION),nPoints)
+			<<sWhere<<": the locations of the file are all accounted for";
+		nSingularTotal += oResult.CountOf(LOCATION_SINGULAR_SECTION);
+	}
+	remove(sFilePath.c_str());
+	EXPECT_GT(nSingularTotal,(size_t)0)<<"no machine of the test set went through a singular section:"
+		" this test would not be about #70 any more";
+}
+
+//Why the padding is needed: SolveSingularOrientation hands back one set per location it can use, and it
+//starts at the first location it can solve and stops at the last. Handed a section whose ends are out of
+//reach, it returns fewer sets than it got inputs, with nothing saying which inputs they belong to. The
+//caller must not assume one set per input - CCLDataPostprocessor::Process pads what is missing.
+TEST(SolvedLocation, TheSingularSolverMayReturnFewerSetsThanItGotLocations)
+{
+	std::string sChain = ChainFile("AC_TiltRotaryTable");
+	ASSERT_NE("",sChain);
+	CChain oChain = LoadChain(sChain);
+	CMillingToolBall oTool(0.016,0.016,0.064,0.016);
+	CPostprocessorSettings oSettings;
+	oSettings.m_bCheckCollisions = false;
+	C5CPostprocessor oPostprocessor(oChain,oSettings);
+
+	//the singular orientation of a tilt-rotary table: the tool axis along the axis of the table
+	const CR3Vector r3vSingular(0.0,0.0,1.0);
+	std::vector<CR3AnchoredVector> vSection;
+	vSection.push_back(CR3AnchoredVector(r3vSingular,CR3Point(1E6,0.0,0.0)));	//nowhere near the machine
+	vSection.push_back(CR3AnchoredVector(r3vSingular,CR3Point(0.00,0.0,0.02)));
+	vSection.push_back(CR3AnchoredVector(r3vSingular,CR3Point(0.01,0.0,0.02)));
+	vSection.push_back(CR3AnchoredVector(r3vSingular,CR3Point(0.02,0.0,0.02)));
+	vSection.push_back(CR3AnchoredVector(r3vSingular,CR3Point(1E6,0.0,0.0)));
+
+	std::string sLog;
+	std::vector<tChainConfigurationVector> v = oPostprocessor.SolveSingularOrientation(vSection,oChain,&oTool,sLog);
+	ASSERT_GT(v.size(),(size_t)0)<<"the reachable middle of the section is solvable:\n"<<sLog;
+	EXPECT_LT(v.size(),vSection.size())<<"the unreachable ends got no set at all";
 }
