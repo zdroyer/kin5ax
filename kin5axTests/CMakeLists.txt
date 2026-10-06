@@ -39,6 +39,7 @@ add_executable(kin5axTests
   RotationTests.cpp
   SegmentFrameTests.cpp
   SimpleSimulationTests.cpp
+  SolvedLocationTests.cpp
   SimulationDataTests.cpp
   SolveReportTests.cpp
   StringToolsTests.cpp

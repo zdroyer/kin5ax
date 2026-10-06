@@ -184,6 +184,12 @@ bool CCutterLocationData::HasMoreLocations() const
 
 bool CCutterLocationData::GetNextLocation(CR3Point & p, CR3Vector & v)
 {
+	size_t nFileLine = 0;
+	return GetNextLocation(p,v,nFileLine);
+}
+
+bool CCutterLocationData::GetNextLocation(CR3Point & p, CR3Vector & v, size_t &nFileLine)
+{
 	if(m_nActual>=m_vLines.size()){
 		//m_nActual=0;
         return false;
@@ -192,6 +198,7 @@ bool CCutterLocationData::GetNextLocation(CR3Point & p, CR3Vector & v)
 		if(m_vLines[m_nActual].m_status==CL_LINE_OK){
 			p = m_m4x4P * m_vLines[m_nActual].m_p;
 			v = m_m4x4V * m_vLines[m_nActual].m_v;
+			nFileLine = m_vLines[m_nActual].m_nLineNumber+1;	//counted from 1, see the declaration
 			m_nActual++;
 			return true;
 		}

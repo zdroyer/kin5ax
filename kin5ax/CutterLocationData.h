@@ -58,6 +58,9 @@ public:
 	void LoadFile(const std::string & sFileName, const std::string &sFileTitle);
 	void ResetLocationIterator(void);
 	bool GetNextLocation(CR3Point & p, CR3Vector & v);
+	//The same, and the line of the file the location was read from, counted from 1 the way an editor
+	//shows it (CCLLine::m_nLineNumber is the index of the line and counts from 0).
+	bool GetNextLocation(CR3Point & p, CR3Vector & v, size_t &nFileLine);
 	
 protected:
 	CR3Box m_oBox, m_oBoxTransformed;

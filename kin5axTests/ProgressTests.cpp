@@ -113,7 +113,7 @@ TEST(Progress, ProcessReportsAndFinishes)
 		CCLDataPostprocessingResult oResult = oPostprocessor.Process(oChain,oTool,oData,oSimulationData,NULL,0,&oProgress);
 		EXPECT_FALSE(oResult.m_bCancelled);
 		EXPECT_GE(oSimulationData.GetSize(),nWritten);
-		EXPECT_EQ(oSimulationData.GetSize(),oResult.m_vStatuses.size());
+		EXPECT_EQ(oSimulationData.GetSize(),oResult.m_vLocations.size());
 		ASSERT_GE(oProgress.m_vFractions.size(),(size_t)2);
 		EXPECT_TRUE(IsNonDecreasingWithin01(oProgress.m_vFractions));
 		EXPECT_DOUBLE_EQ(1.0,oProgress.m_vFractions.back());
@@ -143,7 +143,7 @@ TEST(Progress, ProcessStopsWhenAsked)
 		EXPECT_TRUE(oResult.m_bCancelled);
 		EXPECT_EQ((size_t)6,oProgress.m_nQuestions);
 		EXPECT_LT(oSimulationData.GetSize(),nWritten)<<"stopped long before the end";
-		EXPECT_EQ(oSimulationData.GetSize(),oResult.m_vStatuses.size())<<"what was solved is consistent";
+		EXPECT_EQ(oSimulationData.GetSize(),oResult.m_vLocations.size())<<"what was solved is consistent";
 		EXPECT_LT(oProgress.m_vFractions.empty() ? 0.0 : oProgress.m_vFractions.back(),1.0);
 	} catch (CGeneratorException &e){
 		FAIL()<<"exception: "<<e.Message();

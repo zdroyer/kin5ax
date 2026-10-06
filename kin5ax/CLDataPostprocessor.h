@@ -33,11 +33,13 @@ public:
 	CChainConfiguration m_oMaxOrientationErrorSolution;
 	CR3AnchoredVector m_cvMaxOrientationErrorInput;
 
-	//why every solution set handed to the CSimulationData is what it is: one status per set, in the
-	//order of the sets (a location of a singular section counts as SOLVED or SINGULAR_UNSOLVED)
-	std::vector<SOLVE_STATUS> m_vStatuses;
-	//how many sets have the status
+	//One record per solution set handed to the CSimulationData, in the order of the sets: the status, the
+	//origin and the cutter location of the file it belongs to. The length is the number of sets in the
+	//CSimulationData and equals m_nTotalProblemsCount.
+	std::vector<CSolvedLocation> m_vLocations;
+	//how many records have that status / that origin
 	size_t CountOf(SOLVE_STATUS status) const;
+	size_t CountOf(LOCATION_ORIGIN origin) const;
 };
 
 //Batch postprocessing of CL-data: every cutter location (and the locations interpolated

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <cstddef>
 
 //What C5CPostprocessor::Solve did for one cutter location, and why the location has the solutions
 //it has: the stage at which the last candidate was lost.
@@ -19,6 +20,45 @@ enum SOLVE_STATUS {
 //a short name for logs and reports: "solved", "no orientation", "no position", "limits exceeded",
 //"collision", "singular section unsolved"
 const char *SolveStatusName(SOLVE_STATUS status);
+
+//Where a location that was solved came from: a line of the CL file, the interpolation on the way to one
+//of them, or the singular-section solver, which chooses its own samples out of what it is handed.
+enum LOCATION_ORIGIN {
+	LOCATION_FROM_FILE = 0,
+	LOCATION_INTERPOLATED,
+	LOCATION_SINGULAR_SECTION,
+	LOCATION_ORIGIN_COUNT
+};
+
+//a short name for logs and reports: "from the file", "interpolated", "singular section"
+const char *LocationOriginName(LOCATION_ORIGIN origin);
+
+//One location handed to the CSimulationData by CCLDataPostprocessor::Process, in the order they were
+//handed over: why it has the solutions it has, where it came from, and which cutter location of the
+//file it belongs to. One of these per solution set, always.
+class CSolvedLocation
+{
+public:
+	CSolvedLocation(SOLVE_STATUS status = SOLVE_STATUS_SOLVED
+		,LOCATION_ORIGIN origin = LOCATION_FROM_FILE
+		,size_t nFileLocation = 0
+		,size_t nFileLine = 0)
+		:m_nStatus(status)
+		,m_nOrigin(origin)
+		,m_nFileLocation(nFileLocation)
+		,m_nFileLine(nFileLine)
+	{}
+	SOLVE_STATUS m_nStatus;
+	LOCATION_ORIGIN m_nOrigin;
+	//The cutter location of the file this one belongs to, counted from 1: its own number for a location
+	//of the file, the number of the one before it for everything interpolated on the way to it (the
+	//locations between the 3rd and the 4th carry 3), and the number the section started at for a
+	//singular section. 0 only when the file had no location at all.
+	size_t m_nFileLocation;
+	//The line of the CL file that cutter location was read from, counted from 1 the way an editor shows
+	//it; 0 when it is not known.
+	size_t m_nFileLine;
+};
 
 //The counts of the stages of C5CPostprocessor::Solve for one location. Every stage keeps a subset of
 //the stage before it, so the counts never grow.

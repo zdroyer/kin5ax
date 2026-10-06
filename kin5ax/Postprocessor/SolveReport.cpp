@@ -11,6 +11,14 @@ const char *SolveStatusName(SOLVE_STATUS status)
 	return (status>=0 && status<SOLVE_STATUS_COUNT) ? szNames[status] : "unknown";
 }
 
+const char *LocationOriginName(LOCATION_ORIGIN origin)
+{
+	static const char *szNames[LOCATION_ORIGIN_COUNT] = {
+		"from the file", "interpolated", "singular section"
+	};
+	return (origin>=0 && origin<LOCATION_ORIGIN_COUNT) ? szNames[origin] : "unknown";
+}
+
 CSolveReport::CSolveReport(void)
 {
 	Clear();

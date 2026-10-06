@@ -8,8 +8,17 @@ namespace kin5ax {
 size_t CCLDataPostprocessingResult::CountOf(SOLVE_STATUS status) const
 {
 	size_t n = 0;
-	for(size_t i=0;i<m_vStatuses.size();i++)
-		if(m_vStatuses[i]==status)
+	for(size_t i=0;i<m_vLocations.size();i++)
+		if(m_vLocations[i].m_nStatus==status)
+			n++;
+	return n;
+}
+
+size_t CCLDataPostprocessingResult::CountOf(LOCATION_ORIGIN origin) const
+{
+	size_t n = 0;
+	for(size_t i=0;i<m_vLocations.size();i++)
+		if(m_vLocations[i].m_nOrigin==origin)
 			n++;
 	return n;
 }
@@ -66,7 +75,12 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 	vAmbiguousCollection.reserve(50);
 	CR3AnchoredVector lastInput(CR3Vector(0.0),CR3Point(0.0));
 	CSolveReport oReport;
-	for(int i=0; data.GetNextLocation(p2,v2);i++){
+	//which cutter location of the file a solution set belongs to: the one being solved, the one before it
+	//(which is what everything interpolated on the way to it carries) and the one a singular section began at
+	size_t nFileLocation = 0, nFileLine = 0, nPreviousLocation = 0, nPreviousLine = 0;
+	size_t nSectionLocation = 0, nSectionLine = 0;
+	for(int i=0; data.GetNextLocation(p2,v2,nFileLine);i++){
+		nFileLocation = (size_t)i+1;
 		if(pProgress && !pProgress->Continue()){
 			oResult.m_bCancelled = true;
 			break;
@@ -86,6 +100,9 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 					vAmbiguousCollection.erase(vAmbiguousCollection.begin(),vAmbiguousCollection.end());
 					vAmbiguousCollection.push_back(lastInput);
 					bCollectingAmbiguousSolutions=true;
+					//the collection starts at the location solved before this one
+					nSectionLocation = nPreviousLocation ? nPreviousLocation : nFileLocation;
+					nSectionLine = nPreviousLocation ? nPreviousLine : nFileLine;
 				}
 				vAmbiguousCollection.push_back(vIntermediateLocations[j].second);
 				if(j+1>=vIntermediateLocations.size() && !data.HasMoreLocations()){
@@ -93,7 +110,9 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 					std::vector<tChainConfigurationVector> vUnambiguous = oPostprocessor.SolveSingularOrientation(vAmbiguousCollection,oChain,pTool,sSingularSolutionLog);
 					for(size_t q=0;q<vUnambiguous.size();q++){
 						oSimulationData.AddConfigurationSet(vUnambiguous[q]);
-						oResult.m_vStatuses.push_back(vUnambiguous[q].empty() ? SOLVE_STATUS_SINGULAR_UNSOLVED : SOLVE_STATUS_SOLVED);
+						oResult.m_vLocations.push_back(CSolvedLocation(
+							vUnambiguous[q].empty() ? SOLVE_STATUS_SINGULAR_UNSOLVED : SOLVE_STATUS_SOLVED
+							,LOCATION_SINGULAR_SECTION,nSectionLocation,nSectionLine));
 					}
 					if(pFile)
 						fprintf(pFile,"%s\n",sSingularSolutionLog.c_str());
@@ -106,14 +125,22 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 					std::vector<tChainConfigurationVector> vUnambiguous = oPostprocessor.SolveSingularOrientation(vAmbiguousCollection,oChain,pTool,sSingularSolutionLog);
 					for(size_t q=0;q<vUnambiguous.size();q++){
 						oSimulationData.AddConfigurationSet(vUnambiguous[q]);
-						oResult.m_vStatuses.push_back(vUnambiguous[q].empty() ? SOLVE_STATUS_SINGULAR_UNSOLVED : SOLVE_STATUS_SOLVED);
+						oResult.m_vLocations.push_back(CSolvedLocation(
+							vUnambiguous[q].empty() ? SOLVE_STATUS_SINGULAR_UNSOLVED : SOLVE_STATUS_SOLVED
+							,LOCATION_SINGULAR_SECTION,nSectionLocation,nSectionLine));
 					}
 					if(pFile)
 						fprintf(pFile,"%s\n",sSingularSolutionLog.c_str());
 					bCollectingAmbiguousSolutions=false;
 				} 
+				//the last step of a stretch is the cutter location of the file itself, everything before it
+				//was invented on the way to it
+				const bool bFromFile = (j+1==vIntermediateLocations.size());
                 oSimulationData.AddConfigurationSet(vSolutions);
-				oResult.m_vStatuses.push_back(oReport.Status());
+				oResult.m_vLocations.push_back(CSolvedLocation(oReport.Status()
+					,bFromFile ? LOCATION_FROM_FILE : LOCATION_INTERPOLATED
+					,bFromFile ? nFileLocation : (nPreviousLocation ? nPreviousLocation : nFileLocation)
+					,bFromFile ? nFileLine : nPreviousLine));
 			}
 			lastInput.m_p = vIntermediateLocations[j].second.m_p;
 			lastInput.m_v = vIntermediateLocations[j].second.m_v;
@@ -165,6 +192,8 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 		}
 		p1=p2;
 		v1=v2;
+		nPreviousLocation = nFileLocation;
+		nPreviousLine = nFileLine;
 	}
 	if(pProgress && !oResult.m_bCancelled)
 		pProgress->SetProgress(1.0);
