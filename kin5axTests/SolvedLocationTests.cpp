@@ -46,7 +46,7 @@ std::string ChainFile(const std::string &sNamePart)
 }
 
 //the four locations of WriteStraightPath postprocessed on a tilt-rotary table
-CCLDataPostprocessingResult RunStraightPath(CSimulationData &oSimulationData)
+CCLDataPostprocessingResult RunStraightPath(CSimulationData &oSimulationData, int nInterpolation = 0)
 {
 	std::string sFilePath = TempFilePath("kin5axTests_straight.cld");
 	std::string sProblem = WriteStraightPath(sFilePath);
@@ -61,6 +61,12 @@ CCLDataPostprocessingResult RunStraightPath(CSimulationData &oSimulationData)
 	EXPECT_EQ((size_t)0,oData.GetErrorsCount())<<"the empty lines are not errors";
 	CPostprocessorSettings oSettings;
 	oSettings.m_bCheckCollisions = false;	//the records are the subject here, not the boxes of the model
+	if(nInterpolation==1)
+		oSettings.m_bInterpolateBetweenLocations = false;	//the mode
+	if(nInterpolation==2){
+		oSettings.m_dMaxPositionDifference = 0.0;			//the old way of saying it
+		oSettings.m_dMaxOrientationDifferenceRadians = 0.0;
+	}
 	CCLDataPostprocessor oPostprocessor(oSettings);
 	CCLDataPostprocessingResult oResult = oPostprocessor.Process(oChain,oTool,oData,oSimulationData,NULL,0,NULL);
 	remove(sFilePath.c_str());
@@ -218,4 +224,36 @@ TEST(SolvedLocation, TheSingularSolverMayReturnFewerSetsThanItGotLocations)
 	std::vector<tChainConfigurationVector> v = oPostprocessor.SolveSingularOrientation(vSection,oChain,&oTool,sLog);
 	ASSERT_GT(v.size(),(size_t)0)<<"the reachable middle of the section is solvable:\n"<<sLog;
 	EXPECT_LT(v.size(),vSection.size())<<"the unreachable ends got no set at all";
+}
+
+//with the interpolation switched off every cutter location of the file is solved as it stands and
+//nothing is invented between two of them
+TEST(SolvedLocation, WithoutInterpolationThereIsOneRecordPerCutterLocation)
+{
+	CSimulationData oSimulationData;
+	CCLDataPostprocessingResult oResult = RunStraightPath(oSimulationData,1);
+	EXPECT_EQ(nLOCATIONS,oResult.m_vLocations.size());
+	EXPECT_EQ(nLOCATIONS,oResult.CountOf(LOCATION_FROM_FILE));
+	EXPECT_EQ((size_t)0,oResult.CountOf(LOCATION_INTERPOLATED));
+	EXPECT_EQ(nLOCATIONS,oResult.m_nTotalProblemsCount);
+	EXPECT_EQ(nLOCATIONS,oSimulationData.GetSize());
+	for(size_t i=0;i<oResult.m_vLocations.size();i++){
+		EXPECT_EQ(i+1,oResult.m_vLocations[i].m_nFileLocation);
+		EXPECT_EQ(vFILE_LINES[i],oResult.m_vLocations[i].m_nFileLine);
+	}
+}
+
+//the two limits at zero did the same before there was a flag for it, and still do
+TEST(SolvedLocation, TheLimitsAtZeroDoWhatTheModeDoes)
+{
+	CSimulationData oWithFlag, oWithLimits;
+	CCLDataPostprocessingResult oFlag = RunStraightPath(oWithFlag,1);
+	CCLDataPostprocessingResult oLimits = RunStraightPath(oWithLimits,2);
+	ASSERT_EQ(oFlag.m_vLocations.size(),oLimits.m_vLocations.size());
+	EXPECT_EQ(oWithFlag.GetSize(),oWithLimits.GetSize());
+	for(size_t i=0;i<oFlag.m_vLocations.size();i++){
+		EXPECT_EQ(oFlag.m_vLocations[i].m_nOrigin,oLimits.m_vLocations[i].m_nOrigin)<<"record "<<i;
+		EXPECT_EQ(oFlag.m_vLocations[i].m_nFileLocation,oLimits.m_vLocations[i].m_nFileLocation)<<"record "<<i;
+		EXPECT_EQ(oFlag.m_vLocations[i].m_nStatus,oLimits.m_vLocations[i].m_nStatus)<<"record "<<i;
+	}
 }

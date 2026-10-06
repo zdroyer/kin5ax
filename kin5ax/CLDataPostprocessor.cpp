@@ -236,6 +236,11 @@ void CCLDataPostprocessor::InterpolateLocation
 	, std::vector<std::pair<double,CR3AnchoredVector> > & result) const
 {
 	result.erase(result.begin(),result.end());
+	if(!m_oSettings.m_bInterpolateBetweenLocations){
+		//nothing between two locations of the file: the second one is the whole step
+		result.push_back(std::pair<double,CR3AnchoredVector>(1.0,CR3AnchoredVector(v2,p2)));
+		return;
+	}
 	if(p1==p2 && v1==v2){
 		result.push_back(std::pair<double,CR3AnchoredVector>(1.0,CR3AnchoredVector(v2,p2)));	
 		return;

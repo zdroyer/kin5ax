@@ -29,6 +29,12 @@ public:
 	ALPHA2_METHOD m_nAlpha2Method;
 	ANGLES_SOLVING_METHOD m_nAnglesSolvingMethod;
 
+	//false: every cutter location of the file is solved as it stands and nothing is invented between two
+	//of them. The same effect as putting both limits below at zero, said out loud and tested. The
+	//singular-section solver still interpolates the first angle across the locations it is handed: that
+	//is how a singular section is solved at all, not a densification of the path.
+	bool m_bInterpolateBetweenLocations;
+
 	//linear interpolation limits between two cutter locations; a limit of zero (or less) switches
 	//the interpolation by that criterion off
 	double m_dMaxPositionDifference;
