@@ -112,8 +112,9 @@ TEST(SolvedLocation, TheFileLocationAndItsLineAreRecorded)
 			EXPECT_EQ(nFileSeen,v[i].m_nFileLocation)<<"record "<<i<<" is on the way to "<<(nFileSeen+1);
 			EXPECT_EQ(vFILE_LINES[nFileSeen-1],v[i].m_nFileLine);
 		}
-		if(i)
+		if(i){
 			EXPECT_LE(v[i-1].m_nFileLocation,v[i].m_nFileLocation)<<"the numbers never go back";
+		}
 	}
 	EXPECT_EQ(nLOCATIONS,nFileSeen);
 

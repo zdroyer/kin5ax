@@ -109,17 +109,22 @@ void CCutterLocationData::SetLocations(const std::vector<CR3AnchoredVector> &vLo
 
 void CCutterLocationData::AddLocation(const CR3Point &p, const CR3Vector &v)
 {
+	//a direction of no length is no direction, and a line of a file saying that is an error too
+	if(v.IsZero())
+		MY_THROW(CArgsMyException,"The tool axis of a cutter location has no length, so it is no direction");
+	//the axis of a location is a unit vector, exactly as ParseLine stores the axis of a line
+	const CR3Vector r3vAxis = v.GetUnitVector();
 	//the location before this one, for the two statistics that are sums over the path
 	const CCLLine *pLast = NULL;
 	for(size_t i=m_vLines.size(); i>0 && !pLast; i--)
 		if(m_vLines[i-1].m_status==CL_LINE_OK)
 			pLast = &m_vLines[i-1];
 	if(pLast){
-		m_dTotalOrientationChangeRadians += pLast->m_v.UndirectedAngle(v);
+		m_dTotalOrientationChangeRadians += pLast->m_v.UndirectedAngle(r3vAxis);
 		m_dTrajectoryLength += d_E(m_m4x4P*pLast->m_p,m_m4x4P*p);
 	}
 	//no text to point into: the index of the string stays 0 and GetLineText refuses the line
-	m_vLines.push_back(CCLLine(CL_LINE_OK,m_vLines.size(),0,p,v));
+	m_vLines.push_back(CCLLine(CL_LINE_OK,m_vLines.size(),0,p,r3vAxis));
 	m_oBox.ExpandToPoint(p);
 	m_oBoxTransformed.ExpandToPoint(m_m4x4P*p);
 	m_nLocations++;

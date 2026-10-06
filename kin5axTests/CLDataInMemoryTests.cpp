@@ -71,7 +71,8 @@ TEST(CLDataInMemory, TheLocationsComeBackAsTheyWereGiven)
 	for(size_t i=0;i<nCOUNT;i++){
 		ASSERT_TRUE(oData.GetNextLocation(p,r3v,nLine))<<"location "<<i;
 		EXPECT_NEAR(0.0,d_E(v[i].m_p,p),1E-12)<<"location "<<i;
-		EXPECT_NEAR(0.0,(v[i].m_v-r3v).GetLength(),1E-12)<<"location "<<i;
+		//as a direction: the axis is stored as a unit vector, the way a file is read
+		EXPECT_NEAR(0.0,(v[i].m_v.GetUnitVector()-r3v).GetLength(),1E-12)<<"location "<<i;
 		EXPECT_EQ(i+1,nLine);
 	}
 	EXPECT_FALSE(oData.GetNextLocation(p,r3v,nLine))<<"and no more";
@@ -179,4 +180,25 @@ TEST(CLDataInMemory, PostprocessingGivesTheSameAsFromAFile)
 		}
 	}
 	remove(sFilePath.c_str());
+}
+
+//A location of a file carries a unit vector, because the reader makes one of whatever the line says.
+//A location handed over has to be stored the same way, or the solver would see a different path.
+TEST(CLDataInMemory, TheAxisIsStoredAsAUnitVector)
+{
+	CCutterLocationData oData;
+	oData.AddLocation(CR3Point(0.1,0.2,0.03),CR3Vector(0.0,0.0,2.5));
+	oData.AddLocation(CR3Point(0.2,0.2,0.03),CR3Vector(0.3,0.4,0.866025));	//rounded, so not quite unit
+	oData.ResetLocationIterator();
+	CR3Point p;
+	CR3Vector r3v;
+	ASSERT_TRUE(oData.GetNextLocation(p,r3v));
+	EXPECT_NEAR(1.0,r3v.GetLength(),1E-15)<<"a long axis comes back as a direction";
+	EXPECT_NEAR(1.0,r3v.GetZ(),1E-15);
+	ASSERT_TRUE(oData.GetNextLocation(p,r3v));
+	EXPECT_NEAR(1.0,r3v.GetLength(),1E-15)<<"and so does one that is a millionth off";
+
+	//what the reader of a file calls an error is an argument error here
+	EXPECT_THROW(oData.AddLocation(CR3Point(0.0),CR3Vector(0.0,0.0,0.0)),CArgsMyException);
+	EXPECT_EQ((size_t)2,oData.GetLocationsCount())<<"and nothing was added";
 }

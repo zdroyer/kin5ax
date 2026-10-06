@@ -66,7 +66,10 @@ public:
 	//GetLineText throws for them.
 	void SetLocations(const std::vector<CR3AnchoredVector> &vLocations, const std::string &sName = "");
 	//One more location at the end, the statistics kept up to date. It may follow a file as well as
-	//other locations handed over, and becomes the last line either way.
+	//other locations handed over, and becomes the last line either way. The axis is stored as a unit
+	//vector, the way the reader of a file stores it, so that a path handed over and the same path read
+	//from a file are the same path; an axis of no length throws CArgsMyException, which is what the
+	//reader of a file calls an error.
 	void AddLocation(const CR3Point &p, const CR3Vector &v);
 
 	void ResetLocationIterator(void);
