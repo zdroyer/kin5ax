@@ -50,6 +50,15 @@ target_include_directories(kin5ax PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/Simulation
 )
 target_compile_features(kin5ax PUBLIC cxx_std_17)
+# The static library goes into the shared C interface (kin5axc) as well: a shared object may only be
+# built out of position-independent code, and nothing of this library may leave that shared object -
+# only its k5_* functions are exported, so these objects are compiled hidden. On Windows, where a
+# symbol is exported only when it says so, both lines say nothing.
+set_target_properties(kin5ax PROPERTIES
+  POSITION_INDEPENDENT_CODE ON
+  CXX_VISIBILITY_PRESET hidden
+  VISIBILITY_INLINES_HIDDEN ON
+)
 target_compile_options(kin5ax PRIVATE
   $<$<CXX_COMPILER_ID:MSVC>:/W3 /permissive->
   # -Wno-overloaded-virtual: CTransformation::operator* hides the virtual CM4x4::operator*(const CM4x4&);

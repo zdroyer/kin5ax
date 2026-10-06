@@ -1,15 +1,6 @@
-# The GoogleTest suite of kin5ax. GoogleTest comes through FetchContent (a network connection the first
-# time); the test chains are copied next to the executable, where TestData.cpp expects them.
-include(FetchContent)
-FetchContent_Declare(googletest
-  GIT_REPOSITORY https://github.com/google/googletest.git
-  GIT_TAG v1.15.2
-  GIT_SHALLOW TRUE
-)
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)   # the same runtime as kin5ax on MSVC
-set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
-set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
+# The GoogleTest suite of kin5ax. GoogleTest is fetched by the root CMakeLists, for this suite and for
+# the one of the C interface; the test chains are copied next to the executable, where TestData.cpp
+# expects them.
 
 add_executable(kin5axTests
   main.cpp

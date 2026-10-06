@@ -1,0 +1,11 @@
+/* What the shared library lets out: the C interface and nothing else. Hidden visibility already keeps
+ * the classes of kin5ax inside, but the standard library puts a handful of its own template
+ * instantiations into the symbol table with default visibility, and those have no business being
+ * reachable from a host either. GNU ld and lld read this; the Apple linker wants an
+ * -exported_symbols_list instead, which is untried here because macOS is. */
+{
+	global:
+		k5_*;
+	local:
+		*;
+};
