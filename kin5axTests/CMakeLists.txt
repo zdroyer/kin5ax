@@ -6,6 +6,7 @@ add_executable(kin5axTests
   main.cpp
   TestData.cpp
   SolverRoundTrip.cpp
+  CLDataInMemoryTests.cpp
   CLDataParsingTests.cpp
   CLDataTests.cpp
   ChainFcmTests.cpp

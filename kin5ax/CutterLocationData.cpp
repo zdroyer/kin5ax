@@ -90,6 +90,41 @@ void CCutterLocationData::LoadFile(const std::string & sFileName, const std::str
 	SetTransformation(m_m4x4P,m_m4x4V,false);
 }
 
+void CCutterLocationData::SetLocations(const std::vector<CR3AnchoredVector> &vLocations, const std::string &sName)
+{
+	m_vLines.clear();
+	m_vData.clear();
+	m_sFileName = sName;
+	m_sFileTitle = sName;
+	m_nErrors = 0;
+	m_nActual = 0;
+	m_nLocations = 0;
+	m_dTotalOrientationChangeRadians = 0.0;
+	m_dTrajectoryLength = 0.0;
+	m_oBox = CR3Box();
+	m_oBoxTransformed = CR3Box();
+	for(size_t i=0;i<vLocations.size();i++)
+		AddLocation(vLocations[i].m_p,vLocations[i].m_v);
+}
+
+void CCutterLocationData::AddLocation(const CR3Point &p, const CR3Vector &v)
+{
+	//the location before this one, for the two statistics that are sums over the path
+	const CCLLine *pLast = NULL;
+	for(size_t i=m_vLines.size(); i>0 && !pLast; i--)
+		if(m_vLines[i-1].m_status==CL_LINE_OK)
+			pLast = &m_vLines[i-1];
+	if(pLast){
+		m_dTotalOrientationChangeRadians += pLast->m_v.UndirectedAngle(v);
+		m_dTrajectoryLength += d_E(m_m4x4P*pLast->m_p,m_m4x4P*p);
+	}
+	//no text to point into: the index of the string stays 0 and GetLineText refuses the line
+	m_vLines.push_back(CCLLine(CL_LINE_OK,m_vLines.size(),0,p,v));
+	m_oBox.ExpandToPoint(p);
+	m_oBoxTransformed.ExpandToPoint(m_m4x4P*p);
+	m_nLocations++;
+}
+
 size_t CCutterLocationData::ReadDouble(const char *s,double &d) const
 {
 	//std::from_chars: the point is the decimal separator whatever the locale of the process; it takes
@@ -220,8 +255,10 @@ bool CCutterLocationData::GetLocation(CR3Point & p, CR3Vector & v, size_t nLineN
 
 const char *CCutterLocationData::GetLineText(size_t index) const
 {
-	if(index>=m_vLines.size() || m_vData.empty())
+	if(index>=m_vLines.size())
 		MY_THROW(CArgsMyException,"Invalid line number");
+	if(m_vData.empty())
+		MY_THROW(CArgsMyException,"There is no text behind this line: the cutter locations were handed over, not read from a file");
 	return &(m_vData[m_vLines[index].m_nIndexOfString]);
 }
 

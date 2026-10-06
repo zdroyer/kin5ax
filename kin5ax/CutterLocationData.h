@@ -2,6 +2,7 @@
 
 #include "R3Point.h"
 #include "R3Vector.h"
+#include "R3AnchoredVector.h"
 #include "R3Box.h"
 #include "Transformation.h"
 
@@ -56,6 +57,18 @@ public:
 	//reads the file: every line becomes a CCLLine (GOTO/x,y,z,i,j,k -> OK; MSYS/...; empty; anything else -> ERROR).
 	//Throws CGeneratorException when the file cannot be read.
 	void LoadFile(const std::string & sFileName, const std::string &sFileTitle);
+
+	//Cutter locations handed over instead of read from a file: for a host that generates a tool path
+	//and has no file to put it in. Everything that reads a loaded file reads these the same way - the
+	//iterator, GetLocation, the statistics, the bounding boxes - and the line numbers are the places of
+	//the locations in the vector, counted from 1. Whatever was read before is forgotten; sName is what
+	//GetFileName and GetFileTitle answer afterwards. There is no text behind these lines, so
+	//GetLineText throws for them.
+	void SetLocations(const std::vector<CR3AnchoredVector> &vLocations, const std::string &sName = "");
+	//One more location at the end, the statistics kept up to date. It may follow a file as well as
+	//other locations handed over, and becomes the last line either way.
+	void AddLocation(const CR3Point &p, const CR3Vector &v);
+
 	void ResetLocationIterator(void);
 	bool GetNextLocation(CR3Point & p, CR3Vector & v);
 	//The same, and the line of the file the location was read from, counted from 1 the way an editor
