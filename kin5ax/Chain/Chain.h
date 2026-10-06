@@ -19,6 +19,21 @@ enum CHAIN_PART{
 	CHAIN_PART_MATERIAL_HOLDER	//ends with the MATERIAL_HOLDER segment, whose origin is the material frame
 };
 
+//One segment of the chain at the actual parameter values, in the frame of the machine base. The walk the
+//solver and DetectCollisions do inside themselves, available to whoever draws the machine, places
+//something on a segment or shows where a joint axis points (CChain::GetActualFrames).
+struct CSegmentFrame
+{
+	//after the constant transformation of the segment, before its joint motion: the frame the collision
+	//boxes of the segment are given in (CChainSegment::GetPartVector), and the frame whose Z is the axis
+	//the joint turns about or slides along
+	CTransformation m_trJoint;
+	//after the joint motion as well: the input frame of the next segment. For the last segment of the
+	//tool part this is the tool mount - the tool point hangs GetToolMountToToolPointDistance below it
+	//along its Z - and for the last of the material holder part it is the frame of the material.
+	CTransformation m_trOutput;
+};
+
 enum CHAIN_CONSTRAINTS_RESULT{
 	CHAIN_CONSTRAINTS_MET,
 	CHAIN_CONSTRAINTS_SHIFTS_EXCEEDED,
@@ -123,6 +138,12 @@ public:
 	//the segments of one branch, in the order they are stored (base first)
 	std::vector<CChainSegment> & GetPart(CHAIN_PART part);
 	const std::vector<CChainSegment> & GetPart(CHAIN_PART part) const;
+	//One frame per segment of the part, in the order the segments are stored, at the actual parameter
+	//values. GetActualFrames(CHAIN_PART_TOOL).back().m_trOutput is the tool mount, and
+	//GetActualFrames(CHAIN_PART_MATERIAL_HOLDER).back().m_trOutput the frame of the material.
+	std::vector<CSegmentFrame> GetActualFrames(CHAIN_PART part) const;
+	//the frame of one segment; throws CArgsMyException when the index is past the end of the part
+	CSegmentFrame GetActualFrame(CHAIN_PART part, size_t nIndex) const;
 	void SetName(const std::string &sName);
 	std::string GetName() const;
 	void SetMachine(const std::string &sMachine);

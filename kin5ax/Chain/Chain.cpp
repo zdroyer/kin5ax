@@ -598,6 +598,42 @@ const std::vector<CChainSegment> & CChain::GetPart(CHAIN_PART part) const
 	return m_vMaterialHolderPart;
 }
 
+std::vector<CSegmentFrame> CChain::GetActualFrames(CHAIN_PART part) const
+{
+	const std::vector<CChainSegment> &vPart = GetPart(part);
+	std::vector<CSegmentFrame> vFrames;
+	vFrames.reserve(vPart.size());
+	CTransformation trInput(1.0);		//the frame of the machine base
+	for(size_t i=0;i<vPart.size();i++){
+		CSegmentFrame oFrame;
+		//the same two factors GetParametrizedTransformation multiplies, kept apart: the boxes of the
+		//segment live between them
+		oFrame.m_trJoint = trInput * vPart[i].GetConstantTransformation();
+		oFrame.m_trOutput = oFrame.m_trJoint
+			* vPart[i].GetVariablePartTransformation(vPart[i].m_dActualParameterValue);
+		vFrames.push_back(oFrame);
+		trInput = oFrame.m_trOutput;
+	}
+	return vFrames;
+}
+
+CSegmentFrame CChain::GetActualFrame(CHAIN_PART part, size_t nIndex) const
+{
+	const std::vector<CChainSegment> &vPart = GetPart(part);
+	if(nIndex>=vPart.size())
+		MY_THROW(CArgsMyException,"No segment "+size_to_string(nIndex)+" in this part of the chain: it has "
+			+size_to_string(vPart.size())+" of them");
+	CTransformation trInput(1.0);
+	CSegmentFrame oFrame;
+	for(size_t i=0;i<=nIndex;i++){
+		oFrame.m_trJoint = trInput * vPart[i].GetConstantTransformation();
+		oFrame.m_trOutput = oFrame.m_trJoint
+			* vPart[i].GetVariablePartTransformation(vPart[i].m_dActualParameterValue);
+		trInput = oFrame.m_trOutput;
+	}
+	return oFrame;
+}
+
 //Brings the state derived from the actual parameters up to date (to be called before rendering):
 // - the parameters vector is resized to the number of regular links (after the chain was edited),
 // - the colliding parts of the segments are marked and the collision log of the tool is filled,
