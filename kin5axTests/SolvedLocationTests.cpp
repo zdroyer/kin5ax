@@ -133,11 +133,12 @@ TEST(SolvedLocation, TheStatusesAddUpToTheRecords)
 	EXPECT_EQ(oResult.m_vLocations.size(),nSum)<<"every record has exactly one status";
 	//the set of a solved record is not empty, and an unsolved one has nothing in it
 	for(size_t i=0;i<oResult.m_vLocations.size();i++){
-		if(oResult.m_vLocations[i].m_nStatus==SOLVE_STATUS_SOLVED)
+		if(oResult.m_vLocations[i].m_nStatus==SOLVE_STATUS_SOLVED){
 			EXPECT_TRUE(oSimulationData.HasSolution(i))<<"record "<<i<<" says solved";
-		else
+		} else {
 			EXPECT_FALSE(oSimulationData.HasSolution(i))<<"record "<<i<<" says "
 				<<SolveStatusName(oResult.m_vLocations[i].m_nStatus);
+		}
 	}
 	RecordProperty("solved",(int)oResult.CountOf(SOLVE_STATUS_SOLVED));
 }

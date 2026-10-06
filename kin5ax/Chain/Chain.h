@@ -5,6 +5,7 @@
 #include "ChainConfiguration.h"
 #include "R3AnchoredVector.h"
 #include "R3Box.h"
+#include "../TrajectoryStart.h"
 
 
 //name of the root node of the XML (.kc) representation
@@ -97,6 +98,17 @@ public:
 
 	void GetTranslationsIndexes(size_t &nFirst, size_t &nSecond, size_t &nThird) const;
 	void GetRotationsIndexes(size_t &nFirst, size_t &nSecond) const;
+	//The parameter of a CChainConfiguration holding the first rotary axis met walking the chain from the
+	//terminal of that part: from the tool end the axis nearest the tool (the head axis of a head/table
+	//machine), from the material end the one nearest the part (its table axis). Throws when the chain is
+	//not a 5C chain, because then there is no such thing.
+	size_t GetFirstRotaryParameterIndex(CHAIN_PART nCountFrom) const;
+	//The policy CSimulationData::FindShortestPath starts a trajectory with, resolved against this chain:
+	//by default the first rotary axis counted from the tool end, closest to zero, which is what the
+	//TWP/TCP functions of the usual controls do. pHint, when given, has to outlive the policy.
+	CTrajectoryStart GetTrajectoryStart(CHAIN_PART nCountFrom = CHAIN_PART_TOOL
+		,TRAJECTORY_START_CRITERION nCriterion = TRAJECTORY_START_MIN_ABS
+		,const CChainConfiguration *pHint = NULL) const;
 	CChainConfiguration	GetParameters() const;
 	void SetParameters(const CChainConfiguration & oConfig);
 

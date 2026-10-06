@@ -484,7 +484,10 @@ void CMainFrame::OnSimulationSimple()
 		CCLDataPostprocessor oPostprocessor(oPostprocessorSettings);
 		CCLDataPostprocessingResult oResult = oPostprocessor.Process(pDoc->m_oChain,*pDoc->m_pMillingTool
 			,pDoc->m_oCutterLocationData,pDoc->m_oSimulationData,NULL,0,NULL);
-		pDoc->m_oSimulationData.FindShortestPath(oPostprocessorSettings,NULL);
+		//the start of the trajectory is the convention of the machine: the rotary axis nearest the tool,
+		//as close to zero as the solutions allow
+		pDoc->m_oSimulationData.FindShortestPath(oPostprocessorSettings,NULL
+			,pDoc->m_oChain.GetTrajectoryStart());
 		nSolved = oResult.CountOf(SOLVE_STATUS_SOLVED);
 	} catch (CGeneratorException &e){
 		SetWindowText(sTitle);

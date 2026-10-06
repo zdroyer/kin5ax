@@ -245,7 +245,10 @@ void CPostprocessingDialog::OnBnClickedStart()
 		m_progressPostprocessing.SetPos(100);
 		SetWindowText("2/4 finding shortest path in progress...");
 		CProgressCtrlCallback oProgress(m_progressPostprocessing);
-		m_pDoc->m_oSimulationData.FindShortestPath(oPostprocessorSettings,&oProgress);
+		//the start of the trajectory is the convention of the machine, not whatever makes the path
+		//shortest: the rotary axis nearest the tool, as close to zero as the solutions allow
+		m_oTrajectoryStart = m_pDoc->m_oChain.GetTrajectoryStart();
+		m_pDoc->m_oSimulationData.FindShortestPath(oPostprocessorSettings,&oProgress,m_oTrajectoryStart);
 	} catch (CGeneratorException &e){
 		if(pFile)
 			fclose(pFile);
@@ -283,6 +286,7 @@ std::string CPostprocessingDialog::GenerateReportHead() const
 		CString sDate = t.Format( "%c");
 		sReportHead+=(sDate.GetBuffer(sDate.GetLength())+sNL);
 		sReportHead+=("Solving method: "+oPostprocessorSettings.GetComputationMethod("\n"));
+		sReportHead+=(m_oTrajectoryStart.Describe()+sNL);
 		sReportHead+=("Kinematic chain definition file: "+m_pDoc->m_oChain.GetFileName()+sNL);
 		sReportHead+=("Cutter location data file name: "+oCLData.GetFileName()+sNL);
 		sReportHead+=("\tlines in file: "+size_to_string(oCLData.GetLinesCount())+sNL);
@@ -336,6 +340,7 @@ void CPostprocessingDialog::GenerateAndShowReport(void)
 		CString sDate = t.Format( "%c");
 		m_sReport+=(sDate.GetBuffer(0)+sRNL);
 		m_sReport+=(oPostprocessorSettings.GetComputationMethod(sRNL));
+		m_sReport+=(m_oTrajectoryStart.Describe()+sRNL);
 		m_sReport+=("Kinematic chain definition file: "+m_pDoc->m_oChain.GetFileName()+sRNL);
 		m_sReport+=("Cutter location data file: "+oCLData.GetFileName()+sRNL);
 		m_sReport+=("\tlines in file: "+size_to_string(oCLData.GetLinesCount(),true));

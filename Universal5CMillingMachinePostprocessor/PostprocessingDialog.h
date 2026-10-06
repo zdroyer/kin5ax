@@ -49,6 +49,8 @@ public:
 	double m_dMaxOrientationErrorVectorLength;
 	CR3AnchoredVector m_cvMaxPositionErrorInput;
 	CR3AnchoredVector m_cvMaxOrientationErrorInput;
+	//what the shortest path started from, for the report: a start is a convention of the control
+	CTrajectoryStart m_oTrajectoryStart;
 	CChainConfiguration m_oMaxPositionErrorSolution;
 	CChainConfiguration m_oMaxOrientationErrorSolution;
 	afx_msg void OnEnChangeEditOrientationDifference();

@@ -33,6 +33,7 @@ add_library(kin5ax STATIC
   CutterLocationData.cpp
   PostprocessorSettings.cpp
   SimulationData.cpp
+  TrajectoryStart.cpp
   string_tools.cpp
   3rdParty/pugixml/pugixml.cpp
 )

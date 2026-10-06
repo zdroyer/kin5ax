@@ -116,13 +116,34 @@ static bool ReportProgress(CProgressCallback *pProgress, double dFraction)
 	return pProgress->Continue();
 }
 
-bool CSimulationData::FindShortestPath(const CPostprocessorSettings &oSettings, CProgressCallback *pProgress)
+//A start the policy did not choose: priced out of every path, so that the backtracking cannot land on
+//it. Far above any trajectory a machine of a few metres can make, far below what a sum of a million of
+//them could overflow.
+static const double dSTART_REFUSED = 1E30;
+
+bool CSimulationData::GetLastChosenConfiguration(CChainConfiguration &oConfiguration) const
+{
+	for(size_t i=m_vSolutions.size(); i>0; i--)
+		if(m_vSolutions[i-1].size()){
+			oConfiguration = m_vSolutions[i-1][m_vIndexes[i-1]];
+			return true;
+		}
+	return false;
+}
+
+bool CSimulationData::FindShortestPath(const CPostprocessorSettings &oSettings, CProgressCallback *pProgress
+	,const CTrajectoryStart &oStart)
 {
 	for(size_t k =0; k< m_vIndexes.size();k++)
 		m_vIndexes[k]=0;
 	if(!ReportProgress(pProgress,0.0))
 		return false;
-	if(m_vIndexes.size()<2){	//one set: nothing to choose (two are enough, KnownBugs #43)
+	if(m_vIndexes.size()<2){	//one set: nothing to connect it to, but its start is still a choice
+		for(size_t k=0;k<m_vSolutions.size();k++)
+			if(m_vSolutions[k].size()){
+				m_vIndexes[k] = oStart.ChooseIndex(m_vSolutions[k],oSettings);
+				break;
+			}
 		ReportProgress(pProgress,1.0);
 		return true;
 	}
@@ -176,9 +197,19 @@ bool CSimulationData::FindShortestPath(const CPostprocessorSettings &oSettings, 
 		vDistances2.erase(vDistances2.begin(),vDistances2.end());
 		vDistances2.reserve(m_vSolutions[j].size());
 		if(vDistances1.size()==0){
-			vDistances1 = std::vector<double>(m_vSolutions[i].size(),0.0);
-			size_t n = vDistances1.size();;
-			n++;
+			//The first set of the trajectory. Starting at a candidate costs the move from wherever the
+			//machine stands - nothing at all without a hint, which leaves the start free and the whole
+			//trajectory as short as it can be. A criterion that fixes the start refuses every candidate
+			//but the chosen one, so the backtracking has to come back to it.
+			vDistances1.assign(m_vSolutions[i].size(),0.0);
+			for(size_t k=0;k<vDistances1.size();k++)
+				vDistances1[k] = oStart.StartCost(m_vSolutions[i][k],oSettings);
+			if(oStart.FixesTheStart()){
+				const size_t nStart = oStart.ChooseIndex(m_vSolutions[i],oSettings);
+				for(size_t k=0;k<vDistances1.size();k++)
+					if(k!=nStart)
+						vDistances1[k] = dSTART_REFUSED;
+			}
 		}
 		vvClosestNeighbourIndexes[j]=std::vector<size_t>(m_vSolutions[j].size(),0);
 		vDistances2 = std::vector<double>(m_vSolutions[j].size(),dMinD);
@@ -220,6 +251,10 @@ bool CSimulationData::FindShortestPath(const CPostprocessorSettings &oSettings, 
 	}
 	//backtracking from the last non-empty set (i) down to the first one;
 	//vDistances2 is empty when less than two non-empty sets exist: nothing to choose then
+	if(vDistances2.empty() && i<m_vSolutions.size() && m_vSolutions[i].size()){
+		//one set with solutions and no other: the policy still says where to start
+		m_vIndexes[i] = oStart.ChooseIndex(m_vSolutions[i],oSettings);
+	}
 	if(vDistances2.size()){
 		m_vIndexes[i]=nInd;
 		size_t nNext = i;	//the nearest non-empty set after m

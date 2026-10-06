@@ -346,6 +346,27 @@ void CChain::GetRotationsIndexes(size_t &nFirst, size_t &nSecond) const
 }
 
 
+size_t CChain::GetFirstRotaryParameterIndex(CHAIN_PART nCountFrom) const
+{
+	if(!Is5CChain())
+		MY_THROW(CGeneratorException,"The first rotary axis is not defined: this is not a 5C kinematic chain");
+	size_t nFirst = 0, nSecond = 0;
+	GetRotationsIndexes(nFirst,nSecond);
+	//the parameters run from the material terminal through the base to the tool terminal (operator[]),
+	//so the rotary axis nearest the tool is the second of the two and the one nearest the part the first
+	return (nCountFrom==CHAIN_PART_TOOL) ? nSecond : nFirst;
+}
+
+CTrajectoryStart CChain::GetTrajectoryStart(CHAIN_PART nCountFrom
+	,TRAJECTORY_START_CRITERION nCriterion, const CChainConfiguration *pHint) const
+{
+	CTrajectoryStart oStart;
+	oStart.m_nCriterion = nCriterion;
+	oStart.m_pHint = pHint;
+	oStart.m_nParameterIndex = GetFirstRotaryParameterIndex(nCountFrom);
+	return oStart;
+}
+
 CTransformation CChain::GetActualToMaterialInvertedTransformation() const
 {
 	CTransformation m4x4Result(1.0);

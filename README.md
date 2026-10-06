@@ -48,7 +48,7 @@ fast, exact, machine-aware judge of the toolpath. That judge is this library. Se
 | directory | what | platform |
 |---|---|---|
 | [`kin5ax/`](kin5ax/) | the library: C++17, standard library only (pugixml and nlohmann/json vendored), no Windows dependency | Windows (MSVC) and Linux (GCC) built and tested; macOS untried |
-| [`kin5axTests/`](kin5axTests/) | GoogleTest suite, 750 tests, with 11 machine models under `TestChains/` | same |
+| [`kin5axTests/`](kin5axTests/) | GoogleTest suite, 774 tests, with 11 machine models under `TestChains/` | same |
 | [`Universal5CMillingMachinePostprocessor/`](Universal5CMillingMachinePostprocessor/) | MFC application: kinematic chain editor, 3D viewer, single-location solver with a step-by-step log, batch postprocessing of CL files, a rudimentary voxel simulation that checks the geometry of the postprocessor on a hemisphere sized for the machine | Windows |
 
 Machine models shipped and round-trip tested (catalogue travels and swivel ranges; head and
