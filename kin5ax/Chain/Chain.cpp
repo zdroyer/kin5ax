@@ -411,11 +411,11 @@ void CChain::SetToolAssembly(const CMillingTool &oTool)
 	m_dToolMountToToolPoint = IsToolMountDeclared() ? oTool.GetMountToToolPointDistance() : 0.0;
 }
 
-CR3CaughtVector CChain::GetActualToolPositionAndOrientation() const
+CR3AnchoredVector CChain::GetActualToolPositionAndOrientation() const
 {
 	CTransformation t = GetActualToMaterialInvertedTransformation() 
 		* GetActualToToolTransformation();
-	return CR3CaughtVector(t*r3vOZ,t*r3pZero);
+	return CR3AnchoredVector(t*r3vOZ,t*r3pZero);
 }
 
 
@@ -891,11 +891,11 @@ void CChain::DetectCollisions(CMillingTool &oMillingTool)
 }
 
 
-void CChain::ComputeAndSetError(CChainConfiguration &oConfig, const CR3CaughtVector &cv)
+void CChain::ComputeAndSetError(CChainConfiguration &oConfig, const CR3AnchoredVector &cv)
 {
 	CChainConfiguration old = m_oActualParameters;
 	SetParameters(oConfig);
-	CR3CaughtVector cvComputed = GetActualToolPositionAndOrientation();
+	CR3AnchoredVector cvComputed = GetActualToolPositionAndOrientation();
 	oConfig.SetErrors(d_E(cv.m_p,cvComputed.m_p),(cv.m_v.GetUnitVector()-cvComputed.m_v).GetLength());
 	SetParameters(old);    
 }

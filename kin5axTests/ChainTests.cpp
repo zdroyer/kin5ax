@@ -203,9 +203,9 @@ TEST_P(ChainFileTest, SingularSectionOutOfReachGivesNoSolution)
 	CMillingToolBall oTool(0.016,0.016,0.064,0.016);
 	C5CPostprocessor oPostprocessor(oChain,CPostprocessorSettings());
 	//three locations of a vertical tool, a kilometre away: beyond the limits of the linear axes
-	std::vector<CR3CaughtVector> vInput;
+	std::vector<CR3AnchoredVector> vInput;
 	for(int i=0;i<3;i++)
-		vInput.push_back(CR3CaughtVector(CR3Vector(0.0,0.0,1.0),CR3Point(1000.0+i,0.0,0.0)));
+		vInput.push_back(CR3AnchoredVector(CR3Vector(0.0,0.0,1.0),CR3Point(1000.0+i,0.0,0.0)));
 	std::string sLog;
 	try{
 		std::vector<tChainConfigurationVector> vResult = oPostprocessor.SolveSingularOrientation(vInput,oChain,oTool,sLog);

@@ -145,7 +145,7 @@ TEST(ChainFcmReader, DrivingAJointMovesTheToolAsTheFileSays)
 	oConfiguration[2].SetValue(10.0);		//X
 	oConfiguration[4].SetValue(-30.0);		//Z
 	oChain.SetParameters(oConfiguration);
-	CR3CaughtVector cv = oChain.GetActualToolPositionAndOrientation();
+	CR3AnchoredVector cv = oChain.GetActualToolPositionAndOrientation();
 	ExpectVectorNear(CR3Vector(10.0,0.0,-30.0),cv.m_p.toR3Vector(),"X = 10 and Z = -30 move the tool there");
 	ExpectVectorNear(CR3Vector(0.0,0.0,1.0),cv.m_v,"the linear joints do not tilt the tool");
 }

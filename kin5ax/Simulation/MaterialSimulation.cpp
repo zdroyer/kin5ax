@@ -50,7 +50,7 @@ bool CMaterialSimulation::Step()
 		return false;
 	const CChainConfiguration &oConfiguration = m_oTrajectory[m_nNext++];
 	m_oChain.SetParameters(oConfiguration);
-	CR3CaughtVector cv = m_oChain.GetActualToolPositionAndOrientation();
+	CR3AnchoredVector cv = m_oChain.GetActualToolPositionAndOrientation();
 	m_oTool.SetPositionAndOrientation(cv.m_p,cv.m_v);
 	m_oMaterial.MachineCut(m_oTool);
 	//after the cut of this location: whatever the shank or the holder still touches is a gouge

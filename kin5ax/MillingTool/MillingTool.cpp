@@ -87,7 +87,7 @@ void CMillingTool::AddToCollisionLog(const std::string &s)
 	m_sCollisionLog+=("\n\t\t"+s);
 }
 
-void CMillingTool::SetPositionAndOrientation(const CR3CaughtVector &cv)
+void CMillingTool::SetPositionAndOrientation(const CR3AnchoredVector &cv)
 {
 	SetPositionAndOrientation(cv.m_p,cv.m_v);
 }

@@ -2,7 +2,7 @@
 
 #include "R3Point.h"
 #include "R3Vector.h"
-#include "R3CaughtVector.h"
+#include "R3AnchoredVector.h"
 
 #include "R3Box.h"
 #include "Transformation.h"
@@ -148,7 +148,7 @@ public:
 	//Places the tool: r3pNewPosition is the new place of the reference point (m_dReferencePointZ above the tip),
 	//r3vNewOrientation the new direction of the axis from the tip towards the spindle.
 	void SetPositionAndOrientation(const CR3Point &r3pNewPosition, const CR3Vector &r3vNewOrientation);
-	void SetPositionAndOrientation(const CR3CaughtVector &cv);
+	void SetPositionAndOrientation(const CR3AnchoredVector &cv);
 
 
 

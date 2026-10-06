@@ -9,7 +9,7 @@
 
 namespace kin5ax {
 
-typedef std::pair<CChainConfiguration,CR3CaughtVector> tChainConfigurationWithResult;
+typedef std::pair<CChainConfiguration,CR3AnchoredVector> tChainConfigurationWithResult;
 
 
 class C5CPostprocessor
@@ -33,8 +33,8 @@ public:
 	//the cutter locations of a section where the orientation is singular (alpha1 free): alpha1 is interpolated
 	//between the solutions before and after the section. One solution set per solved location; none when no
 	//location of the section can be solved. The tool as in Solve.
-	std::vector<tChainConfigurationVector> SolveSingularOrientation(const std::vector<CR3CaughtVector> &vInput, CChain &oChain,CMillingTool &oMillingTool,std::string &sLog);
-	std::vector<tChainConfigurationVector> SolveSingularOrientation(const std::vector<CR3CaughtVector> &vInput, CChain &oChain,CMillingTool *pMillingTool,std::string &sLog);
+	std::vector<tChainConfigurationVector> SolveSingularOrientation(const std::vector<CR3AnchoredVector> &vInput, CChain &oChain,CMillingTool &oMillingTool,std::string &sLog);
+	std::vector<tChainConfigurationVector> SolveSingularOrientation(const std::vector<CR3AnchoredVector> &vInput, CChain &oChain,CMillingTool *pMillingTool,std::string &sLog);
 
 protected:
 	//the configurations before the limits and the collisions; pReport (may be NULL) receives the counts

@@ -54,7 +54,7 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 	CR3Vector v1,v2,vi;
 
 	size_t n = std::max((size_t)1,data.GetLocationsCount()/300);
-	std::vector<std::pair<double,CR3CaughtVector> > vIntermediateLocations;
+	std::vector<std::pair<double,CR3AnchoredVector> > vIntermediateLocations;
 
 	data.ResetLocationIterator();
 	data.GetNextLocation(p1,v1);
@@ -62,9 +62,9 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 	oSimulationData.DeleteContents();
 	std::string sLog;
 	bool bCollectingAmbiguousSolutions=false;
-	std::vector<CR3CaughtVector> vAmbiguousCollection;
+	std::vector<CR3AnchoredVector> vAmbiguousCollection;
 	vAmbiguousCollection.reserve(50);
-	CR3CaughtVector lastInput(CR3Vector(0.0),CR3Point(0.0));
+	CR3AnchoredVector lastInput(CR3Vector(0.0),CR3Point(0.0));
 	CSolveReport oReport;
 	for(int i=0; data.GetNextLocation(p2,v2);i++){
 		if(pProgress && !pProgress->Continue()){
@@ -184,16 +184,16 @@ void CCLDataPostprocessor::InterpolateLocation
 	, const CR3Vector &v1
 	, const CR3Point &p2
 	, const CR3Vector &v2
-	, std::vector<std::pair<double,CR3CaughtVector> > & result) const
+	, std::vector<std::pair<double,CR3AnchoredVector> > & result) const
 {
 	result.erase(result.begin(),result.end());
 	if(p1==p2 && v1==v2){
-		result.push_back(std::pair<double,CR3CaughtVector>(1.0,CR3CaughtVector(v2,p2)));	
+		result.push_back(std::pair<double,CR3AnchoredVector>(1.0,CR3AnchoredVector(v2,p2)));	
 		return;
 	}
 	double dInv = m_oSettings.InterpolationSteps(d_E(p1,p2),v1.UndirectedUnitVectorsAngle(v2));
 	if(dInv<=1.0){
-		result.push_back(std::pair<double,CR3CaughtVector>(1.0,CR3CaughtVector(v2,p2)));
+		result.push_back(std::pair<double,CR3AnchoredVector>(1.0,CR3AnchoredVector(v2,p2)));
 		return;
 	} 
 	//the axis turns at a constant rate from u1 towards u2 in the plane of both: u(a) = u1 cos a + w sin a,
@@ -208,9 +208,9 @@ void CCLDataPostprocessor::InterpolateLocation
 	for(double i=1.0;i<dInv-0.001; i++){
 		t = i/dInv;
 		CR3Vector u = u1*cos(t*dAngle) + w*sin(t*dAngle);
-		result.push_back(std::pair<double,CR3CaughtVector>(t,CR3CaughtVector(u,(p2*t)+(p1*(1.0-t)))));
+		result.push_back(std::pair<double,CR3AnchoredVector>(t,CR3AnchoredVector(u,(p2*t)+(p1*(1.0-t)))));
 	}
-	result.push_back(std::pair<double,CR3CaughtVector>(1.0,CR3CaughtVector(v2,p2)));
+	result.push_back(std::pair<double,CR3AnchoredVector>(1.0,CR3AnchoredVector(v2,p2)));
 }
 
 } // namespace kin5ax

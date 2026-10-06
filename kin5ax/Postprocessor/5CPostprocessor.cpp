@@ -211,8 +211,6 @@ tChainConfigurationVector C5CPostprocessor::SolveWithKnownAlpha1(const CR3Point 
 }
 tChainConfigurationVector C5CPostprocessor::SolveTheoretically(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,std::string &sLog, CSolveReport *pReport)
 {
-	CChainConfiguration oChainConfig(5);
-
 	CR3Vector r3vV0 =  m_m4x4InitialOrientationTransformation * r3vOrientation;
 	std::vector<CChainConfiguration> vRotations;
 	try{
@@ -266,12 +264,12 @@ tChainConfigurationVector C5CPostprocessor::SolveTheoretically(const CR3Point  r
 
 
 
-std::vector<tChainConfigurationVector> C5CPostprocessor::SolveSingularOrientation(const std::vector<CR3CaughtVector> &vInput, CChain &oChain,CMillingTool &oMillingTool,std::string &sLog)
+std::vector<tChainConfigurationVector> C5CPostprocessor::SolveSingularOrientation(const std::vector<CR3AnchoredVector> &vInput, CChain &oChain,CMillingTool &oMillingTool,std::string &sLog)
 {
 	return SolveSingularOrientation(vInput,oChain,&oMillingTool,sLog);
 }
 
-std::vector<tChainConfigurationVector> C5CPostprocessor::SolveSingularOrientation(const std::vector<CR3CaughtVector> &vInput, CChain &oChain,CMillingTool *pMillingTool,std::string &sLog)
+std::vector<tChainConfigurationVector> C5CPostprocessor::SolveSingularOrientation(const std::vector<CR3AnchoredVector> &vInput, CChain &oChain,CMillingTool *pMillingTool,std::string &sLog)
 {
 	CSolveReport oReport;
 	std::vector<tChainConfigurationVector> vResult;

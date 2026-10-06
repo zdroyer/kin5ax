@@ -3,7 +3,7 @@
 add_library(kin5ax STATIC
   3DGeometry/M4x4.cpp
   3DGeometry/R3Box.cpp
-  3DGeometry/R3CaughtVector.cpp
+  3DGeometry/R3AnchoredVector.cpp
   3DGeometry/R3Point.cpp
   3DGeometry/R3Vector.cpp
   3DGeometry/Rotation.cpp

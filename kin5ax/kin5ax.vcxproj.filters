@@ -36,7 +36,7 @@
     <ClCompile Include="3DGeometry\R3Box.cpp">
       <Filter>3DGeometry</Filter>
     </ClCompile>
-    <ClCompile Include="3DGeometry\R3CaughtVector.cpp">
+    <ClCompile Include="3DGeometry\R3AnchoredVector.cpp">
       <Filter>3DGeometry</Filter>
     </ClCompile>
     <ClCompile Include="3DGeometry\R3Point.cpp">
@@ -130,7 +130,7 @@
     <ClInclude Include="3DGeometry\R3Box.h">
       <Filter>3DGeometry</Filter>
     </ClInclude>
-    <ClInclude Include="3DGeometry\R3CaughtVector.h">
+    <ClInclude Include="3DGeometry\R3AnchoredVector.h">
       <Filter>3DGeometry</Filter>
     </ClInclude>
     <ClInclude Include="3DGeometry\R3Point.h">

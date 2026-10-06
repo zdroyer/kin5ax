@@ -47,8 +47,8 @@ public:
 	double m_dOrientationDifference;
 	double m_dMaxPositionError;
 	double m_dMaxOrientationErrorVectorLength;
-	CR3CaughtVector m_cvMaxPositionErrorInput;
-	CR3CaughtVector m_cvMaxOrientationErrorInput;
+	CR3AnchoredVector m_cvMaxPositionErrorInput;
+	CR3AnchoredVector m_cvMaxOrientationErrorInput;
 	CChainConfiguration m_oMaxPositionErrorSolution;
 	CChainConfiguration m_oMaxOrientationErrorSolution;
 	afx_msg void OnEnChangeEditOrientationDifference();

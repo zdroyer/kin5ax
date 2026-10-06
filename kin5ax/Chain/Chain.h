@@ -3,7 +3,7 @@
 #include "MillingTool.h"
 #include "ChainSegment.h"
 #include "ChainConfiguration.h"
-#include "R3CaughtVector.h"
+#include "R3AnchoredVector.h"
 #include "R3Box.h"
 
 
@@ -64,7 +64,7 @@ public:
 	CTransformation GetLastConstantRotation(size_t &nLastRotaryLinkIndex) const;
 	CTransformation GetActualToMaterialInvertedTransformation() const;
 	CTransformation GetActualToToolTransformation() const;
-	CR3CaughtVector GetActualToolPositionAndOrientation() const;
+	CR3AnchoredVector GetActualToolPositionAndOrientation() const;
 
 	void GetTranslationAxesAndOffset(
 		CR3Vector &r3vT1,
@@ -99,8 +99,8 @@ public:
 
 	double m_dToolMountToToolPoint;		//see GetToolMountToToolPointDistance
 
-	void ComputeAndSetError(CChainConfiguration &oConfig, const CR3CaughtVector &cv);
-	CR3CaughtVector m_toolPosition;
+	void ComputeAndSetError(CChainConfiguration &oConfig, const CR3AnchoredVector &cv);
+	CR3AnchoredVector m_toolPosition;
 
 	size_t GetNumberOfRevoluteLinks() const;
 	size_t GetNumberOfPrismaticLinks() const;

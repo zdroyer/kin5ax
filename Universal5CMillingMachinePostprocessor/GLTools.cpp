@@ -47,7 +47,7 @@ void CGLTools::DrawAxes(double d,double dAxesLength)
 
 }
 
-void CGLTools::Arrow(const CR3CaughtVector &cv, double r, double g, double b)
+void CGLTools::Arrow(const CR3AnchoredVector &cv, double r, double g, double b)
 {
 	Arrow(cv.m_p,cv.m_p+cv.m_v,r,g,b);
 }

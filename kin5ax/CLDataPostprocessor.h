@@ -28,10 +28,10 @@ public:
 	//the biggest errors of the returned solutions (-1.0: no solution at all) with their inputs
 	double m_dMaxPositionError;
 	CChainConfiguration m_oMaxPositionErrorSolution;
-	CR3CaughtVector m_cvMaxPositionErrorInput;
+	CR3AnchoredVector m_cvMaxPositionErrorInput;
 	double m_dMaxOrientationErrorVectorLength;
 	CChainConfiguration m_oMaxOrientationErrorSolution;
-	CR3CaughtVector m_cvMaxOrientationErrorInput;
+	CR3AnchoredVector m_cvMaxOrientationErrorInput;
 
 	//why every solution set handed to the CSimulationData is what it is: one status per set, in the
 	//order of the sets (a location of a singular section counts as SOLVED or SINGULAR_UNSOLVED)
@@ -82,7 +82,7 @@ public:
 		, const CR3Vector &v1
 		, const CR3Point &p2
 		, const CR3Vector &v2
-		, std::vector<std::pair<double,CR3CaughtVector> > & result) const;
+		, std::vector<std::pair<double,CR3AnchoredVector> > & result) const;
 protected:
 	CPostprocessorSettings m_oSettings;
 };

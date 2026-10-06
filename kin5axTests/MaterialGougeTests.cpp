@@ -92,7 +92,7 @@ TEST(MaterialGouge, TheSimulationCountsTheGouges)
 	std::mt19937 oGenerator(23);
 	CChainConfiguration oSet = RandomJointValues(oChain,oGenerator);
 	oChain.SetParameters(oSet);
-	CR3CaughtVector cv = oChain.GetActualToolPositionAndOrientation();
+	CR3AnchoredVector cv = oChain.GetActualToolPositionAndOrientation();
 	CMaterial oMaterial(0.4,0.4,0.4,0.004,cv.m_p.GetX()-0.2,cv.m_p.GetY()-0.2,cv.m_p.GetZ()-0.2);
 	CSimulationData oTrajectory(10);
 	tChainConfigurationVector v(1,oSet);
@@ -123,7 +123,7 @@ TEST(MaterialGouge, ABareToolInTheSameSceneDoesNotGouge)
 	std::mt19937 oGenerator(23);
 	CChainConfiguration oSet = RandomJointValues(oChain,oGenerator);
 	oChain.SetParameters(oSet);
-	CR3CaughtVector cv = oChain.GetActualToolPositionAndOrientation();
+	CR3AnchoredVector cv = oChain.GetActualToolPositionAndOrientation();
 	CMaterial oMaterial(0.4,0.4,0.4,0.004,cv.m_p.GetX()-0.2,cv.m_p.GetY()-0.2,cv.m_p.GetZ()-0.2);
 	CSimulationData oTrajectory(10);
 	tChainConfigurationVector v(1,oSet);

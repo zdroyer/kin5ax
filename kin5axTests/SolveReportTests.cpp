@@ -80,7 +80,7 @@ TEST_P(SolveReportChain, CountsAreConsistentOnRandomPoses)
 		oChain.SetParameters(oSet);
 		std::string sLog;
 		bool bCollides = oChain.HasCollision(oTool,sLog);
-		CR3CaughtVector cv = oChain.GetActualToolPositionAndOrientation();
+		CR3AnchoredVector cv = oChain.GetActualToolPositionAndOrientation();
 		CSolveReport oReport;
 		sLog = "";
 		tChainConfigurationVector v;
@@ -164,7 +164,7 @@ TEST_P(SolveReportChain, CollisionsOffNeedNoTool)
 	for(int s=0;s<50;s++){
 		CChainConfiguration oSet = RandomJointValues(oChain,oGenerator);
 		oChain.SetParameters(oSet);
-		CR3CaughtVector cv = oChain.GetActualToolPositionAndOrientation();
+		CR3AnchoredVector cv = oChain.GetActualToolPositionAndOrientation();
 		CSolveReport oReport;
 		std::string sLog;
 		tChainConfigurationVector v = oPostprocessor.Solve(cv.m_p,cv.m_v,oChain,(CMillingTool*)NULL,sLog,oReport);

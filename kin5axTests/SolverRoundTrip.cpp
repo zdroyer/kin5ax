@@ -45,7 +45,7 @@ CSolverRoundTripResult RunSolverRoundTrip(CChain &oChain, CMillingTool &oTool, s
 			continue;
 		}
 		oResult.m_nTargets++;
-		CR3CaughtVector cvTarget = oChain.GetActualToolPositionAndOrientation();
+		CR3AnchoredVector cvTarget = oChain.GetActualToolPositionAndOrientation();
 
 		sLog = "";
 		tChainConfigurationVector vSolutions = oPostprocessor.Solve(cvTarget.m_p,cvTarget.m_v,oChain,oTool,sLog);
@@ -59,7 +59,7 @@ CSolverRoundTripResult RunSolverRoundTrip(CChain &oChain, CMillingTool &oTool, s
 		bool bRecovered=false;
 		for(size_t k=0;k<vSolutions.size();k++){
 			oChain.SetParameters(vSolutions[k]);
-			CR3CaughtVector cv = oChain.GetActualToolPositionAndOrientation();
+			CR3AnchoredVector cv = oChain.GetActualToolPositionAndOrientation();
 			double dPosition = d_E(cv.m_p,cvTarget.m_p);
 			double dOrientation = (cv.m_v-cvTarget.m_v).GetLength();
 			oResult.m_dWorstPositionError = std::max(oResult.m_dWorstPositionError,dPosition);

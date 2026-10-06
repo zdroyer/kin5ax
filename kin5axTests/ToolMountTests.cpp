@@ -55,9 +55,9 @@ TEST(ToolMount, TheToolPointMovesDownTheToolAxis)
 	for(int s=0;s<20;s++){
 		oChain.SetParameters(RandomJointValues(oChain,oGenerator));
 		oChain.SetToolMountToToolPointDistance(0.0);
-		CR3CaughtVector cvMount = oChain.GetActualToolPositionAndOrientation();
+		CR3AnchoredVector cvMount = oChain.GetActualToolPositionAndOrientation();
 		oChain.SetToolMountToToolPointDistance(dASSEMBLY_DISTANCE);
-		CR3CaughtVector cvTool = oChain.GetActualToolPositionAndOrientation();
+		CR3AnchoredVector cvTool = oChain.GetActualToolPositionAndOrientation();
 		//the axis points from the tip towards the spindle, so the tool point is below the mount
 		CR3Point pExpected = cvMount.m_p - (cvMount.m_v.GetUnitVector()*dASSEMBLY_DISTANCE);
 		EXPECT_NEAR(0.0,d_E(pExpected,cvTool.m_p),1E-12)<<"sample "<<s;
@@ -92,7 +92,7 @@ TEST_P(ToolMountChain, TheSolverSolvesForTheToolPoint)
 	for(int s=0;s<50;s++){
 		CChainConfiguration oSet = RandomJointValues(oChain,oGenerator);
 		oChain.SetParameters(oSet);
-		CR3CaughtVector cvTarget = oChain.GetActualToolPositionAndOrientation();
+		CR3AnchoredVector cvTarget = oChain.GetActualToolPositionAndOrientation();
 		std::string sLog;
 		CSolveReport oReport;
 		tChainConfigurationVector v = oPostprocessor.Solve(cvTarget.m_p,cvTarget.m_v,oChain,(CMillingTool*)NULL,sLog,oReport);
@@ -102,7 +102,7 @@ TEST_P(ToolMountChain, TheSolverSolvesForTheToolPoint)
 		bool bFound = false;
 		for(size_t k=0;k<v.size();k++){
 			oChain.SetParameters(v[k]);
-			CR3CaughtVector cv = oChain.GetActualToolPositionAndOrientation();
+			CR3AnchoredVector cv = oChain.GetActualToolPositionAndOrientation();
 			EXPECT_NEAR(0.0,d_E(cv.m_p,cvTarget.m_p),1E-9)<<"solution "<<k<<" of sample "<<s;
 			EXPECT_NEAR(0.0,(cv.m_v-cvTarget.m_v).GetLength(),1E-9)<<"solution "<<k<<" of sample "<<s;
 		}
