@@ -48,7 +48,7 @@ fast, exact, machine-aware judge of the toolpath. That judge is this library. Se
 | directory | what | platform |
 |---|---|---|
 | [`kin5ax/`](kin5ax/) | the library: C++17, standard library only (pugixml and nlohmann/json vendored), no Windows dependency | Windows (MSVC) and Linux (GCC) built and tested; macOS untried |
-| [`kin5axTests/`](kin5axTests/) | GoogleTest suite, 774 tests, with 11 machine models under `TestChains/` | same |
+| [`kin5axTests/`](kin5axTests/) | GoogleTest suite, 779 tests, with 11 machine models under `TestChains/` | same |
 | [`kin5axc/`](kin5axc/) | the C interface (`kin5axc`, one header `kin5ax.h`): a shared library that exports nothing but its `k5_*` functions | same |
 | [`kin5axcTests/`](kin5axcTests/) | the tests of that interface, linked against the shared library alone | same |
 | [`Universal5CMillingMachinePostprocessor/`](Universal5CMillingMachinePostprocessor/) | MFC application: kinematic chain editor, 3D viewer, single-location solver with a step-by-step log, batch postprocessing of CL files, a rudimentary voxel simulation that checks the geometry of the postprocessor on a hemisphere sized for the machine | Windows |
@@ -91,8 +91,9 @@ GoogleTest sub-build fails on a mounted Windows drive.
 shared library with one header, [`kin5axc/include/kin5ax.h`](kin5axc/include/kin5ax.h): handles instead
 of objects, a `k5_status` and a `k5_last_error()` instead of an exception, and plain doubles instead of
 the geometry classes, so a host can be built with any compiler and any runtime. Version 1 covers the
-kinematics and the batch solving of a cutter-location file; the simulation, the `.fcm` bridge and the
-material model stay inside. Its own tests link the shared library and nothing else, one of them compiles
+kinematics and the batch solving of a tool path, which may come out of a cutter-location file or be
+handed over as two arrays of doubles - an agent or a CAM system that holds a path in memory has nothing
+to write out; the simulation, the `.fcm` bridge and the material model stay inside. Its own tests link the shared library and nothing else, one of them compiles
 the header with the C compiler, and on Linux a `ctest` case checks that the shared object exports its 28
 `k5_*` functions and not one symbol more.
 
@@ -172,8 +173,7 @@ machine-specific words are not written to the G-code.
 
 1. macOS build; Linux is built and tested on every push (GitHub Actions, self-hosted runner).
 2. A `kin5ax-post` command-line tool with a JSON machinability report, on top of the C interface
-   (version 1 of which is in [`kin5axc/`](kin5axc/); cutter locations handed over in memory rather than
-   in a file are the next thing it needs).
+   (version 1 of which is in [`kin5axc/`](kin5axc/)).
 3. Rollover-aware axis model (#25) and the singular-section feasibility check (#21).
 4. Python bindings for use from FreeCAD and from agent tools.
 5. **Machinability-in-the-loop demo**: an agent generates a part and a toolpath in FreeCAD,

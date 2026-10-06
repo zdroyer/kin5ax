@@ -8,6 +8,7 @@
 #include "5CPostprocessor.h"
 #include "ArgsMyException.h"
 #include "double_tools.h"
+#include "string_tools.h"
 
 #include <string>
 #include <cstring>
@@ -176,6 +177,31 @@ CTrajectoryStart StartOf(const CChain &oChain, const k5_settings &o)
 		o.start_count_from_tool ? CHAIN_PART_TOOL : CHAIN_PART_MATERIAL_HOLDER,nCriterion);
 	oStart.m_nRandomSeed = o.start_random_seed;
 	return oStart;
+}
+
+//What the two batch entry points share, once their own arguments are in order: the checks of the
+//chain, the tool and the settings, the run, and the trajectory through what came out of it.
+k5_status RunPostprocessor(k5_chain_t *pChain, k5_tool_t *pTool, const k5_settings &oCSettings
+	,CCutterLocationData &oLocations, k5_path *out)
+{
+	const k5_status nFive = NeedFiveAxes(pChain->m_oChain);
+	if(nFive!=K5_OK)
+		return nFive;
+	TRAJECTORY_START_CRITERION nCriterion = TRAJECTORY_START_SHORTEST_PATH;
+	if(!FromCCriterion(oCSettings.start_criterion,nCriterion))
+		return Fail(K5_ERROR_ARGUMENT,"start_criterion is not one of k5_start_criterion");
+	CMillingTool *pMillingTool = (pTool && pTool->m_pTool) ? pTool->m_pTool.get() : NULL;
+	if(!pMillingTool && oCSettings.check_collisions)
+		return Fail(K5_ERROR_ARGUMENT,"the collision check needs a tool");
+
+	const CPostprocessorSettings oSettings = FromCSettings(oCSettings);
+	std::unique_ptr<k5_path_t> pHandle(new k5_path_t());
+	CCLDataPostprocessor oPostprocessor(oSettings);
+	pHandle->m_oResult = oPostprocessor.Process(pChain->m_oChain,pMillingTool,oLocations
+		,pHandle->m_oData,NULL,0,NULL);
+	pHandle->m_oData.FindShortestPath(oSettings,NULL,StartOf(pChain->m_oChain,oCSettings));
+	*out = pHandle.release();
+	return K5_OK;
 }
 
 } // namespace
@@ -460,24 +486,33 @@ k5_status k5_postprocess_file(k5_chain chain, k5_tool tool, const k5_settings *s
 	K5_NEED(chain && settings && cl_file_path && out
 		,"k5_postprocess_file needs a chain, settings, a file name and somewhere to put the handle")
 	*out = NULL;
-	const k5_status nFive = NeedFiveAxes(chain->m_oChain);
-	if(nFive!=K5_OK)
-		return nFive;
-	TRAJECTORY_START_CRITERION nCriterion = TRAJECTORY_START_SHORTEST_PATH;
-	K5_NEED(FromCCriterion(settings->start_criterion,nCriterion),"start_criterion is not one of k5_start_criterion")
-	CMillingTool *pTool = (tool && tool->m_pTool) ? tool->m_pTool.get() : NULL;
-	K5_NEED(pTool || !settings->check_collisions,"the collision check needs a tool")
+	CCutterLocationData oLocations;
+	oLocations.LoadFile(cl_file_path,cl_file_path);
+	return RunPostprocessor(chain,tool,*settings,oLocations,out);
+	K5_END(K5_ERROR_SOLVER)
+}
 
-	const CPostprocessorSettings oSettings = FromCSettings(*settings);
-	CCutterLocationData oData;
-	oData.LoadFile(cl_file_path,cl_file_path);
-
-	std::unique_ptr<k5_path_t> pHandle(new k5_path_t());
-	CCLDataPostprocessor oPostprocessor(oSettings);
-	pHandle->m_oResult = oPostprocessor.Process(chain->m_oChain,pTool,oData,pHandle->m_oData,NULL,0,NULL);
-	pHandle->m_oData.FindShortestPath(oSettings,NULL,StartOf(chain->m_oChain,*settings));
-	*out = pHandle.release();
-	return K5_OK;
+k5_status k5_postprocess_locations(k5_chain chain, k5_tool tool, const k5_settings *settings,
+	const double *positions, const double *axes, size_t count, k5_path *out)
+{
+	K5_BEGIN
+	K5_NEED(chain && settings && out
+		,"k5_postprocess_locations needs a chain, settings and somewhere to put the handle")
+	K5_NEED(!count || (positions && axes),"k5_postprocess_locations needs the locations it is to solve")
+	*out = NULL;
+	std::vector<CR3AnchoredVector> vLocations;
+	vLocations.reserve(count);
+	for(size_t i=0;i<count;i++){
+		const CR3Vector r3vAxis(axes[3*i],axes[3*i+1],axes[3*i+2]);
+		if(r3vAxis.IsZero())
+			return Fail(K5_ERROR_ARGUMENT,"the tool axis of location "+size_to_string(i+1)
+				+" has no length, so it is no direction");
+		vLocations.push_back(CR3AnchoredVector(r3vAxis
+			,CR3Point(positions[3*i],positions[3*i+1],positions[3*i+2])));
+	}
+	CCutterLocationData oLocations;
+	oLocations.SetLocations(vLocations,"a tool path handed over");
+	return RunPostprocessor(chain,tool,*settings,oLocations,out);
 	K5_END(K5_ERROR_SOLVER)
 }
 

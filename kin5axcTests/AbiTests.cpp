@@ -88,6 +88,12 @@ bool SameConfiguration(k5_chain chain, const double *a, const double *b)
 	return true;
 }
 
+//what a cutter location file can hold of a number: six decimals
+double SixDecimals(double d)
+{
+	return floor(d*1E6+(d<0.0 ? -0.5 : 0.5))/1E6;
+}
+
 //writes three cutter locations dStep apart, all with the same tool axis
 void WriteCLFile(const std::string &sPath, const double *p, const double *v, double dStep, size_t nCount)
 {
@@ -507,4 +513,104 @@ TEST(Abi, ANullArgumentIsAnErrorEverywhere)
 	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_path_last_configuration(NULL,oLocation.q));
 	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_path_write_gcode(NULL,&oAxes,"nowhere.nc"));
 	EXPECT_STRNE("",k5_last_error());
+}
+
+// ---------------------------------------------------------------- a path handed over, not read
+
+TEST(Abi, APathInMemoryGivesWhatTheSamePathInAFileGives)
+{
+	k5_chain chain = OpenChain();
+	k5_tool tool = CreateTool();
+	k5_settings oSettings;
+	k5_settings_default(&oSettings);
+
+	//Three locations the machine can reach, as a host would have them: two plain arrays. A cutter
+	//location file carries six decimals, so the numbers are rounded to that before either run sees
+	//them - otherwise the two runs are not given the same path and there is nothing to compare.
+	const std::vector<double> q = QInsideLimits(chain);
+	double p[3] = {0,0,0}, v[3] = {0,0,0};
+	ASSERT_EQ(K5_OK,k5_chain_tool_point(chain,tool,&q[0],p,v));
+	for(int k=0;k<3;k++){
+		p[k] = SixDecimals(p[k]);
+		v[k] = SixDecimals(v[k]);
+	}
+	const size_t nCount = 3;
+	const double dStep = 0.025;
+	std::vector<double> vPositions, vAxes;
+	for(size_t i=0;i<nCount;i++){
+		vPositions.push_back(p[0]+(double)i*dStep);
+		vPositions.push_back(p[1]);
+		vPositions.push_back(p[2]);
+		vAxes.push_back(v[0]);
+		vAxes.push_back(v[1]);
+		vAxes.push_back(v[2]);
+	}
+	//and the same three in a file
+	const std::string sCL = TempPath("kin5axcTests_inmemory.cld");
+	WriteCLFile(sCL,p,v,dStep,nCount);
+
+	k5_path pathFile = NULL, pathMemory = NULL;
+	ASSERT_EQ(K5_OK,k5_postprocess_file(chain,tool,&oSettings,sCL.c_str(),&pathFile))<<k5_last_error();
+	ASSERT_EQ(K5_OK,k5_postprocess_locations(chain,tool,&oSettings,&vPositions[0],&vAxes[0],nCount,&pathMemory))
+		<<k5_last_error();
+
+	size_t nFromFile = 0, nFromMemory = 0;
+	ASSERT_EQ(K5_OK,k5_path_size(pathFile,&nFromFile));
+	ASSERT_EQ(K5_OK,k5_path_size(pathMemory,&nFromMemory));
+	EXPECT_EQ((size_t)7,nFromFile)<<"the first location, then two steps and a location, twice";
+	ASSERT_EQ(nFromFile,nFromMemory);
+	for(size_t i=0;i<nFromFile;i++){
+		k5_location a, b;
+		ASSERT_EQ(K5_OK,k5_path_location(pathFile,i,&a));
+		ASSERT_EQ(K5_OK,k5_path_location(pathMemory,i,&b));
+		EXPECT_EQ(a.status,b.status)<<"record "<<i;
+		EXPECT_EQ(a.origin,b.origin)<<"record "<<i;
+		EXPECT_EQ(a.file_location,b.file_location)<<"record "<<i;
+		EXPECT_EQ(a.file_line,b.file_line)<<"record "<<i<<": a location handed over is numbered the way"
+			" the line of a file is";
+		EXPECT_EQ(a.has_solution,b.has_solution)<<"record "<<i;
+		if(a.has_solution){
+			for(size_t k=0;k<(size_t)K5_AXES;k++)
+				EXPECT_NEAR(a.q[k],b.q[k],1E-12)<<"record "<<i<<", axis "<<k;
+		}
+	}
+	remove(sCL.c_str());
+	k5_path_free(pathFile);
+	k5_path_free(pathMemory);
+	k5_tool_free(tool);
+	k5_chain_free(chain);
+}
+
+TEST(Abi, APathHandedOverIsCheckedBeforeItIsSolved)
+{
+	k5_chain chain = OpenChain();
+	k5_settings oSettings;
+	k5_settings_default(&oSettings);
+	oSettings.check_collisions = 0;				//no tool needed, so the arrays are the only subject
+	const double vPositions[6] = {0.1,0.2,0.03, 0.12,0.2,0.03};
+	const double vGoodAxes[6] = {0.3,0.4,0.866025, 0.3,0.4,0.866025};
+	const double vZeroAxis[6] = {0.3,0.4,0.866025, 0.0,0.0,0.0};
+	k5_path path = (k5_path)0x1;
+
+	//an axis of no length is no direction, and the message says which location it was
+	EXPECT_EQ(K5_ERROR_ARGUMENT
+		,k5_postprocess_locations(chain,NULL,&oSettings,vPositions,vZeroAxis,2,&path));
+	EXPECT_NE(std::string::npos,std::string(k5_last_error()).find("location 2"))<<k5_last_error();
+	EXPECT_TRUE(path==NULL);
+
+	//no locations at all is a path of none, not a failure
+	ASSERT_EQ(K5_OK,k5_postprocess_locations(chain,NULL,&oSettings,NULL,NULL,0,&path))<<k5_last_error();
+	size_t nSize = 1;
+	ASSERT_EQ(K5_OK,k5_path_size(path,&nSize));
+	EXPECT_EQ((size_t)0,nSize);
+	double qLast[K5_AXES] = {0,0,0,0,0};
+	EXPECT_EQ(K5_ERROR_SOLVER,k5_path_last_configuration(path,qLast))<<"an empty path leaves the machine nowhere";
+	k5_path_free(path);
+
+	//the locations themselves cannot be missing when there are some to solve
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_postprocess_locations(chain,NULL,&oSettings,NULL,vGoodAxes,2,&path));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_postprocess_locations(chain,NULL,&oSettings,vPositions,NULL,2,&path));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_postprocess_locations(NULL,NULL,&oSettings,vPositions,vGoodAxes,2,&path));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_postprocess_locations(chain,NULL,NULL,vPositions,vGoodAxes,2,&path));
+	k5_chain_free(chain);
 }

@@ -228,6 +228,18 @@ K5_API k5_status k5_solve_location(k5_chain chain, k5_tool tool, const k5_settin
  * tool may be null when the settings do not check collisions. */
 K5_API k5_status k5_postprocess_file(k5_chain chain, k5_tool tool, const k5_settings *settings,
 	const char *cl_file_path, k5_path *out);
+
+/* The same for a tool path the host has in memory and no file to put it in - an agent that generates
+ * one, a CAM system that holds it, a path that was filtered: count locations, their programmed points
+ * in positions[3*count] and their tool axes in axes[3*count], both in the frame of the material. The
+ * axes need not be unit vectors, but an axis of length zero is no direction and is refused with the
+ * number of the location. count may be 0, and then the path holds nothing.
+ *
+ * Everything else is as k5_postprocess_file, and the records of the result count the locations the way
+ * the lines of a file are counted: the first location is 1. */
+K5_API k5_status k5_postprocess_locations(k5_chain chain, k5_tool tool, const k5_settings *settings,
+	const double *positions, const double *axes, size_t count, k5_path *out);
+
 K5_API void k5_path_free(k5_path path);
 
 /* How many locations the path holds: those of the file and those invented between them. */
