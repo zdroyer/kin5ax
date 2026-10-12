@@ -55,6 +55,13 @@ jobs:
           GTEST_OUTPUT: xml:${{ github.workspace }}/test-results/
 
       # The log is long; this is the glance: the total, what failed, and a test count and time per suite.
+      # The FreeCAD addon is Python: its geometry has no FreeCAD in it and runs anywhere, and the
+      # tests that need FreeCAD skip themselves on a runner that has none.
+      - name: The tests of the FreeCAD addon
+        if: matrix.build_type == 'Release'
+        shell: bash
+        run: python3 kin5axcam/run_tests.py
+
       - name: Summary of the test run
         if: always()
         shell: bash
