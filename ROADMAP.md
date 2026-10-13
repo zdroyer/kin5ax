@@ -4,14 +4,14 @@ Where this is going: a part drawn in FreeCAD, cut by a toolpath generated there,
 against a real five-axis machine, and posted as a program that machine will run. Five strands, of
 which two are finished, one is half built and two have not started.
 
-Updated 2026-10-14.
+Updated 2026-10-15.
 
 | | strand | state |
 |---|---|---|
 | 1 | The kinematics: solver, machine models, collisions | **done**, and in a C ABI |
 | 2 | A five-axis toolpath generator in FreeCAD | **done** for a single face |
 | 3 | The postprocessor: TCP, direct axes, TWP, Fanuc and Heidenhain | **two thirds**: Fanuc with TCP, and direct axes from the solver |
-| 4 | Simulating the machine from a `.kc.json` model | not started |
+| 4 | Simulating the machine from a `.kc.json` model | **done**: the machine in the document, a player over the solved job |
 | 5 | Simulating the cutting | library has it, FreeCAD side not started |
 
 ## What is done
@@ -67,21 +67,25 @@ built `kin5axc.dll` in `lib/` is still to do.
   library's own rollover model (#25) would let the trajectory be scored that way too
 - a report of the solve in the task panel of the operation, not only in the report view at post time
 
-### 3. The machine on the screen
+### 3. Done: the machine on the screen
 
-Build the machine from the `.kc.json` in a FreeCAD document — a part per link, placed by
-`k5_chain_frames` — and step it through a solved path. The library already answers every question
-this needs; the work is FreeCAD-side: making the shapes (the file carries collision boxes and
-cylinders, not meshes), a tree of placements, and something to drive the frame number.
+`kin5axcam/machine.py`, `simulation.py`, `machine_gui.py`, 2026-10-15. A part per segment with the
+boxes of the file and an arm to the next, the tool mount and the material as parts, the job's tool
+and model and stock in them, the trajectory in properties, a player with slider, play, step and the
+report. Two calls were added to the ABI for it: `k5_chain_segment_boxes` and
+`k5_chain_set_configuration`. Still to do here: real bodies per segment (a segment part takes
+them by hand already; the file format does not reference them), and the collision verdict of the
+solver shown as a marker in the picture, next to the unreachable ones.
 
-This is also the honest fix for what the stock simulator cannot do: FreeCAD places the tool with a
-fixed upright rotation, so a leaning path is drawn as if the tool stood up.
-
-### 4. Cutting simulation
+### 4. Cutting simulation - next
 
 The voxel material and the cutting are in the library already (`kin5ax/Simulation/`), driven by the
-MFC application. Bringing them to FreeCAD means new ABI calls — a material handle, a step, a mesh or
-a volume out — and is the largest of these. Worth it only after 3 can show the machine moving.
+MFC application. Bringing them to FreeCAD means new ABI calls — a material from the stock's box
+and a voxel size, a simulation over a solved path, step and run, the surface voxels out, the removed
+volume, the gouges — and showing the surface voxels as a point cloud under the material part,
+refreshed per step. Decided 2026-10-14: point cloud first, a mesh of cube faces later, marching
+cubes in the library after that. The library cuts once per location with no sweep between, so the
+interpolation has to be as dense as the voxel size.
 
 ### 5. The library's own list
 
