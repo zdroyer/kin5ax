@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<package format="1" xmlns="https://wiki.freecad.org/Package_Metadata">
+  <name>kin5axcam</name>
+  <description>
+    A 3D Surface (5axis) operation for the CAM workbench: a zigzag over the parameter space of one
+    face, cut with any shape of tool. The path carries the tip of the tool, worked out from the
+    roundness at the end of it. The tool stands up, or points along the surface normal leaned over
+    by two angles, and then every cutting move carries the axis of the tool as I, J and K - the
+    vector output the kin5ax postprocessor solves for.
+  </description>
+  <version>0.1.0</version>
+  <date>2026-10-12</date>
+  <maintainer email="zdroyer@gmail.com">Przemysław Zdroik</maintainer>
+  <license file="../LICENSE">MIT</license>
+  <url type="repository" branch="master">https://github.com/zdroyer/kin5ax</url>
+  <url type="readme">https://github.com/zdroyer/kin5ax/blob/master/kin5axcam/README.md</url>
+  <freecadmin>1.0</freecadmin>
+  <content>
+    <workbench>
+      <classname>kin5axcam</classname>
+      <subdirectory>./</subdirectory>
+      <description>
+        Adds the command CAM_Surface5Axis to the CAM workbench. It is not a workbench of its own.
+      </description>
+      <icon>Resources/icons/Surface5Axis.svg</icon>
+    </workbench>
+  </content>
+</package>

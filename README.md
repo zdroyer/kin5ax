@@ -171,16 +171,24 @@ machine-specific words are not written to the G-code.
 
 ## Roadmap
 
-1. macOS build; Linux is built and tested on every push (GitHub Actions, self-hosted runner).
-2. A `kin5ax-post` command-line tool with a JSON machinability report, on top of the C interface
-   (version 1 of which is in [`kin5axc/`](kin5axc/)).
-3. Rollover-aware axis model (#25) and the singular-section feasibility check (#21).
-4. Python bindings for use from FreeCAD and from agent tools.
+[`ROADMAP.md`](ROADMAP.md) has the whole of it, with what is done and what each step is waiting on.
+The short form:
+
+1. **Python bindings** to the C interface ([`kin5axc/`](kin5axc/)), which is what everything below
+   needs. The five-axis operation for FreeCAD's CAM workbench is built already
+   ([`kin5axcam/`](kin5axcam/)) and writes the tool axis as `I J K`; what it cannot do without the
+   bindings is ask a machine whether the path is reachable.
+2. The postprocessor proper: direct axes (`X Y Z A C`) from the solver, TCP for Fanuc and
+   Heidenhain, then TWP. Vector output with Fanuc TCP exists
+   ([`kin5axcam/post/`](kin5axcam/post/)).
+3. The machine from a `.kc.json` drawn and moved in FreeCAD, then the cutting simulated there.
+4. Rollover-aware axis model (#25) and the singular-section feasibility check (#21); macOS build;
+   a `kin5ax-post` command-line tool with a JSON machinability report.
 5. **Machinability-in-the-loop demo**: an agent generates a part and a toolpath in FreeCAD,
    kin5ax judges it on a real machine, the agent revises. Separate repository, linked here when
    it exists.
 
-Contributions on any of these are welcome; open an issue first for 3 and 4.
+Contributions on any of these are welcome; open an issue first for 1 and 4.
 
 ## Licence
 

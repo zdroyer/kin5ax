@@ -28,3 +28,7 @@ build-*/
 
 # the log of a local ctest run, as the CI workflow writes it
 ctest-*.log
+
+# Python: the FreeCAD addon in kin5axcam/
+__pycache__/
+*.py[cod]
