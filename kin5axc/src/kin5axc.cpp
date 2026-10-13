@@ -410,6 +410,160 @@ k5_status k5_chain_tool_point(k5_chain chain, k5_tool tool, const double *q,
 	K5_END(K5_ERROR_CHAIN)
 }
 
+// ---------------------------------------------------------------- the cutting simulation
+
+k5_status k5_material_create(double x_size, double y_size, double z_size, double voxel_size,
+	double x_start, double y_start, double z_start, k5_material *out)
+{
+	K5_BEGIN
+	K5_NEED(out,"k5_material_create needs somewhere to put the handle")
+	K5_NEED(x_size>0.0 && y_size>0.0 && z_size>0.0,"a block of material has three sizes greater than zero")
+	K5_NEED(voxel_size>0.0,"the side of a voxel is greater than zero")
+	const double dVoxels = (x_size/voxel_size+1.0)*(y_size/voxel_size+1.0)*(z_size/voxel_size+1.0);
+	K5_NEED(dVoxels<2.0E9,"that many voxels is more than a block can hold: make the voxel larger")
+	std::unique_ptr<k5_material_t> p(new k5_material_t());
+	p->m_oMaterial.GenerateBox(x_size,y_size,z_size,voxel_size,x_start,y_start,z_start);
+	*out = p.release();
+	return K5_OK;
+	K5_END(K5_ERROR_ARGUMENT)
+}
+
+void k5_material_free(k5_material material)
+{
+	delete material;
+}
+
+k5_status k5_material_reset(k5_material material)
+{
+	K5_BEGIN
+	K5_NEED(material,"k5_material_reset needs a material")
+	material->m_oMaterial.ResetMaterial();
+	return K5_OK;
+	K5_END(K5_ERROR_UNKNOWN)
+}
+
+k5_status k5_material_dimensions(k5_material material, size_t *nx, size_t *ny, size_t *nz)
+{
+	K5_BEGIN
+	K5_NEED(material,"k5_material_dimensions needs a material")
+	size_t x=0, y=0, z=0;
+	material->m_oMaterial.GetDimensions(x,y,z);
+	if(nx) *nx = x;
+	if(ny) *ny = y;
+	if(nz) *nz = z;
+	return K5_OK;
+	K5_END(K5_ERROR_UNKNOWN)
+}
+
+k5_status k5_material_volumes(k5_material material, double *total, double *removed)
+{
+	K5_BEGIN
+	K5_NEED(material,"k5_material_volumes needs a material")
+	if(total) *total = material->m_oMaterial.GetTotalVolume();
+	if(removed) *removed = material->m_oMaterial.GetRemovedVolume();
+	return K5_OK;
+	K5_END(K5_ERROR_UNKNOWN)
+}
+
+k5_status k5_material_surface(k5_material material, double *out, size_t capacity_in_doubles,
+	size_t *count_out)
+{
+	K5_BEGIN
+	K5_NEED(material && count_out,"k5_material_surface needs a material and somewhere to put the count")
+	const std::vector<CR3Point> &vSurface = material->m_oMaterial.GetSurfaceVoxels();
+	*count_out = vSurface.size();
+	if(!out)
+		return K5_OK;				//the count was the question
+	if(capacity_in_doubles<vSurface.size()*3)
+		return Fail(K5_ERROR_BUFFER_TOO_SMALL,"3 doubles are needed for every voxel of the surface");
+	size_t n = 0;
+	for(size_t i=0;i<vSurface.size();i++){
+		out[n++] = vSurface[i].GetX();
+		out[n++] = vSurface[i].GetY();
+		out[n++] = vSurface[i].GetZ();
+	}
+	return K5_OK;
+	K5_END(K5_ERROR_UNKNOWN)
+}
+
+k5_status k5_simulation_create(k5_chain chain, k5_tool tool, k5_path path, k5_material material,
+	k5_simulation *out)
+{
+	K5_BEGIN
+	K5_NEED(chain && tool && path && material && out,
+		"k5_simulation_create needs a chain, a tool, a path, a material and somewhere to put the handle")
+	K5_NEED(tool->m_pTool,"the tool handle holds no tool")
+	const k5_status nFive = NeedFiveAxes(chain->m_oChain);
+	if(nFive!=K5_OK)
+		return nFive;
+	chain->m_oChain.SetToolAssembly(*tool->m_pTool);
+	*out = new k5_simulation_t(chain,tool,path,material);
+	return K5_OK;
+	K5_END(K5_ERROR_CHAIN)
+}
+
+void k5_simulation_free(k5_simulation simulation)
+{
+	delete simulation;
+}
+
+k5_status k5_simulation_reset(k5_simulation simulation)
+{
+	K5_BEGIN
+	K5_NEED(simulation,"k5_simulation_reset needs a simulation")
+	simulation->m_oSimulation.Reset();
+	return K5_OK;
+	K5_END(K5_ERROR_UNKNOWN)
+}
+
+k5_status k5_simulation_step(k5_simulation simulation, int *stepped)
+{
+	K5_BEGIN
+	K5_NEED(simulation,"k5_simulation_step needs a simulation")
+	const bool b = simulation->m_oSimulation.Step();
+	if(stepped) *stepped = b ? 1 : 0;
+	return K5_OK;
+	K5_END(K5_ERROR_SOLVER)
+}
+
+k5_status k5_simulation_run(k5_simulation simulation)
+{
+	K5_BEGIN
+	K5_NEED(simulation,"k5_simulation_run needs a simulation")
+	simulation->m_oSimulation.Run(NULL);
+	return K5_OK;
+	K5_END(K5_ERROR_SOLVER)
+}
+
+k5_status k5_simulation_progress(k5_simulation simulation, size_t *step_index, size_t *step_count,
+	int *finished)
+{
+	K5_BEGIN
+	K5_NEED(simulation,"k5_simulation_progress needs a simulation")
+	if(step_index) *step_index = simulation->m_oSimulation.GetStepIndex();
+	if(step_count) *step_count = simulation->m_oSimulation.GetStepCount();
+	if(finished) *finished = simulation->m_oSimulation.IsFinished() ? 1 : 0;
+	return K5_OK;
+	K5_END(K5_ERROR_UNKNOWN)
+}
+
+k5_status k5_simulation_gouges(k5_simulation simulation, size_t *count, size_t *first_step,
+	double *first_point)
+{
+	K5_BEGIN
+	K5_NEED(simulation && count,"k5_simulation_gouges needs a simulation and somewhere to put the count")
+	*count = simulation->m_oSimulation.GetGougeCount();
+	if(first_step) *first_step = simulation->m_oSimulation.GetFirstGougeStep();
+	if(first_point){
+		const CR3Point &p = simulation->m_oSimulation.GetFirstGougePoint();
+		first_point[0] = p.GetX();
+		first_point[1] = p.GetY();
+		first_point[2] = p.GetZ();
+	}
+	return K5_OK;
+	K5_END(K5_ERROR_UNKNOWN)
+}
+
 k5_status k5_chain_default_gcode_axes(k5_chain chain, k5_gcode_axes *out)
 {
 	K5_BEGIN

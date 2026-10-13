@@ -7,6 +7,8 @@
 #include "MillingTool.h"
 #include "CLDataPostprocessor.h"
 #include "SimulationData.h"
+#include "Simulation/Material.h"
+#include "Simulation/MaterialSimulation.h"
 #include <memory>
 
 //A machine. The solver writes the joint values of the chain while it works, which is why a handle
@@ -28,4 +30,18 @@ struct k5_path_t
 {
 	kin5ax::CSimulationData m_oData;
 	kin5ax::CCLDataPostprocessingResult m_oResult;
+};
+
+//A block of material, in the frame of the material of the chain.
+struct k5_material_t
+{
+	kin5ax::CMaterial m_oMaterial;
+};
+
+//A cutting simulation over the four it was made of, which the host keeps alive for as long as it lives.
+struct k5_simulation_t
+{
+	k5_simulation_t(k5_chain_t *chain, k5_tool_t *tool, k5_path_t *path, k5_material_t *material)
+		: m_oSimulation(chain->m_oChain,*tool->m_pTool,path->m_oData,material->m_oMaterial) {}
+	kin5ax::CMaterialSimulation m_oSimulation;
 };

@@ -298,6 +298,152 @@ TEST(Abi, TheConfigurationCanBeSetAndTheFramesFollow)
 	k5_chain_free(chain);
 }
 
+// ---------------------------------------------------------------- the cutting simulation
+
+TEST(Abi, ABlockOfMaterialAndWhatIsLeftOfIt)
+{
+	k5_material material = NULL;
+	//a block of 0.1 x 0.1 x 0.05 in voxels of 0.005: 21 x 21 x 11 of them, more or less
+	ASSERT_EQ(K5_OK,k5_material_create(0.1,0.1,0.05,0.005,-0.05,-0.05,0.0,&material))<<k5_last_error();
+	size_t nx=0, ny=0, nz=0;
+	ASSERT_EQ(K5_OK,k5_material_dimensions(material,&nx,&ny,&nz));
+	EXPECT_GE(nx,(size_t)20);
+	EXPECT_GE(nz,(size_t)10);
+	double dTotal=0.0, dRemoved=1.0;
+	ASSERT_EQ(K5_OK,k5_material_volumes(material,&dTotal,&dRemoved));
+	EXPECT_GT(dTotal,0.0);
+	EXPECT_EQ(0.0,dRemoved)<<"nothing is cut yet";
+	//the surface of a whole block is its six faces: every voxel on the outside, none inside
+	size_t nSurface = 0;
+	ASSERT_EQ(K5_OK,k5_material_surface(material,NULL,0,&nSurface));
+	EXPECT_GT(nSurface,(size_t)0);
+	EXPECT_LT(nSurface,nx*ny*nz)<<"the inside is not surface";
+	std::vector<double> v(3*nSurface,0.0);
+	size_t nAgain = 0;
+	ASSERT_EQ(K5_OK,k5_material_surface(material,&v[0],v.size(),&nAgain));
+	EXPECT_EQ(nSurface,nAgain);
+	for(size_t i=0;i<nSurface;i++){
+		EXPECT_GE(v[3*i],-0.05-1E-9);
+		EXPECT_LE(v[3*i],0.05+0.005+1E-9);
+		EXPECT_GE(v[3*i+2],-1E-9);
+	}
+	double d[1] = {0.0};
+	EXPECT_EQ(K5_ERROR_BUFFER_TOO_SMALL,k5_material_surface(material,d,1,&nAgain));
+	k5_material_free(material);
+
+	k5_material bad = NULL;
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_material_create(0.0,0.1,0.05,0.005,0.0,0.0,0.0,&bad));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_material_create(0.1,0.1,0.05,0.0,0.0,0.0,0.0,&bad));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_material_create(1.0,1.0,1.0,1E-6,0.0,0.0,0.0,&bad))<<"too many voxels";
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_material_create(0.1,0.1,0.05,0.005,0.0,0.0,0.0,NULL));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_material_volumes(NULL,&dTotal,&dRemoved));
+	k5_material_free(NULL);		//allowed
+}
+
+TEST(Abi, ThePathCutsTheMaterialWhereItGoes)
+{
+	k5_chain chain = OpenChain();
+	k5_tool tool = CreateTool();
+	k5_settings oSettings;
+	k5_settings_default(&oSettings);
+	oSettings.check_collisions = 0;		//the block is not in the chain's model of itself
+
+	//a path across the top of a block: the programmed point of the ball nose on the top face itself,
+	//so the ball dips in and cuts a groove a radius deep. The tool stands up, the material frame being
+	//the frame the path is in.
+	const double dTop = 0.0, dRadius = 0.016;
+	std::vector<double> vPositions, vAxes;
+	const size_t nCount = 5;
+	for(size_t i=0;i<nCount;i++){
+		vPositions.push_back(-0.04+0.02*(double)i);
+		vPositions.push_back(0.0);
+		vPositions.push_back(dTop);
+		vAxes.push_back(0.0);
+		vAxes.push_back(0.0);
+		vAxes.push_back(1.0);
+	}
+	k5_path path = NULL;
+	ASSERT_EQ(K5_OK,k5_postprocess_locations(chain,tool,&oSettings,&vPositions[0],&vAxes[0],nCount,&path))
+		<<k5_last_error();
+	size_t nSolved = 0;
+	ASSERT_EQ(K5_OK,k5_path_count_of_status(path,K5_SOLVED,&nSolved));
+	ASSERT_GT(nSolved,(size_t)0)<<"the path has to be reachable for this to mean anything";
+
+	k5_material material = NULL;
+	ASSERT_EQ(K5_OK,k5_material_create(0.12,0.06,0.03,0.002,-0.06,-0.03,dTop-0.03,&material))<<k5_last_error();
+	k5_simulation simulation = NULL;
+	ASSERT_EQ(K5_OK,k5_simulation_create(chain,tool,path,material,&simulation))<<k5_last_error();
+
+	size_t nIndex=99, nSteps=0;
+	int nFinished = 1;
+	ASSERT_EQ(K5_OK,k5_simulation_progress(simulation,&nIndex,&nSteps,&nFinished));
+	EXPECT_EQ((size_t)0,nIndex);
+	size_t nPathSize = 0;
+	ASSERT_EQ(K5_OK,k5_path_size(path,&nPathSize));
+	EXPECT_EQ(nPathSize,nSteps)<<"a step per location of the path";
+	EXPECT_EQ(0,nFinished);
+
+	//one step cuts something, and the material says so
+	int nStepped = 0;
+	ASSERT_EQ(K5_OK,k5_simulation_step(simulation,&nStepped))<<k5_last_error();
+	EXPECT_EQ(1,nStepped);
+	double dTotal=0.0, dRemoved=0.0;
+	ASSERT_EQ(K5_OK,k5_material_volumes(material,&dTotal,&dRemoved));
+	EXPECT_GT(dRemoved,0.0)<<"the ball took a bite";
+	EXPECT_LT(dRemoved,dTotal);
+	const double dAfterOne = dRemoved;
+
+	//the rest of the way, and more is gone, but nothing below the reach of the ball
+	ASSERT_EQ(K5_OK,k5_simulation_run(simulation));
+	ASSERT_EQ(K5_OK,k5_simulation_progress(simulation,&nIndex,&nSteps,&nFinished));
+	EXPECT_EQ(nSteps,nIndex);
+	EXPECT_EQ(1,nFinished);
+	ASSERT_EQ(K5_OK,k5_material_volumes(material,&dTotal,&dRemoved));
+	EXPECT_GT(dRemoved,dAfterOne);
+	size_t nSurface = 0;
+	ASSERT_EQ(K5_OK,k5_material_surface(material,NULL,0,&nSurface));
+	std::vector<double> v(3*nSurface,0.0);
+	ASSERT_EQ(K5_OK,k5_material_surface(material,&v[0],v.size(),&nSurface));
+	//the top of what is left: under the path it is the floor of the groove, a radius down; beside the
+	//path, further than the ball reaches, it is still the top of the block
+	double dUnderThePath = -1.0, dBesideIt = -1.0;
+	for(size_t i=0;i<nSurface;i++){
+		if(fabs(v[3*i])>0.03)
+			continue;
+		if(fabs(v[3*i+1])<0.001)
+			dUnderThePath = std::max(dUnderThePath,v[3*i+2]);
+		if(fabs(v[3*i+1]-0.025)<0.0015)
+			dBesideIt = std::max(dBesideIt,v[3*i+2]);
+	}
+	EXPECT_LT(dUnderThePath,dTop-0.5*dRadius)<<"a groove under the path";
+	EXPECT_GT(dUnderThePath,dTop-dRadius-0.004)<<"no deeper than the ball reaches, to a voxel";
+	EXPECT_GT(dBesideIt,dTop-0.004)<<"and nothing taken off beside it";
+
+	//no gouge: the shank and the holder stayed above the block
+	size_t nGouges = 99;
+	ASSERT_EQ(K5_OK,k5_simulation_gouges(simulation,&nGouges,NULL,NULL));
+	EXPECT_EQ((size_t)0,nGouges);
+
+	//a step past the end does nothing and says so; a reset starts again on the same, cut, material
+	ASSERT_EQ(K5_OK,k5_simulation_step(simulation,&nStepped));
+	EXPECT_EQ(0,nStepped);
+	ASSERT_EQ(K5_OK,k5_simulation_reset(simulation));
+	ASSERT_EQ(K5_OK,k5_simulation_progress(simulation,&nIndex,NULL,&nFinished));
+	EXPECT_EQ((size_t)0,nIndex);
+	ASSERT_EQ(K5_OK,k5_material_reset(material));
+	ASSERT_EQ(K5_OK,k5_material_volumes(material,&dTotal,&dRemoved));
+	EXPECT_EQ(0.0,dRemoved)<<"whole again";
+
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_simulation_create(NULL,tool,path,material,&simulation));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_simulation_create(chain,tool,path,NULL,&simulation));
+	k5_simulation_free(simulation);
+	k5_simulation_free(NULL);		//allowed
+	k5_material_free(material);
+	k5_path_free(path);
+	k5_tool_free(tool);
+	k5_chain_free(chain);
+}
+
 TEST(Abi, ATool)
 {
 	k5_tool tool = CreateTool();
