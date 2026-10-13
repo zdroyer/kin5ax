@@ -78,10 +78,8 @@ public:
 		,int nDetailedReportContents
 		,CProgressCallback *pProgress);
 
-	//Interpolation between two cutter locations, as dense as the settings demand: the position moves on a
-	//straight line, the tool axis turns at a constant rate in the plane of both axes. One pair only when
-	//the settings ask for no interpolation (m_bInterpolateBetweenLocations).
-	//result: pairs of (0..1 parameter, location), the last one is always (1.0, second location)
+	//Interpolation between two cutter locations, as dense as the settings demand: kin5ax::InterpolateLocation
+	//of LocationInterpolation.h with the settings of this postprocessor, kept here for the callers it has
 	void InterpolateLocation
 		( const CR3Point &p1
 		, const CR3Vector &v1

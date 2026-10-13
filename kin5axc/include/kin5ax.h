@@ -338,7 +338,23 @@ K5_API k5_status k5_material_surface(k5_material material, double *out, size_t c
  * changed by every step. The chain is given the tool as its assembly, as a solve gives it. */
 K5_API k5_status k5_simulation_create(k5_chain chain, k5_tool tool, k5_path path, k5_material material,
 	k5_simulation *out);
+/* The same with no machine at all: the path as a host has it - count locations, programmed points in
+ * positions[3*count] and tool axes in axes[3*count], in the frame of the material, which is the frame
+ * of the block - made as dense as the settings ask (interpolate, max_position_difference,
+ * max_orientation_difference_degrees; the rest of the settings mean nothing here) and the tool put at
+ * every location of the dense path and stamped in. The tool and the material belong to the caller and
+ * must outlive the simulation. An axis of length zero is refused with the number of the location. */
+K5_API k5_status k5_simulation_create_from_locations(k5_tool tool, const k5_settings *settings,
+	const double *positions, const double *axes, size_t count, k5_material material, k5_simulation *out);
 K5_API void k5_simulation_free(k5_simulation simulation);
+/* The location of that index of what the steps walk: where the programmed point of the tool goes
+ * (position[3]) and which way the tool points (axis[3]), in the frame of the material; source gets
+ * the index of the location it was made from - its own, or for one invented on the way to the next,
+ * the one before it - and invented 1 for such a one. Any of the four may be null. For a simulation on
+ * a chain the position and the axis are the tool point of the configuration chosen for the location,
+ * and a location without a solution is refused with K5_ERROR_ARGUMENT. */
+K5_API k5_status k5_simulation_location(k5_simulation simulation, size_t index, double *position,
+	double *axis, size_t *source, int *invented);
 /* Back to the first location of the path. The material is not touched: k5_material_reset is the
  * caller's decision, since one block may be cut by several paths in turn. */
 K5_API k5_status k5_simulation_reset(k5_simulation simulation);

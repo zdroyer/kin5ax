@@ -444,6 +444,117 @@ TEST(Abi, ThePathCutsTheMaterialWhereItGoes)
 	k5_chain_free(chain);
 }
 
+TEST(Abi, ALeaningToolCutsWithNoMachineAtAll)
+{
+	//a ball on the top of a block, leaning thirty degrees, with no chain: the groove is still one radius
+	//deep, since the lowest point of a ball does not care which way the shank points
+	k5_tool tool = CreateTool();
+	const double dRadius = 0.016;
+	k5_material material = NULL;
+	ASSERT_EQ(K5_OK,k5_material_create(0.12,0.06,0.03,0.002,-0.06,-0.03,-0.03,&material))<<k5_last_error();
+	const double dLean = 30.0*atan(1.0)/45.0;
+	const double p[6] = {-0.04,0.0,0.0, 0.04,0.0,0.0};
+	const double v[6] = {sin(dLean),0.0,cos(dLean), sin(dLean),0.0,cos(dLean)};
+	k5_settings oSettings;
+	k5_settings_default(&oSettings);
+	oSettings.max_position_difference = 0.002;		//as dense as the voxels
+	k5_simulation simulation = NULL;
+	ASSERT_EQ(K5_OK,k5_simulation_create_from_locations(tool,&oSettings,p,v,2,material,&simulation))
+		<<k5_last_error();
+	size_t nIndex=0, nCount=0;
+	int nFinished=1;
+	ASSERT_EQ(K5_OK,k5_simulation_progress(simulation,&nIndex,&nCount,&nFinished));
+	EXPECT_EQ((size_t)41,nCount)<<"80 mm in 2 mm steps, and the first location";
+	EXPECT_EQ(0,nFinished);
+
+	//the dense path can be read back: the first location as it was, the second one step on, invented
+	double q[3]={0,0,0}, a[3]={0,0,0};
+	size_t nSource=9;
+	int nInvented=9;
+	ASSERT_EQ(K5_OK,k5_simulation_location(simulation,1,q,a,&nSource,&nInvented))<<k5_last_error();
+	EXPECT_NEAR(-0.038,q[0],1E-9);
+	EXPECT_NEAR(sin(dLean),a[0],1E-9);
+	EXPECT_EQ((size_t)0,nSource);
+	EXPECT_EQ(1,nInvented);
+	ASSERT_EQ(K5_OK,k5_simulation_location(simulation,40,q,a,&nSource,&nInvented));
+	EXPECT_NEAR(0.04,q[0],1E-9);
+	EXPECT_EQ((size_t)1,nSource);
+	EXPECT_EQ(0,nInvented);
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_simulation_location(simulation,41,q,a,NULL,NULL));
+
+	ASSERT_EQ(K5_OK,k5_simulation_run(simulation));
+	ASSERT_EQ(K5_OK,k5_simulation_progress(simulation,&nIndex,&nCount,&nFinished));
+	EXPECT_EQ(1,nFinished);
+	size_t nSurface = 0;
+	ASSERT_EQ(K5_OK,k5_material_surface(material,NULL,0,&nSurface));
+	std::vector<double> s(3*nSurface,0.0);
+	ASSERT_EQ(K5_OK,k5_material_surface(material,&s[0],s.size(),&nSurface));
+	double dUnderThePath = -1.0, dBesideIt = -1.0;
+	for(size_t i=0;i<nSurface;i++){
+		if(fabs(s[3*i])>0.03)
+			continue;
+		if(fabs(s[3*i+1])<0.001)
+			dUnderThePath = std::max(dUnderThePath,s[3*i+2]);
+		if(fabs(s[3*i+1]-0.025)<0.0015)
+			dBesideIt = std::max(dBesideIt,s[3*i+2]);
+	}
+	EXPECT_LT(dUnderThePath,-0.5*dRadius)<<"a groove under the path";
+	EXPECT_GT(dUnderThePath,-dRadius-0.004)<<"one radius deep, lean or no lean";
+	EXPECT_GT(dBesideIt,-0.004)<<"nothing taken off beside it";
+	size_t nGouges = 9;
+	ASSERT_EQ(K5_OK,k5_simulation_gouges(simulation,&nGouges,NULL,NULL));
+	EXPECT_EQ((size_t)0,nGouges)<<"the shank leans away above the block";
+	k5_simulation_free(simulation);
+
+	//an axis of no length is refused with the number of its location
+	const double zero[6] = {0,0,1, 0,0,0};
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_simulation_create_from_locations(tool,&oSettings,p,zero,2,material,&simulation));
+	EXPECT_TRUE(strstr(k5_last_error(),"2")!=NULL);
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_simulation_create_from_locations(NULL,&oSettings,p,v,2,material,&simulation));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_simulation_create_from_locations(tool,NULL,p,v,2,material,&simulation));
+	//and an empty path is a simulation of nothing, which is allowed
+	ASSERT_EQ(K5_OK,k5_simulation_create_from_locations(tool,&oSettings,NULL,NULL,0,material,&simulation))<<k5_last_error();
+	ASSERT_EQ(K5_OK,k5_simulation_progress(simulation,&nIndex,&nCount,&nFinished));
+	EXPECT_EQ((size_t)0,nCount);
+	EXPECT_EQ(1,nFinished);
+	k5_simulation_free(simulation);
+	k5_material_free(material);
+	k5_tool_free(tool);
+}
+
+TEST(Abi, TheLocationsOfASimulationOnAChainAreItsToolPoints)
+{
+	k5_chain chain = OpenChain();
+	k5_tool tool = CreateTool();
+	k5_settings oSettings;
+	k5_settings_default(&oSettings);
+	oSettings.check_collisions = 0;
+	const std::vector<double> q = QInsideLimits(chain);
+	double p[3]={0,0,0}, v[3]={0,0,0};
+	ASSERT_EQ(K5_OK,k5_chain_tool_point(chain,tool,&q[0],p,v));
+	k5_path path = NULL;
+	ASSERT_EQ(K5_OK,k5_postprocess_locations(chain,tool,&oSettings,p,v,1,&path))<<k5_last_error();
+	k5_material material = NULL;
+	ASSERT_EQ(K5_OK,k5_material_create(0.1,0.1,0.05,0.005,-0.05,-0.05,-0.2,&material));
+	k5_simulation simulation = NULL;
+	ASSERT_EQ(K5_OK,k5_simulation_create(chain,tool,path,material,&simulation))<<k5_last_error();
+	double q2[3]={0,0,0}, a[3]={0,0,0};
+	size_t nSource=9;
+	int nInvented=9;
+	ASSERT_EQ(K5_OK,k5_simulation_location(simulation,0,q2,a,&nSource,&nInvented))<<k5_last_error();
+	for(int k=0;k<3;k++){
+		EXPECT_NEAR(p[k],q2[k],1E-9);
+		EXPECT_NEAR(v[k],a[k],1E-9);
+	}
+	EXPECT_EQ((size_t)0,nSource);
+	EXPECT_EQ(0,nInvented);
+	k5_simulation_free(simulation);
+	k5_material_free(material);
+	k5_path_free(path);
+	k5_tool_free(tool);
+	k5_chain_free(chain);
+}
+
 TEST(Abi, ATool)
 {
 	k5_tool tool = CreateTool();

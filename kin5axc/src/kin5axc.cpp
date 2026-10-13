@@ -502,16 +502,79 @@ k5_status k5_simulation_create(k5_chain chain, k5_tool tool, k5_path path, k5_ma
 	K5_END(K5_ERROR_CHAIN)
 }
 
+k5_status k5_simulation_create_from_locations(k5_tool tool, const k5_settings *settings,
+	const double *positions, const double *axes, size_t count, k5_material material, k5_simulation *out)
+{
+	K5_BEGIN
+	K5_NEED(tool && settings && material && out,
+		"k5_simulation_create_from_locations needs a tool, settings, a material and somewhere to put the handle")
+	K5_NEED(tool->m_pTool,"the tool handle holds no tool")
+	K5_NEED(count==0 || (positions && axes),"a path of locations needs its positions and its axes")
+	std::vector<CR3AnchoredVector> vLocations;
+	vLocations.reserve(count);
+	for(size_t i=0;i<count;i++){
+		const CR3Vector v(axes[3*i],axes[3*i+1],axes[3*i+2]);
+		if(v.IsZero(1E-12))
+			return Fail(K5_ERROR_ARGUMENT,"the tool axis of location "+size_to_string(i+1)+" has no length");
+		vLocations.push_back(CR3AnchoredVector(v,CR3Point(positions[3*i],positions[3*i+1],positions[3*i+2])));
+	}
+	*out = new k5_simulation_t(tool,vLocations,FromCSettings(*settings),material);
+	return K5_OK;
+	K5_END(K5_ERROR_ARGUMENT)
+}
+
 void k5_simulation_free(k5_simulation simulation)
 {
 	delete simulation;
+}
+
+k5_status k5_simulation_location(k5_simulation simulation, size_t index, double *position,
+	double *axis, size_t *source, int *invented)
+{
+	K5_BEGIN
+	K5_NEED(simulation,"k5_simulation_location needs a simulation")
+	K5_NEED(index<simulation->m_pSimulation->GetStepCount(),"there is no location of that index in this simulation")
+	CR3AnchoredVector cv;
+	size_t nSource = index;
+	bool bInvented = false;
+	if(simulation->m_pFree){
+		const CDenseLocation &o = simulation->m_pFree->GetLocations()[index];
+		cv = o.m_cv;
+		nSource = o.m_nSource;
+		bInvented = o.m_bInvented;
+	}else{
+		k5_path_t *path = simulation->m_pPath;
+		K5_NEED(path->m_oData.HasSolution(index),"that location has no solution, so the tool is nowhere")
+		CChain &oChain = simulation->m_pChain->m_oChain;
+		oChain.SetParameters(path->m_oData[index]);
+		cv = oChain.GetActualToolPositionAndOrientation();
+		if(index<path->m_oResult.m_vLocations.size()){
+			const CSolvedLocation &o = path->m_oResult.m_vLocations[index];
+			nSource = o.m_nFileLocation ? o.m_nFileLocation-1 : 0;
+			bInvented = (o.m_nOrigin!=LOCATION_FROM_FILE);
+		}
+	}
+	if(position){
+		position[0] = cv.m_p.GetX();
+		position[1] = cv.m_p.GetY();
+		position[2] = cv.m_p.GetZ();
+	}
+	if(axis){
+		axis[0] = cv.m_v.GetX();
+		axis[1] = cv.m_v.GetY();
+		axis[2] = cv.m_v.GetZ();
+	}
+	if(source) *source = nSource;
+	if(invented) *invented = bInvented ? 1 : 0;
+	return K5_OK;
+	K5_END(K5_ERROR_ARGUMENT)
 }
 
 k5_status k5_simulation_reset(k5_simulation simulation)
 {
 	K5_BEGIN
 	K5_NEED(simulation,"k5_simulation_reset needs a simulation")
-	simulation->m_oSimulation.Reset();
+	simulation->m_pSimulation->Reset();
 	return K5_OK;
 	K5_END(K5_ERROR_UNKNOWN)
 }
@@ -520,7 +583,7 @@ k5_status k5_simulation_step(k5_simulation simulation, int *stepped)
 {
 	K5_BEGIN
 	K5_NEED(simulation,"k5_simulation_step needs a simulation")
-	const bool b = simulation->m_oSimulation.Step();
+	const bool b = simulation->m_pSimulation->Step();
 	if(stepped) *stepped = b ? 1 : 0;
 	return K5_OK;
 	K5_END(K5_ERROR_SOLVER)
@@ -530,7 +593,7 @@ k5_status k5_simulation_run(k5_simulation simulation)
 {
 	K5_BEGIN
 	K5_NEED(simulation,"k5_simulation_run needs a simulation")
-	simulation->m_oSimulation.Run(NULL);
+	simulation->m_pSimulation->Run(NULL);
 	return K5_OK;
 	K5_END(K5_ERROR_SOLVER)
 }
@@ -540,9 +603,9 @@ k5_status k5_simulation_progress(k5_simulation simulation, size_t *step_index, s
 {
 	K5_BEGIN
 	K5_NEED(simulation,"k5_simulation_progress needs a simulation")
-	if(step_index) *step_index = simulation->m_oSimulation.GetStepIndex();
-	if(step_count) *step_count = simulation->m_oSimulation.GetStepCount();
-	if(finished) *finished = simulation->m_oSimulation.IsFinished() ? 1 : 0;
+	if(step_index) *step_index = simulation->m_pSimulation->GetStepIndex();
+	if(step_count) *step_count = simulation->m_pSimulation->GetStepCount();
+	if(finished) *finished = simulation->m_pSimulation->IsFinished() ? 1 : 0;
 	return K5_OK;
 	K5_END(K5_ERROR_UNKNOWN)
 }
@@ -552,10 +615,10 @@ k5_status k5_simulation_gouges(k5_simulation simulation, size_t *count, size_t *
 {
 	K5_BEGIN
 	K5_NEED(simulation && count,"k5_simulation_gouges needs a simulation and somewhere to put the count")
-	*count = simulation->m_oSimulation.GetGougeCount();
-	if(first_step) *first_step = simulation->m_oSimulation.GetFirstGougeStep();
+	*count = simulation->m_pSimulation->GetGougeCount();
+	if(first_step) *first_step = simulation->m_pSimulation->GetFirstGougeStep();
 	if(first_point){
-		const CR3Point &p = simulation->m_oSimulation.GetFirstGougePoint();
+		const CR3Point &p = simulation->m_pSimulation->GetFirstGougePoint();
 		first_point[0] = p.GetX();
 		first_point[1] = p.GetY();
 		first_point[2] = p.GetZ();

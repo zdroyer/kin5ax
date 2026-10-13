@@ -12,7 +12,7 @@ Updated 2026-10-15.
 | 2 | A five-axis toolpath generator in FreeCAD | **done** for a single face |
 | 3 | The postprocessor: TCP, direct axes, TWP, Fanuc and Heidenhain | **two thirds**: Fanuc with TCP, and direct axes from the solver |
 | 4 | Simulating the machine from a `.kc.json` model | **done**: the machine in the document, a player over the solved job |
-| 5 | Simulating the cutting | **done** as voxels and points: the stock cut step by step, gouges and volume |
+| 5 | Simulating the cutting | **done** as voxels and points: the stock cut step by step, gouges and volume, on a machine or on the path alone |
 
 ## What is done
 
@@ -84,6 +84,12 @@ simulation object, 2026-10-15: the stock of the job as a block of voxels, cut st
 tool of each operation, the surface as a point cloud under the material part, the removed volume
 and the gouges as properties and a marker. The interpolation is made as dense as the voxels when
 cutting, which is what the once-per-location stamp of the library needs.
+
+2026-10-15, later the same day: the cut **without a machine** — `CToolPathSimulation` in the
+library, the path made dense by the solver's own interpolation (`LocationInterpolation.h`, moved
+out of the solver so both share it), one ABI constructor from positions and axes, and `Machine`
+optional on the simulation object. The tool is drawn leaning in the frame of the part straight
+from the path. Nothing of the densification is in Python.
 
 Next here, in order of value: **a surface instead of points** — a mesh of cube faces first, then
 marching cubes in the library and through the ABI; **the sweep** of the tool between two locations
