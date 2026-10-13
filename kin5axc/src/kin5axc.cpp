@@ -343,6 +343,47 @@ k5_status k5_chain_frames(k5_chain chain, int part, double *out, size_t capacity
 	K5_END(K5_ERROR_CHAIN)
 }
 
+k5_status k5_chain_segment_boxes(k5_chain chain, int part, size_t index, double *out,
+	size_t capacity_in_doubles, size_t *count_out)
+{
+	K5_BEGIN
+	K5_NEED(chain && count_out,"k5_chain_segment_boxes needs a chain and somewhere to put the count")
+	CHAIN_PART nPart = CHAIN_PART_TOOL;
+	K5_NEED(FromCPart(part,nPart),"part is neither K5_PART_TOOL nor K5_PART_MATERIAL_HOLDER")
+	const std::vector<CChainSegment> &vPart = chain->m_oChain.GetPart(nPart);
+	K5_NEED(index<vPart.size(),"there is no segment of that index in that branch of the chain")
+	const std::vector<CR3Box> &vBoxes = vPart[index].GetPartVector();
+	*count_out = vBoxes.size();
+	if(!out)
+		return K5_OK;				//the count was the question
+	if(capacity_in_doubles<vBoxes.size()*6)
+		return Fail(K5_ERROR_BUFFER_TOO_SMALL,"6 doubles are needed for every box of the segment");
+	size_t n = 0;
+	for(size_t i=0;i<vBoxes.size();i++){
+		const CR3Point a = vBoxes[i].GetMinPoint(), b = vBoxes[i].GetMaxPoint();
+		out[n++] = a.GetX();
+		out[n++] = a.GetY();
+		out[n++] = a.GetZ();
+		out[n++] = b.GetX();
+		out[n++] = b.GetY();
+		out[n++] = b.GetZ();
+	}
+	return K5_OK;
+	K5_END(K5_ERROR_CHAIN)
+}
+
+k5_status k5_chain_set_configuration(k5_chain chain, const double *q)
+{
+	K5_BEGIN
+	K5_NEED(chain && q,"k5_chain_set_configuration needs a chain and five joint values")
+	const k5_status nFive = NeedFiveAxes(chain->m_oChain);
+	if(nFive!=K5_OK)
+		return nFive;
+	chain->m_oChain.SetParameters(FromQ(chain->m_oChain,q));
+	return K5_OK;
+	K5_END(K5_ERROR_CHAIN)
+}
+
 k5_status k5_chain_tool_point(k5_chain chain, k5_tool tool, const double *q,
 	double *position, double *axis)
 {

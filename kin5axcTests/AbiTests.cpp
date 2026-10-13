@@ -237,6 +237,67 @@ TEST(Abi, TheFramesOfTheSegments)
 	k5_chain_free(chain);
 }
 
+TEST(Abi, TheBoxesOfTheSegments)
+{
+	//a model with boxes: the holder of its tool and the holder of its material each carry one
+	k5_chain chain = OpenChain("Reiden_RX10_A_SwivelHead_C_RotaryTable.kc.json");
+	size_t nTotal = 0;
+	const int nParts[2] = {K5_PART_TOOL,K5_PART_MATERIAL_HOLDER};
+	for(int p=0;p<2;p++){
+		size_t nSegments = 0;
+		ASSERT_EQ(K5_OK,k5_chain_frames(chain,nParts[p],NULL,0,&nSegments))<<k5_last_error();
+		for(size_t i=0;i<nSegments;i++){
+			size_t nBoxes = 0;
+			ASSERT_EQ(K5_OK,k5_chain_segment_boxes(chain,nParts[p],i,NULL,0,&nBoxes))<<k5_last_error();
+			std::vector<double> v(6*nBoxes+1,0.0);
+			size_t nAgain = 0;
+			ASSERT_EQ(K5_OK,k5_chain_segment_boxes(chain,nParts[p],i,&v[0],6*nBoxes,&nAgain))<<k5_last_error();
+			EXPECT_EQ(nBoxes,nAgain);
+			for(size_t b=0;b<nBoxes;b++)
+				for(int k=0;k<3;k++)
+					EXPECT_LE(v[6*b+k],v[6*b+3+k])<<"the minimum corner first";
+			nTotal += nBoxes;
+		}
+	}
+	EXPECT_EQ((size_t)2,nTotal)<<"one box on each terminal of this model";
+
+	//the last segment of the tool branch is its holder, which has the box: too small a buffer says so
+	size_t nSegments = 0, nBoxes = 0;
+	ASSERT_EQ(K5_OK,k5_chain_frames(chain,K5_PART_TOOL,NULL,0,&nSegments));
+	double d[1] = {0.0};
+	EXPECT_EQ(K5_ERROR_BUFFER_TOO_SMALL,k5_chain_segment_boxes(chain,K5_PART_TOOL,nSegments-1,d,1,&nBoxes));
+	EXPECT_EQ((size_t)1,nBoxes)<<"and the count is given anyway";
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_segment_boxes(chain,K5_PART_TOOL,nSegments,NULL,0,&nBoxes));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_segment_boxes(chain,42,0,NULL,0,&nBoxes));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_segment_boxes(NULL,K5_PART_TOOL,0,NULL,0,&nBoxes));
+	k5_chain_free(chain);
+}
+
+TEST(Abi, TheConfigurationCanBeSetAndTheFramesFollow)
+{
+	k5_chain chain = OpenChain();
+	const std::vector<double> q = QInsideLimits(chain);
+	ASSERT_EQ(K5_OK,k5_chain_set_configuration(chain,&q[0]))<<k5_last_error();
+	for(size_t i=0;i<(size_t)K5_AXES;i++){
+		k5_link oLink;
+		ASSERT_EQ(K5_OK,k5_chain_link(chain,i,&oLink));
+		EXPECT_NEAR(q[i],oLink.value,1E-12)<<"joint "<<i<<" stands where it was put";
+	}
+	size_t n = 0;
+	ASSERT_EQ(K5_OK,k5_chain_frames(chain,K5_PART_TOOL,NULL,0,&n));
+	std::vector<double> vBefore(32*n,0.0), vAfter(32*n,0.0);
+	ASSERT_EQ(K5_OK,k5_chain_frames(chain,K5_PART_TOOL,&vBefore[0],vBefore.size(),&n));
+	std::vector<double> q2 = q;
+	for(size_t i=0;i<q2.size();i++)
+		q2[i] += 0.01;
+	ASSERT_EQ(K5_OK,k5_chain_set_configuration(chain,&q2[0]))<<k5_last_error();
+	ASSERT_EQ(K5_OK,k5_chain_frames(chain,K5_PART_TOOL,&vAfter[0],vAfter.size(),&n));
+	EXPECT_NE(vBefore,vAfter)<<"the segments moved with their joints";
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_set_configuration(chain,NULL));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_set_configuration(NULL,&q[0]));
+	k5_chain_free(chain);
+}
+
 TEST(Abi, ATool)
 {
 	k5_tool tool = CreateTool();

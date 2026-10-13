@@ -178,6 +178,19 @@ K5_API k5_status k5_chain_first_rotary_axis(k5_chain chain, int part, size_t *ou
 K5_API k5_status k5_chain_frames(k5_chain chain, int part, double *out, size_t capacity_in_doubles,
 	size_t *count_out);
 
+/* The collision boxes of the segment of that index in that branch - the segments being those of
+ * k5_chain_frames, the terminal included - in the first of the two frames k5_chain_frames gives for
+ * the segment: 6 doubles per box, the minimum corner x y z then the maximum corner x y z. A segment
+ * may have no box at all; the models shipped with the library carry boxes on their terminals only.
+ * out may be null to ask for the count only; count_out gets the number of boxes either way. */
+K5_API k5_status k5_chain_segment_boxes(k5_chain chain, int part, size_t index, double *out,
+	size_t capacity_in_doubles, size_t *count_out);
+
+/* Puts the chain into a set of joint values (K5_AXES of them, in the order of k5_chain_link) and
+ * nothing more: what k5_chain_frames and k5_chain_link answer afterwards is for that configuration.
+ * The joint limits are not checked - a host drawing the machine may want to see it past them. */
+K5_API k5_status k5_chain_set_configuration(k5_chain chain, const double *q);
+
 /* Puts the chain into a set of joint values (K5_AXES of them, in the order of k5_chain_link) and
  * answers where the programmed point of the tool ends up: position[3] and the tool axis axis[3], in the
  * frame of the material. The forward kinematics, and the way to check k5_solve_location.
