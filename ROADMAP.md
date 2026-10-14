@@ -2,9 +2,9 @@
 
 Where this is going: a part drawn in FreeCAD, cut by a toolpath generated there, judged by kin5ax
 against a real five-axis machine, and posted as a program that machine will run. Five strands, of
-which two are finished, one is half built and two have not started.
+which four are finished and one is two thirds built.
 
-Updated 2026-10-15.
+Updated 2026-10-14.
 
 | | strand | state |
 |---|---|---|
@@ -35,7 +35,8 @@ roadmap needs:
 
 **The FreeCAD operation** (`kin5axcam/`) lays a zigzag over the `u,v` space of one face with any
 shape of tool, holds the tool either standing up or along the surface normal leaned over by two
-angles, and writes the tip of the tool with the axis as `I J K`. A row is one pass. 72 tests.
+angles, and writes the tip of the tool with the axis as `I J K`. A row is one pass. 149 tests, of
+which 72 need no FreeCAD.
 
 **Python can call kin5ax** (`kin5axcam/kin5axcam/kin5ax.py`): a `ctypes` binding to the C ABI — a
 chain, a tool, the settings, a path solved in memory, its locations and report, the frames of the
@@ -51,7 +52,7 @@ machine cannot reach is left out and said so.
 
 ### 1. Done: Python can call kin5ax, and the post writes direct axes
 
-The binding and the `--machine` mode of the post, 2026-10-14. The decisions were taken the cheap
+The binding and the `--machine` mode of the post, 2026-10-13. The decisions were taken the cheap
 way: the post scales by `--machine-unit` (metres by default), and the rotary letters come from the
 names of the links when they are letters, else from an argument. The binding finds the shared
 library through `KIN5AXC_LIBRARY`, `kin5axcam/lib/` or the build tree of a checkout; shipping a
@@ -69,7 +70,7 @@ built `kin5axc.dll` in `lib/` is still to do.
 
 ### 3. Done: the machine on the screen
 
-`kin5axcam/machine.py`, `simulation.py`, `machine_gui.py`, 2026-10-15. A part per segment with the
+`kin5axcam/machine.py`, `simulation.py`, `machine_gui.py`, 2026-10-13. A part per segment with the
 boxes of the file and an arm to the next, the tool mount and the material as parts, the job's tool
 and model and stock in them, the trajectory in properties, a player with slider, play, step and the
 report. Two calls were added to the ABI for it: `k5_chain_segment_boxes` and
@@ -79,28 +80,42 @@ carried out of a solve by `CSolveReport` and aggregated per location into the re
 ABI as `k5_path_collision`, and shown in the dialog under *what met*. The same day: the colliding
 solids **shown** - a location that collides poses the machine where it would have had to be
 (`k5_chain_check_collisions` on a configuration solved with the check off) and paints the two solids
-red, named through `k5_chain_solid_name` so the host matches what the library reports. Still to do
-here: real bodies per segment (a segment part takes them by hand already; the file format does not
-reference them).
+red, named through `k5_chain_solid_name` so the host matches what the library reports. A solid that
+has met anything stays orange to the end of the run; the tool is red while it meets something and
+never orange, being the thing that moves rather than a part that was in the way. The player can be
+made to pause where the machine first meets itself, and a run can be reset to a whole stock at the
+first location. Still to do here: real bodies per segment (a segment part takes them by hand
+already; the file format does not reference them).
 
 ### 4. Done: cutting simulation, as voxels
 
 Twelve calls in the ABI (`k5_material_*`, `k5_simulation_*`), the binding, and `Cut` on the
-simulation object, 2026-10-15: the stock of the job as a block of voxels, cut step by step with the
+simulation object, 2026-10-13: the stock of the job as a block of voxels, cut step by step with the
 tool of each operation, the surface under the material part, the removed volume
 and the gouges as properties and a marker. The interpolation is made as dense as the voxels when
 cutting, which is what the once-per-location stamp of the library needs.
 
-2026-10-15, later the same day: the cut **without a machine** — `CToolPathSimulation` in the
+2026-10-13, later the same day: the cut **without a machine** — `CToolPathSimulation` in the
 library, the path made dense by the solver's own interpolation (`LocationInterpolation.h`, moved
 out of the solver so both share it), one ABI constructor from positions and axes, and `Machine`
 optional on the simulation object. The tool is drawn leaning in the frame of the part straight
 from the path. Nothing of the densification is in Python.
 
-2026-10-16: the surface as a **mesh of the exposed voxel faces**, worked out in the library
+2026-10-14: the surface as a **mesh of the exposed voxel faces**, worked out in the library
 (`CMaterial::GetSurfaceTriangles`, `k5_material_surface_triangles`), in place of the point cloud;
 the joints of the machine shown as the application draws them; a link carrying the placement of the
-stock, and one simulation per job, which were the two faults of the first picture.
+stock, and one simulation per job, which were the two faults of the first picture. The stock is cut
+at a location the machine cannot reach as well (`k5_material_cut`, one stamp of the tool wherever it
+is put), since the tool was asked to be there and what it would have taken off is worth seeing
+beside the collision; `CutInCollision` turns that off.
+
+2026-10-14, the same day: **every location of a path says what it was solved for**
+(`CSolvedLocation::m_cvInput`, `k5_location.position` and `.axis`). An invented location had no
+point of its own that a caller could reach, so the host used the cutter location the step was on the
+way to, which is the end of the move: every step of a long move stood at its end, the machine did
+not move through a plunge, the stamps of a whole unreachable stretch landed in one place and left
+the stock ridged, and the player took such a run for a turn in place and passed it in one tick. One
+record, five symptoms.
 
 Next here, in order of value: **marching cubes** in the library and through the ABI, for a smooth
 surface in place of the voxel faces; **the sweep** of the tool between two locations
@@ -129,12 +144,19 @@ machine-independent and one path can be posted for two machines — or in the op
 report view can say "this is not reachable" while the user is still editing. The recommendation is
 the postprocessor, with the operation gaining a *check against a machine* button later.
 
-## Housekeeping, and one risk
+## Housekeeping, and two risks
 
-- **Everything lives on `c-abi`**: 89 commits ahead of `fcm-bridge`, which is the default branch, and
-  17 of them not pushed anywhere. The C ABI and the whole FreeCAD addon are on that one branch. It
-  wants merging, or `c-abi` wants to become the default.
-- The tests that need FreeCAD never run in CI — the runner has no FreeCAD. An AppImage and a second
-  job would run all 72 instead of the 44 that need no FreeCAD.
-- `kin5axc` is built on Linux by CI; the Windows build of it is a local matter so far, and the
-  binding will need it where FreeCAD can find it.
+- **`master` holds everything, and is the default branch.** `c-abi` was merged into it on
+  2026-10-14 with the C ABI, the FreeCAD addon, the machine simulation and the cutting simulation;
+  the feature branches behind it are finished and kept only for history. Nothing has to be merged
+  before this repository can be read, which was the risk this entry used to record.
+- **The tests that need FreeCAD still never run in CI**: the runner has no FreeCAD. 72 of the 149
+  tests of the addon run without it, so the 74 that exercise the operation, the machine and the
+  simulation are covered on one developer's machine alone — and that is the layer where every
+  defect of the last three days was found, while the library, which is tested on every push, needed
+  no repair at all. An AppImage and a second job would close it.
+- **Nothing ships a built library.** `kin5axc` is built on Linux by CI and on Windows by hand. The
+  binding looks in `KIN5AXC_LIBRARY`, then `kin5axcam/lib/`, then the build trees of a checkout, and
+  that `lib` folder does not exist, so an installed addon finds nothing unless its user builds the
+  C++ project first.
+  This is the one thing standing between the project and a second user.
