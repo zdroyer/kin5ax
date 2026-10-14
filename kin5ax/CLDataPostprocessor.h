@@ -39,6 +39,10 @@ public:
 	//origin and the cutter location of the file it belongs to. The length is the number of sets in the
 	//CSimulationData and equals m_nTotalProblemsCount.
 	std::vector<CSolvedLocation> m_vLocations;
+	//Which solids of the machine met on the way, and at how many locations each pair did - a location
+	//whose every configuration was rejected by the same pair counts once. Empty when the collision
+	//check was off or nothing met.
+	CCollisionReport m_oCollisions;
 	//how many records have that status / that origin
 	size_t CountOf(SOLVE_STATUS status) const;
 	size_t CountOf(LOCATION_ORIGIN origin) const;
@@ -78,10 +82,8 @@ public:
 		,int nDetailedReportContents
 		,CProgressCallback *pProgress);
 
-	//Interpolation between two cutter locations, as dense as the settings demand: the position moves on a
-	//straight line, the tool axis turns at a constant rate in the plane of both axes. One pair only when
-	//the settings ask for no interpolation (m_bInterpolateBetweenLocations).
-	//result: pairs of (0..1 parameter, location), the last one is always (1.0, second location)
+	//Interpolation between two cutter locations, as dense as the settings demand: kin5ax::InterpolateLocation
+	//of LocationInterpolation.h with the settings of this postprocessor, kept here for the callers it has
 	void InterpolateLocation
 		( const CR3Point &p1
 		, const CR3Vector &v1

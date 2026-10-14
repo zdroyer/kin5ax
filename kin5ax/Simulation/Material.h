@@ -135,6 +135,12 @@ inline bool ShouldBeGray(size_t nX, size_t nY, size_t nZ) const
 	//the surface voxels (material next to a removed voxel or to the outside), brought up to date first;
 	//for the renderers and, later, the mesh extraction
 	const std::vector<CR3Point> &GetSurfaceVoxels();
+	//The exposed faces of what is left, as triangles: for every voxel that is material and every one of
+	//its six sides with a removed voxel or the outside behind it, two triangles wound to face outwards,
+	//18 doubles per face appended to vOut (x y z of three corners, twice). The count of faces is
+	//returned. What a host draws as a solid - the same surface GetSurfaceVoxels gives as points, with
+	//the sides a renderer can see and none of the ones it cannot.
+	size_t GetSurfaceTriangles(std::vector<double> &vOut) const;
 	void ResetMaterial();
 
 	void GenerateBox

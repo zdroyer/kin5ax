@@ -109,8 +109,11 @@ does not occur; it is logged when it does.
   locations so that no step exceeds the configured position/orientation limits (constant-rate
   turn of the axis, antiparallel axes handled), solves each location, handles singular sections,
   reports the largest reproduction error (forward kinematics of the solution against the input),
-  fills a `CSimulationData` with one solution set per location and records a `SOLVE_STATUS` for
-  each. A `CProgressCallback` receives the progress and may stop the batch between two locations
+  fills a `CSimulationData` with one solution set per location and records for each its
+  `SOLVE_STATUS`, where it came from, the cutter location of the file it belongs to, and the point
+  and the axis it was solved for (`CSolvedLocation`) — so that a location without a solution still
+  says where the tool was asked to be. A `CProgressCallback` receives the progress and may stop the
+  batch between two locations
   (`Continue()` returning false; the result says it was cancelled).
 - **Trajectory**: `CSimulationData::FindShortestPath` picks one configuration per location by
   dynamic programming on the weighted sum of joint changes, skipping locations without a
@@ -173,11 +176,11 @@ the tool axis points along +Z at home.
 | area | classes |
 |---|---|
 | geometry (`3DGeometry/`) | `CR3Point`, `CR3Vector`, `CR3AnchoredVector` (position + axis), `CM4x4`, `CTransformation`, `CTranslation`, `CRotation`, `CScale`, `CR3Box` (collision boxes: exact box/box, box/segment, box/sphere, box/cylinder tests) |
-| machine (`Chain/`) | `CChain` (two segment vectors, forward kinematics, limits, collisions, XML out), `CChainSegment`, `CChainParameter` (value, unit, type single/any/none), `CChainConfiguration` (the five joint values, distance, equivalents), `CChainXmlReader`, `CChainJsonReader`/`Writer`, `CChainFcmReader`/`Writer`, `CChainFileReader` |
+| machine (`Chain/`) | `CChain` (two segment vectors, forward kinematics, limits, collisions with a `CCollisionReport` of which solids met, XML out), `CChainSegment`, `CChainParameter` (value, unit, type single/any/none), `CChainConfiguration` (the five joint values, distance, equivalents), `CChainXmlReader`, `CChainJsonReader`/`Writer`, `CChainFcmReader`/`Writer`, `CChainFileReader` |
 | tool (`MillingTool/`) | `CMillingTool`, `CMillingToolBall`, `CMillingToolCylinder`: the cutting part (the cut volume of the simulation and a collision solid), the non-cutting shank and the holder (`CToolHolder`), the lengths they add up to and the distance from the tool mount to the tool point |
 | solver (`Postprocessor/`) | `COrientationPostprocessor` (the angles), `CPositionPostprocessor` (the shifts), `C5CPostprocessor` (signs, limits, collisions, singular sections), `CSolveReport` and `SOLVE_STATUS` |
-| batch | `CCutterLocationData`, `CCLDataPostprocessor` (+ `CCLDataPostprocessingResult`), `CSimulationData` (solution sets, shortest path, G-code), `CPostprocessorSettings`, `CProgressCallback` |
-| simulation (`Simulation/`) | `CMaterial` (the voxel block: material, surface, removed; the cut of the tool at its position; volumes), `CMaterialSimulation` (the trajectory replayed on the chain, the tool following, the material cut; `Step`, `Run` with progress and stop; no thread of its own), `CSimpleSimulationSetup` (a hemisphere job sized for a machine). The simulation is deliberately simple and not efficient: a voxel grid sampled at the voxel corners, no sweep between two locations. It is there to check the geometry of the postprocessor and to see how a machine model moves, not to predict a machined surface. |
+| batch | `CCutterLocationData`, `CCLDataPostprocessor` (+ `CCLDataPostprocessingResult`), `CSimulationData` (solution sets, shortest path, G-code), `CPostprocessorSettings`, `CProgressCallback`, `LocationInterpolation.h` (the densification between two cutter locations the solver and the chain-less simulation share: `InterpolateLocation`, `DensifyLocations`) |
+| simulation (`Simulation/`) | `CMaterial` (the voxel block: material, surface, removed; the cut of the tool at its position; volumes), `CCuttingSimulation` (what every cutting simulation offers its driver: `Step`, `Run` with progress and stop, where it is, the gouges), `CMaterialSimulation` (the trajectory replayed on the chain, the tool following, the material cut), `CToolPathSimulation` (the same with no chain: a path of programmed points and tool axes, made dense by `LocationInterpolation.h`, the tool put at each location), `CSimpleSimulationSetup` (a hemisphere job sized for a machine). No thread of their own. The simulation is deliberately simple and not efficient: a voxel grid sampled at the voxel corners, no sweep between two locations. It is there to check the geometry of the postprocessor and to see how a machine model moves, not to predict a machined surface. |
 | support | `CGeneratorException` (a `std::exception`) and subclasses with the `MY_THROW` macro (file, line, function), `string_tools`, `double_tools` |
 
 ## Tolerances, units, threads, locale

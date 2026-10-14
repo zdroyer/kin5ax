@@ -40,7 +40,8 @@ protected:
 	//the configurations before the limits and the collisions; pReport (may be NULL) receives the counts
 	tChainConfigurationVector SolveTheoretically(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,std::string &sLog, CSolveReport *pReport = NULL);
 	tChainConfigurationVector ApplyParameterConstraints(const tChainConfigurationVector &vSolutions, CChain &oChain,std::string &sLog);
-	tChainConfigurationVector ApplyCollisionDetection(const tChainConfigurationVector &vSolutions, CChain &oChain,CMillingTool &oMillingTool,std::string &sLog);
+	//pCollisions, when given, receives the pairs met while the configurations were being checked
+	tChainConfigurationVector ApplyCollisionDetection(const tChainConfigurationVector &vSolutions, CChain &oChain,CMillingTool &oMillingTool,std::string &sLog,CCollisionReport *pCollisions = NULL);
 
 
 	void CreateSigns(const CChain &oChain);

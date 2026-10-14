@@ -75,6 +75,13 @@ typedef enum k5_location_origin {
 	K5_SINGULAR_SECTION			/* from the singular-section solver, which picks its own samples */
 } k5_location_origin;
 
+/* How two solids met: what is read between the names of a pair. */
+typedef enum k5_collision_kind {
+	K5_COLLIDING_PARTS = 0,		/* two solids of the machine: "and" */
+	K5_COLLIDING_TOOL,			/* the cutting part of the tool against a solid: "cuts into" */
+	K5_COLLIDING_TOOL_SHANK		/* its shank or its holder, which may touch nothing at all: "is in" */
+} k5_collision_kind;
+
 typedef enum k5_link_type {
 	K5_LINK_PRISMATIC = 0,			/* slides along its own Z */
 	K5_LINK_REVOLUTE				/* turns about its own Z */
@@ -178,6 +185,39 @@ K5_API k5_status k5_chain_first_rotary_axis(k5_chain chain, int part, size_t *ou
 K5_API k5_status k5_chain_frames(k5_chain chain, int part, double *out, size_t capacity_in_doubles,
 	size_t *count_out);
 
+/* The collision boxes of the segment of that index in that branch - the segments being those of
+ * k5_chain_frames, the terminal included - in the first of the two frames k5_chain_frames gives for
+ * the segment: 6 doubles per box, the minimum corner x y z then the maximum corner x y z. A segment
+ * may have no box at all; the models shipped with the library carry boxes on their terminals only.
+ * out may be null to ask for the count only; count_out gets the number of boxes either way. */
+K5_API k5_status k5_chain_segment_boxes(k5_chain chain, int part, size_t index, double *out,
+	size_t capacity_in_doubles, size_t *count_out);
+
+/* Puts the chain into a set of joint values (K5_AXES of them, in the order of k5_chain_link) and
+ * nothing more: what k5_chain_frames and k5_chain_link answer afterwards is for that configuration.
+ * The joint limits are not checked - a host drawing the machine may want to see it past them. */
+K5_API k5_status k5_chain_set_configuration(k5_chain chain, const double *q);
+
+typedef struct k5_collision {
+	char first[K5_NAME_MAX];	/* the two solids that met, named as the chain file names them, cut to fit */
+	char second[K5_NAME_MAX];
+	int kind;					/* k5_collision_kind */
+	size_t locations;			/* at how many locations of the path this pair met */
+} k5_collision;
+
+/* The name a report gives one solid of a segment of a branch - the name of the segment, or its place
+ * in the branch when the file gives it none, and the number of the box when the segment has more than
+ * one. A host that draws a machine needs these to show which solids k5_path_collision names. */
+K5_API k5_status k5_chain_solid_name(k5_chain chain, int part, size_t segment, size_t box,
+	char *out, size_t capacity);
+
+/* Checks the chain, at the configuration it stands in, against the tool: collides gets 1 when
+ * anything met. What met is then k5_chain_collision_count and k5_chain_collision, until the next
+ * check on this chain - a solve makes its own checks, so ask before solving anything else. */
+K5_API k5_status k5_chain_check_collisions(k5_chain chain, k5_tool tool, int *collides);
+K5_API k5_status k5_chain_collision_count(k5_chain chain, size_t *out);
+K5_API k5_status k5_chain_collision(k5_chain chain, size_t index, k5_collision *out);
+
 /* Puts the chain into a set of joint values (K5_AXES of them, in the order of k5_chain_link) and
  * answers where the programmed point of the tool ends up: position[3] and the tool axis axis[3], in the
  * frame of the material. The forward kinematics, and the way to check k5_solve_location.
@@ -254,6 +294,10 @@ typedef struct k5_location {
 	size_t file_line;					/* the line of the file that cutter location was read from, from 1 */
 	int has_solution;					/* 1 when q below is the configuration chosen for this location */
 	double q[K5_AXES];					/* in the order of k5_chain_link */
+	double position[3];					/* the programmed point of the tool this location was solved for, and */
+	double axis[3];						/* its tool axis: the cutter location's own, or the ones invented on the
+										 * way to it. Filled whether or not the location has a solution: they
+										 * say where the tool was asked to be */
 } k5_location;
 
 K5_API k5_status k5_path_location(k5_path path, size_t index, k5_location *out);
@@ -264,6 +308,15 @@ K5_API k5_status k5_path_count_of_origin(k5_path path, int origin, size_t *out);
  * from where it was asked for, and the length of the error of the tool axis. Below a nanometre on the
  * machines the library is tested with. */
 K5_API k5_status k5_path_errors(k5_path path, double *max_position_error, double *max_orientation_error);
+/* Which solids of the machine met while this path was being solved, and at how many of its locations
+ * each pair did - a location whose every configuration was rejected by the same pair counts once.
+ * Empty when the collision check was off or nothing met; the pairs come in no particular order.
+ * A location counted here has no solution for that reason: these are the K5_COLLISION ones. */
+K5_API k5_status k5_path_collision_count(k5_path path, size_t *out);
+K5_API k5_status k5_path_collision(k5_path path, size_t index, k5_collision *out);
+
+
+
 /* Where the machine is left standing: the configuration chosen for the last location that has one.
  * Hand it back to the next run and the trajectory carries on from there (not in version 1 - the
  * settings have no hint field yet; k5_path_last_configuration is the half that exists). */
@@ -287,6 +340,94 @@ K5_API k5_status k5_chain_default_gcode_axes(k5_chain chain, k5_gcode_axes *out)
  * solution, with the decimal point whatever the locale of the process. Feed rates, tool changes and
  * machine words are not written. */
 K5_API k5_status k5_path_write_gcode(k5_path path, const k5_gcode_axes *axes, const char *file_path);
+
+/* ---------------------------------------------------------------- the cutting simulation */
+
+/* A block of material to cut, and a simulation that cuts it with a solved path. Rudimentary, and
+ * said so: the material is a box of voxels, the tool is stamped into it once per location of the
+ * path with nothing swept between two locations, and there is no feed or time. Dense interpolation
+ * - steps no longer than a voxel - is what makes it look like a cut. What it is good for is the
+ * geometry: whether the trajectory the solver chose takes the material off where the path meant
+ * it to, and whether the shank or the holder of the tool went through material that was still
+ * there, which is a gouge. */
+typedef struct k5_material_t *k5_material;
+typedef struct k5_simulation_t *k5_simulation;
+
+/* A box of material in the frame of the material of the chain, all lengths in the unit of the chain
+ * file: its size, the side of one voxel, and the corner it starts at. Everything is material to
+ * begin with. The voxel count is the size over the voxel side along each axis, rounded up; keep it
+ * in the millions, not the billions. */
+K5_API k5_status k5_material_create(double x_size, double y_size, double z_size, double voxel_size,
+	double x_start, double y_start, double z_start, k5_material *out);
+K5_API void k5_material_free(k5_material material);
+/* Whole again, as it was created. */
+K5_API k5_status k5_material_reset(k5_material material);
+/* How many voxels there are along X, Y and Z. */
+K5_API k5_status k5_material_dimensions(k5_material material, size_t *nx, size_t *ny, size_t *nz);
+/* The volume of the block and the volume removed so far, whole voxels, in the unit of the file cubed. */
+K5_API k5_status k5_material_volumes(k5_material material, double *total, double *removed);
+/* The surface of what is left: the voxels that are still material and have a removed voxel or the
+ * outside next to them, 3 doubles each - the corner of the voxel nearest the start of the block, in
+ * the frame of the material. What a host draws, as points or as cubes of the voxel side. out may be
+ * null to ask for the count only; count_out gets the number of voxels either way. */
+K5_API k5_status k5_material_surface(k5_material material, double *out, size_t capacity_in_doubles,
+	size_t *count_out);
+/* The same surface as a solid: the exposed faces of what is left - every side of a material voxel
+ * with a removed voxel or the outside behind it - as two triangles each, wound to face outwards, 18
+ * doubles per face (x y z of three corners, twice). A face a renderer cannot see from any side is
+ * not among them. out may be null to ask for the count of faces only; count_out gets it either way,
+ * and the doubles needed are 18 times that. */
+K5_API k5_status k5_material_surface_triangles(k5_material material, double *out,
+	size_t capacity_in_doubles, size_t *count_out);
+
+/* One cut, with no simulation and no machine: the tool put at position[3] with its axis along
+ * axis[3], both in the frame of the material - the programmed point of the tool, which is the centre
+ * of the ball of a ball nose one - and stamped into the material. gouged, when not null, gets 1 when
+ * the shank or the holder is in material that is still there after the cut, and gouge_point[3] where.
+ * What a host needs for a location its simulation will not cut: one the machine cannot reach, which
+ * is still a place the tool was asked to be. */
+K5_API k5_status k5_material_cut(k5_material material, k5_tool tool, const double *position,
+	const double *axis, int *gouged, double *gouge_point);
+
+/* A simulation of the path cutting the material with that tool on that chain. The four belong to the
+ * caller and must outlive the simulation; the chain's joint values and the tool's position are
+ * changed by every step. The chain is given the tool as its assembly, as a solve gives it. */
+K5_API k5_status k5_simulation_create(k5_chain chain, k5_tool tool, k5_path path, k5_material material,
+	k5_simulation *out);
+/* The same with no machine at all: the path as a host has it - count locations, programmed points in
+ * positions[3*count] and tool axes in axes[3*count], in the frame of the material, which is the frame
+ * of the block - made as dense as the settings ask (interpolate, max_position_difference,
+ * max_orientation_difference_degrees; the rest of the settings mean nothing here) and the tool put at
+ * every location of the dense path and stamped in. The tool and the material belong to the caller and
+ * must outlive the simulation. An axis of length zero is refused with the number of the location. */
+K5_API k5_status k5_simulation_create_from_locations(k5_tool tool, const k5_settings *settings,
+	const double *positions, const double *axes, size_t count, k5_material material, k5_simulation *out);
+K5_API void k5_simulation_free(k5_simulation simulation);
+/* The location of that index of what the steps walk: where the programmed point of the tool goes
+ * (position[3]) and which way the tool points (axis[3]), in the frame of the material; source gets
+ * the index of the location it was made from - its own, or for one invented on the way to the next,
+ * the one before it - and invented 1 for such a one. Any of the four may be null. For a simulation on
+ * a chain the position and the axis are the tool point of the configuration chosen for the location,
+ * and a location without a solution is refused with K5_ERROR_ARGUMENT. */
+K5_API k5_status k5_simulation_location(k5_simulation simulation, size_t index, double *position,
+	double *axis, size_t *source, int *invented);
+/* Back to the first location of the path. The material is not touched: k5_material_reset is the
+ * caller's decision, since one block may be cut by several paths in turn. */
+K5_API k5_status k5_simulation_reset(k5_simulation simulation);
+/* The next location that has a solution: the chain takes its configuration, the tool its frame, the
+ * material is cut. stepped gets 1, or 0 when the path is exhausted and nothing was done. */
+K5_API k5_status k5_simulation_step(k5_simulation simulation, int *stepped);
+/* All the remaining locations. */
+K5_API k5_status k5_simulation_run(k5_simulation simulation);
+/* How far the simulation is: the locations passed so far (those without a solution are passed without
+ * a cut), how many the path has, and whether it is finished. Any of the three may be null. */
+K5_API k5_status k5_simulation_progress(k5_simulation simulation, size_t *step_index, size_t *step_count,
+	int *finished);
+/* The gouges so far: locations where the shank or the holder of the tool met material that was still
+ * there. A gouge does not stop the simulation. first_step and first_point[3] (in the frame of the
+ * material) are those of the first gouge and mean nothing while count is 0; either may be null. */
+K5_API k5_status k5_simulation_gouges(k5_simulation simulation, size_t *count, size_t *first_step,
+	double *first_point);
 
 #ifdef __cplusplus
 }

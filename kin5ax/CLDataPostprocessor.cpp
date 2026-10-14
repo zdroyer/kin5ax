@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "CLDataPostprocessor.h"
 #include "5CPostprocessor.h"
+#include "LocationInterpolation.h"
 #include "string_tools.h"
 
 namespace kin5ax {
@@ -28,21 +29,25 @@ size_t CCLDataPostprocessingResult::CountOf(LOCATION_ORIGIN origin) const
 //it can solve and stops at the last - so the locations it dropped are padded with empty sets here.
 //Without the padding the simulation data and the records were shorter than the number of locations
 //solved, and nothing said which locations had gone missing (KnownBugs #70).
+//vSection is what the solver was handed: the location solved before the section first, which has its
+//record already, then the locations owed; the k-th set is for the (k+1)-th of them.
 static void AddSingularSectionSets(CCLDataPostprocessingResult &oResult, CSimulationData &oSimulationData
 	,const std::vector<tChainConfigurationVector> &vUnambiguous, size_t nOwedLocations
-	,size_t nFileLocation, size_t nFileLine)
+	,size_t nFileLocation, size_t nFileLine, const std::vector<CR3AnchoredVector> &vSection)
 {
 	size_t nPushed = 0;
 	for(;nPushed<vUnambiguous.size();nPushed++){
 		oSimulationData.AddConfigurationSet(vUnambiguous[nPushed]);
 		oResult.m_vLocations.push_back(CSolvedLocation(
 			vUnambiguous[nPushed].empty() ? SOLVE_STATUS_SINGULAR_UNSOLVED : SOLVE_STATUS_SOLVED
-			,LOCATION_SINGULAR_SECTION,nFileLocation,nFileLine));
+			,LOCATION_SINGULAR_SECTION,nFileLocation,nFileLine
+			,nPushed+1<vSection.size() ? vSection[nPushed+1] : CR3AnchoredVector()));
 	}
 	for(;nPushed<nOwedLocations;nPushed++){
 		oSimulationData.AddConfigurationSet(tChainConfigurationVector());
 		oResult.m_vLocations.push_back(CSolvedLocation(SOLVE_STATUS_SINGULAR_UNSOLVED
-			,LOCATION_SINGULAR_SECTION,nFileLocation,nFileLine));
+			,LOCATION_SINGULAR_SECTION,nFileLocation,nFileLine
+			,nPushed+1<vSection.size() ? vSection[nPushed+1] : CR3AnchoredVector()));
 	}
 }
 
@@ -134,7 +139,7 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 					//the first location of the collection is the one solved before the section and has its
 					//record already; every other one is ambiguous and waiting for its set
 					AddSingularSectionSets(oResult,oSimulationData,vUnambiguous
-						,vAmbiguousCollection.size()-1,nSectionLocation,nSectionLine);
+						,vAmbiguousCollection.size()-1,nSectionLocation,nSectionLine,vAmbiguousCollection);
 					if(pFile)
 						fprintf(pFile,"%s\n",sSingularSolutionLog.c_str());
 					bCollectingAmbiguousSolutions=false;
@@ -148,7 +153,7 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 					//this location, which gets its own a few lines below
 					AddSingularSectionSets(oResult,oSimulationData,vUnambiguous
 						,vAmbiguousCollection.size()>=2 ? vAmbiguousCollection.size()-2 : 0
-						,nSectionLocation,nSectionLine);
+						,nSectionLocation,nSectionLine,vAmbiguousCollection);
 					if(pFile)
 						fprintf(pFile,"%s\n",sSingularSolutionLog.c_str());
 					bCollectingAmbiguousSolutions=false;
@@ -160,7 +165,11 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 				oResult.m_vLocations.push_back(CSolvedLocation(oReport.Status()
 					,bFromFile ? LOCATION_FROM_FILE : LOCATION_INTERPOLATED
 					,bFromFile ? nFileLocation : (nPreviousLocation ? nPreviousLocation : nFileLocation)
-					,bFromFile ? nFileLine : nPreviousLine));
+					,bFromFile ? nFileLine : nPreviousLine
+					,vIntermediateLocations[j].second));
+				//one count per pair for this location, however many of its configurations that pair
+				//rejected
+				oResult.m_oCollisions.MergeDistinct(oReport.m_oCollisions);
 			}
 			lastInput.m_p = vIntermediateLocations[j].second.m_p;
 			lastInput.m_v = vIntermediateLocations[j].second.m_v;
@@ -220,14 +229,6 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 	return oResult;
 }
 
-//a unit vector perpendicular to the unit vector u: u x (the coordinate axis u is least aligned with)
-static CR3Vector PerpendicularUnitVector(const CR3Vector &u)
-{
-	double dX = fabs(u.GetX()), dY = fabs(u.GetY()), dZ = fabs(u.GetZ());
-	CR3Vector axis = (dX<=dY && dX<=dZ) ? CR3Vector(1.0,0.0,0.0) : (dY<=dZ ? CR3Vector(0.0,1.0,0.0) : CR3Vector(0.0,0.0,1.0));
-	return u.vectorProduct(axis).GetUnitVector();
-}
-
 void CCLDataPostprocessor::InterpolateLocation
 	( const CR3Point &p1
 	, const CR3Vector &v1
@@ -235,36 +236,7 @@ void CCLDataPostprocessor::InterpolateLocation
 	, const CR3Vector &v2
 	, std::vector<std::pair<double,CR3AnchoredVector> > & result) const
 {
-	result.erase(result.begin(),result.end());
-	if(!m_oSettings.m_bInterpolateBetweenLocations){
-		//nothing between two locations of the file: the second one is the whole step
-		result.push_back(std::pair<double,CR3AnchoredVector>(1.0,CR3AnchoredVector(v2,p2)));
-		return;
-	}
-	if(p1==p2 && v1==v2){
-		result.push_back(std::pair<double,CR3AnchoredVector>(1.0,CR3AnchoredVector(v2,p2)));	
-		return;
-	}
-	double dInv = m_oSettings.InterpolationSteps(d_E(p1,p2),v1.UndirectedUnitVectorsAngle(v2));
-	if(dInv<=1.0){
-		result.push_back(std::pair<double,CR3AnchoredVector>(1.0,CR3AnchoredVector(v2,p2)));
-		return;
-	} 
-	//the axis turns at a constant rate from u1 towards u2 in the plane of both: u(a) = u1 cos a + w sin a,
-	//w the unit vector perpendicular to u1 in that plane (any perpendicular one when the axes are antiparallel,
-	//KnownBugs #42: the normalised linear blend was the zero vector half way, and not uniform in between)
-	CR3Vector u1 = v1.GetUnitVector(), u2 = v2.GetUnitVector();
-	double dAngle = u1.UndirectedUnitVectorsAngle(u2);
-	CR3Vector w = u2 - u1*(u1*u2);
-	w = w.IsZero(1E-9) ? PerpendicularUnitVector(u1) : w.GetUnitVector();
-	double t;
-	result.reserve((size_t)fabs(dInv));
-	for(double i=1.0;i<dInv-0.001; i++){
-		t = i/dInv;
-		CR3Vector u = u1*cos(t*dAngle) + w*sin(t*dAngle);
-		result.push_back(std::pair<double,CR3AnchoredVector>(t,CR3AnchoredVector(u,(p2*t)+(p1*(1.0-t)))));
-	}
-	result.push_back(std::pair<double,CR3AnchoredVector>(1.0,CR3AnchoredVector(v2,p2)));
+	kin5ax::InterpolateLocation(p1,v1,p2,v2,m_oSettings,result);
 }
 
 } // namespace kin5ax

@@ -343,6 +343,106 @@ k5_status k5_chain_frames(k5_chain chain, int part, double *out, size_t capacity
 	K5_END(K5_ERROR_CHAIN)
 }
 
+k5_status k5_chain_segment_boxes(k5_chain chain, int part, size_t index, double *out,
+	size_t capacity_in_doubles, size_t *count_out)
+{
+	K5_BEGIN
+	K5_NEED(chain && count_out,"k5_chain_segment_boxes needs a chain and somewhere to put the count")
+	CHAIN_PART nPart = CHAIN_PART_TOOL;
+	K5_NEED(FromCPart(part,nPart),"part is neither K5_PART_TOOL nor K5_PART_MATERIAL_HOLDER")
+	const std::vector<CChainSegment> &vPart = chain->m_oChain.GetPart(nPart);
+	K5_NEED(index<vPart.size(),"there is no segment of that index in that branch of the chain")
+	const std::vector<CR3Box> &vBoxes = vPart[index].GetPartVector();
+	*count_out = vBoxes.size();
+	if(!out)
+		return K5_OK;				//the count was the question
+	if(capacity_in_doubles<vBoxes.size()*6)
+		return Fail(K5_ERROR_BUFFER_TOO_SMALL,"6 doubles are needed for every box of the segment");
+	size_t n = 0;
+	for(size_t i=0;i<vBoxes.size();i++){
+		const CR3Point a = vBoxes[i].GetMinPoint(), b = vBoxes[i].GetMaxPoint();
+		out[n++] = a.GetX();
+		out[n++] = a.GetY();
+		out[n++] = a.GetZ();
+		out[n++] = b.GetX();
+		out[n++] = b.GetY();
+		out[n++] = b.GetZ();
+	}
+	return K5_OK;
+	K5_END(K5_ERROR_CHAIN)
+}
+
+k5_status k5_chain_set_configuration(k5_chain chain, const double *q)
+{
+	K5_BEGIN
+	K5_NEED(chain && q,"k5_chain_set_configuration needs a chain and five joint values")
+	const k5_status nFive = NeedFiveAxes(chain->m_oChain);
+	if(nFive!=K5_OK)
+		return nFive;
+	chain->m_oChain.SetParameters(FromQ(chain->m_oChain,q));
+	return K5_OK;
+	K5_END(K5_ERROR_CHAIN)
+}
+
+//the pairs of a report into the k5_collision of the host
+static void ToCCollision(const CCollidingPair &oPair, k5_collision *out)
+{
+	CopyName(oPair.m_sFirst,out->first,(size_t)K5_NAME_MAX);
+	CopyName(oPair.m_sSecond,out->second,(size_t)K5_NAME_MAX);
+	switch(oPair.m_nKind){
+	case COLLIDING_TOOL:		out->kind = K5_COLLIDING_TOOL; break;
+	case COLLIDING_TOOL_SHANK:	out->kind = K5_COLLIDING_TOOL_SHANK; break;
+	default:					out->kind = K5_COLLIDING_PARTS; break;
+	}
+	out->locations = oPair.m_nCount;
+}
+
+k5_status k5_chain_solid_name(k5_chain chain, int part, size_t segment, size_t box,
+	char *out, size_t capacity)
+{
+	K5_BEGIN
+	K5_NEED(chain && out && capacity,"k5_chain_solid_name needs a chain and somewhere to put the name")
+	CHAIN_PART nPart = CHAIN_PART_TOOL;
+	K5_NEED(FromCPart(part,nPart),"part is neither K5_PART_TOOL nor K5_PART_MATERIAL_HOLDER")
+	CopyName(chain->m_oChain.GetSolidName(nPart,segment,box),out,capacity);
+	return K5_OK;
+	K5_END(K5_ERROR_CHAIN)
+}
+
+k5_status k5_chain_check_collisions(k5_chain chain, k5_tool tool, int *collides)
+{
+	K5_BEGIN
+	K5_NEED(chain && tool,"k5_chain_check_collisions needs a chain and a tool")
+	K5_NEED(tool->m_pTool,"the tool handle holds no tool")
+	chain->m_oChain.SetToolAssembly(*tool->m_pTool);
+	std::string sLog;
+	const bool b = chain->m_oChain.HasCollision(*tool->m_pTool,sLog);
+	if(collides)
+		*collides = b ? 1 : 0;
+	return K5_OK;
+	K5_END(K5_ERROR_CHAIN)
+}
+
+k5_status k5_chain_collision_count(k5_chain chain, size_t *out)
+{
+	K5_BEGIN
+	K5_NEED(chain && out,"k5_chain_collision_count needs a chain and somewhere to put the count")
+	*out = chain->m_oChain.GetCollisions().GetPairs().size();
+	return K5_OK;
+	K5_END(K5_ERROR_CHAIN)
+}
+
+k5_status k5_chain_collision(k5_chain chain, size_t index, k5_collision *out)
+{
+	K5_BEGIN
+	K5_NEED(chain && out,"k5_chain_collision needs a chain and somewhere to put the answer")
+	const std::vector<CCollidingPair> &vPairs = chain->m_oChain.GetCollisions().GetPairs();
+	K5_NEED(index<vPairs.size(),"there is no colliding pair of that index in this chain")
+	ToCCollision(vPairs[index],out);
+	return K5_OK;
+	K5_END(K5_ERROR_CHAIN)
+}
+
 k5_status k5_chain_tool_point(k5_chain chain, k5_tool tool, const double *q,
 	double *position, double *axis)
 {
@@ -367,6 +467,264 @@ k5_status k5_chain_tool_point(k5_chain chain, k5_tool tool, const double *q,
 	}
 	return K5_OK;
 	K5_END(K5_ERROR_CHAIN)
+}
+
+// ---------------------------------------------------------------- the cutting simulation
+
+k5_status k5_material_create(double x_size, double y_size, double z_size, double voxel_size,
+	double x_start, double y_start, double z_start, k5_material *out)
+{
+	K5_BEGIN
+	K5_NEED(out,"k5_material_create needs somewhere to put the handle")
+	K5_NEED(x_size>0.0 && y_size>0.0 && z_size>0.0,"a block of material has three sizes greater than zero")
+	K5_NEED(voxel_size>0.0,"the side of a voxel is greater than zero")
+	const double dVoxels = (x_size/voxel_size+1.0)*(y_size/voxel_size+1.0)*(z_size/voxel_size+1.0);
+	K5_NEED(dVoxels<2.0E9,"that many voxels is more than a block can hold: make the voxel larger")
+	std::unique_ptr<k5_material_t> p(new k5_material_t());
+	p->m_oMaterial.GenerateBox(x_size,y_size,z_size,voxel_size,x_start,y_start,z_start);
+	*out = p.release();
+	return K5_OK;
+	K5_END(K5_ERROR_ARGUMENT)
+}
+
+void k5_material_free(k5_material material)
+{
+	delete material;
+}
+
+k5_status k5_material_reset(k5_material material)
+{
+	K5_BEGIN
+	K5_NEED(material,"k5_material_reset needs a material")
+	material->m_oMaterial.ResetMaterial();
+	return K5_OK;
+	K5_END(K5_ERROR_UNKNOWN)
+}
+
+k5_status k5_material_dimensions(k5_material material, size_t *nx, size_t *ny, size_t *nz)
+{
+	K5_BEGIN
+	K5_NEED(material,"k5_material_dimensions needs a material")
+	size_t x=0, y=0, z=0;
+	material->m_oMaterial.GetDimensions(x,y,z);
+	if(nx) *nx = x;
+	if(ny) *ny = y;
+	if(nz) *nz = z;
+	return K5_OK;
+	K5_END(K5_ERROR_UNKNOWN)
+}
+
+k5_status k5_material_volumes(k5_material material, double *total, double *removed)
+{
+	K5_BEGIN
+	K5_NEED(material,"k5_material_volumes needs a material")
+	if(total) *total = material->m_oMaterial.GetTotalVolume();
+	if(removed) *removed = material->m_oMaterial.GetRemovedVolume();
+	return K5_OK;
+	K5_END(K5_ERROR_UNKNOWN)
+}
+
+k5_status k5_material_surface(k5_material material, double *out, size_t capacity_in_doubles,
+	size_t *count_out)
+{
+	K5_BEGIN
+	K5_NEED(material && count_out,"k5_material_surface needs a material and somewhere to put the count")
+	const std::vector<CR3Point> &vSurface = material->m_oMaterial.GetSurfaceVoxels();
+	*count_out = vSurface.size();
+	if(!out)
+		return K5_OK;				//the count was the question
+	if(capacity_in_doubles<vSurface.size()*3)
+		return Fail(K5_ERROR_BUFFER_TOO_SMALL,"3 doubles are needed for every voxel of the surface");
+	size_t n = 0;
+	for(size_t i=0;i<vSurface.size();i++){
+		out[n++] = vSurface[i].GetX();
+		out[n++] = vSurface[i].GetY();
+		out[n++] = vSurface[i].GetZ();
+	}
+	return K5_OK;
+	K5_END(K5_ERROR_UNKNOWN)
+}
+
+k5_status k5_material_surface_triangles(k5_material material, double *out,
+	size_t capacity_in_doubles, size_t *count_out)
+{
+	K5_BEGIN
+	K5_NEED(material && count_out,"k5_material_surface_triangles needs a material and somewhere to put the count")
+	std::vector<double> v;
+	const size_t nFaces = material->m_oMaterial.GetSurfaceTriangles(v);
+	*count_out = nFaces;
+	if(!out)
+		return K5_OK;				//the count was the question
+	if(capacity_in_doubles<v.size())
+		return Fail(K5_ERROR_BUFFER_TOO_SMALL,"18 doubles are needed for every face of the surface");
+	for(size_t i=0;i<v.size();i++)
+		out[i] = v[i];
+	return K5_OK;
+	K5_END(K5_ERROR_UNKNOWN)
+}
+
+k5_status k5_material_cut(k5_material material, k5_tool tool, const double *position,
+	const double *axis, int *gouged, double *gouge_point)
+{
+	K5_BEGIN
+	K5_NEED(material && tool && position && axis,"k5_material_cut needs a material, a tool, a position and an axis")
+	K5_NEED(tool->m_pTool,"the tool handle holds no tool")
+	const CR3Vector v(axis[0],axis[1],axis[2]);
+	K5_NEED(!v.IsZero(1E-12),"an axis of length zero is no direction")
+	tool->m_pTool->SetPositionAndOrientation(CR3Point(position[0],position[1],position[2]),v.GetUnitVector());
+	material->m_oMaterial.MachineCut(*tool->m_pTool);
+	CR3Point r3pGouge;
+	const bool bGouged = material->m_oMaterial.HasMaterialInNonCuttingPart(*tool->m_pTool,r3pGouge);
+	if(gouged)
+		*gouged = bGouged ? 1 : 0;
+	if(gouge_point && bGouged){
+		gouge_point[0] = r3pGouge.GetX();
+		gouge_point[1] = r3pGouge.GetY();
+		gouge_point[2] = r3pGouge.GetZ();
+	}
+	return K5_OK;
+	K5_END(K5_ERROR_SOLVER)
+}
+
+k5_status k5_simulation_create(k5_chain chain, k5_tool tool, k5_path path, k5_material material,
+	k5_simulation *out)
+{
+	K5_BEGIN
+	K5_NEED(chain && tool && path && material && out,
+		"k5_simulation_create needs a chain, a tool, a path, a material and somewhere to put the handle")
+	K5_NEED(tool->m_pTool,"the tool handle holds no tool")
+	const k5_status nFive = NeedFiveAxes(chain->m_oChain);
+	if(nFive!=K5_OK)
+		return nFive;
+	chain->m_oChain.SetToolAssembly(*tool->m_pTool);
+	*out = new k5_simulation_t(chain,tool,path,material);
+	return K5_OK;
+	K5_END(K5_ERROR_CHAIN)
+}
+
+k5_status k5_simulation_create_from_locations(k5_tool tool, const k5_settings *settings,
+	const double *positions, const double *axes, size_t count, k5_material material, k5_simulation *out)
+{
+	K5_BEGIN
+	K5_NEED(tool && settings && material && out,
+		"k5_simulation_create_from_locations needs a tool, settings, a material and somewhere to put the handle")
+	K5_NEED(tool->m_pTool,"the tool handle holds no tool")
+	K5_NEED(count==0 || (positions && axes),"a path of locations needs its positions and its axes")
+	std::vector<CR3AnchoredVector> vLocations;
+	vLocations.reserve(count);
+	for(size_t i=0;i<count;i++){
+		const CR3Vector v(axes[3*i],axes[3*i+1],axes[3*i+2]);
+		if(v.IsZero(1E-12))
+			return Fail(K5_ERROR_ARGUMENT,"the tool axis of location "+size_to_string(i+1)+" has no length");
+		vLocations.push_back(CR3AnchoredVector(v,CR3Point(positions[3*i],positions[3*i+1],positions[3*i+2])));
+	}
+	*out = new k5_simulation_t(tool,vLocations,FromCSettings(*settings),material);
+	return K5_OK;
+	K5_END(K5_ERROR_ARGUMENT)
+}
+
+void k5_simulation_free(k5_simulation simulation)
+{
+	delete simulation;
+}
+
+k5_status k5_simulation_location(k5_simulation simulation, size_t index, double *position,
+	double *axis, size_t *source, int *invented)
+{
+	K5_BEGIN
+	K5_NEED(simulation,"k5_simulation_location needs a simulation")
+	K5_NEED(index<simulation->m_pSimulation->GetStepCount(),"there is no location of that index in this simulation")
+	CR3AnchoredVector cv;
+	size_t nSource = index;
+	bool bInvented = false;
+	if(simulation->m_pFree){
+		const CDenseLocation &o = simulation->m_pFree->GetLocations()[index];
+		cv = o.m_cv;
+		nSource = o.m_nSource;
+		bInvented = o.m_bInvented;
+	}else{
+		k5_path_t *path = simulation->m_pPath;
+		K5_NEED(path->m_oData.HasSolution(index),"that location has no solution, so the tool is nowhere")
+		CChain &oChain = simulation->m_pChain->m_oChain;
+		oChain.SetParameters(path->m_oData[index]);
+		cv = oChain.GetActualToolPositionAndOrientation();
+		if(index<path->m_oResult.m_vLocations.size()){
+			const CSolvedLocation &o = path->m_oResult.m_vLocations[index];
+			nSource = o.m_nFileLocation ? o.m_nFileLocation-1 : 0;
+			bInvented = (o.m_nOrigin!=LOCATION_FROM_FILE);
+		}
+	}
+	if(position){
+		position[0] = cv.m_p.GetX();
+		position[1] = cv.m_p.GetY();
+		position[2] = cv.m_p.GetZ();
+	}
+	if(axis){
+		axis[0] = cv.m_v.GetX();
+		axis[1] = cv.m_v.GetY();
+		axis[2] = cv.m_v.GetZ();
+	}
+	if(source) *source = nSource;
+	if(invented) *invented = bInvented ? 1 : 0;
+	return K5_OK;
+	K5_END(K5_ERROR_ARGUMENT)
+}
+
+k5_status k5_simulation_reset(k5_simulation simulation)
+{
+	K5_BEGIN
+	K5_NEED(simulation,"k5_simulation_reset needs a simulation")
+	simulation->m_pSimulation->Reset();
+	return K5_OK;
+	K5_END(K5_ERROR_UNKNOWN)
+}
+
+k5_status k5_simulation_step(k5_simulation simulation, int *stepped)
+{
+	K5_BEGIN
+	K5_NEED(simulation,"k5_simulation_step needs a simulation")
+	const bool b = simulation->m_pSimulation->Step();
+	if(stepped) *stepped = b ? 1 : 0;
+	return K5_OK;
+	K5_END(K5_ERROR_SOLVER)
+}
+
+k5_status k5_simulation_run(k5_simulation simulation)
+{
+	K5_BEGIN
+	K5_NEED(simulation,"k5_simulation_run needs a simulation")
+	simulation->m_pSimulation->Run(NULL);
+	return K5_OK;
+	K5_END(K5_ERROR_SOLVER)
+}
+
+k5_status k5_simulation_progress(k5_simulation simulation, size_t *step_index, size_t *step_count,
+	int *finished)
+{
+	K5_BEGIN
+	K5_NEED(simulation,"k5_simulation_progress needs a simulation")
+	if(step_index) *step_index = simulation->m_pSimulation->GetStepIndex();
+	if(step_count) *step_count = simulation->m_pSimulation->GetStepCount();
+	if(finished) *finished = simulation->m_pSimulation->IsFinished() ? 1 : 0;
+	return K5_OK;
+	K5_END(K5_ERROR_UNKNOWN)
+}
+
+k5_status k5_simulation_gouges(k5_simulation simulation, size_t *count, size_t *first_step,
+	double *first_point)
+{
+	K5_BEGIN
+	K5_NEED(simulation && count,"k5_simulation_gouges needs a simulation and somewhere to put the count")
+	*count = simulation->m_pSimulation->GetGougeCount();
+	if(first_step) *first_step = simulation->m_pSimulation->GetFirstGougeStep();
+	if(first_point){
+		const CR3Point &p = simulation->m_pSimulation->GetFirstGougePoint();
+		first_point[0] = p.GetX();
+		first_point[1] = p.GetY();
+		first_point[2] = p.GetZ();
+	}
+	return K5_OK;
+	K5_END(K5_ERROR_UNKNOWN)
 }
 
 k5_status k5_chain_default_gcode_axes(k5_chain chain, k5_gcode_axes *out)
@@ -546,6 +904,12 @@ k5_status k5_path_location(k5_path path, size_t index, k5_location *out)
 		out->q[i] = 0.0;
 	if(out->has_solution)
 		ToQ(path->m_oData[index],out->q);
+	out->position[0] = oRecord.m_cvInput.m_p.GetX();
+	out->position[1] = oRecord.m_cvInput.m_p.GetY();
+	out->position[2] = oRecord.m_cvInput.m_p.GetZ();
+	out->axis[0] = oRecord.m_cvInput.m_v.GetX();
+	out->axis[1] = oRecord.m_cvInput.m_v.GetY();
+	out->axis[2] = oRecord.m_cvInput.m_v.GetZ();
 	return K5_OK;
 	K5_END(K5_ERROR_ARGUMENT)
 }
@@ -582,6 +946,26 @@ k5_status k5_path_errors(k5_path path, double *max_position_error, double *max_o
 		*max_orientation_error = path->m_oResult.m_dMaxOrientationErrorVectorLength;
 	return K5_OK;
 	K5_END(K5_ERROR_ARGUMENT)
+}
+
+k5_status k5_path_collision_count(k5_path path, size_t *out)
+{
+	K5_BEGIN
+	K5_NEED(path && out,"k5_path_collision_count needs a path and somewhere to put the count")
+	*out = path->m_oResult.m_oCollisions.GetPairs().size();
+	return K5_OK;
+	K5_END(K5_ERROR_UNKNOWN)
+}
+
+k5_status k5_path_collision(k5_path path, size_t index, k5_collision *out)
+{
+	K5_BEGIN
+	K5_NEED(path && out,"k5_path_collision needs a path and somewhere to put the answer")
+	const std::vector<CCollidingPair> &vPairs = path->m_oResult.m_oCollisions.GetPairs();
+	K5_NEED(index<vPairs.size(),"there is no colliding pair of that index in this path")
+	ToCCollision(vPairs[index],out);
+	return K5_OK;
+	K5_END(K5_ERROR_UNKNOWN)
 }
 
 k5_status k5_path_last_configuration(k5_path path, double *q)

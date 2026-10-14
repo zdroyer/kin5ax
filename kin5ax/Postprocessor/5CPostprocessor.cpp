@@ -98,7 +98,7 @@ tChainConfigurationVector C5CPostprocessor::Solve(const CR3Point  r3pPosition, c
 		sLog+="joint limits not checked\n";
 	oReport.m_nWithinLimits = vResult.size();
 	if(m_oSettings.m_bCheckCollisions)
-		vResult = ApplyCollisionDetection(vResult,oChain,*pMillingTool,sLog);
+		vResult = ApplyCollisionDetection(vResult,oChain,*pMillingTool,sLog,&oReport.m_oCollisions);
 	else
 		sLog+="collisions not checked\n";
 	oReport.m_nCollisionFree = vResult.size();
@@ -139,7 +139,7 @@ tChainConfigurationVector C5CPostprocessor::ApplyParameterConstraints(const tCha
 	return vResults;
 }
 
-tChainConfigurationVector C5CPostprocessor::ApplyCollisionDetection(const tChainConfigurationVector &vSolutions, CChain &oChain,CMillingTool &oMillingTool,std::string &sLog)
+tChainConfigurationVector C5CPostprocessor::ApplyCollisionDetection(const tChainConfigurationVector &vSolutions, CChain &oChain,CMillingTool &oMillingTool,std::string &sLog,CCollisionReport *pCollisions)
 {
 	std::string sCollisionLog;
 	tChainConfigurationVector vResults;
@@ -147,6 +147,8 @@ tChainConfigurationVector C5CPostprocessor::ApplyCollisionDetection(const tChain
 		oChain.SetParameters(vSolutions[i]);
 		if(oChain.HasCollision(oMillingTool,sCollisionLog)){
 			sLog+=sCollisionLog;
+			if(pCollisions)
+				pCollisions->MergeDistinct(oChain.GetCollisions());
 		} else {
 			vResults.push_back(vSolutions[i]);
 		}

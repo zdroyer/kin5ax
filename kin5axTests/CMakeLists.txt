@@ -16,10 +16,12 @@ add_executable(kin5axTests
   ChainTests.cpp
   ChainToolCollisionTests.cpp
   ChainXmlReaderTests.cpp
+  CollisionReportTests.cpp
   DoubleToolsTests.cpp
   ExceptionsTests.cpp
   InterpolationTests.cpp
   LocaleTests.cpp
+  LocationInterpolationTests.cpp
   M4x4Tests.cpp
   MaterialGougeTests.cpp
   MaterialSimulationTests.cpp
@@ -36,6 +38,7 @@ add_executable(kin5axTests
   SolveReportTests.cpp
   StringToolsTests.cpp
   ToolAssemblyTests.cpp
+  ToolPathSimulationTests.cpp
   TrajectoryStartTests.cpp
   ToolMountTests.cpp
 )
