@@ -85,7 +85,11 @@ ctest --test-dir build --output-on-failure
 On Windows add the generator and the toolset of the application project, `-G "Visual Studio 18 2026" -A x64 -T v143`,
 and `-C Release` to `ctest`. Builds warning-free with MSVC 19.44 (v143) and GCC 15; the tests pass on both.
 In WSL keep the build tree in the Linux file system (`cmake -S /mnt/c/... -B ~/kin5ax-build -G Ninja`): the
-GoogleTest sub-build fails on a mounted Windows drive.
+GoogleTest sub-build fails on a mounted Windows drive. Such a build always stamps its commit
+`-dirty`, and correctly so: git inside WSL has no `core.autocrlf`, so it reads every CRLF file of a
+Windows checkout as modified, and the binary really is not that commit as far as that git can tell.
+A shared library that is going to be shipped should come from the release workflow, or from a
+checkout made on Linux.
 
 **The C interface** is built with the rest unless `-DKIN5AX_BUILD_C_ABI=OFF` says otherwise. It is a
 shared library with one header, [`kin5axc/include/kin5ax.h`](kin5axc/include/kin5ax.h): handles instead
