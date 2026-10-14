@@ -143,6 +143,53 @@ const std::vector<CR3Point> &CMaterial::GetSurfaceVoxels()
 	return m_vGrayVoxels;
 }
 
+size_t CMaterial::GetSurfaceTriangles(std::vector<double> &vOut) const
+{
+	//the six sides of a voxel: the step to the neighbour behind the side, and the two edges of the
+	//side as the voxel's own axes, ordered so that the first edge crossed with the second points out
+	static const int nSides[6][3] = {{1,0,0},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1}};
+	static const int nEdges[6][2][3] = {
+		{{0,1,0},{0,0,1}}, {{0,0,1},{0,1,0}},		//+x: y then z; -x: z then y
+		{{0,0,1},{1,0,0}}, {{1,0,0},{0,0,1}},		//+y: z then x; -y: x then z
+		{{1,0,0},{0,1,0}}, {{0,1,0},{1,0,0}}};		//+z: x then y; -z: y then x
+	const double p = m_dPrecision;
+	size_t nFaces = 0;
+	for(size_t i=0;i<m_nX;i++)
+		for(size_t j=0;j<m_nY;j++)
+			for(size_t k=0;k<m_nZ;k++){
+				if(Is(VOXEL_BLACK,i,j,k))
+					continue;
+				for(int s=0;s<6;s++){
+					//the neighbour behind the side, with the outside counting as removed; a step below
+					//zero wraps to a huge index, which Is() takes for outside as well
+					const size_t ni = i+(size_t)nSides[s][0], nj = j+(size_t)nSides[s][1], nk = k+(size_t)nSides[s][2];
+					if(!Is(VOXEL_BLACK,ni,nj,nk))
+						continue;
+					//the corner of the side nearest the start of the block: the voxel corner, moved one
+					//voxel along the side's axis when the side faces the positive way
+					double c[3] = {m_dXStart+(double)i*p,m_dYStart+(double)j*p,m_dZStart+(double)k*p};
+					for(int a=0;a<3;a++)
+						if(nSides[s][a]>0)
+							c[a] += p;
+					double u[3], v[3];
+					for(int a=0;a<3;a++){
+						u[a] = c[a]+p*(double)nEdges[s][0][a];
+						v[a] = c[a]+p*(double)nEdges[s][1][a];
+					}
+					double w[3];
+					for(int a=0;a<3;a++)
+						w[a] = c[a]+p*(double)(nEdges[s][0][a]+nEdges[s][1][a]);
+					//two triangles: corner, along the first edge, the far corner; corner, far, along the second
+					const double *pTriangles[6] = {c,u,w,c,w,v};
+					for(int t=0;t<6;t++)
+						for(int a=0;a<3;a++)
+							vOut.push_back(pTriangles[t][a]);
+					nFaces++;
+				}
+			}
+	return nFaces;
+}
+
 void CMaterial::MachineCut(CMillingTool & oCutter)
 {
 	CR3Box b =  oCutter.GetCuttingPartBoundingBox();

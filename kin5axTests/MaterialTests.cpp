@@ -1,6 +1,7 @@
 // CMaterial: the voxel block (material, surface, removed) and the cut of a milling tool.
 #include "stdafx.h"
 #include "gtest/gtest.h"
+#include <vector>
 #include "Material.h"
 #include "MillingToolBall.h"
 
@@ -132,4 +133,28 @@ TEST(Material, VolumesAreWholeVoxels)
 	EXPECT_DOUBLE_EQ((double)o.GetVoxelCount(VOXEL_BLACK)*1.25E-7,o.GetRemovedVolume());
 	EXPECT_GT(o.GetRemovedVolume(),117*1.25E-7)<<"half a ball and a 40 mm cylinder of radius 10 mm, blurred by a voxel";
 	EXPECT_LT(o.GetRemovedVolume(),0.3*o.GetTotalVolume());
+}
+
+TEST(Material, TheExposedFacesOfABlockAreItsOutsideAndACutAddsToThem)
+{
+	//10 x 5 x 2 voxels of 0.01: the outside is 2(10*5 + 5*2 + 10*2) = 160 faces
+	CMaterial oBlock(0.10,0.05,0.02,0.01,0.0,0.0,0.0);
+	size_t nx=0, ny=0, nz=0;
+	oBlock.GetDimensions(nx,ny,nz);
+	std::vector<double> v;
+	const size_t nWhole = oBlock.GetSurfaceTriangles(v);
+	EXPECT_EQ(2*(nx*ny+ny*nz+nx*nz),nWhole);
+	EXPECT_EQ(18*nWhole,v.size());
+	//a ball taken out of the middle of the top of a wider block exposes the walls of its hole: more
+	//faces than the outside alone (in the block above, the hole would reach the sides and take their
+	//faces away with it, which is why the cut is made here on 20 x 20 x 2)
+	CMaterial oWide(0.20,0.20,0.02,0.01,0.0,0.0,0.0);
+	v.clear();
+	const size_t nWideWhole = oWide.GetSurfaceTriangles(v);
+	CMillingToolBall oTool(0.016,0.016,0.064,0.016,0.030,CToolHolder(0.050,0.030));
+	oTool.SetPositionAndOrientation(CR3Point(0.10,0.10,0.02),CR3Vector(0.0,0.0,1.0));
+	oWide.MachineCut(oTool);
+	EXPECT_GT(oWide.GetRemovedVolume(),0.0);
+	v.clear();
+	EXPECT_GT(oWide.GetSurfaceTriangles(v),nWideWhole);
 }

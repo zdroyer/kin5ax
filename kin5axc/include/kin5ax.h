@@ -332,6 +332,13 @@ K5_API k5_status k5_material_volumes(k5_material material, double *total, double
  * null to ask for the count only; count_out gets the number of voxels either way. */
 K5_API k5_status k5_material_surface(k5_material material, double *out, size_t capacity_in_doubles,
 	size_t *count_out);
+/* The same surface as a solid: the exposed faces of what is left - every side of a material voxel
+ * with a removed voxel or the outside behind it - as two triangles each, wound to face outwards, 18
+ * doubles per face (x y z of three corners, twice). A face a renderer cannot see from any side is
+ * not among them. out may be null to ask for the count of faces only; count_out gets it either way,
+ * and the doubles needed are 18 times that. */
+K5_API k5_status k5_material_surface_triangles(k5_material material, double *out,
+	size_t capacity_in_doubles, size_t *count_out);
 
 /* A simulation of the path cutting the material with that tool on that chain. The four belong to the
  * caller and must outlive the simulation; the chain's joint values and the tool's position are

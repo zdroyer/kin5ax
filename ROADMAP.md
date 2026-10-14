@@ -77,11 +77,11 @@ report. Two calls were added to the ABI for it: `k5_chain_segment_boxes` and
 them by hand already; the file format does not reference them), and the collision verdict of the
 solver shown as a marker in the picture, next to the unreachable ones.
 
-### 4. Done: cutting simulation, as voxels and points
+### 4. Done: cutting simulation, as voxels
 
 Twelve calls in the ABI (`k5_material_*`, `k5_simulation_*`), the binding, and `Cut` on the
 simulation object, 2026-10-15: the stock of the job as a block of voxels, cut step by step with the
-tool of each operation, the surface as a point cloud under the material part, the removed volume
+tool of each operation, the surface under the material part, the removed volume
 and the gouges as properties and a marker. The interpolation is made as dense as the voxels when
 cutting, which is what the once-per-location stamp of the library needs.
 
@@ -91,8 +91,13 @@ out of the solver so both share it), one ABI constructor from positions and axes
 optional on the simulation object. The tool is drawn leaning in the frame of the part straight
 from the path. Nothing of the densification is in Python.
 
-Next here, in order of value: **a surface instead of points** — a mesh of cube faces first, then
-marching cubes in the library and through the ABI; **the sweep** of the tool between two locations
+2026-10-16: the surface as a **mesh of the exposed voxel faces**, worked out in the library
+(`CMaterial::GetSurfaceTriangles`, `k5_material_surface_triangles`), in place of the point cloud;
+the joints of the machine shown as the application draws them; a link carrying the placement of the
+stock, and one simulation per job, which were the two faults of the first picture.
+
+Next here, in order of value: **marching cubes** in the library and through the ABI, for a smooth
+surface in place of the voxel faces; **the sweep** of the tool between two locations
 in the library, so the interpolation can be coarse again; **the comparison** of what is left with
 the model of the job, which is what a finish pass is judged by; and the collision verdict of the
 solver as a marker next to the unreachable ones.

@@ -340,6 +340,45 @@ TEST(Abi, ABlockOfMaterialAndWhatIsLeftOfIt)
 	k5_material_free(NULL);		//allowed
 }
 
+TEST(Abi, TheSurfaceOfTheMaterialAsTriangles)
+{
+	//a block of 10 x 5 x 2 voxels: its outside is 2(10*5 + 5*2 + 10*2) = 160 faces, no more
+	k5_material material = NULL;
+	ASSERT_EQ(K5_OK,k5_material_create(0.10,0.05,0.02,0.01,0.0,0.0,0.0,&material))<<k5_last_error();
+	size_t nx=0, ny=0, nz=0;
+	ASSERT_EQ(K5_OK,k5_material_dimensions(material,&nx,&ny,&nz));
+	const size_t nExpected = 2*(nx*ny+ny*nz+nx*nz);
+	size_t nFaces = 0;
+	ASSERT_EQ(K5_OK,k5_material_surface_triangles(material,NULL,0,&nFaces))<<k5_last_error();
+	EXPECT_EQ(nExpected,nFaces);
+	std::vector<double> v(18*nFaces,0.0);
+	size_t nAgain = 0;
+	ASSERT_EQ(K5_OK,k5_material_surface_triangles(material,&v[0],v.size(),&nAgain));
+	EXPECT_EQ(nFaces,nAgain);
+	//every corner on the block, and every triangle's normal pointing out of it
+	const double dX = (double)nx*0.01, dY = (double)ny*0.01, dZ = (double)nz*0.01;
+	for(size_t f=0;f<nFaces;f++){
+		for(int t=0;t<2;t++){
+			const double *a = &v[18*f+9*t], *b = a+3, *c = a+6;
+			for(int k=0;k<3;k++){
+				EXPECT_GE(a[k],-1E-12);
+			}
+			EXPECT_LE(a[0],dX+1E-12);
+			EXPECT_LE(a[1],dY+1E-12);
+			EXPECT_LE(a[2],dZ+1E-12);
+			const double n[3] = {(b[1]-a[1])*(c[2]-a[2])-(b[2]-a[2])*(c[1]-a[1])
+				,(b[2]-a[2])*(c[0]-a[0])-(b[0]-a[0])*(c[2]-a[2])
+				,(b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0])};
+			const double m[3] = {(a[0]+b[0]+c[0])/3.0-dX/2.0,(a[1]+b[1]+c[1])/3.0-dY/2.0,(a[2]+b[2]+c[2])/3.0-dZ/2.0};
+			EXPECT_GT(n[0]*m[0]+n[1]*m[1]+n[2]*m[2],0.0)<<"face "<<f<<" triangle "<<t<<" faces outwards";
+		}
+	}
+	double d[1] = {0.0};
+	EXPECT_EQ(K5_ERROR_BUFFER_TOO_SMALL,k5_material_surface_triangles(material,d,1,&nAgain));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_material_surface_triangles(NULL,NULL,0,&nAgain));
+	k5_material_free(material);
+}
+
 TEST(Abi, ThePathCutsTheMaterialWhereItGoes)
 {
 	k5_chain chain = OpenChain();
