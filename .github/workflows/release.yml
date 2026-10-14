@@ -148,6 +148,41 @@ jobs:
       - name: Install into a staging folder
         run: cmake --install build --config "$BUILD_TYPE" --prefix "stage/$PKG"
 
+      # kin5ax Chain Editor Plus, the MFC application: the only way to edit a chain file and the
+      # only view of why the solver chose the configuration it chose, so a release of the library
+      # that leaves it out leaves out the tool for looking at what was released. Windows only, since
+      # MFC is, and it needs the C++ MFC component of Visual Studio, which the hosted image carries.
+      # Its kin5ax project is a Makefile project that calls CMake, so the library is built twice
+      # here; that costs a minute and keeps the application's build the one a developer runs.
+      - name: Build the chain editor
+        if: ${{ matrix.platform == 'windows-x64' }}
+        shell: pwsh
+        run: |
+          $mfc = Get-ChildItem -Path "$env:VCINSTALLDIR","C:\Program Files\Microsoft Visual Studio" `
+            -Recurse -Filter afxwin.h -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $mfc) {
+            Write-Host "::error::MFC is not on this runner. The image needs the Visual Studio component Microsoft.VisualStudio.Component.VC.ATLMFC."
+            exit 1
+          }
+          Write-Host "MFC found at $($mfc.FullName)"
+          $msbuild = (Get-ChildItem "C:\Program Files\Microsoft Visual Studio\*\*\MSBuild\Current\Bin\MSBuild.exe" |
+                      Select-Object -First 1).FullName
+          & $msbuild kin5axChainEditorPlus\kin5axChainEditorPlus.sln `
+            -p:Configuration=Release -p:Platform=x64 -m -nologo -v:minimal
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Put the chain editor in the package
+        if: ${{ matrix.platform == 'windows-x64' }}
+        run: |
+          mkdir -p "stage/$PKG/chain-editor"
+          cp kin5axChainEditorPlus/x64/Release/kin5axChainEditorPlus.exe "stage/$PKG/chain-editor/"
+          # the machine models it opens, so the application has something to show on first run
+          cp kin5axChainEditorPlus/*.kc "stage/$PKG/chain-editor/" 2>/dev/null || true
+          ls -l "stage/$PKG/chain-editor/"
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          print("- `windows-x64` carries kin5ax Chain Editor Plus")
+          PY
+
       # The reason this workflow exists: the binary that is about to be shipped has to agree with
       # the source it was built from. A mismatch means the build did not see git, or saw the wrong
       # checkout, and a library that misreports its own commit is worse than one that says nothing.

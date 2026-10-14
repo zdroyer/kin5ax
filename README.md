@@ -51,7 +51,7 @@ fast, exact, machine-aware judge of the toolpath. That judge is this library. Se
 | [`kin5axTests/`](kin5axTests/) | GoogleTest suite, 794 tests, with 11 machine models under `TestChains/` | same |
 | [`kin5axc/`](kin5axc/) | the C interface (`kin5axc`, one header `kin5ax.h`): a shared library that exports nothing but its `k5_*` functions | same |
 | [`kin5axcTests/`](kin5axcTests/) | the tests of that interface, 23 tests, linked against the shared library alone | same |
-| [`Universal5CMillingMachinePostprocessor/`](Universal5CMillingMachinePostprocessor/) | MFC application: kinematic chain editor, 3D viewer, single-location solver with a step-by-step log, batch postprocessing of CL files, a rudimentary voxel simulation that checks the geometry of the postprocessor on a hemisphere sized for the machine | Windows |
+| [`kin5axChainEditorPlus/`](kin5axChainEditorPlus/) | **kin5ax Chain Editor Plus**, the MFC application: kinematic chain editor, 3D viewer, single-location solver with a step-by-step log, batch postprocessing of CL files, a rudimentary voxel simulation that checks the geometry of the postprocessor on a hemisphere sized for the machine. The only way to edit a chain file, and the only view of why the solver chose what it chose | Windows |
 
 Machine models shipped and round-trip tested (catalogue travels and swivel ranges; head and
 pivot offsets estimated and marked as such in the file):
@@ -130,7 +130,7 @@ the commit the binary reports is the commit that was checked out. The Linux half
 older one loads on more of the systems FreeCAD runs on.
 
 **The application** (Windows, Visual Studio 2022 or later with MFC, CMake on the PATH): open
-`Universal5CMillingMachinePostprocessor/Universal5CMillingMachinePostprocessor.sln`. Its `kin5ax`
+`kin5axChainEditorPlus/kin5axChainEditorPlus.sln`. Its `kin5ax`
 project is a Makefile project that builds the library with CMake into `build/` and the application
 links that `kin5ax.lib`; the source list of the library lives in `kin5ax/CMakeLists.txt` only. The
 tests are CMake only. One script does everything on Windows:

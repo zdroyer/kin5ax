@@ -2,7 +2,7 @@
 
 Inverse kinematics and postprocessing for five-axis (5C) milling machines. A C++17 library,
 `namespace kin5ax`, standard library only; pugixml and nlohmann/json are vendored under
-`3rdParty/`. The MFC application in `../Universal5CMillingMachinePostprocessor` is its editor,
+`3rdParty/`. The MFC application in `../kin5axChainEditorPlus` is its editor,
 viewer and simulator; `../kin5axTests` is its GoogleTest suite. The pitch, the build and the state
 of the code are in the [repository README](../README.md); this file is the reference.
 

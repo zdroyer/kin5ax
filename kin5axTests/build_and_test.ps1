@@ -6,7 +6,7 @@
 # Usage:  powershell -ExecutionPolicy Bypass -File kin5axTests/build_and_test.ps1 [-Start]
 param([switch]$Start)
 $root = Split-Path -Parent $PSScriptRoot
-$sol = "$root\Universal5CMillingMachinePostprocessor"   # the Visual Studio solution lives with the MFC application
+$sol = "$root\kin5axChainEditorPlus"   # the Visual Studio solution lives with the MFC application
 $build = "$root\build"
 $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
 $msbuild = & $vswhere -latest -requires Microsoft.Component.MSBuild -find "MSBuild\**\Bin\MSBuild.exe" | Select-Object -First 1
@@ -37,7 +37,7 @@ if ($bad -eq 0) {
 
 # 2. msbuild: the application
 foreach ($cfg in "Debug","Release") {
-  $o = & $msbuild "$sol\Universal5CMillingMachinePostprocessor.sln" /p:Configuration=$cfg /p:Platform=x64 /m /nologo /v:minimal
+  $o = & $msbuild "$sol\kin5axChainEditorPlus.sln" /p:Configuration=$cfg /p:Platform=x64 /m /nologo /v:minimal
   $code = $LASTEXITCODE
   $e = @($o | Select-String ': (fatal )?error '); $w = @($o | Select-String ': warning ')
   "APP ${cfg}|x64  exit $code  errors $($e.Count)  warnings $($w.Count)"
@@ -48,7 +48,7 @@ foreach ($cfg in "Debug","Release") {
 # 3. the application starts
 if ($Start -and $bad -eq 0) {
   foreach ($cfg in "Debug","Release") {
-    $p = Start-Process "$sol\x64\$cfg\Universal5CMillingMachinePostprocessor.exe" -ArgumentList "`"$sol\3CWithSphericalWrist_withBoxes.kc`"" -WorkingDirectory $sol -PassThru
+    $p = Start-Process "$sol\x64\$cfg\kin5axChainEditorPlus.exe" -ArgumentList "`"$sol\3CWithSphericalWrist_withBoxes.kc`"" -WorkingDirectory $sol -PassThru
     Start-Sleep -Seconds 4; $p.Refresh()
     if ($p.HasExited) { "START ${cfg}: exited early, code $($p.ExitCode)"; $bad++ }
     else { "START ${cfg}: running, responding=$($p.Responding), '$($p.MainWindowTitle)'"; $p.CloseMainWindow() | Out-Null; Start-Sleep 2; $p.Refresh(); if (-not $p.HasExited) { $p.Kill() } }

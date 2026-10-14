@@ -1,5 +1,5 @@
 # kin5ax: the inverse kinematics library and its GoogleTest suite, on any platform with a C++17 compiler.
-# The MFC application has its own Visual Studio solution in Universal5CMillingMachinePostprocessor/.
+# The MFC application has its own Visual Studio solution in kin5axChainEditorPlus/.
 #
 #   cmake -B build -DCMAKE_BUILD_TYPE=Release
 #   cmake --build build

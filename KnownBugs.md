@@ -36,9 +36,9 @@ Nothing here was observed at run time unless a test is named.
 
 | # | Where | Defect | Check | Status |
 |---|---|---|---|---|
-| 12 | `Universal5CMillingMachinePostprocessorDoc.cpp` `GetPostprocessor` | Deletes `m_pPostprocessor` and may then throw without nulling it: double delete on the next call. | verified | **fixed** 57df9cc |
+| 12 | `kin5axChainEditorPlusDoc.cpp` `GetPostprocessor` | Deletes `m_pPostprocessor` and may then throw without nulling it: double delete on the next call. | verified | **fixed** 57df9cc |
 | 13 | `PostprocessingDialog.cpp` `fprintf(pFile,GenerateReportHead().c_str())` | Data (file paths) used as the format string. | verified | **fixed** d58f899 |
-| 14 | `Universal5CMillingMachinePostprocessorDoc.cpp` `OnSaveDocument` `fprintf(file,sXML.c_str())` | Data (the XML) used as the format string. | verified | **fixed** d58f899 |
+| 14 | `kin5axChainEditorPlusDoc.cpp` `OnSaveDocument` `fprintf(file,sXML.c_str())` | Data (the XML) used as the format string. | verified | **fixed** d58f899 |
 | 15 | `KinematicChainPropertiesDialog.cpp` `m_pActiveSegment` | Pointer into a vector; stale after add/delete segment or a replaced chain: the tree rebuild in `SetActiveDocument` fires the selection handler, which dereferenced it and indexed the vector with the old item data. | verified | **fixed** bd982f1 |
 | 16 | `PostprocessingDialog.cpp`, `OnOpenDocument` | No try/catch around calls that throw `CGeneratorException`/`_com_error`: the application terminates. `OnOpenDocument` got its catch with the reader move (2605ba7); `OnBnClickedStart` now catches around `Process`/`FindShortestPath` and refuses to start without a milling tool. | verified | **fixed** 869424a |
 | 17 | `CLDataPostprocessor.cpp` `InterpolateLocation` + dialog | A zero interpolation limit (also while typing "0.01") gives an endless loop; no locations gives 0/0. | reported | **fixed** 1447c0b |
@@ -73,7 +73,7 @@ Nothing here was observed at run time unless a test is named.
 | 30 | `Chain.cpp` `CheckAndCorrectSegmentsNames` | `j=0` inside the `for(...;j++)` restarts at 1: duplicate names can survive. | **fixed** e0e981d |
 | 31 | `Chain.cpp` `GetActualParameter` | Off by one for the material holder part (unused function). | **fixed** d7a1c87 |
 | 32 | `5CPostprocessor.cpp` `SolveSingularOrientation` | `vFirst.front()` on an empty vector when no input is solvable (not reachable from the current caller). | **fixed** 6fa8a61 |
-| 33 | `Universal5CMillingMachinePostprocessorView.cpp:82` | A GLU quadric is created on every repaint and never freed. | **fixed** ac6538c |
+| 33 | `kin5axChainEditorPlusView.cpp:82` | A GLU quadric is created on every repaint and never freed. | **fixed** ac6538c |
 | 34 | `KinematicChainPropertiesDialog.cpp` | `size_t m_nActivePart`: `GetCurSel()` of -1 and `max(0,n-1)` underflow. | **fixed** c0e8462 |
 | 35 | `GLTools.cpp` arrows | A vector (0,0,-1) gives a zero rotation axis: drawn pointing up. | **fixed** 25c7486 |
 | 36 | various | `MaterialBlockDialog` accepts voxel size 0; `CMaterial::m_dPixelSize` and `CMillingToolPropertiesDialog::m_pDoc` uninitialised; `"%d"` with `size_t` in three dialogs; also `CMaterialBlockDialog::m_pDoc` uninitialised. | **fixed** a93f8ce |
