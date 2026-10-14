@@ -78,6 +78,10 @@ public:
 	//Which solids met in the last DetectCollisions - and so in the last HasCollision, and in the last
 	//check the solver made on this chain. Empty when nothing met.
 	const CCollisionReport &GetCollisions() const;
+	//The name a report gives one solid of a segment of a branch: the name of the segment, or its place
+	//in the branch when the file gives it none, and the number of the box when the segment has more
+	//than one. The host that draws a machine needs the same names to show what met.
+	std::string GetSolidName(CHAIN_PART part, size_t nSegment, size_t nBox) const;
 	CChain(void);
 	std::string toXML() const;
 	//the tool part ends with the only TOOL segment, the material holder part with the only

@@ -833,15 +833,28 @@ bool CChain::HasCollision(CMillingTool &oMillingTool,std::string &sLog)
 	return false;
 }
 
+//see below
+std::string SolidName(const CChainSegment &oSegment, size_t nBox, size_t nBoxes
+	,CHAIN_PART part, size_t nIndex);
+
 const CCollisionReport &CChain::GetCollisions() const
 {
 	return m_oCollisions;
 }
 
+std::string CChain::GetSolidName(CHAIN_PART part, size_t nSegment, size_t nBox) const
+{
+	const std::vector<CChainSegment> &vPart = GetPart(part);
+	if(nSegment>=vPart.size())
+		MY_THROW(CArgsMyException,"No segment "+size_to_string(nSegment)+" in this part of the chain: it has "
+			+size_to_string(vPart.size())+" of them");
+	return SolidName(vPart[nSegment],nBox,vPart[nSegment].GetPartVector().size(),part,nSegment);
+}
+
 //The name of one solid of a segment, the way a report reads it: the name the file gives the segment,
 //or its place in its branch when it has none, and the number of the box when the segment has more
 //than one.
-static std::string SolidName(const CChainSegment &oSegment, size_t nBox, size_t nBoxes
+std::string SolidName(const CChainSegment &oSegment, size_t nBox, size_t nBoxes
 	,CHAIN_PART part, size_t nIndex)
 {
 	std::string sName = oSegment.GetName();

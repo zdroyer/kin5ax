@@ -198,6 +198,26 @@ K5_API k5_status k5_chain_segment_boxes(k5_chain chain, int part, size_t index, 
  * The joint limits are not checked - a host drawing the machine may want to see it past them. */
 K5_API k5_status k5_chain_set_configuration(k5_chain chain, const double *q);
 
+typedef struct k5_collision {
+	char first[K5_NAME_MAX];	/* the two solids that met, named as the chain file names them, cut to fit */
+	char second[K5_NAME_MAX];
+	int kind;					/* k5_collision_kind */
+	size_t locations;			/* at how many locations of the path this pair met */
+} k5_collision;
+
+/* The name a report gives one solid of a segment of a branch - the name of the segment, or its place
+ * in the branch when the file gives it none, and the number of the box when the segment has more than
+ * one. A host that draws a machine needs these to show which solids k5_path_collision names. */
+K5_API k5_status k5_chain_solid_name(k5_chain chain, int part, size_t segment, size_t box,
+	char *out, size_t capacity);
+
+/* Checks the chain, at the configuration it stands in, against the tool: collides gets 1 when
+ * anything met. What met is then k5_chain_collision_count and k5_chain_collision, until the next
+ * check on this chain - a solve makes its own checks, so ask before solving anything else. */
+K5_API k5_status k5_chain_check_collisions(k5_chain chain, k5_tool tool, int *collides);
+K5_API k5_status k5_chain_collision_count(k5_chain chain, size_t *out);
+K5_API k5_status k5_chain_collision(k5_chain chain, size_t index, k5_collision *out);
+
 /* Puts the chain into a set of joint values (K5_AXES of them, in the order of k5_chain_link) and
  * answers where the programmed point of the tool ends up: position[3] and the tool axis axis[3], in the
  * frame of the material. The forward kinematics, and the way to check k5_solve_location.
@@ -284,20 +304,15 @@ K5_API k5_status k5_path_count_of_origin(k5_path path, int origin, size_t *out);
  * from where it was asked for, and the length of the error of the tool axis. Below a nanometre on the
  * machines the library is tested with. */
 K5_API k5_status k5_path_errors(k5_path path, double *max_position_error, double *max_orientation_error);
-
-typedef struct k5_collision {
-	char first[K5_NAME_MAX];	/* the two solids that met, named as the chain file names them, cut to fit */
-	char second[K5_NAME_MAX];
-	int kind;					/* k5_collision_kind */
-	size_t locations;			/* at how many locations of the path this pair met */
-} k5_collision;
-
 /* Which solids of the machine met while this path was being solved, and at how many of its locations
  * each pair did - a location whose every configuration was rejected by the same pair counts once.
  * Empty when the collision check was off or nothing met; the pairs come in no particular order.
  * A location counted here has no solution for that reason: these are the K5_COLLISION ones. */
 K5_API k5_status k5_path_collision_count(k5_path path, size_t *out);
 K5_API k5_status k5_path_collision(k5_path path, size_t index, k5_collision *out);
+
+
+
 /* Where the machine is left standing: the configuration chosen for the last location that has one.
  * Hand it back to the next run and the trajectory carries on from there (not in version 1 - the
  * settings have no hint field yet; k5_path_last_configuration is the half that exists). */

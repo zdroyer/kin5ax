@@ -594,6 +594,69 @@ TEST(Abi, TheLocationsOfASimulationOnAChainAreItsToolPoints)
 	k5_chain_free(chain);
 }
 
+TEST(Abi, AChainSaysWhichOfItsSolidsMetAtThePoseItStandsIn)
+{
+	k5_chain chain = OpenChain("3CWithSphericalWrist_withBaseBox.kc");
+	k5_tool tool = CreateTool();
+	std::vector<double> q((size_t)K5_AXES,0.0);
+	ASSERT_EQ(K5_OK,k5_chain_set_configuration(chain,&q[0]));
+	int nCollides = 1;
+	ASSERT_EQ(K5_OK,k5_chain_check_collisions(chain,tool,&nCollides))<<k5_last_error();
+	EXPECT_EQ(0,nCollides)<<"standing up, nothing meets";
+	size_t nPairs = 1;
+	ASSERT_EQ(K5_OK,k5_chain_collision_count(chain,&nPairs));
+	EXPECT_EQ((size_t)0,nPairs);
+
+	//every rotary joint turned a long way: this wrist meets itself
+	for(size_t i=0;i<(size_t)K5_AXES;i++){
+		k5_link oLink;
+		ASSERT_EQ(K5_OK,k5_chain_link(chain,i,&oLink));
+		if(oLink.type==K5_LINK_REVOLUTE)
+			q[i] = 2.0;
+	}
+	ASSERT_EQ(K5_OK,k5_chain_set_configuration(chain,&q[0]));
+	ASSERT_EQ(K5_OK,k5_chain_check_collisions(chain,tool,&nCollides))<<k5_last_error();
+	ASSERT_EQ(1,nCollides)<<"turned that far, something meets";
+	ASSERT_EQ(K5_OK,k5_chain_collision_count(chain,&nPairs));
+	ASSERT_GT(nPairs,(size_t)0);
+	for(size_t i=0;i<nPairs;i++){
+		k5_collision oPair;
+		ASSERT_EQ(K5_OK,k5_chain_collision(chain,i,&oPair))<<k5_last_error();
+		EXPECT_STRNE("",oPair.first);
+		EXPECT_STRNE("",oPair.second);
+		EXPECT_EQ((size_t)1,oPair.locations)<<"one check, one count";
+	}
+	k5_collision oPair;
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_collision(chain,nPairs,&oPair));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_check_collisions(chain,NULL,&nCollides));
+
+	//and the names of the solids are the ones the pairs are made of
+	char szName[K5_NAME_MAX] = {0};
+	size_t nSegments = 0;
+	ASSERT_EQ(K5_OK,k5_chain_frames(chain,K5_PART_TOOL,NULL,0,&nSegments));
+	bool bFound = false;
+	for(size_t i=0;i<nSegments && !bFound;i++){
+		size_t nBoxes = 0;
+		ASSERT_EQ(K5_OK,k5_chain_segment_boxes(chain,K5_PART_TOOL,i,NULL,0,&nBoxes));
+		for(size_t b=0;b<nBoxes;b++){
+			ASSERT_EQ(K5_OK,k5_chain_solid_name(chain,K5_PART_TOOL,i,b,szName,sizeof(szName)))
+				<<k5_last_error();
+			EXPECT_STRNE("",szName);
+			for(size_t p=0;p<nPairs;p++){
+				k5_collision o;
+				ASSERT_EQ(K5_OK,k5_chain_collision(chain,p,&o));
+				if(!strcmp(o.first,szName) || !strcmp(o.second,szName))
+					bFound = true;
+			}
+		}
+	}
+	EXPECT_TRUE(bFound)<<"a solid of the tool branch is named in one of the pairs";
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_solid_name(chain,K5_PART_TOOL,nSegments,0,szName,sizeof(szName)))
+		<<"a segment that is not there is a bad argument, as it is everywhere else";
+	k5_tool_free(tool);
+	k5_chain_free(chain);
+}
+
 TEST(Abi, APathSaysWhichSolidsMetAndAtHowManyLocations)
 {
 	//the model of the spherical wrist cannot tilt its tool far without meeting itself: a path that

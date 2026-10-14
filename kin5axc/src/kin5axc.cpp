@@ -384,6 +384,65 @@ k5_status k5_chain_set_configuration(k5_chain chain, const double *q)
 	K5_END(K5_ERROR_CHAIN)
 }
 
+//the pairs of a report into the k5_collision of the host
+static void ToCCollision(const CCollidingPair &oPair, k5_collision *out)
+{
+	CopyName(oPair.m_sFirst,out->first,(size_t)K5_NAME_MAX);
+	CopyName(oPair.m_sSecond,out->second,(size_t)K5_NAME_MAX);
+	switch(oPair.m_nKind){
+	case COLLIDING_TOOL:		out->kind = K5_COLLIDING_TOOL; break;
+	case COLLIDING_TOOL_SHANK:	out->kind = K5_COLLIDING_TOOL_SHANK; break;
+	default:					out->kind = K5_COLLIDING_PARTS; break;
+	}
+	out->locations = oPair.m_nCount;
+}
+
+k5_status k5_chain_solid_name(k5_chain chain, int part, size_t segment, size_t box,
+	char *out, size_t capacity)
+{
+	K5_BEGIN
+	K5_NEED(chain && out && capacity,"k5_chain_solid_name needs a chain and somewhere to put the name")
+	CHAIN_PART nPart = CHAIN_PART_TOOL;
+	K5_NEED(FromCPart(part,nPart),"part is neither K5_PART_TOOL nor K5_PART_MATERIAL_HOLDER")
+	CopyName(chain->m_oChain.GetSolidName(nPart,segment,box),out,capacity);
+	return K5_OK;
+	K5_END(K5_ERROR_CHAIN)
+}
+
+k5_status k5_chain_check_collisions(k5_chain chain, k5_tool tool, int *collides)
+{
+	K5_BEGIN
+	K5_NEED(chain && tool,"k5_chain_check_collisions needs a chain and a tool")
+	K5_NEED(tool->m_pTool,"the tool handle holds no tool")
+	chain->m_oChain.SetToolAssembly(*tool->m_pTool);
+	std::string sLog;
+	const bool b = chain->m_oChain.HasCollision(*tool->m_pTool,sLog);
+	if(collides)
+		*collides = b ? 1 : 0;
+	return K5_OK;
+	K5_END(K5_ERROR_CHAIN)
+}
+
+k5_status k5_chain_collision_count(k5_chain chain, size_t *out)
+{
+	K5_BEGIN
+	K5_NEED(chain && out,"k5_chain_collision_count needs a chain and somewhere to put the count")
+	*out = chain->m_oChain.GetCollisions().GetPairs().size();
+	return K5_OK;
+	K5_END(K5_ERROR_CHAIN)
+}
+
+k5_status k5_chain_collision(k5_chain chain, size_t index, k5_collision *out)
+{
+	K5_BEGIN
+	K5_NEED(chain && out,"k5_chain_collision needs a chain and somewhere to put the answer")
+	const std::vector<CCollidingPair> &vPairs = chain->m_oChain.GetCollisions().GetPairs();
+	K5_NEED(index<vPairs.size(),"there is no colliding pair of that index in this chain")
+	ToCCollision(vPairs[index],out);
+	return K5_OK;
+	K5_END(K5_ERROR_CHAIN)
+}
+
 k5_status k5_chain_tool_point(k5_chain chain, k5_tool tool, const double *q,
 	double *position, double *axis)
 {
@@ -875,14 +934,7 @@ k5_status k5_path_collision(k5_path path, size_t index, k5_collision *out)
 	K5_NEED(path && out,"k5_path_collision needs a path and somewhere to put the answer")
 	const std::vector<CCollidingPair> &vPairs = path->m_oResult.m_oCollisions.GetPairs();
 	K5_NEED(index<vPairs.size(),"there is no colliding pair of that index in this path")
-	CopyName(vPairs[index].m_sFirst,out->first,(size_t)K5_NAME_MAX);
-	CopyName(vPairs[index].m_sSecond,out->second,(size_t)K5_NAME_MAX);
-	switch(vPairs[index].m_nKind){
-	case COLLIDING_TOOL:		out->kind = K5_COLLIDING_TOOL; break;
-	case COLLIDING_TOOL_SHANK:	out->kind = K5_COLLIDING_TOOL_SHANK; break;
-	default:					out->kind = K5_COLLIDING_PARTS; break;
-	}
-	out->locations = vPairs[index].m_nCount;
+	ToCCollision(vPairs[index],out);
 	return K5_OK;
 	K5_END(K5_ERROR_UNKNOWN)
 }
