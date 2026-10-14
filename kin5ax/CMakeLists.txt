@@ -38,10 +38,14 @@ add_library(kin5ax STATIC
   PostprocessorSettings.cpp
   SimulationData.cpp
   TrajectoryStart.cpp
+  Version.cpp
   string_tools.cpp
   3rdParty/pugixml/pugixml.cpp
 )
 add_library(kin5ax::kin5ax ALIAS kin5ax)
+
+# what Version.cpp answers CommitHash() with; the root CMakeLists worked it out from git
+target_compile_definitions(kin5ax PRIVATE KIN5AX_COMMIT="${KIN5AX_COMMIT}")
 
 # the sources include each other by bare file name; the consumers (tests, application) do the same
 target_include_directories(kin5ax PUBLIC

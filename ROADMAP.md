@@ -4,6 +4,10 @@ Where this is going: a part drawn in FreeCAD, cut by a toolpath generated there,
 against a real five-axis machine, and posted as a program that machine will run. Five strands, of
 which four are finished and one is two thirds built.
 
+The project is two repositories: this one, the library and its C interface, and
+[kin5ax-cam-freecad][addon], everything that runs inside FreeCAD. This roadmap covers both, since
+neither half is worth much without the other.
+
 Updated 2026-10-14.
 
 | | strand | state |
@@ -33,16 +37,16 @@ roadmap needs:
 - `k5_path_errors`, `k5_path_count_of_status`, `k5_path_last_configuration`
 - `k5_chain_default_gcode_axes`, `k5_path_write_gcode` — direct-axes G-code, `G1 X Y Z A C`
 
-**The FreeCAD operation** (`kin5axcam/`) lays a zigzag over the `u,v` space of one face with any
+**The FreeCAD operation**, now in its own repository [kin5ax-cam-freecad](https://github.com/zdroyer/kin5ax-cam-freecad), lays a zigzag over the `u,v` space of one face with any
 shape of tool, holds the tool either standing up or along the surface normal leaned over by two
 angles, and writes the tip of the tool with the axis as `I J K`. A row is one pass. 149 tests, of
 which 72 need no FreeCAD.
 
-**Python can call kin5ax** (`kin5axcam/kin5axcam/kin5ax.py`): a `ctypes` binding to the C ABI — a
+**Python can call kin5ax** (`kin5axcam/kin5ax.py`, in the addon repository): a `ctypes` binding to the C ABI — a
 chain, a tool, the settings, a path solved in memory, its locations and report, the frames of the
 machine. Checked against the forward kinematics of the library.
 
-**The postprocessor** (`kin5axcam/post/fanuc_tcp_kin5ax_post.py`) writes that vector whole and wraps
+**The postprocessor** (`post/fanuc_tcp_kin5ax_post.py`, in the addon repository) writes that vector whole and wraps
 an operation that has one in `G43.5`/`G49` — FreeCAD's Fanuc post with three changes, no kinematics,
 the control does the work. With `--machine <chain file>` it hands every move to kin5ax instead and
 writes the five axes: direct output, the one mode that runs without a TCP option. A location the
@@ -55,8 +59,8 @@ machine cannot reach is left out and said so.
 The binding and the `--machine` mode of the post, 2026-10-13. The decisions were taken the cheap
 way: the post scales by `--machine-unit` (metres by default), and the rotary letters come from the
 names of the links when they are letters, else from an argument. The binding finds the shared
-library through `KIN5AXC_LIBRARY`, `kin5axcam/lib/` or the build tree of a checkout; shipping a
-built `kin5axc.dll` in `lib/` is still to do.
+library through `KIN5AXC_LIBRARY`, the `lib/` folder of the addon or the build tree of a
+checkout, and the addon now ships a built `kin5axc` for Windows and Linux in that folder.
 
 ### 2. The rest of the postprocessor
 
@@ -70,7 +74,7 @@ built `kin5axc.dll` in `lib/` is still to do.
 
 ### 3. Done: the machine on the screen
 
-`kin5axcam/machine.py`, `simulation.py`, `machine_gui.py`, 2026-10-13. A part per segment with the
+`kin5axcam/machine.py`, `simulation.py`, `machine_gui.py` of the addon, 2026-10-13. A part per segment with the
 boxes of the file and an arm to the next, the tool mount and the material as parts, the job's tool
 and model and stock in them, the trajectory in properties, a player with slider, play, step and the
 report. Two calls were added to the ABI for it: `k5_chain_segment_boxes` and
@@ -144,19 +148,19 @@ machine-independent and one path can be posted for two machines — or in the op
 report view can say "this is not reachable" while the user is still editing. The recommendation is
 the postprocessor, with the operation gaining a *check against a machine* button later.
 
-## Housekeeping, and two risks
+## Housekeeping
 
-- **`master` holds everything, and is the default branch.** `c-abi` was merged into it on
-  2026-10-14 with the C ABI, the FreeCAD addon, the machine simulation and the cutting simulation;
-  the feature branches behind it are finished and kept only for history. Nothing has to be merged
-  before this repository can be read, which was the risk this entry used to record.
-- **The tests that need FreeCAD still never run in CI**: the runner has no FreeCAD. 72 of the 149
-  tests of the addon run without it, so the 74 that exercise the operation, the machine and the
-  simulation are covered on one developer's machine alone — and that is the layer where every
-  defect of the last three days was found, while the library, which is tested on every push, needed
-  no repair at all. An AppImage and a second job would close it.
-- **Nothing ships a built library.** `kin5axc` is built on Linux by CI and on Windows by hand. The
-  binding looks in `KIN5AXC_LIBRARY`, then `kin5axcam/lib/`, then the build trees of a checkout, and
-  that `lib` folder does not exist, so an installed addon finds nothing unless its user builds the
-  C++ project first.
-  This is the one thing standing between the project and a second user.
+- **`master` holds everything of the library, and is the default branch.** `c-abi` was merged into
+  it on 2026-10-14 with the C ABI, and nothing has to be merged before this repository can be read.
+- **The FreeCAD half is a repository of its own**, [kin5ax-cam-freecad][addon], since 2026-10-14:
+  the operation, the postprocessor, the binding, the machine simulation and the cutting simulation,
+  with their history carried over by `git subtree split`. It ships a built `kin5axc` for Windows and
+  Linux, so that an Addon Manager install needs no compiler, and it refuses a library whose major
+  and minor it was not written against. The two are released together for that reason.
+- **The version is 0.1.0**, in `kin5ax/Version.h`, which CMake reads for the project and the shared
+  object and which `k5_version` answers with. The C header repeats the numbers, and a test holds the
+  copies together.
+- `kin5axc` is built on Linux by CI and on Windows by hand; a release of the addon is where those
+  builds are published. macOS is neither built nor shipped.
+
+[addon]: https://github.com/zdroyer/kin5ax-cam-freecad

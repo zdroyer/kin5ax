@@ -19,8 +19,8 @@ set_target_properties(kin5axc PROPERTIES
   CXX_VISIBILITY_PRESET hidden       # only the k5_* functions leave the shared object
   VISIBILITY_INLINES_HIDDEN ON
   POSITION_INDEPENDENT_CODE ON
-  VERSION 1.0.0
-  SOVERSION 1
+  VERSION ${PROJECT_VERSION}
+  SOVERSION ${PROJECT_VERSION_MAJOR}
 )
 
 # and on a GNU-like linker the standard library's own instantiations are shut in as well
@@ -35,6 +35,16 @@ target_compile_options(kin5axc PRIVATE
   $<$<CXX_COMPILER_ID:MSVC>:/W3>
   $<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wall -Wno-overloaded-virtual>
 )
+
+# What a release archive holds. The static core is deliberately not installed: the C interface is the
+# only way in, and shipping kin5ax.lib beside it would invite linking against C++ classes that are
+# part of no promise and that change between any two versions.
+include(GNUInstallDirs)
+install(TARGETS kin5axc
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}        # kin5axc.dll on Windows
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}        # libkin5axc.so and its links on Linux
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})       # kin5axc.lib, the import library of the dll
+install(FILES include/kin5ax.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 # and a test that says so, because this is the kind of promise that rots quietly
 if(UNIX AND NOT APPLE AND KIN5AX_BUILD_TESTS)

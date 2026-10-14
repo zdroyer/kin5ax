@@ -51,7 +51,6 @@ fast, exact, machine-aware judge of the toolpath. That judge is this library. Se
 | [`kin5axTests/`](kin5axTests/) | GoogleTest suite, 794 tests, with 11 machine models under `TestChains/` | same |
 | [`kin5axc/`](kin5axc/) | the C interface (`kin5axc`, one header `kin5ax.h`): a shared library that exports nothing but its `k5_*` functions | same |
 | [`kin5axcTests/`](kin5axcTests/) | the tests of that interface, 23 tests, linked against the shared library alone | same |
-| [`kin5axcam/`](kin5axcam/) | the FreeCAD addon: the 3D Surface (5axis) operation, a `ctypes` binding to the C interface, the postprocessor, the machine drawn and played in the document, the cutting simulation; 149 tests, of which 72 need no FreeCAD | wherever FreeCAD 1.1 runs |
 | [`Universal5CMillingMachinePostprocessor/`](Universal5CMillingMachinePostprocessor/) | MFC application: kinematic chain editor, 3D viewer, single-location solver with a step-by-step log, batch postprocessing of CL files, a rudimentary voxel simulation that checks the geometry of the postprocessor on a hemisphere sized for the machine | Windows |
 
 Machine models shipped and round-trip tested (catalogue travels and swivel ranges; head and
@@ -86,7 +85,11 @@ ctest --test-dir build --output-on-failure
 On Windows add the generator and the toolset of the application project, `-G "Visual Studio 18 2026" -A x64 -T v143`,
 and `-C Release` to `ctest`. Builds warning-free with MSVC 19.44 (v143) and GCC 15; the tests pass on both.
 In WSL keep the build tree in the Linux file system (`cmake -S /mnt/c/... -B ~/kin5ax-build -G Ninja`): the
-GoogleTest sub-build fails on a mounted Windows drive.
+GoogleTest sub-build fails on a mounted Windows drive. Such a build always stamps its commit
+`-dirty`, and correctly so: git inside WSL has no `core.autocrlf`, so it reads every CRLF file of a
+Windows checkout as modified, and the binary really is not that commit as far as that git can tell.
+A shared library that is going to be shipped should come from the release workflow, or from a
+checkout made on Linux.
 
 **The C interface** is built with the rest unless `-DKIN5AX_BUILD_C_ABI=OFF` says otherwise. It is a
 shared library with one header, [`kin5axc/include/kin5ax.h`](kin5axc/include/kin5ax.h): handles instead
@@ -95,8 +98,18 @@ the geometry classes, so a host can be built with any compiler and any runtime. 
 kinematics and the batch solving of a tool path, which may come out of a cutter-location file or be
 handed over as two arrays of doubles - an agent or a CAM system that holds a path in memory has nothing
 to write out; the simulation, the `.fcm` bridge and the material model stay inside. Its own tests link the shared library and nothing else, one of them compiles
-the header with the C compiler, and on Linux a `ctest` case checks that the shared object exports its 28
-`k5_*` functions and not one symbol more.
+the header with the C compiler, and on Linux a `ctest` case checks that every symbol the shared
+object exports is one of its `k5_*` functions and not one is anything else.
+
+**Which build is which.** `k5_version` answers with the version a host checks for compatibility,
+and `k5_commit_hash` with the commit the library was built from, compiled in by CMake from
+`git rev-parse`: `0.1.0+09a933bf186c`, with `-dirty` when the working tree held changes that are in
+no commit and `unknown` when it was built outside a checkout. The commit is build metadata in the
+sense of semantic versioning and takes no part in the compatibility check, which is why it is not in
+`k5_version_string`. It matters because the shared library travels on its own, inside the FreeCAD
+addon and in release archives, where nothing else records where it came from, so a bug report can
+name the binary exactly. The same line is in `BUILD-INFO.txt` beside the binaries, for a reader who
+would rather not load anything.
 
 **Continuous integration**: [`.github/workflows/library-linux.yml`](.github/workflows/library-linux.yml)
 configures, builds and tests the library on Linux on a self-hosted runner, in Release and in Debug, on every
@@ -105,6 +118,16 @@ the log; the summary page of the run gets the total, the failures and a count an
 the GoogleTest report and the ctest log of each configuration are kept as artifacts. The runner needs git,
 CMake, a C++17 compiler and a connection to github.com for the GoogleTest fetch, and the labels
 `self-hosted` and `linux`.
+
+[`.github/workflows/release.yml`](.github/workflows/release.yml) builds `kin5axc` for Linux and
+Windows on GitHub's own runners and attaches both archives to a release. It is started **by hand
+only**, from the Actions tab with the tag to release: a release here has to be matched by one of the
+FreeCAD addon, which carries the shared library, and that wants choosing rather than happening on a
+push. The release is a draft until every platform has built. Each platform runs the whole test suite
+before it uploads anything, and then loads the library it is about to ship and refuses to go on unless
+the commit the binary reports is the commit that was checked out. The Linux half is built on Ubuntu
+22.04 on purpose: a shared object is linked against the C runtime of the machine that builds it, and an
+older one loads on more of the systems FreeCAD runs on.
 
 **The application** (Windows, Visual Studio 2022 or later with MFC, CMake on the PATH): open
 `Universal5CMillingMachinePostprocessor/Universal5CMillingMachinePostprocessor.sln`. Its `kin5ax`
@@ -175,15 +198,17 @@ machine-specific words are not written to the G-code.
 [`ROADMAP.md`](ROADMAP.md) has the whole of it, with what is done and what each step is waiting on.
 The short form:
 
-1. **Done.** Python bindings to the C interface ([`kin5axc/`](kin5axc/)), the five-axis operation
-   for FreeCAD's CAM workbench, the machine from a `.kc.json` drawn and played in the document, and
-   the cutting simulated there, all in [`kin5axcam/`](kin5axcam/).
+1. **Done, and moved out.** Python bindings to the C interface ([`kin5axc/`](kin5axc/)), the
+   five-axis operation for FreeCAD's CAM workbench, the machine from a `.kc.json` drawn and
+   played in the document, and the cutting simulated there. They live in
+   [kin5ax-cam-freecad](https://github.com/zdroyer/kin5ax-cam-freecad), which is the FreeCAD half of this project and carries a built
+   copy of `kin5axc` so that it installs without a compiler.
 2. **Ship a built `kin5axc` with the addon.** The binding looks for the shared library and today
    finds it only in a build tree, so nobody can install this without compiling the C++ first.
 3. **Decide the length unit** carried by a chain file, so that callers stop scaling by hand, and
    let a chain file name the G-code letter of each axis.
 4. The postprocessor proper: TCP and direct axes for Heidenhain, then TWP. Vector output with
-   Fanuc TCP and direct axes from the solver exist ([`kin5axcam/post/`](kin5axcam/post/)).
+   Fanuc TCP and direct axes from the solver exist, in the addon repository.
 5. Rollover-aware axis model (#25, #40, #59) and the singular-section feasibility check (#21),
    which are the two places where a wrong answer is possible rather than merely a missing feature;
    macOS build; a `kin5ax-post` command-line tool with a JSON machinability report.
@@ -201,4 +226,4 @@ MIT. See [`LICENSE`](LICENSE). pugixml (MIT) and nlohmann/json (MIT) are vendore
 
 ## Author
 
-Przemysław Zdroik — code (2004, 2026). Method with K. Marciniak and J. Porter-Sobieraj.
+P.Zdroik (zdroyer) - code, 2004-2006, 2026. Method with K. Marciniak and J. Porter-Sobieraj.

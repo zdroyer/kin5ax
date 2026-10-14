@@ -118,8 +118,29 @@ typedef struct k5_path_t *k5_path;		/* what a batch run produced: the trajectory
  * valid until the next call on the same thread. */
 K5_API const char *k5_last_error(void);
 
+/* The version of this header. k5_version answers with the version of the library actually loaded,
+ * which is the one that matters: a host that ships a binding rather than a compiled program only
+ * ever sees that one. While the major number is 0 the interface may change between minor versions,
+ * so a host should refuse a minor it does not know. */
+#define K5_VERSION_MAJOR 0
+#define K5_VERSION_MINOR 1
+#define K5_VERSION_PATCH 0
+#define K5_VERSION_STRING "0.1.0"
+
 K5_API const char *k5_version_string(void);
 K5_API void k5_version(int *major, int *minor, int *patch);
+
+/* Which commit this library was built from: "09a933b4f1c2", with "-dirty" after it when the working
+ * tree held uncommitted changes, and "unknown" when it was built outside a checkout. A shared
+ * library travels on its own - inside a FreeCAD addon, in a release archive - and nothing else about
+ * it says where it came from, so a bug report can name the binary exactly.
+ *
+ * This is build metadata in the sense of semantic versioning: it takes no part in the compatibility
+ * of the interface, and two libraries of the same version built from different commits are the same
+ * interface. A host checks k5_version; it reports k5_build_string. */
+K5_API const char *k5_commit_hash(void);
+/* "0.1.0+09a933b4f1c2": the version and the commit in one string, which is what to put in a report */
+K5_API const char *k5_build_string(void);
 
 /* ---------------------------------------------------------------- the settings of a run */
 

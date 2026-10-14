@@ -9,6 +9,7 @@
 #include "ArgsMyException.h"
 #include "double_tools.h"
 #include "string_tools.h"
+#include "Version.h"
 
 #include <string>
 #include <cstring>
@@ -217,14 +218,22 @@ const char *k5_last_error(void)
 
 const char *k5_version_string(void)
 {
-	return "1.0.0";
+	return kin5ax::VersionString();
 }
 
 void k5_version(int *major, int *minor, int *patch)
 {
-	if(major) *major = 1;
-	if(minor) *minor = 0;
-	if(patch) *patch = 0;
+	kin5ax::Version(major,minor,patch);
+}
+
+const char *k5_commit_hash(void)
+{
+	return kin5ax::CommitHash();
+}
+
+const char *k5_build_string(void)
+{
+	return kin5ax::BuildString();
 }
 
 void k5_settings_default(k5_settings *out)

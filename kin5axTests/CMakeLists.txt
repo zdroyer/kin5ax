@@ -40,6 +40,7 @@ add_executable(kin5axTests
   ToolAssemblyTests.cpp
   ToolPathSimulationTests.cpp
   TrajectoryStartTests.cpp
+  VersionTests.cpp
   ToolMountTests.cpp
 )
 target_include_directories(kin5axTests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
