@@ -94,8 +94,18 @@ the geometry classes, so a host can be built with any compiler and any runtime. 
 kinematics and the batch solving of a tool path, which may come out of a cutter-location file or be
 handed over as two arrays of doubles - an agent or a CAM system that holds a path in memory has nothing
 to write out; the simulation, the `.fcm` bridge and the material model stay inside. Its own tests link the shared library and nothing else, one of them compiles
-the header with the C compiler, and on Linux a `ctest` case checks that the shared object exports its 28
-`k5_*` functions and not one symbol more.
+the header with the C compiler, and on Linux a `ctest` case checks that every symbol the shared
+object exports is one of its `k5_*` functions and not one is anything else.
+
+**Which build is which.** `k5_version` answers with the version a host checks for compatibility,
+and `k5_commit_hash` with the commit the library was built from, compiled in by CMake from
+`git rev-parse`: `0.1.0+09a933bf186c`, with `-dirty` when the working tree held changes that are in
+no commit and `unknown` when it was built outside a checkout. The commit is build metadata in the
+sense of semantic versioning and takes no part in the compatibility check, which is why it is not in
+`k5_version_string`. It matters because the shared library travels on its own, inside the FreeCAD
+addon and in release archives, where nothing else records where it came from, so a bug report can
+name the binary exactly. The same line is in `BUILD-INFO.txt` beside the binaries, for a reader who
+would rather not load anything.
 
 **Continuous integration**: [`.github/workflows/library-linux.yml`](.github/workflows/library-linux.yml)
 configures, builds and tests the library on Linux on a self-hosted runner, in Release and in Debug, on every
@@ -104,6 +114,16 @@ the log; the summary page of the run gets the total, the failures and a count an
 the GoogleTest report and the ctest log of each configuration are kept as artifacts. The runner needs git,
 CMake, a C++17 compiler and a connection to github.com for the GoogleTest fetch, and the labels
 `self-hosted` and `linux`.
+
+[`.github/workflows/release.yml`](.github/workflows/release.yml) builds `kin5axc` for Linux and
+Windows on GitHub's own runners and attaches both archives to a release. It is started **by hand
+only**, from the Actions tab with the tag to release: a release here has to be matched by one of the
+FreeCAD addon, which carries the shared library, and that wants choosing rather than happening on a
+push. The release is a draft until every platform has built. Each platform runs the whole test suite
+before it uploads anything, and then loads the library it is about to ship and refuses to go on unless
+the commit the binary reports is the commit that was checked out. The Linux half is built on Ubuntu
+22.04 on purpose: a shared object is linked against the C runtime of the machine that builds it, and an
+older one loads on more of the systems FreeCAD runs on.
 
 **The application** (Windows, Visual Studio 2022 or later with MFC, CMake on the PATH): open
 `Universal5CMillingMachinePostprocessor/Universal5CMillingMachinePostprocessor.sln`. Its `kin5ax`

@@ -144,6 +144,13 @@ TEST(Abi, TheVersionAndTheLastError)
 	snprintf(szExpected,sizeof(szExpected),"%d.%d.%d",nMajor,nMinor,nPatch);
 	EXPECT_EQ(std::string(szExpected),std::string(k5_version_string()))<<"the string is the numbers";
 
+	//the commit is build metadata: it travels with a shipped binary so that it can be traced back,
+	//and takes no part in the version a host checks for compatibility
+	ASSERT_STRNE("",k5_commit_hash());
+	EXPECT_EQ(std::string(k5_version_string())+"+"+k5_commit_hash(),std::string(k5_build_string()));
+	EXPECT_EQ(std::string::npos,std::string(k5_version_string()).find('+'))
+		<<"the version a host compares has no metadata in it";
+
 	//a call that succeeds leaves no message behind, a call that fails leaves one
 	k5_settings oSettings;
 	k5_settings_default(&oSettings);

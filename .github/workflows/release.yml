@@ -1,0 +1,175 @@
+# Builds kin5axc for Linux and Windows and attaches both archives to a GitHub release.
+#
+# Started by hand only. A release of this library is not something a push should cause: the addon
+# that carries the shared library has to be updated in the same breath, and whoever does that wants
+# to choose the moment. Actions -> Build and release -> Run workflow, with the tag to release.
+#
+# The tag need not exist yet; it is created on the commit this workflow runs from. The release is a
+# draft until every platform has built, so a failure half way leaves nothing public behind.
+#
+# What comes out, per platform: kin5axc (the shared library), its import library on Windows,
+# kin5ax.h, the licence, the readme, and BUILD-INFO.txt naming the commit. The commit is compiled
+# into the binary as well, and a step below checks that what the binary says matches what was
+# checked out, which is the point of the whole exercise: a shared library travels on its own, inside
+# a FreeCAD addon or an unpacked archive, and has to be able to say where it came from.
+name: Build and release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release, e.g. v0.1.0. Created on this commit if it does not exist.'
+        required: true
+        type: string
+      publish:
+        description: 'Publish the release at the end, rather than leaving it a draft'
+        required: false
+        default: false
+        type: boolean
+      prerelease:
+        description: 'Mark it a pre-release'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write     # creating a release, creating its tag and uploading to it
+
+concurrency:
+  group: release-${{ inputs.tag }}
+  cancel-in-progress: false      # never cancel a release half way through uploading
+
+jobs:
+  # A draft first, so that a build that fails on one platform leaves no half-filled public release
+  create-release:
+    name: Draft the release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create the draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "${{ inputs.tag }}" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "A release ${{ inputs.tag }} exists already. Delete it, or choose another tag."
+            exit 1
+          fi
+          gh release create "${{ inputs.tag }}" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "kin5ax ${{ inputs.tag }}" \
+            --generate-notes \
+            --draft \
+            ${{ inputs.prerelease && '--prerelease' || '' }}
+
+  build:
+    name: ${{ matrix.platform }}
+    needs: create-release
+    strategy:
+      fail-fast: true           # one platform failing means the release is not happening
+      matrix:
+        include:
+          # 22.04 rather than the newest: the shared object is linked against the C runtime of the
+          # machine that builds it, and an older glibc loads on more of the systems FreeCAD runs on
+          - os: ubuntu-22.04
+            platform: linux-x64
+            cmake_args: ''
+            library: lib/libkin5axc.so
+          - os: windows-2022
+            platform: windows-x64
+            cmake_args: '-A x64'
+            library: bin/kin5axc.dll
+    runs-on: ${{ matrix.os }}
+    env:
+      BUILD_TYPE: Release
+      PKG: kin5axc-${{ inputs.tag }}-${{ matrix.platform }}
+    defaults:
+      run:
+        shell: bash             # Git Bash on Windows, so one set of commands serves both
+
+    steps:
+      - uses: actions/checkout@v4
+        # a shallow checkout is enough: the build asks git for HEAD, not for the history
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Configure
+        run: cmake -S . -B build ${{ matrix.cmake_args }} -DCMAKE_BUILD_TYPE="$BUILD_TYPE"
+
+      - name: Build
+        run: cmake --build build --config "$BUILD_TYPE" --parallel
+
+      # Nothing is released that has not passed. The suites are the library, the C interface and,
+      # on Linux, the check that the shared object exports its k5_* functions and nothing else.
+      - name: Test
+        run: ctest --test-dir build --build-config "$BUILD_TYPE" --output-on-failure
+
+      - name: Install into a staging folder
+        run: cmake --install build --config "$BUILD_TYPE" --prefix "stage/$PKG"
+
+      # The reason this workflow exists: the binary that is about to be shipped has to agree with
+      # the source it was built from. A mismatch means the build did not see git, or saw the wrong
+      # checkout, and a library that misreports its own commit is worse than one that says nothing.
+      - name: The library says which commit it was built from
+        run: |
+          python - <<'PY'
+          import ctypes, os, sys
+          staged = os.path.join("stage", os.environ["PKG"], *"${{ matrix.library }}".split("/"))
+          lib = ctypes.CDLL(os.path.abspath(staged))
+          for name in ("k5_version_string", "k5_commit_hash", "k5_build_string"):
+              getattr(lib, name).restype = ctypes.c_char_p
+          version = lib.k5_version_string().decode()
+          commit = lib.k5_commit_hash().decode()
+          build = lib.k5_build_string().decode()
+          print("staged library:", staged)
+          print("version:", version)
+          print("commit: ", commit)
+          print("build:  ", build)
+          head = os.environ["GITHUB_SHA"]
+          if commit.endswith("-dirty"):
+              sys.exit("the build tree was dirty, so this binary is not any commit: " + commit)
+          if commit == "unknown" or not head.startswith(commit):
+              sys.exit("the binary says %r, the checkout is %r" % (commit, head))
+          if build != version + "+" + commit:
+              sys.exit("build string %r does not match %r and %r" % (build, version, commit))
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as summary:
+              summary.write("- `%s` builds `%s`\n" % ("${{ matrix.platform }}", build))
+          PY
+
+      - name: Archive
+        working-directory: stage
+        run: cmake -E tar cf "../$PKG.zip" --format=zip "$PKG"
+
+      - name: Attach it to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ inputs.tag }}" "$PKG.zip" --repo "$GITHUB_REPOSITORY" --clobber
+
+  publish:
+    name: Publish
+    needs: build
+    if: ${{ inputs.publish }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Take the release out of draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release edit "${{ inputs.tag }}" --repo "$GITHUB_REPOSITORY" --draft=false
+
+  # Left a draft on purpose, or left a draft because publishing was not asked for: say which, so
+  # that nobody goes looking for a release that is sitting there unpublished.
+  report:
+    name: Where the release is
+    needs: build
+    if: ${{ always() && needs.build.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          if [ "${{ inputs.publish }}" = "true" ]; then
+            echo "Published as ${{ inputs.tag }}." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Built and uploaded to the **draft** release ${{ inputs.tag }}. Publish it by hand, or run again with *publish* ticked." >> "$GITHUB_STEP_SUMMARY"
+          fi

@@ -21,4 +21,14 @@ const char *VersionString();
 //the three numbers of it; any of the pointers may be NULL
 void Version(int *pMajor, int *pMinor, int *pPatch);
 
+//The commit this library was built from, abbreviated: "09a933b4f1c2", with "-dirty" after it when
+//the working tree held changes that are in no commit, and "unknown" when it was built without git
+//or outside a checkout. A binary that is shipped - and kin5axc is shipped, inside the FreeCAD addon
+//- can be traced back to the source it came from only if it carries this.
+const char *CommitHash();
+//"0.1.0+09a933b4f1c2": the version and the commit, in the form semantic versioning gives build
+//metadata. Metadata is what it is: it says nothing about the interface and takes no part in the
+//compatibility check, which is why it is not in VersionString.
+const char *BuildString();
+
 } // namespace kin5ax

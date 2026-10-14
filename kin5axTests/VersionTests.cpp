@@ -23,6 +23,31 @@ TEST(Version, TheStringIsTheThreeNumbers)
 	EXPECT_EQ(std::string(KIN5AX_VERSION_STRING),std::string(VersionString()));
 }
 
+//A binary of this library is shipped on its own, inside the FreeCAD addon and in a release archive,
+//where nothing else says which source it was built from. The commit is compiled in so that it does.
+TEST(Version, TheCommitItWasBuiltFromIsCompiledIn)
+{
+	const std::string sCommit = CommitHash();
+	ASSERT_FALSE(sCommit.empty())<<"a build always says something, even if only that it cannot tell";
+
+	//in a checkout it is the abbreviated hash, possibly marked as not being that commit exactly;
+	//built from an unpacked archive, or with no git to ask, it says so instead of inventing one
+	if(sCommit!="unknown"){
+		const std::string sHash = sCommit.substr(0,sCommit.find('-'));
+		EXPECT_GE(sHash.size(),(size_t)7)<<sCommit<<": an abbreviation short enough to be ambiguous";
+		EXPECT_LE(sHash.size(),(size_t)40)<<sCommit;
+		for(size_t i=0;i<sHash.size();i++)
+			EXPECT_NE(std::string::npos,std::string("0123456789abcdef").find(sHash[i]))
+				<<sCommit<<" is not a hexadecimal hash";
+		if(sCommit.size()!=sHash.size())
+			EXPECT_EQ("-dirty",sCommit.substr(sHash.size()))<<"the only mark there is";
+	}
+
+	//and the two together, the way semantic versioning writes build metadata
+	EXPECT_EQ(std::string(VersionString())+"+"+sCommit,std::string(BuildString()));
+	EXPECT_EQ(std::string(KIN5AX_VERSION_STRING)+"+"+sCommit,std::string(BuildString()));
+}
+
 TEST(Version, AnyOfThePointersMayBeLeftOut)
 {
 	int nOnly = -1;

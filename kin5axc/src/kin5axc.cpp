@@ -226,6 +226,16 @@ void k5_version(int *major, int *minor, int *patch)
 	kin5ax::Version(major,minor,patch);
 }
 
+const char *k5_commit_hash(void)
+{
+	return kin5ax::CommitHash();
+}
+
+const char *k5_build_string(void)
+{
+	return kin5ax::BuildString();
+}
+
 void k5_settings_default(k5_settings *out)
 {
 	if(!out)

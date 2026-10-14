@@ -25,6 +25,11 @@ int k5c_header_check_c(void)
 		return 2;
 	if(k5_last_error()==NULL)
 		return 3;
+	/* the build metadata, reachable from C as well */
+	if(k5_commit_hash()==NULL || k5_commit_hash()[0]==0)
+		return 10;
+	if(k5_build_string()==NULL || k5_build_string()[0]==0)
+		return 11;
 
 	/* the recommended settings, and the fields a C host writes into */
 	k5_settings_default(&oSettings);

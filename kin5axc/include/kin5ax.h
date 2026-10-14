@@ -130,6 +130,18 @@ K5_API const char *k5_last_error(void);
 K5_API const char *k5_version_string(void);
 K5_API void k5_version(int *major, int *minor, int *patch);
 
+/* Which commit this library was built from: "09a933b4f1c2", with "-dirty" after it when the working
+ * tree held uncommitted changes, and "unknown" when it was built outside a checkout. A shared
+ * library travels on its own - inside a FreeCAD addon, in a release archive - and nothing else about
+ * it says where it came from, so a bug report can name the binary exactly.
+ *
+ * This is build metadata in the sense of semantic versioning: it takes no part in the compatibility
+ * of the interface, and two libraries of the same version built from different commits are the same
+ * interface. A host checks k5_version; it reports k5_build_string. */
+K5_API const char *k5_commit_hash(void);
+/* "0.1.0+09a933b4f1c2": the version and the commit in one string, which is what to put in a report */
+K5_API const char *k5_build_string(void);
+
 /* ---------------------------------------------------------------- the settings of a run */
 
 typedef struct k5_settings {
