@@ -486,6 +486,24 @@ k5_status k5_material_surface(k5_material material, double *out, size_t capacity
 	K5_END(K5_ERROR_UNKNOWN)
 }
 
+k5_status k5_material_surface_triangles(k5_material material, double *out,
+	size_t capacity_in_doubles, size_t *count_out)
+{
+	K5_BEGIN
+	K5_NEED(material && count_out,"k5_material_surface_triangles needs a material and somewhere to put the count")
+	std::vector<double> v;
+	const size_t nFaces = material->m_oMaterial.GetSurfaceTriangles(v);
+	*count_out = nFaces;
+	if(!out)
+		return K5_OK;				//the count was the question
+	if(capacity_in_doubles<v.size())
+		return Fail(K5_ERROR_BUFFER_TOO_SMALL,"18 doubles are needed for every face of the surface");
+	for(size_t i=0;i<v.size();i++)
+		out[i] = v[i];
+	return K5_OK;
+	K5_END(K5_ERROR_UNKNOWN)
+}
+
 k5_status k5_simulation_create(k5_chain chain, k5_tool tool, k5_path path, k5_material material,
 	k5_simulation *out)
 {
