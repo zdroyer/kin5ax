@@ -131,10 +131,18 @@ TEST(Abi, TheVersionAndTheLastError)
 	EXPECT_STRNE("",k5_version_string());
 	int nMajor=-1, nMinor=-1, nPatch=-1;
 	k5_version(&nMajor,&nMinor,&nPatch);
-	EXPECT_EQ(1,nMajor)<<"this is version 1 of the interface";
+	EXPECT_LE(0,nMajor);
 	EXPECT_LE(0,nMinor);
 	EXPECT_LE(0,nPatch);
-	EXPECT_EQ(std::string(k5_version_string()).substr(0,1),std::to_string(nMajor));
+	//the library answers with its own version, and the header this test was built against repeats
+	//those numbers by hand - the two have to agree, or a host checking the header checks nothing
+	EXPECT_EQ(K5_VERSION_MAJOR,nMajor)<<"kin5ax.h and kin5ax/Version.h disagree about the major";
+	EXPECT_EQ(K5_VERSION_MINOR,nMinor)<<"kin5ax.h and kin5ax/Version.h disagree about the minor";
+	EXPECT_EQ(K5_VERSION_PATCH,nPatch)<<"kin5ax.h and kin5ax/Version.h disagree about the patch";
+	EXPECT_EQ(std::string(K5_VERSION_STRING),std::string(k5_version_string()));
+	char szExpected[32];
+	snprintf(szExpected,sizeof(szExpected),"%d.%d.%d",nMajor,nMinor,nPatch);
+	EXPECT_EQ(std::string(szExpected),std::string(k5_version_string()))<<"the string is the numbers";
 
 	//a call that succeeds leaves no message behind, a call that fails leaves one
 	k5_settings oSettings;

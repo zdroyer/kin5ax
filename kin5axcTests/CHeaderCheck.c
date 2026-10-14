@@ -18,8 +18,10 @@ int k5c_header_check_c(void)
 
 	if(k5_version_string()==NULL || k5_version_string()[0]==0)
 		return 1;
+	/* the library answers with its own version, which is what a host checks; the macros of the header
+	 * it was compiled against have to say the same thing, or checking them would prove nothing */
 	k5_version(&major,&minor,&patch);
-	if(major<1 || minor<0 || patch<0)
+	if(major!=K5_VERSION_MAJOR || minor!=K5_VERSION_MINOR || patch!=K5_VERSION_PATCH)
 		return 2;
 	if(k5_last_error()==NULL)
 		return 3;
