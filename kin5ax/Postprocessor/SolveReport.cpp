@@ -28,6 +28,7 @@ void CSolveReport::Clear()
 {
 	m_nOrientationSolutions = m_nTheoreticalSolutions = m_nWithinLimits = m_nCollisionFree = 0;
 	m_bAmbiguous = false;
+	m_oCollisions.Clear();
 }
 
 SOLVE_STATUS CSolveReport::Status() const

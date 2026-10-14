@@ -13,6 +13,11 @@ chain and in the units of its file - and every part is placed by the frames
 kin5ax computes for that configuration. Nothing here knows about a path; that
 is the simulation, which drives this.
 
+A solid of a segment is named here as the library names it in a collision
+report, so that ``highlight`` can be handed the names of a pair that met and
+colour exactly those two - which is what a simulation does when it stops at a
+location the machine cannot reach.
+
 Every joint shows its value the way the application of kin5ax draws it: a
 revolute joint as a sector of a disc swept from zero to the angle it stands at,
 a prismatic one as a box as long as its slide, magenta for a positive value and
@@ -43,6 +48,13 @@ ZERO = (0.5, 0.5, 0.5)                  #nothing to sweep, nothing to slide
 #the thickness of the disc of a revolute marker, as a fraction of its radius
 DISC_THICKNESS = 0.08
 
+#a solid that is meeting another one at the location shown, red; one that met something earlier in
+#the run, orange, so that what a path has cost is still visible at the end of it; and the colours a
+#branch is painted when neither
+COLLIDING = (1.0, 0.1, 0.1)
+COLLIDED_BEFORE = (1.0, 0.55, 0.0)
+BRANCH_COLOURS = {kin5ax.PART_TOOL: (0.55, 0.62, 0.75), kin5ax.PART_MATERIAL_HOLDER: (0.75, 0.68, 0.5)}
+
 
 def placement_of(frame, unit_in_mm):
     """A frame of kin5ax - 16 doubles in the layout OpenGL uses - as a FreeCAD Placement in mm."""
@@ -58,42 +70,47 @@ def placement_of(frame, unit_in_mm):
 class ObjectMachine(object):
     """The proxy of the machine group: builds the parts once, places them on every configuration."""
 
+    #what a machine carries, in the order it is read in the property editor; the lists of parts are
+    #filled by build() and left empty here
+    PROPERTIES = (
+        ("App::PropertyFile", "ChainFile",
+         "The kinematic chain file of kin5ax this machine is read from (.kc or .kc.json)", None),
+        ("App::PropertyFloat", "UnitInMillimetres",
+         "How many millimetres one length unit of the chain file is: 1000 for metres", 1000.0),
+        ("App::PropertyFloatList", "Configuration",
+         "The five joint values the machine stands at, in the order of the links of the chain, in the "
+         "units of its file and in radians", None),
+        ("App::PropertyFloat", "ArmRadius",
+         "The radius of the arms drawn between the segments, in mm; 0 picks one from the size of the "
+         "machine", 0.0),
+        ("App::PropertyFloat", "JointSize",
+         "The radius of the disc a turning joint shows its angle with, and the side of the box a "
+         "sliding one shows its travel with, in mm; 0 picks one from the size of the machine", 0.0),
+        ("App::PropertyBool", "ShowJoints",
+         "Show every joint's value as a disc sector or a box, magenta when positive, cyan when "
+         "negative", True),
+        ("App::PropertyLinkList", "ToolBodies",
+         "The parts holding the boxes of the segments of the tool branch", None),
+        ("App::PropertyLinkList", "ToolArms",
+         "The parts holding the arms from each segment of the tool branch to the next", None),
+        ("App::PropertyLinkListGlobal", "ToolJoints",
+         "The markers of the joints of the tool branch, one per segment that has one", None),
+        ("App::PropertyLinkList", "MaterialBodies",
+         "The parts holding the boxes of the segments of the material branch", None),
+        ("App::PropertyLinkList", "MaterialArms",
+         "The parts holding the arms from each segment of the material branch to the next", None),
+        ("App::PropertyLinkListGlobal", "MaterialJoints",
+         "The markers of the joints of the material branch, one per segment that has one", None),
+        ("App::PropertyLink", "ToolMount",
+         "The part at the tool mount of the machine: a simulation puts the tool in it", None),
+        ("App::PropertyLink", "Material",
+         "The part at the frame of the material: a simulation puts the model and the stock in it", None),
+    )
+
     def __init__(self, obj, chain_file, unit_in_mm):
         obj.Proxy = self
         self._chain = None
-        obj.addProperty("App::PropertyFile", "ChainFile", PROPERTY_GROUP,
-                        "The kinematic chain file of kin5ax this machine is read from (.kc or .kc.json)")
-        obj.addProperty("App::PropertyFloat", "UnitInMillimetres", PROPERTY_GROUP,
-                        "How many millimetres one length unit of the chain file is: 1000 for metres")
-        obj.addProperty("App::PropertyFloatList", "Configuration", PROPERTY_GROUP,
-                        "The five joint values the machine stands at, in the order of the links of "
-                        "the chain, in the units of its file and in radians")
-        obj.addProperty("App::PropertyFloat", "ArmRadius", PROPERTY_GROUP,
-                        "The radius of the arms drawn between the segments, in mm; 0 picks one from "
-                        "the size of the machine")
-        obj.addProperty("App::PropertyFloat", "JointSize", PROPERTY_GROUP,
-                        "The radius of the disc a turning joint shows its angle with, and the side of "
-                        "the box a sliding one shows its travel with, in mm; 0 picks one from the "
-                        "size of the machine")
-        obj.addProperty("App::PropertyBool", "ShowJoints", PROPERTY_GROUP,
-                        "Show every joint's value as a disc sector or a box, magenta when positive, "
-                        "cyan when negative")
-        for _, name in BRANCHES:
-            obj.addProperty("App::PropertyLinkList", name + "Bodies", PROPERTY_GROUP,
-                            "The parts holding the boxes of the segments of the %s branch" % name.lower())
-            obj.addProperty("App::PropertyLinkList", name + "Arms", PROPERTY_GROUP,
-                            "The parts holding the arms from each segment of the %s branch to the next"
-                            % name.lower())
-            #a global link: the markers live inside the parts of the segments, and a link into a part
-            #from outside it is out of scope for an ordinary one
-            obj.addProperty("App::PropertyLinkListGlobal", name + "Joints", PROPERTY_GROUP,
-                            "The markers of the joints of the %s branch, one per segment that has one"
-                            % name.lower())
-        obj.addProperty("App::PropertyLink", "ToolMount", PROPERTY_GROUP,
-                        "The part at the tool mount of the machine: a simulation puts the tool in it")
-        obj.addProperty("App::PropertyLink", "Material", PROPERTY_GROUP,
-                        "The part at the frame of the material: a simulation puts the model and the "
-                        "stock in it")
+        ensure(obj, self.PROPERTIES)
         obj.ChainFile = chain_file
         obj.UnitInMillimetres = float(unit_in_mm)
         obj.ArmRadius = 0.0
@@ -229,8 +246,48 @@ class ObjectMachine(object):
         view = getattr(feature, "ViewObject", None)
         if view is None:
             return
-        view.ShapeColor = (0.55, 0.62, 0.75) if part == kin5ax.PART_TOOL else (0.75, 0.68, 0.5)
+        view.ShapeColor = BRANCH_COLOURS[part]
         view.Transparency = int(transparency * 100)
+
+    def solids(self, obj):
+        """Every box of the machine by the name a collision report calls it: {name: the feature}.
+
+        The names come from the library, so a pair of k5_path_collision or of
+        k5_chain_collision can be looked up here without guessing at how the
+        chain file names anything.
+        """
+        chain = self.chain(obj)
+        found = {}
+        for part, name in BRANCHES:
+            bodies = getattr(obj, name + "Bodies")
+            for index, body in enumerate(bodies):
+                boxes = [o for o in body.Group if o.Name.startswith(obj.Name + name + "Box")]
+                for box, feature in enumerate(boxes):
+                    found[chain.solid_name(part, index, box)] = (feature, part)
+        return found
+
+    def highlight(self, obj, names, remembered=()):
+        """Paints the solids: red where they meet now, orange where they met earlier, as they were otherwise.
+
+        names and remembered: the names of single solids, as a collision report
+        gives them - not the description of a pair, which names two of them and
+        matches nothing here. The tool's own names may be among them; they
+        belong to the simulation, which paints its own tool, and are passed over.
+        """
+        wanted = set(names or ())
+        before = set(remembered or ())
+        for name, (feature, part) in self.solids(obj).items():
+            view = getattr(feature, "ViewObject", None)
+            if view is None:
+                continue
+            if name in wanted:
+                colour = COLLIDING
+            elif name in before:
+                colour = COLLIDED_BEFORE
+            else:
+                colour = BRANCH_COLOURS[part]
+            if tuple(view.ShapeColor)[:3] != colour:
+                view.ShapeColor = colour
 
     def pose(self, obj):
         """Places every part by the frames of the chain at the configuration the machine stands at.
@@ -352,6 +409,65 @@ class ObjectMachine(object):
         self._chain = None
         self._shown_joints = None
         globalise(obj, {name + "Joints": "App::PropertyLinkListGlobal" for _, name in BRANCHES})
+        if ensure(obj, self.PROPERTIES):
+            #a machine saved before the joint markers existed has none to show: build them
+            try:
+                self.buildJoints(obj)
+            except Exception as problem:
+                FreeCAD.Console.PrintError("kin5axcam: the joints of %s could not be added: %s\n"
+                                           % (obj.Label, problem))
+
+    def buildJoints(self, obj):
+        """The markers of the joints of a machine that has none, in the parts of their segments."""
+        chain = self.chain(obj)
+        if not obj.JointSize:
+            obj.JointSize = self.automaticJointSize(chain, obj.UnitInMillimetres)
+        for part, name in BRANCHES:
+            if getattr(obj, name + "Joints"):
+                continue
+            bodies = getattr(obj, name + "Bodies")
+            markers = []
+            for index in range(len(bodies)):
+                if self.linkOfSegment(chain, part, index) is None:
+                    continue
+                marker = obj.Document.addObject("Part::Feature", "%s%sJoint" % (obj.Name, name))
+                marker.Label = "%s %d joint" % (name, index + 1)
+                bodies[index].addObject(marker)
+                markers.append(marker)
+            setattr(obj, name + "Joints", markers)
+        self.showJoints(obj, chain, everything=True)
+
+
+def ensure(obj, properties):
+    """Adds whatever property of that table the object has not got, and sets the default of each one it adds.
+
+    A document saved by an older version of this addon is restored without the
+    properties added since, and an object that then runs the current code reads
+    and writes properties that are not there - silently, since setting an
+    unknown name on a document object only makes a Python attribute of it, which
+    the next save drops. Everything an object of this addon needs is therefore
+    declared in a table and put in place both when it is made and when it is
+    restored.
+
+    properties: (kind, name, documentation, default) each; a default of None is
+    left alone, and an enumeration takes its list of values as the default and
+    keeps the value it had.
+    """
+    added = []
+    for kind, name, documentation, default in properties:
+        if name in obj.PropertiesList:
+            if kind == "App::PropertyEnumeration" and default:
+                #the list of values is not saved, only the value chosen out of it
+                chosen = getattr(obj, name)
+                setattr(obj, name, list(default))
+                if chosen:
+                    setattr(obj, name, chosen)
+            continue
+        obj.addProperty(kind, name, PROPERTY_GROUP, documentation)
+        if default is not None:
+            setattr(obj, name, default if kind != "App::PropertyEnumeration" else list(default))
+        added.append(name)
+    return added
 
 
 def globalise(obj, wanted):

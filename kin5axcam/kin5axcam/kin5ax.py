@@ -63,6 +63,17 @@ SOLVE_STATUS_NAMES = {
     SINGULAR_UNSOLVED: "a location of a singular section the interpolated angle did not solve",
 }
 
+#k5_collision_kind: how two solids met, which is what is read between the names of a pair
+COLLIDING_PARTS = 0
+COLLIDING_TOOL = 1
+COLLIDING_TOOL_SHANK = 2
+
+COLLIDING_KIND_NAMES = {
+    COLLIDING_PARTS: "and",
+    COLLIDING_TOOL: "cuts into",
+    COLLIDING_TOOL_SHANK: "is in",
+}
+
 #k5_location_origin: where a location of a solved path came from
 FROM_FILE = 0
 INTERPOLATED = 1
@@ -168,6 +179,8 @@ class Location(ctypes.Structure):
         ("file_line", ctypes.c_size_t),
         ("_has_solution", ctypes.c_int),
         ("_q", ctypes.c_double * AXES),
+        ("_position", ctypes.c_double * 3),
+        ("_axis", ctypes.c_double * 3),
     ]
 
     @property
@@ -180,12 +193,51 @@ class Location(ctypes.Structure):
         return tuple(self._q) if self._has_solution else None
 
     @property
+    def position(self):
+        """The programmed point of the tool this location was solved for: the cutter location's own,
+        or one invented on the way to it. Known whether or not the location has a solution."""
+        return tuple(self._position)
+
+    @property
+    def axis(self):
+        """The tool axis this location was solved for, in the same way."""
+        return tuple(self._axis)
+
+    @property
     def status_name(self):
         return SOLVE_STATUS_NAMES.get(self.status, "status %d" % self.status)
 
     def __repr__(self):
         return "Location(%s, origin %d, from %d, q=%r)" % (self.status_name, self.origin,
                                                            self.file_location, self.q)
+
+
+class Collision(ctypes.Structure):
+    """k5_collision: two solids of the machine that met, and at how many locations of a path."""
+
+    _fields_ = [
+        ("_first", ctypes.c_char * NAME_MAX),
+        ("_second", ctypes.c_char * NAME_MAX),
+        ("kind", ctypes.c_int),
+        ("locations", ctypes.c_size_t),
+    ]
+
+    @property
+    def first(self):
+        return self._first.decode("utf-8", "replace")
+
+    @property
+    def second(self):
+        return self._second.decode("utf-8", "replace")
+
+    def describe(self):
+        """"Z box 1 and Tool holder: 313 locations"."""
+        return "%s %s %s: %d location%s" % (
+            self.first, COLLIDING_KIND_NAMES.get(self.kind, "and"), self.second, self.locations,
+            "" if self.locations == 1 else "s")
+
+    def __repr__(self):
+        return "Collision(%r)" % self.describe()
 
 
 class GcodeAxes(ctypes.Structure):
@@ -330,6 +382,15 @@ def _declare(lib):
                                            ctypes.c_size_t, _size_p]
     lib.k5_chain_set_configuration.restype = ctypes.c_int
     lib.k5_chain_set_configuration.argtypes = [_chain_t, _double_p]
+    lib.k5_chain_solid_name.restype = ctypes.c_int
+    lib.k5_chain_solid_name.argtypes = [_chain_t, ctypes.c_int, ctypes.c_size_t, ctypes.c_size_t,
+                                        ctypes.c_char_p, ctypes.c_size_t]
+    lib.k5_chain_check_collisions.restype = ctypes.c_int
+    lib.k5_chain_check_collisions.argtypes = [_chain_t, _tool_t, _int_p]
+    lib.k5_chain_collision_count.restype = ctypes.c_int
+    lib.k5_chain_collision_count.argtypes = [_chain_t, _size_p]
+    lib.k5_chain_collision.restype = ctypes.c_int
+    lib.k5_chain_collision.argtypes = [_chain_t, ctypes.c_size_t, ctypes.POINTER(Collision)]
     lib.k5_chain_tool_point.restype = ctypes.c_int
     lib.k5_chain_tool_point.argtypes = [_chain_t, _tool_t, _double_p, _double_p, _double_p]
 
@@ -364,6 +425,10 @@ def _declare(lib):
     lib.k5_path_count_of_status.argtypes = [_path_t, ctypes.c_int, _size_p]
     lib.k5_path_count_of_origin.restype = ctypes.c_int
     lib.k5_path_count_of_origin.argtypes = [_path_t, ctypes.c_int, _size_p]
+    lib.k5_path_collision_count.restype = ctypes.c_int
+    lib.k5_path_collision_count.argtypes = [_path_t, _size_p]
+    lib.k5_path_collision.restype = ctypes.c_int
+    lib.k5_path_collision.argtypes = [_path_t, ctypes.c_size_t, ctypes.POINTER(Collision)]
     lib.k5_path_errors.restype = ctypes.c_int
     lib.k5_path_errors.argtypes = [_path_t, _double_p, _double_p]
     lib.k5_path_last_configuration.restype = ctypes.c_int
@@ -382,6 +447,8 @@ def _declare(lib):
     lib.k5_material_surface.argtypes = [_material_t, _double_p, ctypes.c_size_t, _size_p]
     lib.k5_material_surface_triangles.restype = ctypes.c_int
     lib.k5_material_surface_triangles.argtypes = [_material_t, _double_p, ctypes.c_size_t, _size_p]
+    lib.k5_material_cut.restype = ctypes.c_int
+    lib.k5_material_cut.argtypes = [_material_t, _tool_t, _double_p, _double_p, _int_p, _double_p]
     lib.k5_simulation_create.restype = ctypes.c_int
     lib.k5_simulation_create.argtypes = [_chain_t, _tool_t, _path_t, _material_t,
                                          ctypes.POINTER(_simulation_t)]
@@ -543,6 +610,25 @@ class Path(object):
                 counts[name] = count
         return counts
 
+    def collisions(self):
+        """Which solids of the machine met, and at how many locations of this path each pair did.
+
+        A list of Collision, most locations first; empty when the collision
+        check was off or nothing met. A location whose every configuration was
+        rejected by the same pair counts once.
+        """
+        count = ctypes.c_size_t()
+        _check(self._lib, self._lib.k5_path_collision_count(self._handle, ctypes.byref(count)),
+               "k5_path_collision_count")
+        pairs = []
+        for index in range(count.value):
+            pair = Collision()
+            _check(self._lib, self._lib.k5_path_collision(self._handle, index, ctypes.byref(pair)),
+                   "k5_path_collision")
+            pairs.append(pair)
+        pairs.sort(key=lambda p: p.locations, reverse=True)
+        return pairs
+
     def errors(self):
         """The biggest position error and the biggest tool-axis error of the solutions of this run."""
         position, orientation = ctypes.c_double(), ctypes.c_double()
@@ -669,6 +755,36 @@ class Chain(object):
         """Puts the chain into these joint values, limits unchecked; frames() and links() follow."""
         _check(self._lib, self._lib.k5_chain_set_configuration(self._handle, _doubles(q, AXES, "q")),
                "k5_chain_set_configuration")
+
+    def solid_name(self, part, segment, box):
+        """What a report calls one solid of a segment: the name to match a drawn part against."""
+        out = ctypes.create_string_buffer(NAME_MAX)
+        _check(self._lib, self._lib.k5_chain_solid_name(self._handle, int(part), int(segment), int(box),
+                                                        out, NAME_MAX), "k5_chain_solid_name")
+        return out.value.decode("utf-8", "replace")
+
+    def check_collisions(self, tool):
+        """Which solids met at the configuration the chain stands in: a list of Collision, or empty.
+
+        The counts are of this one check, so every pair is 1. A solve makes its
+        own checks, so ask before solving anything else on this chain.
+        """
+        collides = ctypes.c_int()
+        _check(self._lib, self._lib.k5_chain_check_collisions(self._handle, tool.handle,
+                                                              ctypes.byref(collides)),
+               "k5_chain_check_collisions")
+        if not collides.value:
+            return []
+        count = ctypes.c_size_t()
+        _check(self._lib, self._lib.k5_chain_collision_count(self._handle, ctypes.byref(count)),
+               "k5_chain_collision_count")
+        pairs = []
+        for index in range(count.value):
+            pair = Collision()
+            _check(self._lib, self._lib.k5_chain_collision(self._handle, index, ctypes.byref(pair)),
+                   "k5_chain_collision")
+            pairs.append(pair)
+        return pairs
 
     def tool_point(self, q, tool=None):
         """The forward kinematics: where the programmed point ends up, and the tool axis, for these joints."""
@@ -812,6 +928,21 @@ class Material(object):
         _check(self._lib, self._lib.k5_material_surface(self._handle, out, 3 * count.value,
                                                         ctypes.byref(count)), "k5_material_surface")
         return out
+
+    def cut(self, tool, position, axis):
+        """One stamp of the tool at that programmed point and axis, in the unit of this material.
+
+        Returns (gouged, where): whether the shank or the holder is in material
+        that is still there after the cut, and the first such place. For a
+        location a simulation will not cut - one the machine cannot reach, which
+        is still a place the tool was asked to be.
+        """
+        gouged = ctypes.c_int()
+        where = (ctypes.c_double * 3)()
+        _check(self._lib, self._lib.k5_material_cut(
+            self._handle, tool.handle, _doubles(position, 3, "position"), _doubles(axis, 3, "axis"),
+            ctypes.byref(gouged), where), "k5_material_cut")
+        return bool(gouged.value), tuple(where)
 
     def surface_triangles(self):
         """The exposed faces of what is left as triangles, a flat ctypes array of 18 doubles per face.

@@ -158,6 +158,39 @@ TEST(SolvedLocation, TheNamesOfTheOrigins)
 	EXPECT_EQ((size_t)0,o.m_nFileLine);
 }
 
+//every record says what it was solved for: a location of the file its own point, a step invented on
+//the way to one a point strictly between - which is what a simulation needs to put the tool at a
+//location the machine did not reach, and where every record used to carry nothing
+TEST(SolvedLocation, EveryRecordSaysWhereTheToolWasAskedToBe)
+{
+	CSimulationData oSimulationData;
+	CCLDataPostprocessingResult oResult = RunStraightPath(oSimulationData);
+	const std::vector<CSolvedLocation> &v = oResult.m_vLocations;
+	ASSERT_EQ((size_t)10,v.size());
+	const CR3Vector vAxis = CR3Vector(0.3,0.4,0.866025).GetUnitVector();
+	size_t nFileSeen = 0;
+	for(size_t i=0;i<v.size();i++){
+		const CR3Point &p = v[i].m_cvInput.m_p;
+		EXPECT_NEAR(0.0,p.GetY(),1E-12)<<"record "<<i;
+		EXPECT_NEAR(0.03,p.GetZ(),1E-12)<<"record "<<i;
+		EXPECT_NEAR(0.0,(v[i].m_cvInput.m_v.GetUnitVector()-vAxis).GetLength(),1E-6)
+			<<"record "<<i<<": the axis of the file, whichever way it was invented";
+		if(v[i].m_nOrigin==LOCATION_FROM_FILE){
+			nFileSeen++;
+			EXPECT_NEAR(0.025*(double)(nFileSeen-1),p.GetX(),1E-12)<<"record "<<i<<" is at cutter location "<<nFileSeen;
+		} else {
+			EXPECT_GT(p.GetX(),0.025*(double)(nFileSeen-1)+1E-9)<<"record "<<i<<" is past location "<<nFileSeen;
+			EXPECT_LT(p.GetX(),0.025*(double)nFileSeen-1E-9)<<"record "<<i<<" and before location "<<(nFileSeen+1);
+		}
+		if(i){
+			EXPECT_GT(p.GetX(),v[i-1].m_cvInput.m_p.GetX())<<"record "<<i<<": no two records at the same point";
+		}
+	}
+	//the sequence written out: 0, a third and two thirds of the way, 0.025, and so on
+	for(size_t i=0;i<10;i++)
+		EXPECT_NEAR(0.025*(double)i/3.0,v[i].m_cvInput.m_p.GetX(),1E-12)<<"record "<<i;
+}
+
 // ---------------------------------------------------------------- KnownBugs #70
 
 //A meridian over the north pole crosses the singular orientation of most machines, so the

@@ -13,6 +13,7 @@ add_library(kin5ax STATIC
   Exceptions/GeneratorException.cpp
   Chain/Chain.cpp
   Chain/ChainConfiguration.cpp
+  Chain/CollisionReport.cpp
   Chain/ChainSegment.cpp
   Chain/ChainXmlReader.cpp
   Chain/ChainJson.cpp

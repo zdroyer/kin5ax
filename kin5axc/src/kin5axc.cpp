@@ -384,6 +384,65 @@ k5_status k5_chain_set_configuration(k5_chain chain, const double *q)
 	K5_END(K5_ERROR_CHAIN)
 }
 
+//the pairs of a report into the k5_collision of the host
+static void ToCCollision(const CCollidingPair &oPair, k5_collision *out)
+{
+	CopyName(oPair.m_sFirst,out->first,(size_t)K5_NAME_MAX);
+	CopyName(oPair.m_sSecond,out->second,(size_t)K5_NAME_MAX);
+	switch(oPair.m_nKind){
+	case COLLIDING_TOOL:		out->kind = K5_COLLIDING_TOOL; break;
+	case COLLIDING_TOOL_SHANK:	out->kind = K5_COLLIDING_TOOL_SHANK; break;
+	default:					out->kind = K5_COLLIDING_PARTS; break;
+	}
+	out->locations = oPair.m_nCount;
+}
+
+k5_status k5_chain_solid_name(k5_chain chain, int part, size_t segment, size_t box,
+	char *out, size_t capacity)
+{
+	K5_BEGIN
+	K5_NEED(chain && out && capacity,"k5_chain_solid_name needs a chain and somewhere to put the name")
+	CHAIN_PART nPart = CHAIN_PART_TOOL;
+	K5_NEED(FromCPart(part,nPart),"part is neither K5_PART_TOOL nor K5_PART_MATERIAL_HOLDER")
+	CopyName(chain->m_oChain.GetSolidName(nPart,segment,box),out,capacity);
+	return K5_OK;
+	K5_END(K5_ERROR_CHAIN)
+}
+
+k5_status k5_chain_check_collisions(k5_chain chain, k5_tool tool, int *collides)
+{
+	K5_BEGIN
+	K5_NEED(chain && tool,"k5_chain_check_collisions needs a chain and a tool")
+	K5_NEED(tool->m_pTool,"the tool handle holds no tool")
+	chain->m_oChain.SetToolAssembly(*tool->m_pTool);
+	std::string sLog;
+	const bool b = chain->m_oChain.HasCollision(*tool->m_pTool,sLog);
+	if(collides)
+		*collides = b ? 1 : 0;
+	return K5_OK;
+	K5_END(K5_ERROR_CHAIN)
+}
+
+k5_status k5_chain_collision_count(k5_chain chain, size_t *out)
+{
+	K5_BEGIN
+	K5_NEED(chain && out,"k5_chain_collision_count needs a chain and somewhere to put the count")
+	*out = chain->m_oChain.GetCollisions().GetPairs().size();
+	return K5_OK;
+	K5_END(K5_ERROR_CHAIN)
+}
+
+k5_status k5_chain_collision(k5_chain chain, size_t index, k5_collision *out)
+{
+	K5_BEGIN
+	K5_NEED(chain && out,"k5_chain_collision needs a chain and somewhere to put the answer")
+	const std::vector<CCollidingPair> &vPairs = chain->m_oChain.GetCollisions().GetPairs();
+	K5_NEED(index<vPairs.size(),"there is no colliding pair of that index in this chain")
+	ToCCollision(vPairs[index],out);
+	return K5_OK;
+	K5_END(K5_ERROR_CHAIN)
+}
+
 k5_status k5_chain_tool_point(k5_chain chain, k5_tool tool, const double *q,
 	double *position, double *axis)
 {
@@ -502,6 +561,29 @@ k5_status k5_material_surface_triangles(k5_material material, double *out,
 		out[i] = v[i];
 	return K5_OK;
 	K5_END(K5_ERROR_UNKNOWN)
+}
+
+k5_status k5_material_cut(k5_material material, k5_tool tool, const double *position,
+	const double *axis, int *gouged, double *gouge_point)
+{
+	K5_BEGIN
+	K5_NEED(material && tool && position && axis,"k5_material_cut needs a material, a tool, a position and an axis")
+	K5_NEED(tool->m_pTool,"the tool handle holds no tool")
+	const CR3Vector v(axis[0],axis[1],axis[2]);
+	K5_NEED(!v.IsZero(1E-12),"an axis of length zero is no direction")
+	tool->m_pTool->SetPositionAndOrientation(CR3Point(position[0],position[1],position[2]),v.GetUnitVector());
+	material->m_oMaterial.MachineCut(*tool->m_pTool);
+	CR3Point r3pGouge;
+	const bool bGouged = material->m_oMaterial.HasMaterialInNonCuttingPart(*tool->m_pTool,r3pGouge);
+	if(gouged)
+		*gouged = bGouged ? 1 : 0;
+	if(gouge_point && bGouged){
+		gouge_point[0] = r3pGouge.GetX();
+		gouge_point[1] = r3pGouge.GetY();
+		gouge_point[2] = r3pGouge.GetZ();
+	}
+	return K5_OK;
+	K5_END(K5_ERROR_SOLVER)
 }
 
 k5_status k5_simulation_create(k5_chain chain, k5_tool tool, k5_path path, k5_material material,
@@ -822,6 +904,12 @@ k5_status k5_path_location(k5_path path, size_t index, k5_location *out)
 		out->q[i] = 0.0;
 	if(out->has_solution)
 		ToQ(path->m_oData[index],out->q);
+	out->position[0] = oRecord.m_cvInput.m_p.GetX();
+	out->position[1] = oRecord.m_cvInput.m_p.GetY();
+	out->position[2] = oRecord.m_cvInput.m_p.GetZ();
+	out->axis[0] = oRecord.m_cvInput.m_v.GetX();
+	out->axis[1] = oRecord.m_cvInput.m_v.GetY();
+	out->axis[2] = oRecord.m_cvInput.m_v.GetZ();
 	return K5_OK;
 	K5_END(K5_ERROR_ARGUMENT)
 }
@@ -858,6 +946,26 @@ k5_status k5_path_errors(k5_path path, double *max_position_error, double *max_o
 		*max_orientation_error = path->m_oResult.m_dMaxOrientationErrorVectorLength;
 	return K5_OK;
 	K5_END(K5_ERROR_ARGUMENT)
+}
+
+k5_status k5_path_collision_count(k5_path path, size_t *out)
+{
+	K5_BEGIN
+	K5_NEED(path && out,"k5_path_collision_count needs a path and somewhere to put the count")
+	*out = path->m_oResult.m_oCollisions.GetPairs().size();
+	return K5_OK;
+	K5_END(K5_ERROR_UNKNOWN)
+}
+
+k5_status k5_path_collision(k5_path path, size_t index, k5_collision *out)
+{
+	K5_BEGIN
+	K5_NEED(path && out,"k5_path_collision needs a path and somewhere to put the answer")
+	const std::vector<CCollidingPair> &vPairs = path->m_oResult.m_oCollisions.GetPairs();
+	K5_NEED(index<vPairs.size(),"there is no colliding pair of that index in this path")
+	ToCCollision(vPairs[index],out);
+	return K5_OK;
+	K5_END(K5_ERROR_UNKNOWN)
 }
 
 k5_status k5_path_last_configuration(k5_path path, double *q)

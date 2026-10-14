@@ -247,11 +247,35 @@ written there. Its `Step` is the picture: the machine takes that configuration, 
 step's operation hangs from the mount by the length of its assembly (the bit's own solid, or a
 cylinder when it has none), the model and the stock of the job sit in the frame of the material
 through links, and a location the machine cannot reach is a **red vertex** where its tip would have
-been. The report of the solve is a property too.
+been. The report of the solve is a property too, and when the machine met itself on the way, so is
+**what met what**: `Collisions` holds a line per pair of solids with the number of locations it cost
+— *C and Tool holder: 331 locations*, *the tool cuts into Material holder: 25 locations* — and the
+same lines are in the report under *what met*. A pair is counted once per location however many of
+its configurations it rejected. That is the difference between knowing a path collides and knowing
+the machine cannot tilt that far.
+
+**And it is shown.** A location the machine cannot reach *because it would collide* is not skipped
+over: the machine is posed at a configuration that puts the tool where that location asks — the
+collision check off, the configuration nearest the pose before it, which is the one it would have
+swung into — and the two solids that meet there are painted **red**, the tool and its holder with
+them. `Collided` names the pairs for that location and the player says *what meets here*. Stepping to
+a location that solves takes the red off, but a solid of the machine that has met anything stays
+**orange** to the end of the run (`CollidedEver`), so what a path has cost is still visible once the
+tool has moved on. The tool itself is never orange: it is the thing that moves, not a part that was
+in the way.
+
+The stock is cut at such a location as well, since the tool was asked to be there and what it would
+have taken off is worth seeing beside the collision — the cutting simulation of the library will not
+go there, having no configuration for it, so the stamp is made straight into the material. `Cut in a
+collision` in the player, `CutInCollision` on the object, turns it off; on the job this came from it
+is 2 472 mm³ of 27 805.
 
 **The player** is the task panel the simulate command opens: a slider over the locations, play and
 pause at a rate you set, a step either way, first and last, and the report. It moves `Step` and
-nothing else. A tick passes a **turn in place** — a run of locations whose tip does not move, which
+nothing else. **Pause on a collision or a gouge**, on by default, stops the playback where the
+machine first meets itself or the tool first drags its shank through material — at the start of such
+a stretch, not at every location of it, so that pressing play again carries on. **Reset** makes the
+stock whole again, forgets what has met what, and goes back to the first location. A tick passes a **turn in place** — a run of locations whose tip does not move, which
 is the tool reorienting at one point: the swing of a lead angle at the end of a pass, or the solver's
 way through a singular direction of a wrist — in one go and says how many it passed; the cut is made
 at every one of them either way. *Every location* draws them all.
@@ -284,7 +308,11 @@ gouge is an orange marker, and the player shows both under the slider.
 Three things to know about it. The library stamps the tool into the voxels **once per location
 with nothing swept between two**, so when cutting the simulation makes the invented steps as dense
 as the voxels (`MaxStep` left at 0) — many more locations than the operation has moves, and the
-reason a cut looks like a cut. **Stepping backwards starts the cut again** from a whole block, since
+reason a cut looks like a cut. Every location of the trajectory, invented or not, carries **its own
+point and axis** (`Tips`, `Axes`): the library records what each one was solved for, and the addon
+takes it from there rather than from the move the location is on the way to — which is what puts the
+machine, the red vertex and the stamp at an unreached location where that location is, and not at
+the end of its move. **Stepping backwards starts the cut again** from a whole block, since
 voxels cannot be uncut; scrubbing the slider back is a recut up to there, which is fast at these
 sizes. And the cut needs the solved paths of the library, which live only while the document is
 open: a reopened document still scrubs the machine, but **recompute the simulation to cut again**.
@@ -447,7 +475,7 @@ py -3 run_tests.py                                    # the geometry, no FreeCAD
 "C:/Program Files/FreeCAD 1.1.1/bin/freecadcmd.exe" run_tests.py   # and the FreeCAD ones
 ```
 
-134 tests. The geometry of `pathgen.py` is checked against surfaces whose answers are known on paper
+149 tests. The geometry of `pathgen.py` is checked against surfaces whose answers are known on paper
 — a plane, a sphere, a plane with a hole in it — because the generator asks a surface only four
 things (`ParameterRange`, `valueAt`, `normalAt`, `isPartOfDomain`) and a test can answer them
 without a CAD kernel. `Part.Face` answers the same four, which `tests/test_freecad.py` checks

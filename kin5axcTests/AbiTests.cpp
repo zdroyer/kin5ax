@@ -379,6 +379,50 @@ TEST(Abi, TheSurfaceOfTheMaterialAsTriangles)
 	k5_material_free(material);
 }
 
+TEST(Abi, OneStampOfTheToolWhereverItIsPut)
+{
+	//what a host does for a location its simulation will not cut: put the tool there and stamp it
+	k5_tool tool = CreateTool();
+	k5_material material = NULL;
+	ASSERT_EQ(K5_OK,k5_material_create(0.12,0.06,0.03,0.002,-0.06,-0.03,-0.03,&material))<<k5_last_error();
+	double dTotal=0.0, dRemoved=0.0;
+	ASSERT_EQ(K5_OK,k5_material_volumes(material,&dTotal,&dRemoved));
+	EXPECT_EQ(0.0,dRemoved);
+
+	const double p[3] = {0.0,0.0,0.0};		//the ball centre on the top of the block
+	const double v[3] = {0.0,0.0,1.0};
+	int nGouged = 1;
+	ASSERT_EQ(K5_OK,k5_material_cut(material,tool,p,v,&nGouged,NULL))<<k5_last_error();
+	EXPECT_EQ(0,nGouged)<<"the shank is above the block";
+	ASSERT_EQ(K5_OK,k5_material_volumes(material,&dTotal,&dRemoved));
+	EXPECT_GT(dRemoved,0.0)<<"a bite out of it";
+	const double dOne = dRemoved;
+
+	//the same stamp again takes nothing more: a voxel removed is removed
+	ASSERT_EQ(K5_OK,k5_material_cut(material,tool,p,v,NULL,NULL));
+	ASSERT_EQ(K5_OK,k5_material_volumes(material,&dTotal,&dRemoved));
+	EXPECT_EQ(dOne,dRemoved);
+
+	//and one pushed into the block has its shank in material that is still there - a tool whose
+	//cutting part is 20 mm, since the 64 mm one of CreateTool reaches out of a block 30 mm deep
+	k5_tool stubby = NULL;
+	ASSERT_EQ(K5_OK,k5_tool_create(K5_TOOL_BALL_NOSE,0.016,0.016,0.020,0.030,0.050,0.030,&stubby))
+		<<k5_last_error();
+	const double deep[3] = {0.04,0.0,-0.02};
+	double gouge[3] = {0.0,0.0,0.0};
+	ASSERT_EQ(K5_OK,k5_material_cut(material,stubby,deep,v,&nGouged,gouge))<<k5_last_error();
+	EXPECT_EQ(1,nGouged);
+	EXPECT_GT(gouge[2],-0.03)<<"and the place of it is in the block";
+	k5_tool_free(stubby);
+
+	const double zero[3] = {0.0,0.0,0.0};
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_material_cut(material,tool,p,zero,NULL,NULL))<<"no direction";
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_material_cut(NULL,tool,p,v,NULL,NULL));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_material_cut(material,NULL,p,v,NULL,NULL));
+	k5_material_free(material);
+	k5_tool_free(tool);
+}
+
 TEST(Abi, ThePathCutsTheMaterialWhereItGoes)
 {
 	k5_chain chain = OpenChain();
@@ -594,6 +638,132 @@ TEST(Abi, TheLocationsOfASimulationOnAChainAreItsToolPoints)
 	k5_chain_free(chain);
 }
 
+TEST(Abi, AChainSaysWhichOfItsSolidsMetAtThePoseItStandsIn)
+{
+	k5_chain chain = OpenChain("3CWithSphericalWrist_withBaseBox.kc");
+	k5_tool tool = CreateTool();
+	std::vector<double> q((size_t)K5_AXES,0.0);
+	ASSERT_EQ(K5_OK,k5_chain_set_configuration(chain,&q[0]));
+	int nCollides = 1;
+	ASSERT_EQ(K5_OK,k5_chain_check_collisions(chain,tool,&nCollides))<<k5_last_error();
+	EXPECT_EQ(0,nCollides)<<"standing up, nothing meets";
+	size_t nPairs = 1;
+	ASSERT_EQ(K5_OK,k5_chain_collision_count(chain,&nPairs));
+	EXPECT_EQ((size_t)0,nPairs);
+
+	//every rotary joint turned a long way: this wrist meets itself
+	for(size_t i=0;i<(size_t)K5_AXES;i++){
+		k5_link oLink;
+		ASSERT_EQ(K5_OK,k5_chain_link(chain,i,&oLink));
+		if(oLink.type==K5_LINK_REVOLUTE)
+			q[i] = 2.0;
+	}
+	ASSERT_EQ(K5_OK,k5_chain_set_configuration(chain,&q[0]));
+	ASSERT_EQ(K5_OK,k5_chain_check_collisions(chain,tool,&nCollides))<<k5_last_error();
+	ASSERT_EQ(1,nCollides)<<"turned that far, something meets";
+	ASSERT_EQ(K5_OK,k5_chain_collision_count(chain,&nPairs));
+	ASSERT_GT(nPairs,(size_t)0);
+	for(size_t i=0;i<nPairs;i++){
+		k5_collision oPair;
+		ASSERT_EQ(K5_OK,k5_chain_collision(chain,i,&oPair))<<k5_last_error();
+		EXPECT_STRNE("",oPair.first);
+		EXPECT_STRNE("",oPair.second);
+		EXPECT_EQ((size_t)1,oPair.locations)<<"one check, one count";
+	}
+	k5_collision oPair;
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_collision(chain,nPairs,&oPair));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_check_collisions(chain,NULL,&nCollides));
+
+	//and the names of the solids are the ones the pairs are made of
+	char szName[K5_NAME_MAX] = {0};
+	size_t nSegments = 0;
+	ASSERT_EQ(K5_OK,k5_chain_frames(chain,K5_PART_TOOL,NULL,0,&nSegments));
+	bool bFound = false;
+	for(size_t i=0;i<nSegments && !bFound;i++){
+		size_t nBoxes = 0;
+		ASSERT_EQ(K5_OK,k5_chain_segment_boxes(chain,K5_PART_TOOL,i,NULL,0,&nBoxes));
+		for(size_t b=0;b<nBoxes;b++){
+			ASSERT_EQ(K5_OK,k5_chain_solid_name(chain,K5_PART_TOOL,i,b,szName,sizeof(szName)))
+				<<k5_last_error();
+			EXPECT_STRNE("",szName);
+			for(size_t p=0;p<nPairs;p++){
+				k5_collision o;
+				ASSERT_EQ(K5_OK,k5_chain_collision(chain,p,&o));
+				if(!strcmp(o.first,szName) || !strcmp(o.second,szName))
+					bFound = true;
+			}
+		}
+	}
+	EXPECT_TRUE(bFound)<<"a solid of the tool branch is named in one of the pairs";
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_solid_name(chain,K5_PART_TOOL,nSegments,0,szName,sizeof(szName)))
+		<<"a segment that is not there is a bad argument, as it is everywhere else";
+	k5_tool_free(tool);
+	k5_chain_free(chain);
+}
+
+TEST(Abi, APathSaysWhichSolidsMetAndAtHowManyLocations)
+{
+	//the model of the spherical wrist cannot tilt its tool far without meeting itself: a path that
+	//asks it to is where a pair and a count are worth more than "it collides"
+	k5_chain chain = OpenChain("3CWithSphericalWrist_withBaseBox.kc");
+	k5_tool tool = CreateTool();
+	k5_settings oSettings;
+	k5_settings_default(&oSettings);
+	oSettings.interpolate = 0;
+
+	//a line of locations whose tool axis leans further and further over
+	std::vector<double> vPositions, vAxes;
+	const size_t nCount = 12;
+	for(size_t i=0;i<nCount;i++){
+		const double dLean = (double)i*(4.0*atan(1.0)/180.0)*8.0;	//0, 8, 16 ... degrees
+		vPositions.push_back(0.02*(double)i-0.1);
+		vPositions.push_back(0.0);
+		vPositions.push_back(0.1);
+		vAxes.push_back(sin(dLean));
+		vAxes.push_back(0.0);
+		vAxes.push_back(cos(dLean));
+	}
+	k5_path path = NULL;
+	ASSERT_EQ(K5_OK,k5_postprocess_locations(chain,tool,&oSettings,&vPositions[0],&vAxes[0],nCount,&path))
+		<<k5_last_error();
+	size_t nColliding = 0;
+	ASSERT_EQ(K5_OK,k5_path_count_of_status(path,K5_COLLISION,&nColliding));
+	ASSERT_GT(nColliding,(size_t)0)<<"the far end of that path has to collide for this to say anything";
+
+	size_t nPairs = 0;
+	ASSERT_EQ(K5_OK,k5_path_collision_count(path,&nPairs))<<k5_last_error();
+	ASSERT_GT(nPairs,(size_t)0)<<"and the path says which solids met";
+	size_t nWorst = 0;
+	for(size_t i=0;i<nPairs;i++){
+		k5_collision oPair;
+		ASSERT_EQ(K5_OK,k5_path_collision(path,i,&oPair))<<k5_last_error();
+		EXPECT_STRNE("",oPair.first);
+		EXPECT_STRNE("",oPair.second);
+		EXPECT_STRNE(oPair.first,oPair.second);
+		EXPECT_GT(oPair.locations,(size_t)0);
+		EXPECT_LE(oPair.locations,nColliding)<<"no pair can cost more locations than collided";
+		EXPECT_TRUE(oPair.kind==K5_COLLIDING_PARTS || oPair.kind==K5_COLLIDING_TOOL
+			|| oPair.kind==K5_COLLIDING_TOOL_SHANK);
+		nWorst = std::max(nWorst,oPair.locations);
+	}
+	EXPECT_EQ(nColliding,nWorst)<<"the pair that rejected every colliding location costs all of them";
+
+	k5_collision oPair;
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_path_collision(path,nPairs,&oPair));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_path_collision(NULL,0,&oPair));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_path_collision_count(NULL,&nPairs));
+	k5_path_free(path);
+
+	//with the check off nothing is rejected and nothing is reported
+	oSettings.check_collisions = 0;
+	ASSERT_EQ(K5_OK,k5_postprocess_locations(chain,tool,&oSettings,&vPositions[0],&vAxes[0],nCount,&path));
+	ASSERT_EQ(K5_OK,k5_path_collision_count(path,&nPairs));
+	EXPECT_EQ((size_t)0,nPairs);
+	k5_path_free(path);
+	k5_tool_free(tool);
+	k5_chain_free(chain);
+}
+
 TEST(Abi, ATool)
 {
 	k5_tool tool = CreateTool();
@@ -729,7 +899,8 @@ TEST(Abi, APathIsSolvedAndWrittenAsGCode)
 	EXPECT_EQ(nSize,nSolved)<<"every location of this path is solvable";
 	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_path_count_of_origin(path,42,&nFromFile));
 
-	//the records: the line of the file, the cutter location they belong to, and the solution
+	//the records: the line of the file, the cutter location they belong to, the solution, and what
+	//they were solved for - the file's own points a third of a step apart, with the axis of the file
 	size_t nFileSeen = 0;
 	for(size_t i=0;i<nSize;i++){
 		k5_location oLocation;
@@ -739,6 +910,11 @@ TEST(Abi, APathIsSolvedAndWrittenAsGCode)
 		if(oLocation.origin==K5_FROM_FILE)
 			nFileSeen++;
 		EXPECT_EQ(nFileSeen,oLocation.file_location)<<"record "<<i;
+		EXPECT_NEAR(p[0]+(double)i*0.025/3.0,oLocation.position[0],1E-6)<<"record "<<i<<" is a third of a step on";
+		EXPECT_NEAR(p[1],oLocation.position[1],1E-6)<<"record "<<i;
+		EXPECT_NEAR(p[2],oLocation.position[2],1E-6)<<"record "<<i;
+		for(size_t k=0;k<3;k++)
+			EXPECT_NEAR(v[k],oLocation.axis[k],1E-5)<<"record "<<i<<" axis "<<k;
 	}
 	EXPECT_EQ((size_t)3,nFileSeen);
 	k5_location oIgnored;

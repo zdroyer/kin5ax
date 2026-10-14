@@ -73,9 +73,15 @@ built `kin5axc.dll` in `lib/` is still to do.
 boxes of the file and an arm to the next, the tool mount and the material as parts, the job's tool
 and model and stock in them, the trajectory in properties, a player with slider, play, step and the
 report. Two calls were added to the ABI for it: `k5_chain_segment_boxes` and
-`k5_chain_set_configuration`. Still to do here: real bodies per segment (a segment part takes
-them by hand already; the file format does not reference them), and the collision verdict of the
-solver shown as a marker in the picture, next to the unreachable ones.
+`k5_chain_set_configuration`. 2026-10-14: which solids met is reported as well - a
+`CCollisionReport` of named pairs with counts in the library, filled by `CChain::DetectCollisions`,
+carried out of a solve by `CSolveReport` and aggregated per location into the result, through the
+ABI as `k5_path_collision`, and shown in the dialog under *what met*. The same day: the colliding
+solids **shown** - a location that collides poses the machine where it would have had to be
+(`k5_chain_check_collisions` on a configuration solved with the check off) and paints the two solids
+red, named through `k5_chain_solid_name` so the host matches what the library reports. Still to do
+here: real bodies per segment (a segment part takes them by hand already; the file format does not
+reference them).
 
 ### 4. Done: cutting simulation, as voxels
 
@@ -99,8 +105,7 @@ stock, and one simulation per job, which were the two faults of the first pictur
 Next here, in order of value: **marching cubes** in the library and through the ABI, for a smooth
 surface in place of the voxel faces; **the sweep** of the tool between two locations
 in the library, so the interpolation can be coarse again; **the comparison** of what is left with
-the model of the job, which is what a finish pass is judged by; and the collision verdict of the
-solver as a marker next to the unreachable ones.
+the model of the job, which is what a finish pass is judged by.
 
 ### 5. The library's own list
 

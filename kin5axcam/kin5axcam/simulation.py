@@ -8,6 +8,20 @@ that configuration, the tool of the operation hanging from the tool mount and
 the model and the stock of the job sitting in the frame of the material. A
 location the machine cannot reach is a marker where its tip would have been.
 
+A location the machine cannot reach **because it would collide** is shown
+rather than skipped: the machine is posed at a configuration that puts the tool
+where the location asks, collisions ignored, and the two solids that meet there
+are painted red - the machine caught in the act. ``Collided`` says which, for
+that location, and ``CollidedEver`` keeps every solid that has met anything so
+far in the run, which stays orange to the end of it: what a path has cost is
+still visible once the tool has moved on.
+
+The stock is cut at such a location as well, with ``CutInCollision`` on - the
+tool was asked to be there, and what it would have taken off is worth seeing
+beside the collision - which the cutting simulation of the library will not do,
+since it walks a trajectory and that location has no configuration in it. The
+stamp is made straight into the material instead.
+
 Recomputing the simulation solves the whole trajectory again - the batch; the
 player of the task panel moves ``Step`` - the picture. Both run on
 ``kin5axcam.solve``, as the postprocessor does, so what is seen here is what is
@@ -46,99 +60,108 @@ def _quantity(value):
 
 class ObjectSimulation(object):
 
-    def __init__(self, obj, machine_object, job):
-        obj.Proxy = self
-        obj.addProperty("App::PropertyLink", "Machine", PROPERTY_GROUP,
-                        "The machine the job runs on; none, and the path is played as it is, the tool "
-                        "leaning in the frame of the part")
-        obj.addProperty("App::PropertyLink", "Job", PROPERTY_GROUP, "The job whose operations are run")
-        obj.addProperty("App::PropertyLinkList", "Operations", PROPERTY_GROUP,
-                        "The operations run, in this order; none means every active operation of the job")
-        obj.addProperty("App::PropertyLength", "HolderLength", PROPERTY_GROUP,
-                        "The holder between the tool and the spindle, which a tool bit does not describe")
-        obj.addProperty("App::PropertyLength", "HolderRadius", PROPERTY_GROUP, "And its radius")
-        obj.addProperty("App::PropertyBool", "CheckLimits", PROPERTY_GROUP,
-                        "A configuration outside the joint limits is no solution")
-        obj.addProperty("App::PropertyBool", "CheckCollisions", PROPERTY_GROUP,
-                        "A configuration whose parts meet is no solution")
-        obj.addProperty("App::PropertyBool", "Interpolate", PROPERTY_GROUP,
-                        "Invent locations between two moves, as dense as the two bounds below")
-        obj.addProperty("App::PropertyLength", "MaxStep", PROPERTY_GROUP,
-                        "No invented step longer than this; 0 leaves it to kin5ax")
-        obj.addProperty("App::PropertyAngle", "MaxTurn", PROPERTY_GROUP,
-                        "Nor turning the tool axis further than this; 0 leaves it to kin5ax")
-        obj.addProperty("App::PropertyEnumeration", "Start", PROPERTY_GROUP,
-                        "Where the trajectory starts: the first rotary axis closest to zero, at its "
-                        "minimum, at its maximum, or wherever makes the whole path shortest")
-        obj.Start = START_CHOICES
+    #what a simulation carries: what it is told to do, what the solve gave, and what it put in the
+    #document. Everything read or written by this class is here, so that an object restored from an
+    #older document gains whatever it is missing - see kin5axcam.machine.ensure.
+    PROPERTIES = (
+        ("App::PropertyLink", "Machine",
+         "The machine the job runs on; none, and the path is played as it is, the tool leaning in the "
+         "frame of the part", None),
+        ("App::PropertyLink", "Job", "The job whose operations are run", None),
+        ("App::PropertyLinkList", "Operations",
+         "The operations run, in this order; none means every active operation of the job", None),
+        ("App::PropertyLength", "HolderLength",
+         "The holder between the tool and the spindle, which a tool bit does not describe", 50.0),
+        ("App::PropertyLength", "HolderRadius", "And its radius", 30.0),
+        ("App::PropertyBool", "CheckLimits",
+         "A configuration outside the joint limits is no solution", True),
+        ("App::PropertyBool", "CheckCollisions",
+         "A configuration whose parts meet is no solution", True),
+        ("App::PropertyBool", "Interpolate",
+         "Invent locations between two moves, as dense as the two bounds below", True),
+        ("App::PropertyLength", "MaxStep",
+         "No invented step longer than this; 0 leaves it to kin5ax", 0.0),
+        ("App::PropertyAngle", "MaxTurn",
+         "Nor turning the tool axis further than this; 0 leaves it to kin5ax", 0.0),
+        ("App::PropertyEnumeration", "Start",
+         "Where the trajectory starts: the first rotary axis closest to zero, at its minimum, at its "
+         "maximum, or wherever makes the whole path shortest", START_CHOICES),
+        ("App::PropertyBool", "Cut",
+         "Cut the stock of the job as the machine goes, and show what is left", True),
+        ("App::PropertyLength", "VoxelSize",
+         "The side of a voxel of the stock; 0 picks one from the size of the stock", 0.0),
+        ("App::PropertyInteger", "RefreshEvery",
+         "How many cut steps between two redraws of what is left of the stock", 5),
+        ("App::PropertyBool", "CutInCollision",
+         "Cut the stock at a location the machine cannot reach as well: the tool was asked to be "
+         "there, and what it would have taken off is worth seeing beside the collision", True),
 
-        obj.addProperty("App::PropertyInteger", "Step", PROPERTY_GROUP,
-                        "The location of the trajectory the machine is shown at")
-        obj.addProperty("App::PropertyInteger", "StepCount", PROPERTY_GROUP,
-                        "How many locations the trajectory has")
-        obj.addProperty("App::PropertyFloatList", "Joints", PROPERTY_GROUP,
-                        "Five joint values per location, in the order of the links of the chain")
-        obj.addProperty("App::PropertyIntegerList", "Solved", PROPERTY_GROUP,
-                        "1 for a location with a solution, 0 for one without")
-        obj.addProperty("App::PropertyIntegerList", "Statuses", PROPERTY_GROUP,
-                        "The status of kin5ax for every location")
-        obj.addProperty("App::PropertyFloatList", "Tips", PROPERTY_GROUP,
-                        "Where the tip of the tool was asked to be, three values per location, mm")
-        obj.addProperty("App::PropertyFloatList", "Axes", PROPERTY_GROUP,
-                        "Which way the tool was asked to point, three values per location")
-        obj.addProperty("App::PropertyLink", "ToolFrame", PROPERTY_GROUP,
-                        "Without a machine: the part the tool hangs from, placed at every location")
-        obj.addProperty("App::PropertyLink", "PartFrame", PROPERTY_GROUP,
-                        "Without a machine: the part holding what is left of the stock and the markers")
-        obj.addProperty("App::PropertyIntegerList", "StepOperations", PROPERTY_GROUP,
-                        "The index into Operations of the operation every location belongs to")
-        obj.addProperty("App::PropertyString", "Report", PROPERTY_GROUP,
-                        "What came of the solve: the counts by status and the largest errors")
+        ("App::PropertyInteger", "Step",
+         "The location of the trajectory the machine is shown at", 0),
+        ("App::PropertyInteger", "StepCount", "How many locations the trajectory has", None),
+        ("App::PropertyFloatList", "Joints",
+         "Five joint values per location, in the order of the links of the chain", None),
+        ("App::PropertyIntegerList", "Solved",
+         "1 for a location with a solution, 0 for one without", None),
+        ("App::PropertyIntegerList", "Statuses", "The status of kin5ax for every location", None),
+        ("App::PropertyFloatList", "Tips",
+         "Where the tip of the tool was asked to be, three values per location, mm", None),
+        ("App::PropertyFloatList", "Axes",
+         "Which way the tool was asked to point, three values per location", None),
+        ("App::PropertyIntegerList", "StepOperations",
+         "The index into Operations of the operation every location belongs to", None),
+        ("App::PropertyString", "Report",
+         "What came of the solve: the counts by status and the largest errors", None),
+        ("App::PropertyStringList", "Collisions",
+         "Which solids of the machine met on the way, and at how many locations each pair did", None),
+        ("App::PropertyStringList", "Collided",
+         "Which solids meet at the location the machine is shown at, when it cannot reach it", None),
+        ("App::PropertyStringList", "CollidedEver",
+         "Every solid that has met anything so far in this run; they stay marked to the end of it",
+         None),
+        ("App::PropertyFloat", "RemovedVolume",
+         "The volume cut off the stock so far, in cubic millimetres", None),
+        ("App::PropertyInteger", "Gouges",
+         "How many locations so far had the shank or the holder in material still there", None),
+        ("App::PropertyVector", "FirstGouge",
+         "Where the first of them was, in the frame of the part", None),
+
         #global links: these live inside parts of the machine or of this object, and a link into a
         #part from outside it is out of scope for an ordinary one
-        obj.addProperty("App::PropertyLinkGlobal", "Tool", PROPERTY_GROUP, "The tool shown at the tool mount")
-        obj.addProperty("App::PropertyLinkGlobal", "Holder", PROPERTY_GROUP, "The holder shown above it")
-        obj.addProperty("App::PropertyLinkListGlobal", "Workpiece", PROPERTY_GROUP,
-                        "The links to the model and the stock of the job, in the frame of the material")
-        obj.addProperty("App::PropertyLinkGlobal", "Unreachable", PROPERTY_GROUP,
-                        "The markers of the locations the machine cannot reach")
+        ("App::PropertyLinkGlobal", "Tool", "The tool shown at the tool mount", None),
+        ("App::PropertyLinkGlobal", "Holder", "The holder shown above it", None),
+        ("App::PropertyLinkListGlobal", "Workpiece",
+         "The links to the model and the stock of the job, in the frame of the material", None),
+        ("App::PropertyLinkGlobal", "Unreachable",
+         "The markers of the locations the machine cannot reach", None),
+        ("App::PropertyLinkGlobal", "Surface",
+         "What is left of the stock, as a mesh of the exposed faces of its voxels", None),
+        ("App::PropertyLinkGlobal", "GougeMarker", "The marker of the first gouge", None),
+        ("App::PropertyLink", "ToolFrame",
+         "Without a machine: the part the tool hangs from, placed at every location", None),
+        ("App::PropertyLink", "PartFrame",
+         "Without a machine: the part holding what is left of the stock and the markers", None),
+    )
 
-        obj.addProperty("App::PropertyBool", "Cut", PROPERTY_GROUP,
-                        "Cut the stock of the job as the machine goes, and show what is left")
-        obj.addProperty("App::PropertyLength", "VoxelSize", PROPERTY_GROUP,
-                        "The side of a voxel of the stock; 0 picks one from the size of the stock")
-        obj.addProperty("App::PropertyInteger", "RefreshEvery", PROPERTY_GROUP,
-                        "How many cut steps between two redraws of what is left of the stock")
-        obj.addProperty("App::PropertyFloat", "RemovedVolume", PROPERTY_GROUP,
-                        "The volume cut off the stock so far, in cubic millimetres")
-        obj.addProperty("App::PropertyInteger", "Gouges", PROPERTY_GROUP,
-                        "How many locations so far had the shank or the holder in material still there")
-        obj.addProperty("App::PropertyVector", "FirstGouge", PROPERTY_GROUP,
-                        "Where the first of them was, in the frame of the part")
-        obj.addProperty("App::PropertyLinkGlobal", "Surface", PROPERTY_GROUP,
-                        "What is left of the stock, as a mesh of the exposed faces of its voxels")
-        obj.addProperty("App::PropertyLinkGlobal", "GougeMarker", PROPERTY_GROUP,
-                        "The marker of the first gouge")
-        for name in ("StepCount", "Joints", "Solved", "Statuses", "Tips", "Axes", "StepOperations",
-                     "Report", "Tool", "Holder", "Workpiece", "Unreachable", "RemovedVolume", "Gouges",
-                     "FirstGouge", "Surface", "GougeMarker", "ToolFrame", "PartFrame"):
-            obj.setEditorMode(name, 1)
-        obj.Cut = True
-        obj.VoxelSize = 0.0
-        obj.RefreshEvery = 5
+    #what the solve and the picture fill in, which nobody edits by hand
+    READ_ONLY = ("StepCount", "Joints", "Solved", "Statuses", "Tips", "Axes", "StepOperations",
+                 "Report", "Collisions", "Collided", "CollidedEver", "RemovedVolume", "Gouges",
+                 "FirstGouge", "Tool", "Holder",
+                 "Workpiece", "Unreachable", "Surface", "GougeMarker", "ToolFrame", "PartFrame")
 
+    def __init__(self, obj, machine_object, job):
+        obj.Proxy = self
+        self.ensureProperties(obj)
         obj.Machine = machine_object
         obj.Job = job
-        obj.HolderLength = 50.0
-        obj.HolderRadius = 30.0
-        obj.CheckLimits = True
-        obj.CheckCollisions = True
-        obj.Interpolate = True
-        obj.MaxStep = 0.0
-        obj.MaxTurn = 0.0
-        obj.Start = "MIN_ABS"
-        obj.Step = 0
         self.forget()
+
+    def ensureProperties(self, obj):
+        """Whatever of PROPERTIES the object has not got, with its default; the read-only ones hidden."""
+        added = machine.ensure(obj, self.PROPERTIES)
+        for name in self.READ_ONLY:
+            obj.setEditorMode(name, 1)
+        return added
 
     def forget(self):
         """The state that lives only while the document is open: nothing of it is pickled."""
@@ -249,6 +272,7 @@ class ObjectSimulation(object):
         self.forgetCut()
         joints, solved, statuses, tips, axes, operations_of_steps = [], [], [], [], [], []
         reports = []
+        collisions = []
         runs = []
         for index, operation in enumerate(self.operations(obj)):
             moves = solve.moves_of(operation)
@@ -262,11 +286,15 @@ class ObjectSimulation(object):
                     joints.extend(step.q if step.solved else [0.0] * kin5ax.AXES)
                     solved.append(1 if step.solved else 0)
                     statuses.append(step.status)
-                    tips.extend(step.move.point)
-                    axes.extend(step.move.axis)
+                    #the location itself, invented or not - not the end of the move it is on the
+                    #way to, which left every step of a long move standing at its end
+                    tips.extend(step.point)
+                    axes.extend(step.axis)
                     operations_of_steps.append(index)
                 runs.append((first, len(solved), trajectory))
                 reports.append("%s: %s" % (operation.Label, trajectory.describe()))
+                for line in trajectory.describe_collisions():
+                    collisions.append("%s: %s" % (operation.Label, line))
             else:
                 #no machine: the path is the trajectory, made dense by the library, every location of
                 #it reachable by definition
@@ -288,6 +316,10 @@ class ObjectSimulation(object):
         obj.Axes = axes
         obj.StepOperations = operations_of_steps
         obj.StepCount = len(solved)
+        obj.Collisions = collisions
+        if collisions:
+            reports.append("what met:")
+            reports.extend("    " + line for line in collisions)
         obj.Report = "\n".join(reports) if reports else "nothing to run"
         self.placeWorkpiece(obj)
         self.markUnreachable(obj)
@@ -438,6 +470,8 @@ class ObjectSimulation(object):
         self._runs = None
         self._cut_to = -1
         self._cut_since_refresh = 0
+        self._stamped_gouges = 0            #the gouges of the stamps made outside the simulations
+        self._first_stamped_gouge = None
 
     def prepareCut(self, obj):
         """The block of the library from the stock of the job, and a cutting simulation per run."""
@@ -482,16 +516,41 @@ class ObjectSimulation(object):
         self._cut_to = -1
         self.refreshSurface(obj)
 
+    def rewindCut(self, obj):
+        """The stock whole again and every cut back at its first location: the cut starts afresh."""
+        if self._block is None:
+            return
+        self._block.reset()
+        for cut in (self._cuts or []):
+            if cut is not None:
+                cut.reset()
+        self._cut_to = -1
+        self._stamped_gouges = 0
+        self._first_stamped_gouge = None
+        obj.RemovedVolume = 0.0
+        obj.Gouges = 0
+
+    def reset(self, obj):
+        """Back to the beginning: the stock whole, nothing marked, the machine at the first location."""
+        self.rewindCut(obj)
+        obj.CollidedEver = []
+        obj.Collided = []
+        if obj.Machine is not None:
+            obj.Machine.Proxy.highlight(obj.Machine, [], [])
+        self.paintTool(obj, [])
+        self.markGouge(obj, False)
+        if obj.Step == 0:
+            self.pose(obj)                  #already there: pose it again, since Step will not change
+        else:
+            obj.Step = 0
+        self.refreshSurface(obj)
+
     def cutTo(self, obj, step):
         """Takes the cut up to that step, from a whole block again when the step is behind the cut."""
         if self._block is None or not self._cuts:
             return
         if step < self._cut_to:
-            self._block.reset()
-            for cut in self._cuts:
-                if cut is not None:
-                    cut.reset()
-            self._cut_to = -1
+            self.rewindCut(obj)
         if step == self._cut_to:
             return
         advanced = 0
@@ -510,12 +569,13 @@ class ObjectSimulation(object):
                 advanced += 1
             #the locations without a solution are passed by the library without a cut; the count
             #it reports is of locations passed, the way it is here
+        advanced += self.stampUnreached(obj, self._cut_to + 1, step)
         self._cut_to = step
         self._cut_since_refresh += advanced
         unit = self.unit(obj)
         total, removed = self._block.volumes()
         obj.RemovedVolume = removed * unit ** 3
-        gouges, first_point = 0, None
+        gouges, first_point = self._stamped_gouges, self._first_stamped_gouge
         for cut in self._cuts:
             if cut is None:
                 continue
@@ -531,6 +591,50 @@ class ObjectSimulation(object):
         finished = step >= obj.StepCount - 1
         if self._cut_since_refresh >= max(obj.RefreshEvery, 1) or finished or advanced == 0:
             self.refreshSurface(obj)
+
+    def stampUnreached(self, obj, first, last):
+        """Cuts the stock at the locations of that range the cutting simulation passed without cutting.
+
+        A location the machine cannot reach has no configuration in the
+        trajectory, so the simulation of the library walks past it; the tool was
+        asked to be there all the same. Removing material is the same whichever
+        order it is done in, so these are stamped after the run has been walked.
+        """
+        if not obj.CutInCollision or self._block is None:
+            return 0
+        operations = self.operations(obj)
+        options = self.options(obj)
+        scale = options.unit_in_mm
+        tools = {}
+        stamped = 0
+        try:
+            for step in range(max(first, 0), min(last, obj.StepCount - 1) + 1):
+                if obj.Solved[step]:
+                    continue
+                index = obj.StepOperations[step]
+                if index not in tools:
+                    model = solve.tool_model_of(operations[index], options) if index < len(operations) \
+                        else None
+                    tools[index] = (model, model.to_kin5ax(scale) if model is not None else None)
+                model, tool = tools[index]
+                if tool is None:
+                    continue
+                tip = obj.Tips[3 * step:3 * step + 3]
+                axis = obj.Axes[3 * step:3 * step + 3]
+                if sum(c * c for c in axis) < 1e-18:
+                    continue
+                point = model.programmed_point(tip, axis)
+                gouged, where = self._block.cut(tool, [c / scale for c in point], axis)
+                if gouged:
+                    self._stamped_gouges += 1
+                    if self._first_stamped_gouge is None:
+                        self._first_stamped_gouge = where
+                stamped += 1
+        finally:
+            for _, tool in tools.values():
+                if tool is not None:
+                    tool.close()
+        return stamped
 
     def refreshSurface(self, obj):
         """What is left of the block as a mesh: the exposed faces of its voxels, from the library.
@@ -606,6 +710,12 @@ class ObjectSimulation(object):
         machine_object = obj.Machine
         if machine_object is not None:
             q = self.configurationAt(obj, step)
+            if q is None:
+                #nothing solved here; when what stopped it was a collision, the machine is put where
+                #it would have had to be and what met there is painted
+                q = self.showCollision(obj, step)
+            else:
+                self.showCollision(obj, step, nothing=True)
             if q is not None:
                 machine_object.Configuration = q
                 #set from here rather than by the machine's own recompute: the touch is purged
@@ -614,6 +724,108 @@ class ObjectSimulation(object):
             self.placeToolFrame(obj, step)
         if obj.Cut:
             self.cutTo(obj, step)
+
+    def showCollision(self, obj, step, nothing=False):
+        """The machine at a configuration of a colliding location, with what meets there painted red.
+
+        Returns that configuration, or None when there is nothing to show -
+        another status, no tool, or a location the machine cannot reach for a
+        reason of its own. nothing=True only clears what the step before painted.
+        """
+        machine_object = obj.Machine
+        if machine_object is None:
+            return None
+        collided, solids = [], []
+        configuration = None
+        if not nothing and step < len(obj.Statuses) and obj.Statuses[step] == kin5ax.COLLISION:
+            try:
+                configuration, collided, solids = self.collisionAt(obj, step)
+            except Exception as problem:
+                FreeCAD.Console.PrintWarning("kin5axcam: what met at location %d cannot be shown: %s\n"
+                                             % (step + 1, problem))
+        remembered = list(obj.CollidedEver)
+        for name in solids:
+            if name not in remembered:
+                remembered.append(name)
+        if list(obj.Collided) != collided or remembered != list(obj.CollidedEver):
+            obj.Collided = collided
+            obj.CollidedEver = remembered
+            #the pairs are what a reader wants; what is painted is the single solids they are made of
+            machine_object.Proxy.highlight(machine_object, solids, remembered)
+            self.paintTool(obj, solids)
+        return configuration
+
+    def collisionAt(self, obj, step):
+        """Where the machine would have to be for that location, what meets there and which solids.
+
+        Three things: the configuration, a line per pair for a reader ("C and
+        Tool holder"), and the names of the single solids those pairs are made
+        of, which is what can be painted.
+
+        The location has no solution, so the configurations are asked for again
+        with the collision check off; the one nearest the pose shown before it is
+        taken, which is the one the machine would have swung into.
+        """
+        operations = self.operations(obj)
+        index = obj.StepOperations[step] if step < len(obj.StepOperations) else 0
+        if index >= len(operations):
+            return None, [], []
+        options = self.options(obj)
+        model = solve.tool_model_of(operations[index], options)
+        if model is None:
+            return None, [], []
+        scale = options.unit_in_mm
+        tip = obj.Tips[3 * step:3 * step + 3]
+        axis = obj.Axes[3 * step:3 * step + 3]
+        point = model.programmed_point(tip, axis)
+        settings = options.settings()
+        settings.check_collisions = 0
+        chain = obj.Machine.Proxy.chain(obj.Machine)
+        tool = model.to_kin5ax(scale)
+        try:
+            configurations, _ = chain.solve_location([c / scale for c in point], axis, settings, tool)
+            if not configurations:
+                return None, [], []
+            shown = list(obj.Machine.Configuration) or None
+            if shown and len(shown) == kin5ax.AXES:
+                configurations.sort(key=lambda q: sum((q[i] - shown[i]) ** 2 for i in range(kin5ax.AXES)))
+            configuration = configurations[0]
+            chain.set_configuration(configuration)
+            met = chain.check_collisions(tool)
+        finally:
+            tool.close()
+        solids = []
+        for pair in met:
+            for name in (pair.first, pair.second):
+                if name not in solids:
+                    solids.append(name)
+        return configuration, [pair.describe().rsplit(":", 1)[0] for pair in met], solids
+
+    def paintTool(self, obj, solids):
+        """The tool and its holder red while they meet something, their own colours otherwise.
+
+        The two are named by the library as "the tool" and "the shank or the
+        holder"; the holder of the picture is painted for either, since it is
+        drawn as one piece with the shank. Unlike a solid of the machine, the
+        tool is not left orange afterwards: it is the thing that moves, not a
+        part that was in the way.
+        """
+        named = set(solids or ())
+
+        def colour_of(words, normal):
+            if any(word in named for word in words):
+                return machine.COLLIDING
+            return normal
+
+        for owned, normal, words in (
+                (obj.Tool, (0.85, 0.85, 0.9), ("the tool", "the shank or the holder")),
+                (obj.Holder, (0.4, 0.4, 0.45), ("the shank or the holder",))):
+            view = getattr(owned, "ViewObject", None) if owned is not None else None
+            if view is None:
+                continue
+            colour = colour_of(words, normal)
+            if tuple(view.ShapeColor)[:3] != colour:
+                view.ShapeColor = colour
 
     def placeToolFrame(self, obj, step):
         """The tool frame at the tip and the axis of the step: Z along the axis, the mount up it.
@@ -701,6 +913,7 @@ class ObjectSimulation(object):
 
     def onDocumentRestored(self, obj):
         self.forget()
+        self.ensureProperties(obj)
         machine.globalise(obj, {
             "Tool": "App::PropertyLinkGlobal", "Holder": "App::PropertyLinkGlobal",
             "Workpiece": "App::PropertyLinkListGlobal", "Unreachable": "App::PropertyLinkGlobal",

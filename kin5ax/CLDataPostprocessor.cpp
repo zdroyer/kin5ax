@@ -29,21 +29,25 @@ size_t CCLDataPostprocessingResult::CountOf(LOCATION_ORIGIN origin) const
 //it can solve and stops at the last - so the locations it dropped are padded with empty sets here.
 //Without the padding the simulation data and the records were shorter than the number of locations
 //solved, and nothing said which locations had gone missing (KnownBugs #70).
+//vSection is what the solver was handed: the location solved before the section first, which has its
+//record already, then the locations owed; the k-th set is for the (k+1)-th of them.
 static void AddSingularSectionSets(CCLDataPostprocessingResult &oResult, CSimulationData &oSimulationData
 	,const std::vector<tChainConfigurationVector> &vUnambiguous, size_t nOwedLocations
-	,size_t nFileLocation, size_t nFileLine)
+	,size_t nFileLocation, size_t nFileLine, const std::vector<CR3AnchoredVector> &vSection)
 {
 	size_t nPushed = 0;
 	for(;nPushed<vUnambiguous.size();nPushed++){
 		oSimulationData.AddConfigurationSet(vUnambiguous[nPushed]);
 		oResult.m_vLocations.push_back(CSolvedLocation(
 			vUnambiguous[nPushed].empty() ? SOLVE_STATUS_SINGULAR_UNSOLVED : SOLVE_STATUS_SOLVED
-			,LOCATION_SINGULAR_SECTION,nFileLocation,nFileLine));
+			,LOCATION_SINGULAR_SECTION,nFileLocation,nFileLine
+			,nPushed+1<vSection.size() ? vSection[nPushed+1] : CR3AnchoredVector()));
 	}
 	for(;nPushed<nOwedLocations;nPushed++){
 		oSimulationData.AddConfigurationSet(tChainConfigurationVector());
 		oResult.m_vLocations.push_back(CSolvedLocation(SOLVE_STATUS_SINGULAR_UNSOLVED
-			,LOCATION_SINGULAR_SECTION,nFileLocation,nFileLine));
+			,LOCATION_SINGULAR_SECTION,nFileLocation,nFileLine
+			,nPushed+1<vSection.size() ? vSection[nPushed+1] : CR3AnchoredVector()));
 	}
 }
 
@@ -135,7 +139,7 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 					//the first location of the collection is the one solved before the section and has its
 					//record already; every other one is ambiguous and waiting for its set
 					AddSingularSectionSets(oResult,oSimulationData,vUnambiguous
-						,vAmbiguousCollection.size()-1,nSectionLocation,nSectionLine);
+						,vAmbiguousCollection.size()-1,nSectionLocation,nSectionLine,vAmbiguousCollection);
 					if(pFile)
 						fprintf(pFile,"%s\n",sSingularSolutionLog.c_str());
 					bCollectingAmbiguousSolutions=false;
@@ -149,7 +153,7 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 					//this location, which gets its own a few lines below
 					AddSingularSectionSets(oResult,oSimulationData,vUnambiguous
 						,vAmbiguousCollection.size()>=2 ? vAmbiguousCollection.size()-2 : 0
-						,nSectionLocation,nSectionLine);
+						,nSectionLocation,nSectionLine,vAmbiguousCollection);
 					if(pFile)
 						fprintf(pFile,"%s\n",sSingularSolutionLog.c_str());
 					bCollectingAmbiguousSolutions=false;
@@ -161,7 +165,11 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 				oResult.m_vLocations.push_back(CSolvedLocation(oReport.Status()
 					,bFromFile ? LOCATION_FROM_FILE : LOCATION_INTERPOLATED
 					,bFromFile ? nFileLocation : (nPreviousLocation ? nPreviousLocation : nFileLocation)
-					,bFromFile ? nFileLine : nPreviousLine));
+					,bFromFile ? nFileLine : nPreviousLine
+					,vIntermediateLocations[j].second));
+				//one count per pair for this location, however many of its configurations that pair
+				//rejected
+				oResult.m_oCollisions.MergeDistinct(oReport.m_oCollisions);
 			}
 			lastInput.m_p = vIntermediateLocations[j].second.m_p;
 			lastInput.m_v = vIntermediateLocations[j].second.m_v;

@@ -9,7 +9,8 @@ same way:
 - ``tool_of`` makes the tool of the operation as kin5ax sees it, from the tool
   bit of its controller and the holder the options describe;
 - ``solve`` hands the moves to the solver and brings the answer back in the
-  order of the path, one step per location, the invented ones included.
+  order of the path, one step per location, the invented ones included, with
+  the solids of the machine that met on the way and at how many locations.
 
 Lengths in a document are millimetres and lengths in a chain file are whatever
 the file's are (metres for the machines shipped with kin5ax), so an ``Options``
@@ -187,6 +188,12 @@ class ToolModel(object):
             return tuple(tip)
         return tuple(tip[i] + self.radius_mm * axis[i] for i in range(3))
 
+    def tip_point(self, programmed, axis):
+        """Where the tip is for a programmed point there: the way back from programmed_point."""
+        if not self.ball_nosed:
+            return tuple(programmed)
+        return tuple(programmed[i] - self.radius_mm * axis[i] for i in range(3))
+
     def to_kin5ax(self, unit_in_mm):
         """The tool of the library, in the unit of the chain file."""
         radius = self.radius_mm / unit_in_mm
@@ -230,16 +237,22 @@ class Step(object):
     q is the configuration chosen, in the order of the links of the chain and in
     the units of the chain file, or None when the location has no solution.
     move is the Move this location belongs to: its own, or for a location the
-    solver invented, the move it is on the way to.
+    solver invented, the move it is on the way to. point and axis are where the
+    tip was asked to be and which way the tool was to point at this very
+    location, in mm: the move's own for a location of the path, and for an
+    invented one the point on the way the library solved - not the end of the
+    move, which is where the machine goes only at the last of them.
     """
 
-    __slots__ = ("q", "status", "origin", "move")
+    __slots__ = ("q", "status", "origin", "move", "point", "axis")
 
-    def __init__(self, q, status, origin, move):
+    def __init__(self, q, status, origin, move, point=None, axis=None):
         self.q = q
         self.status = status
         self.origin = origin
         self.move = move
+        self.point = tuple(move.point) if point is None else tuple(point)
+        self.axis = tuple(move.axis) if axis is None else tuple(axis)
 
     @property
     def solved(self):
@@ -257,11 +270,14 @@ class Step(object):
 class Trajectory(object):
     """What solving the moves of an operation gave: a step per location, and the report of the run."""
 
-    def __init__(self, steps, report, position_error_mm, orientation_error, path=None, tool=None):
+    def __init__(self, steps, report, position_error_mm, orientation_error, path=None, tool=None,
+                 collisions=()):
         self.steps = steps
         self.report = report                    #{status name: count}, the statuses nobody got left out
         self.position_error_mm = position_error_mm
         self.orientation_error = orientation_error
+        #the pairs of solids that met, most locations first; empty when nothing did
+        self.collisions = list(collisions)
         #the path and the tool of the library, kept when the caller asked for them - a cutting
         #simulation needs both alive - and the caller's to close; None otherwise
         self.path = path
@@ -285,6 +301,15 @@ class Trajectory(object):
         return "%s; largest errors %.3g mm and %.3g" % (
             ", ".join("%d %s" % (count, status) for status, count in sorted(self.report.items())),
             self.position_error_mm, self.orientation_error)
+
+    def describe_collisions(self):
+        """A line per pair of solids that met: what met what, and at how many locations.
+
+        What a user can act on - the machine cannot tilt that far, the part sits
+        too close to that arm - where "every configuration collides" leaves them
+        nowhere.
+        """
+        return [pair.describe() for pair in self.collisions]
 
 
 def solve(chain, moves, tool_model, options, keep=False):
@@ -314,9 +339,15 @@ def solve(chain, moves, tool_model, options, keep=False):
             index = location.file_location - 1
             if location.origin != kin5ax.FROM_FILE:
                 index = min(index + 1, len(moves) - 1)
-            steps.append(Step(location.q, location.status, location.origin, moves[index]))
+            #what the library solved, back in mm and at the tip: the move's own point for a location
+            #of the path, a point on the way for one invented between two
+            programmed = tuple(c * scale for c in location.position)
+            tip = tool_model.tip_point(programmed, location.axis) if tool_model else programmed
+            steps.append(Step(location.q, location.status, location.origin, moves[index], tip,
+                              location.axis))
         report = path.report()
         position_error, orientation_error = path.errors()
+        collisions = path.collisions()
     except Exception:
         if path is not None:
             path.close()
@@ -328,7 +359,8 @@ def solve(chain, moves, tool_model, options, keep=False):
         if tool is not None:
             tool.close()
         path = tool = None
-    return Trajectory(steps, report, position_error * scale, orientation_error, path, tool)
+    return Trajectory(steps, report, position_error * scale, orientation_error, path, tool,
+                      collisions)
 
 
 def rotary_letters(chain, options):

@@ -225,6 +225,44 @@ class AMachine(unittest.TestCase):
                 self.assertTrue(location.has_solution)
                 self.assertEqual(kin5ax.AXES, len(location.q))
             self.assertEqual(seen[-1].q, path.last_configuration())
+            #and every record says what it was solved for: a third of a step on from the one before
+            for index, location in enumerate(seen):
+                self.assertAlmostEqual(p[0] + 0.025 * index / 3.0, location.position[0], delta=1e-9,
+                                       msg="record %d" % index)
+                self.assertAlmostEqual(p[1], location.position[1], delta=1e-9)
+                self.assertAlmostEqual(p[2], location.position[2], delta=1e-9)
+                for k in range(3):
+                    self.assertAlmostEqual(v[k], location.axis[k], delta=1e-6)
+
+    def test_a_path_says_which_solids_met_and_at_how_many_locations(self):
+        """The model of the spherical wrist meets itself when the tool leans far: the pair and the
+        count are what a user can act on, where "it collides" leaves them nowhere."""
+        wrist = os.path.join(CHAINS, "3CWithSphericalWrist_withBaseBox.kc")
+        if not os.path.isfile(wrist):
+            self.skipTest("no spherical wrist model in the test set")
+        settings = kin5ax.Settings.default()
+        settings.interpolate = 0
+        positions = [(0.02 * i - 0.1, 0.0, 0.1) for i in range(12)]
+        axes = [(math.sin(math.radians(8.0 * i)), 0.0, math.cos(math.radians(8.0 * i))) for i in range(12)]
+        with kin5ax.Chain(wrist) as chain:
+            with chain.postprocess_locations(positions, axes, settings, self.tool) as path:
+                colliding = path.count_of_status(kin5ax.COLLISION)
+                self.assertGreater(colliding, 0, "the far end of that path has to collide")
+                pairs = path.collisions()
+                self.assertGreater(len(pairs), 0, "and the path says which solids")
+                self.assertEqual(sorted((p.locations for p in pairs), reverse=True),
+                                 [p.locations for p in pairs], "most locations first")
+                for pair in pairs:
+                    self.assertNotEqual("", pair.first)
+                    self.assertNotEqual(pair.first, pair.second)
+                    self.assertLessEqual(pair.locations, colliding)
+                    self.assertIn(pair.kind, kin5ax.COLLIDING_KIND_NAMES)
+                    self.assertIn(pair.first, pair.describe())
+                self.assertEqual(colliding, pairs[0].locations,
+                                 "the pair that rejected every colliding location costs all of them")
+            settings.check_collisions = 0
+            with chain.postprocess_locations(positions, axes, settings, self.tool) as path:
+                self.assertEqual([], path.collisions(), "nothing checked, nothing reported")
 
     def test_the_solution_of_the_last_location_is_where_the_machine_is_left(self):
         """Not necessarily the configuration the point was taken from: a point has two, and the
@@ -308,6 +346,26 @@ class TheCutting(unittest.TestCase):
             for i in range(0, len(triangles), 3):
                 self.assertGreaterEqual(triangles[i], -1e-12)
                 self.assertLessEqual(triangles[i], nx * 0.01 + 1e-12)
+
+    def test_one_stamp_of_the_tool_wherever_it_is_put(self):
+        """What a host does for a location its simulation will not cut: put the tool there and stamp."""
+        with kin5ax.Material((0.12, 0.06, 0.03), 0.002, (-0.06, -0.03, -0.03)) as block:
+            self.assertEqual(0.0, block.volumes()[1])
+            gouged, _ = block.cut(self.tool, (0.0, 0.0, 0.0), (0.0, 0.0, 1.0))
+            self.assertFalse(gouged, "the shank is above the block")
+            after_one = block.volumes()[1]
+            self.assertGreater(after_one, 0.0, "a bite out of it")
+            block.cut(self.tool, (0.0, 0.0, 0.0), (0.0, 0.0, 1.0))
+            self.assertEqual(after_one, block.volumes()[1], "a voxel removed is removed")
+            #a tool whose cutting part is 20 mm: the 64 mm one reaches out of a block 30 mm deep
+            stubby = kin5ax.Tool(kin5ax.TOOL_BALL_NOSE, 0.016, 0.016, 0.020, 0.030, 0.050, 0.030)
+            gouged, where = block.cut(stubby, (0.04, 0.0, -0.02), (0.0, 0.0, 1.0))
+            stubby.close()
+            self.assertTrue(gouged, "pushed in, its shank is in material still there")
+            self.assertEqual(3, len(where))
+            self.assertGreater(where[2], -0.03, "and the place of it is in the block")
+            with self.assertRaises(kin5ax.Kin5axError):
+                block.cut(self.tool, (0.0, 0.0, 0.0), (0.0, 0.0, 0.0))
 
     def test_a_block_that_cannot_be_made_is_refused(self):
         with self.assertRaises(kin5ax.Kin5axError):

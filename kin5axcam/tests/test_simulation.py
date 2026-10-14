@@ -212,6 +212,177 @@ class AJobOnAMachine(unittest.TestCase):
         self.assertGreater((FreeCAD.Vector(self.machine.ToolMount.Placement.Base) - first).Length, 0.1)
         self.assertEqual(self.simulation.StepCount // 2, self.simulation.Step)
 
+    def test_a_simulation_saved_before_a_property_existed_gains_it_on_restore(self):
+        """A document of an older version is restored without the properties added since; an object
+        that then runs the current code would read and write names that are not there."""
+        sim = self.simulation
+        self.assertIn("Collisions", sim.PropertiesList)
+        sim.removeProperty("Collisions")
+        sim.removeProperty("VoxelSize")
+        self.assertNotIn("Collisions", sim.PropertiesList)
+        sim.Proxy.onDocumentRestored(sim)
+        self.assertIn("Collisions", sim.PropertiesList)
+        self.assertEqual(0.0, sim.VoxelSize.Value, "and the default of the one that has one")
+        self.document.recompute()
+        self.assertNotIn("Invalid", sim.State, sim.Report)
+
+    def test_what_met_what_is_in_the_report_when_the_machine_collides(self):
+        """A machine whose wrist cannot tilt as far as the path asks: the pairs and their counts are
+        in the Collisions property and in the report the dialog shows."""
+        wrist = os.path.join(CHAINS, "3CWithSphericalWrist_withBaseBox.kc")
+        if not os.path.isfile(wrist):
+            self.skipTest("no spherical wrist model in the test set")
+        from kin5axcam import machine
+
+        sim = self.simulation
+        sim.Machine = machine.Create("Wrist", wrist, 1000.0, self.document)
+        self.operation.LeanAngle = 60.0                 #far more than that wrist can tilt
+        self.document.recompute()
+        self.assertFalse(all(sim.Solved), "something has to collide for this to say anything")
+        self.assertGreater(len(sim.Collisions), 0, sim.Report)
+        for line in sim.Collisions:
+            self.assertIn(": ", line, "the operation, then what met what")
+            self.assertRegex(line, r"\d+ location")
+            self.assertIn(line, sim.Report)
+        self.assertIn("what met:", sim.Report)
+
+        #and with the check off, nothing is reported
+        sim.CheckCollisions = False
+        self.document.recompute()
+        self.assertEqual([], list(sim.Collisions))
+        self.assertNotIn("what met:", sim.Report)
+
+    def test_a_colliding_location_is_shown_with_the_solids_that_meet_there(self):
+        """The machine is posed where it would have had to be, and the pair that meets there is named.
+
+        The painting itself needs view objects, which a console FreeCAD has not
+        got; what is checked here is the pose, the names and - where there is a
+        view - the colour.
+        """
+        wrist = os.path.join(CHAINS, "3CWithSphericalWrist_withBaseBox.kc")
+        if not os.path.isfile(wrist):
+            self.skipTest("no spherical wrist model in the test set")
+        from kin5axcam import machine
+
+        sim = self.simulation
+        sim.Machine = machine.Create("Wrist", wrist, 1000.0, self.document)
+        self.operation.LeanAngle = 60.0
+        self.document.recompute()
+        colliding = [i for i in range(sim.StepCount)
+                     if not sim.Solved[i] and sim.Statuses[i] == kin5ax.COLLISION]
+        self.assertGreater(len(colliding), 0, sim.Report)
+
+        solids = sim.Machine.Proxy.solids(sim.Machine)
+        self.assertGreater(len(solids), 0, "the machine has solids to name")
+        sim.Step = colliding[0]
+        self.assertGreater(len(sim.Collided), 0, "what meets there is said")
+        named = set()
+        for line in sim.Collided:
+            for word in (" and ", " cuts into ", " is in "):
+                if word in line:
+                    named.update(line.split(word))
+        self.assertTrue(named & set(solids), "a solid of the machine is named: %r" % sim.Collided)
+        for line in sim.Collided:
+            self.assertNotIn(":", line, "the names alone, without the count of the whole path")
+
+        #the machine stands where it would have had to stand: the tool at the location of the step
+        tip = sim.Tips[3 * sim.Step:3 * sim.Step + 3]
+        chain = sim.Machine.Proxy.chain(sim.Machine)
+        from kin5axcam import solve
+        model = solve.tool_model_of(self.operation, sim.Proxy.options(sim))
+        tool = model.to_kin5ax(sim.Machine.UnitInMillimetres)
+        point, _ = chain.tool_point(sim.Machine.Configuration, tool)
+        tool.close()
+        centre = model.programmed_point(tip, sim.Axes[3 * sim.Step:3 * sim.Step + 3])
+        for i in range(3):
+            self.assertAlmostEqual(centre[i], point[i] * sim.Machine.UnitInMillimetres, delta=1e-3,
+                                   msg="the machine is posed at the location it could not reach")
+
+        #what is painted is the single solids the pairs are made of, not the pairs themselves
+        configuration, pairs, single = sim.Proxy.collisionAt(sim, sim.Step)
+        self.assertEqual(pairs, list(sim.Collided))
+        self.assertGreater(len(single), 0)
+        for name in single:
+            self.assertTrue(any(name in line for line in pairs), "%s is in no pair" % name)
+            self.assertNotIn(" and ", name, "a single solid, not a pair")
+        self.assertTrue(set(single) & set(solids), "and at least one of them is a solid of the machine")
+
+        painted = [name for name, (feature, _) in solids.items()
+                   if feature.ViewObject is not None
+                   and tuple(feature.ViewObject.ShapeColor)[:3] == machine.COLLIDING]
+        if painted:
+            self.assertEqual(sorted(painted), sorted(set(single) & set(solids)),
+                             "every machine solid that met is painted, and no other")
+
+        #a location that solves takes the names, and the paint, off again
+        solved = [i for i in range(sim.StepCount) if sim.Solved[i]]
+        if solved:
+            sim.Step = solved[0]
+            self.assertEqual([], list(sim.Collided))
+
+    def test_the_stock_is_cut_at_a_location_the_machine_cannot_reach_as_well(self):
+        """The tool was asked to be there; the cutting simulation of the library will not go there,
+        so the stamp is made into the material instead."""
+        wrist = os.path.join(CHAINS, "3CWithSphericalWrist_withBaseBox.kc")
+        if not os.path.isfile(wrist):
+            self.skipTest("no spherical wrist model in the test set")
+        from kin5axcam import machine
+
+        sim = self.simulation
+        sim.Machine = machine.Create("Wrist", wrist, 1000.0, self.document)
+        self.operation.LeanAngle = 60.0
+        self.document.recompute()
+        colliding = [i for i in range(sim.StepCount) if not sim.Solved[i]]
+        self.assertGreater(len(colliding), 0)
+
+        self.assertTrue(sim.CutInCollision)
+        sim.Step = sim.StepCount - 1
+        cut_through = sim.RemovedVolume
+        self.assertGreater(cut_through, 0.0)
+
+        sim.CutInCollision = False
+        sim.Proxy.rewindCut(sim)
+        sim.Proxy.pose(sim)
+        self.assertLess(sim.RemovedVolume, cut_through,
+                        "without it the locations that collide take nothing off")
+
+    def test_reset_makes_the_stock_whole_and_goes_back_to_the_first_location(self):
+        sim = self.simulation
+        sim.Step = sim.StepCount - 1
+        self.assertGreater(sim.RemovedVolume, 0.0)
+        sim.Proxy.reset(sim)
+        self.assertEqual(0, sim.Step)
+        self.assertEqual(0.0, sim.RemovedVolume)
+        self.assertEqual([], list(sim.CollidedEver))
+        self.assertEqual([], list(sim.Collided))
+        #and it cuts again from there
+        sim.Step = sim.StepCount - 1
+        self.assertGreater(sim.RemovedVolume, 0.0)
+
+    def test_a_solid_that_has_met_something_stays_marked_for_the_rest_of_the_run(self):
+        wrist = os.path.join(CHAINS, "3CWithSphericalWrist_withBaseBox.kc")
+        if not os.path.isfile(wrist):
+            self.skipTest("no spherical wrist model in the test set")
+        from kin5axcam import machine
+
+        sim = self.simulation
+        sim.Machine = machine.Create("Wrist", wrist, 1000.0, self.document)
+        self.operation.LeanAngle = 60.0
+        self.document.recompute()
+        colliding = [i for i in range(sim.StepCount)
+                     if not sim.Solved[i] and sim.Statuses[i] == kin5ax.COLLISION]
+        self.assertGreater(len(colliding), 0)
+        sim.Step = colliding[0]
+        met = list(sim.CollidedEver)
+        self.assertGreater(len(met), 0)
+        self.assertEqual(sorted(met), sorted(set(met)), "each solid once")
+
+        solved = [i for i in range(sim.StepCount) if sim.Solved[i] and i > colliding[0]]
+        if solved:
+            sim.Step = solved[0]
+            self.assertEqual([], list(sim.Collided), "nothing meets here")
+            self.assertEqual(met, list(sim.CollidedEver), "but what met earlier is still named")
+
     def test_a_part_the_machine_cannot_reach_is_marked_where_its_tip_would_be(self):
         self.box.Placement.Base = FreeCAD.Vector(5000.0, 0.0, 0.0)
         self.document.recompute()
@@ -271,6 +442,44 @@ class AJobOnAMachine(unittest.TestCase):
         options = sim.Proxy.options(sim)
         self.assertAlmostEqual(sim.Proxy.voxelSize(sim), options.max_step_mm, delta=1e-12)
         self.assertGreater(sim.StepCount, 100, "many more locations than the operation's moves")
+
+    def test_an_invented_step_is_on_the_way_and_not_at_the_end_of_its_move(self):
+        """Every location of the trajectory is where the tool was asked to be at that location: a
+        move's own point for one of the path, a point between two moves for one invented by the
+        library. The tips used to carry the end of the move for every step of it, so the machine
+        stood still through a long move and then jumped, and a stamp at an unreached location went
+        to the wrong place."""
+        from kin5axcam import solve
+
+        sim = self.simulation
+        options = sim.Proxy.options(sim)
+        chain = self.machine.Proxy.chain(self.machine)
+        moves = solve.moves_of(self.operation)
+        model = solve.tool_model_of(self.operation, options)
+        trajectory = solve.solve(chain, moves, model, options)
+        longest = max(options.max_step_mm, 1e-3)
+        invented = 0
+        for before, step in zip(trajectory.steps, trajectory.steps[1:]):
+            apart = sum((step.point[k] - before.point[k]) ** 2 for k in range(3)) ** 0.5
+            self.assertLessEqual(apart, longest + 1e-6, "no step longer than the limit")
+            if step.origin == kin5ax.INTERPOLATED:
+                invented += 1
+                #on the way to the move - or, in a turn in place, at its point with the axis still
+                #turning towards its axis
+                short_of_it = sum((step.point[k] - step.move.point[k]) ** 2 for k in range(3))
+                still_turning = sum((step.axis[k] - step.move.axis[k]) ** 2 for k in range(3))
+                self.assertGreater(short_of_it + still_turning, 1e-12,
+                                   "neither at the end of the move nor turning towards it")
+            elif step.origin == kin5ax.FROM_FILE:
+                for k in range(3):
+                    self.assertAlmostEqual(step.move.point[k], step.point[k], delta=1e-6)
+                    self.assertAlmostEqual(step.move.axis[k], step.axis[k], delta=1e-6)
+        self.assertGreater(invented, 0)
+        #and the properties carry the same: nothing jumps further than a step
+        tips = sim.Tips
+        for i in range(1, sim.StepCount):
+            apart = sum((tips[3 * i + k] - tips[3 * i - 3 + k]) ** 2 for k in range(3)) ** 0.5
+            self.assertLessEqual(apart, longest + 1e-6, "location %d" % i)
 
     def test_switching_the_cut_off_takes_the_cloud_away(self):
         sim = self.simulation

@@ -13,6 +13,13 @@ and pause on a timer, a step either way, run to the end, and the report of the
 solve. It moves ``Step`` of the simulation and nothing else; the simulation
 moves the machine.
 
+**Pause on a collision or a gouge** stops the playback where the machine first
+meets itself or the tool first drags its shank through material - at the start
+of such a stretch, not at every location of it, so that pressing play again
+carries on rather than stopping on the spot. **Cut in a collision** cuts the
+stock at those locations too, and **Reset** makes the stock whole again, forgets
+what has met what, and goes back to the first location.
+
 A tick of the player passes a **turn in place** - a run of locations whose tip
 does not move, which is the tool reorienting at one point: the swing of a lead
 angle at the end of a pass, or the solver's way through a singular direction
@@ -212,6 +219,32 @@ class Player(object):
         speed.addWidget(self.rate)
         layout.addLayout(speed)
 
+        self.reset = QtGui.QPushButton(translate("Kin5axMachine", "Reset"), self.form)
+        self.reset.setToolTip(translate(
+            "Kin5axMachine", "The stock whole again, nothing marked as having met anything, and back "
+            "to the first location"))
+        self.reset.clicked.connect(self.resetRun)
+        buttons.addWidget(self.reset)
+
+        self.pauseOnTrouble = QtGui.QCheckBox(
+            translate("Kin5axMachine", "Pause on a collision or a gouge"), self.form)
+        self.pauseOnTrouble.setChecked(True)
+        self.pauseOnTrouble.setToolTip(translate(
+            "Kin5axMachine", "Stop the playback where the machine first meets itself or the tool "
+            "first drags its shank through material - at the start of such a stretch, not at every "
+            "location of it"))
+        layout.addWidget(self.pauseOnTrouble)
+
+        self.cutInCollision = QtGui.QCheckBox(
+            translate("Kin5axMachine", "Cut in a collision"), self.form)
+        self.cutInCollision.setChecked(bool(getattr(sim, "CutInCollision", True)))
+        self.cutInCollision.setToolTip(translate(
+            "Kin5axMachine", "Cut the stock at a location the machine cannot reach as well: the tool "
+            "was asked to be there, and what it would have taken off is worth seeing beside the "
+            "collision"))
+        self.cutInCollision.stateChanged.connect(self.changeCutInCollision)
+        layout.addWidget(self.cutInCollision)
+
         self.everyLocation = QtGui.QCheckBox(translate("Kin5axMachine", "Every location"), self.form)
         self.everyLocation.setToolTip(translate(
             "Kin5axMachine", "Draw every location, the ones of a turn in place too; off, a tick "
@@ -247,7 +280,27 @@ class Player(object):
         #a step in progress: a tick that arrives while one is being drawn is dropped, never nested
         self._busy = False
         self._passed = 0                    #locations passed in one go by the last tick
+        self._gouges = int(getattr(sim, "Gouges", 0) or 0)
+        self._in_trouble = False            #the location drawn last met something
         self.describe()
+
+    def trouble(self):
+        """What is wrong at the location shown, when it is the first such location of a stretch.
+
+        A run of colliding locations stops the playback once, at its start, and
+        a gouge stops it when the count goes up - not at every location after it.
+        """
+        sim = self.simulation
+        reasons = []
+        colliding = bool(list(getattr(sim, "Collided", [])))
+        if colliding and not self._in_trouble:
+            reasons.append(translate("Kin5axMachine", "the machine meets itself"))
+        gouges = int(getattr(sim, "Gouges", 0) or 0)
+        if gouges > self._gouges:
+            reasons.append(translate("Kin5axMachine", "the shank or the holder is in the material"))
+        self._gouges = gouges
+        self._in_trouble = colliding
+        return ", ".join(reasons)
 
     def tipOf(self, step):
         tips = self.simulation.Tips
@@ -315,6 +368,9 @@ class Player(object):
         if getattr(sim, "Cut", False) and sim.Surface is not None:
             text += "\n" + translate("Kin5axMachine", "cut: %.0f mm3 removed, %d gouges") % (
                 sim.RemovedVolume, sim.Gouges)
+        if list(getattr(sim, "Collided", [])):
+            text += "\n" + translate("Kin5axMachine", "what meets here: %s") % (
+                "; ".join(sim.Collided))
         if self._passed > 1:
             text += "\n" + translate("Kin5axMachine", "a turn in place: %d locations passed in one go") % (
                 self._passed)
@@ -341,6 +397,25 @@ class Player(object):
 
     def goto(self, value):
         self.slider.setValue(max(0, min(value, self.slider.maximum())))
+
+    def resetRun(self):
+        """The stock whole again, nothing marked, back to the first location."""
+        self.pause()
+        self._gouges = 0
+        self._in_trouble = False
+        self._passed = 0
+        self.simulation.Proxy.reset(self.simulation)
+        self.slider.setValue(0)
+        self.describe()
+
+    def changeCutInCollision(self, state):
+        """The cut is taken again from the start: what was cut, or not cut, is being changed."""
+        sim = self.simulation
+        sim.CutInCollision = bool(state)
+        where = self.slider.value()
+        sim.Proxy.rewindCut(sim)
+        sim.Proxy.pose(sim)
+        self.describe()
 
     def toggleJoints(self, state):
         machine_object = self.simulation.Machine
@@ -375,6 +450,14 @@ class Player(object):
         following = self.nextToDraw(self.slider.value())
         self._passed = following - self.slider.value()
         self.slider.setValue(following)
+        if self.pauseOnTrouble.isChecked():
+            why = self.trouble()
+            if why:
+                self.pause()
+                self.where.setText(self.where.text() + "\n"
+                                   + translate("Kin5axMachine", "paused: %s") % why)
+        else:
+            self.trouble()                  #the counts move on either way
 
     def getStandardButtons(self):
         return QtGui.QDialogButtonBox.Close

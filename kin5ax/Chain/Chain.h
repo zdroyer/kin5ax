@@ -2,6 +2,7 @@
 
 #include "MillingTool.h"
 #include "ChainSegment.h"
+#include "CollisionReport.h"
 #include "ChainConfiguration.h"
 #include "R3AnchoredVector.h"
 #include "R3Box.h"
@@ -74,6 +75,13 @@ public:
 	//assembly (the cutting part, the shank and the holder) against the boxes of all segments, at the actual parameters. The result is stored in the segments (IsPartInCollision)
 	//and in the collision log of the tool; the tool part and the material holder part are both walked from the base.
 	void DetectCollisions(CMillingTool &oMillingTool);
+	//Which solids met in the last DetectCollisions - and so in the last HasCollision, and in the last
+	//check the solver made on this chain. Empty when nothing met.
+	const CCollisionReport &GetCollisions() const;
+	//The name a report gives one solid of a segment of a branch: the name of the segment, or its place
+	//in the branch when the file gives it none, and the number of the box when the segment has more
+	//than one. The host that draws a machine needs the same names to show what met.
+	std::string GetSolidName(CHAIN_PART part, size_t nSegment, size_t nBox) const;
 	CChain(void);
 	std::string toXML() const;
 	//the tool part ends with the only TOOL segment, the material holder part with the only
@@ -120,6 +128,7 @@ public:
 	size_t GetNumberOfRegularLinks() const; 
 	//part of chain ended with material holder
 	std::vector<CChainSegment> m_vMaterialHolderPart;
+	CCollisionReport m_oCollisions;	//what met in the last DetectCollisions
 
 	//descriptive data of the chain, all free text and all optional; kept in the file, not used by the solver
 	std::string m_sName;		//name of the model, e.g. "BC tilt-rotary table"

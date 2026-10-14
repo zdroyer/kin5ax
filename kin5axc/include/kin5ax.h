@@ -75,6 +75,13 @@ typedef enum k5_location_origin {
 	K5_SINGULAR_SECTION			/* from the singular-section solver, which picks its own samples */
 } k5_location_origin;
 
+/* How two solids met: what is read between the names of a pair. */
+typedef enum k5_collision_kind {
+	K5_COLLIDING_PARTS = 0,		/* two solids of the machine: "and" */
+	K5_COLLIDING_TOOL,			/* the cutting part of the tool against a solid: "cuts into" */
+	K5_COLLIDING_TOOL_SHANK		/* its shank or its holder, which may touch nothing at all: "is in" */
+} k5_collision_kind;
+
 typedef enum k5_link_type {
 	K5_LINK_PRISMATIC = 0,			/* slides along its own Z */
 	K5_LINK_REVOLUTE				/* turns about its own Z */
@@ -191,6 +198,26 @@ K5_API k5_status k5_chain_segment_boxes(k5_chain chain, int part, size_t index, 
  * The joint limits are not checked - a host drawing the machine may want to see it past them. */
 K5_API k5_status k5_chain_set_configuration(k5_chain chain, const double *q);
 
+typedef struct k5_collision {
+	char first[K5_NAME_MAX];	/* the two solids that met, named as the chain file names them, cut to fit */
+	char second[K5_NAME_MAX];
+	int kind;					/* k5_collision_kind */
+	size_t locations;			/* at how many locations of the path this pair met */
+} k5_collision;
+
+/* The name a report gives one solid of a segment of a branch - the name of the segment, or its place
+ * in the branch when the file gives it none, and the number of the box when the segment has more than
+ * one. A host that draws a machine needs these to show which solids k5_path_collision names. */
+K5_API k5_status k5_chain_solid_name(k5_chain chain, int part, size_t segment, size_t box,
+	char *out, size_t capacity);
+
+/* Checks the chain, at the configuration it stands in, against the tool: collides gets 1 when
+ * anything met. What met is then k5_chain_collision_count and k5_chain_collision, until the next
+ * check on this chain - a solve makes its own checks, so ask before solving anything else. */
+K5_API k5_status k5_chain_check_collisions(k5_chain chain, k5_tool tool, int *collides);
+K5_API k5_status k5_chain_collision_count(k5_chain chain, size_t *out);
+K5_API k5_status k5_chain_collision(k5_chain chain, size_t index, k5_collision *out);
+
 /* Puts the chain into a set of joint values (K5_AXES of them, in the order of k5_chain_link) and
  * answers where the programmed point of the tool ends up: position[3] and the tool axis axis[3], in the
  * frame of the material. The forward kinematics, and the way to check k5_solve_location.
@@ -267,6 +294,10 @@ typedef struct k5_location {
 	size_t file_line;					/* the line of the file that cutter location was read from, from 1 */
 	int has_solution;					/* 1 when q below is the configuration chosen for this location */
 	double q[K5_AXES];					/* in the order of k5_chain_link */
+	double position[3];					/* the programmed point of the tool this location was solved for, and */
+	double axis[3];						/* its tool axis: the cutter location's own, or the ones invented on the
+										 * way to it. Filled whether or not the location has a solution: they
+										 * say where the tool was asked to be */
 } k5_location;
 
 K5_API k5_status k5_path_location(k5_path path, size_t index, k5_location *out);
@@ -277,6 +308,15 @@ K5_API k5_status k5_path_count_of_origin(k5_path path, int origin, size_t *out);
  * from where it was asked for, and the length of the error of the tool axis. Below a nanometre on the
  * machines the library is tested with. */
 K5_API k5_status k5_path_errors(k5_path path, double *max_position_error, double *max_orientation_error);
+/* Which solids of the machine met while this path was being solved, and at how many of its locations
+ * each pair did - a location whose every configuration was rejected by the same pair counts once.
+ * Empty when the collision check was off or nothing met; the pairs come in no particular order.
+ * A location counted here has no solution for that reason: these are the K5_COLLISION ones. */
+K5_API k5_status k5_path_collision_count(k5_path path, size_t *out);
+K5_API k5_status k5_path_collision(k5_path path, size_t index, k5_collision *out);
+
+
+
 /* Where the machine is left standing: the configuration chosen for the last location that has one.
  * Hand it back to the next run and the trajectory carries on from there (not in version 1 - the
  * settings have no hint field yet; k5_path_last_configuration is the half that exists). */
@@ -339,6 +379,15 @@ K5_API k5_status k5_material_surface(k5_material material, double *out, size_t c
  * and the doubles needed are 18 times that. */
 K5_API k5_status k5_material_surface_triangles(k5_material material, double *out,
 	size_t capacity_in_doubles, size_t *count_out);
+
+/* One cut, with no simulation and no machine: the tool put at position[3] with its axis along
+ * axis[3], both in the frame of the material - the programmed point of the tool, which is the centre
+ * of the ball of a ball nose one - and stamped into the material. gouged, when not null, gets 1 when
+ * the shank or the holder is in material that is still there after the cut, and gouge_point[3] where.
+ * What a host needs for a location its simulation will not cut: one the machine cannot reach, which
+ * is still a place the tool was asked to be. */
+K5_API k5_status k5_material_cut(k5_material material, k5_tool tool, const double *position,
+	const double *axis, int *gouged, double *gouge_point);
 
 /* A simulation of the path cutting the material with that tool on that chain. The four belong to the
  * caller and must outlive the simulation; the chain's joint values and the tool's position are
