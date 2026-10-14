@@ -201,4 +201,4 @@ MIT. See [`LICENSE`](LICENSE). pugixml (MIT) and nlohmann/json (MIT) are vendore
 
 ## Author
 
-Przemysław Zdroik — code (2004, 2026). Method with K. Marciniak and J. Porter-Sobieraj.
+P.Zdroik (zdroyer) - code, 2004-2006, 2026. Method with K. Marciniak and J. Porter-Sobieraj.
