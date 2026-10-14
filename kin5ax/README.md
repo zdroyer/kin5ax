@@ -109,8 +109,11 @@ does not occur; it is logged when it does.
   locations so that no step exceeds the configured position/orientation limits (constant-rate
   turn of the axis, antiparallel axes handled), solves each location, handles singular sections,
   reports the largest reproduction error (forward kinematics of the solution against the input),
-  fills a `CSimulationData` with one solution set per location and records a `SOLVE_STATUS` for
-  each. A `CProgressCallback` receives the progress and may stop the batch between two locations
+  fills a `CSimulationData` with one solution set per location and records for each its
+  `SOLVE_STATUS`, where it came from, the cutter location of the file it belongs to, and the point
+  and the axis it was solved for (`CSolvedLocation`) — so that a location without a solution still
+  says where the tool was asked to be. A `CProgressCallback` receives the progress and may stop the
+  batch between two locations
   (`Continue()` returning false; the result says it was cancelled).
 - **Trajectory**: `CSimulationData::FindShortestPath` picks one configuration per location by
   dynamic programming on the weighted sum of joint changes, skipping locations without a

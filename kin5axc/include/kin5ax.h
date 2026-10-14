@@ -294,6 +294,10 @@ typedef struct k5_location {
 	size_t file_line;					/* the line of the file that cutter location was read from, from 1 */
 	int has_solution;					/* 1 when q below is the configuration chosen for this location */
 	double q[K5_AXES];					/* in the order of k5_chain_link */
+	double position[3];					/* the programmed point of the tool this location was solved for, and */
+	double axis[3];						/* its tool axis: the cutter location's own, or the ones invented on the
+										 * way to it. Filled whether or not the location has a solution: they
+										 * say where the tool was asked to be */
 } k5_location;
 
 K5_API k5_status k5_path_location(k5_path path, size_t index, k5_location *out);

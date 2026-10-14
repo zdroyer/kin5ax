@@ -904,6 +904,12 @@ k5_status k5_path_location(k5_path path, size_t index, k5_location *out)
 		out->q[i] = 0.0;
 	if(out->has_solution)
 		ToQ(path->m_oData[index],out->q);
+	out->position[0] = oRecord.m_cvInput.m_p.GetX();
+	out->position[1] = oRecord.m_cvInput.m_p.GetY();
+	out->position[2] = oRecord.m_cvInput.m_p.GetZ();
+	out->axis[0] = oRecord.m_cvInput.m_v.GetX();
+	out->axis[1] = oRecord.m_cvInput.m_v.GetY();
+	out->axis[2] = oRecord.m_cvInput.m_v.GetZ();
 	return K5_OK;
 	K5_END(K5_ERROR_ARGUMENT)
 }

@@ -899,7 +899,8 @@ TEST(Abi, APathIsSolvedAndWrittenAsGCode)
 	EXPECT_EQ(nSize,nSolved)<<"every location of this path is solvable";
 	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_path_count_of_origin(path,42,&nFromFile));
 
-	//the records: the line of the file, the cutter location they belong to, and the solution
+	//the records: the line of the file, the cutter location they belong to, the solution, and what
+	//they were solved for - the file's own points a third of a step apart, with the axis of the file
 	size_t nFileSeen = 0;
 	for(size_t i=0;i<nSize;i++){
 		k5_location oLocation;
@@ -909,6 +910,11 @@ TEST(Abi, APathIsSolvedAndWrittenAsGCode)
 		if(oLocation.origin==K5_FROM_FILE)
 			nFileSeen++;
 		EXPECT_EQ(nFileSeen,oLocation.file_location)<<"record "<<i;
+		EXPECT_NEAR(p[0]+(double)i*0.025/3.0,oLocation.position[0],1E-6)<<"record "<<i<<" is a third of a step on";
+		EXPECT_NEAR(p[1],oLocation.position[1],1E-6)<<"record "<<i;
+		EXPECT_NEAR(p[2],oLocation.position[2],1E-6)<<"record "<<i;
+		for(size_t k=0;k<3;k++)
+			EXPECT_NEAR(v[k],oLocation.axis[k],1E-5)<<"record "<<i<<" axis "<<k;
 	}
 	EXPECT_EQ((size_t)3,nFileSeen);
 	k5_location oIgnored;

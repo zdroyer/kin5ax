@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CollisionReport.h"
+#include "R3AnchoredVector.h"
 #include <string>
 #include <cstddef>
 
@@ -35,19 +36,21 @@ enum LOCATION_ORIGIN {
 const char *LocationOriginName(LOCATION_ORIGIN origin);
 
 //One location handed to the CSimulationData by CCLDataPostprocessor::Process, in the order they were
-//handed over: why it has the solutions it has, where it came from, and which cutter location of the
-//file it belongs to. One of these per solution set, always.
+//handed over: why it has the solutions it has, where it came from, which cutter location of the file it
+//belongs to, and what it was solved for. One of these per solution set, always.
 class CSolvedLocation
 {
 public:
 	CSolvedLocation(SOLVE_STATUS status = SOLVE_STATUS_SOLVED
 		,LOCATION_ORIGIN origin = LOCATION_FROM_FILE
 		,size_t nFileLocation = 0
-		,size_t nFileLine = 0)
+		,size_t nFileLine = 0
+		,const CR3AnchoredVector &cvInput = CR3AnchoredVector())
 		:m_nStatus(status)
 		,m_nOrigin(origin)
 		,m_nFileLocation(nFileLocation)
 		,m_nFileLine(nFileLine)
+		,m_cvInput(cvInput)
 	{}
 	SOLVE_STATUS m_nStatus;
 	LOCATION_ORIGIN m_nOrigin;
@@ -59,6 +62,10 @@ public:
 	//The line of the CL file that cutter location was read from, counted from 1 the way an editor shows
 	//it; 0 when it is not known.
 	size_t m_nFileLine;
+	//The point and the tool axis this location was solved for, in the units of the chain file: those
+	//of the cutter location for one of the file, the ones invented on the way for anything interpolated.
+	//A location without a solution has them all the same - they say where the tool was asked to be.
+	CR3AnchoredVector m_cvInput;
 };
 
 //The counts of the stages of C5CPostprocessor::Solve for one location. Every stage keeps a subset of
