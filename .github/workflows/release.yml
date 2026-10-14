@@ -47,21 +47,59 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Two things here are defensive rather than tidy.
+      #
+      # A draft that is already there is reused instead of refused, so that a run which failed half
+      # way - a platform that would not build, a network that went away - can simply be started
+      # again. A release that is published is still refused, because replacing one of those is a
+      # decision, not a retry.
+      #
+      # And the notes are generated if GitHub will generate them, and written here if it will not.
+      # Asking for `--generate-notes` has answered HTTP 500 on this repository, which is a fault on
+      # their side and says nothing about the release being wrong; a release that cannot be made
+      # because the summary of it could not be composed would be an absurd place to stop.
       - name: Create the draft
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+          # empty or `--prerelease`; unquoted below, where an empty variable has to vanish
+          PRERELEASE: ${{ inputs.prerelease && '--prerelease' || '' }}
         run: |
-          if gh release view "${{ inputs.tag }}" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            echo "A release ${{ inputs.tag }} exists already. Delete it, or choose another tag."
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            if [ "$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json isDraft -q .isDraft)" = "true" ]; then
+              echo "A draft $TAG is already there; this run will fill it again."
+              exit 0
+            fi
+            echo "::error::$TAG is published already. Delete that release, or choose another tag."
             exit 1
           fi
-          gh release create "${{ inputs.tag }}" \
-            --repo "$GITHUB_REPOSITORY" \
-            --target "$GITHUB_SHA" \
-            --title "kin5ax ${{ inputs.tag }}" \
-            --generate-notes \
-            --draft \
-            ${{ inputs.prerelease && '--prerelease' || '' }}
+
+          create() {
+            gh release create "$TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" \
+              --title "kin5ax $TAG" \
+              --draft \
+              $PRERELEASE "$@"
+          }
+
+          if create --generate-notes; then
+            echo "created, with notes from GitHub"
+          elif gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::warning::the call reported an error but the release is there; carrying on"
+          else
+            echo "::warning::GitHub would not generate the notes, so they are written here instead"
+            create --notes "$(printf '%s\n' \
+              "kin5ax $TAG, built from \`$GITHUB_SHA\`." \
+              "" \
+              "One archive per platform: the \`kin5axc\` shared library, its import library on" \
+              "Windows, \`kin5ax.h\`, the licence, and \`BUILD-INFO.txt\` naming the commit above." \
+              "The library answers with that same commit at run time through \`k5_commit_hash\`," \
+              "so a binary that has been copied somewhere and renamed can still be traced back." \
+              "" \
+              "_GitHub would not generate release notes for this one; the commit log is the_" \
+              "_history between this tag and the one before it._")"
+          fi
 
   build:
     name: ${{ matrix.platform }}
