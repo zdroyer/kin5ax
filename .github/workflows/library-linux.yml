@@ -1,9 +1,56 @@
-# Compiles the kin5ax library and runs its GoogleTest suite on Linux, on a self-hosted runner.
-# The MFC application is Windows only and is not built here; the library has no Windows dependency.
+# Compiles the kin5ax library and runs its GoogleTest suite on Linux.
 #
 # What the runner needs: git, CMake 3.20 or newer, a C++17 compiler (GCC 15 is what the suite is kept
 # warning-free on) and a connection to github.com, because GoogleTest 1.15.2 comes through FetchContent.
-# The runner must be registered with the labels in `runs-on` below.
+# The self-hosted runner must be registered with the labels `self-hosted` and `linux`.
+#
+# ---------------------------------------------------------------- where this is allowed to run
+#
+# A self-hosted runner is somebody's actual machine, and it stays between jobs. If this repository is
+# public, anyone on the internet can open a pull request from a fork, and a workflow that builds that
+# pull request runs the author's code: their CMakeLists, their C++, their test executable. On a
+# hosted runner that is a throwaway virtual machine. On a self-hosted one it is the machine itself,
+# with whatever is on its disk and whatever its network can reach, and nothing stops the next job
+# from finding what the last one left behind. GitHub's own advice is not to point public
+# repositories at self-hosted runners at all.
+#
+# So the rule here is that the self-hosted runner only ever builds code that somebody with write
+# access put there:
+#
+#   push, workflow_dispatch       needs write access, so the code is trusted   -> self-hosted
+#   pull request from a branch    same repository, so the code is trusted      -> self-hosted
+#   pull request from a fork      anybody's code                               -> GitHub-hosted
+#
+# A fork still gets its tests run, on a machine that is deleted afterwards and is not ours. The first
+# step of the job checks the same thing over again and refuses to go on, so that editing the triggers
+# above is not by itself enough to put untrusted code on the runner.
+#
+# Two things that must not be added to this file. `pull_request_target` runs with a writable token
+# and the base repository's secrets while checking out the pull request's code, which is exactly the
+# combination being avoided here. And no secret belongs in this job while a fork can reach it: there
+# are none, `permissions` is read-only, and both should stay that way.
+#
+# ---------------------------------------------------------------- and what this file cannot do
+#
+# None of the above is the real defence, and it would be dangerous to believe that it is. A pull
+# request runs the workflow file as that pull request has it, so a fork that wants the self-hosted
+# runner can simply edit the three lines that send it elsewhere. Everything here is a second line:
+# it stops an accident, a careless edit, a trigger added later without thinking it through. It does
+# not stop somebody who is trying.
+#
+# What stops them is a setting, and it has to be set on the repository before this goes public:
+#
+#   Settings -> Actions -> General -> Fork pull request workflows from outside collaborators
+#     -> "Require approval for all external contributors"
+#
+# The default is milder: approval is needed from a first-time contributor only, so somebody whose
+# first pull request was merged can afterwards run whatever they like on the runner, with no second
+# look. For a repository with one maintainer that default is not enough.
+#
+# The alternative, and the one GitHub itself recommends for public repositories, is to stop pointing
+# a self-hosted runner at this repository at all: `runs-on: ubuntu-latest` throughout costs nothing
+# here, since this build needs no hardware the hosted images lack. The self-hosted runner is a
+# convenience, not a requirement, and it is the only thing on the risky side of this trade.
 name: kin5ax library (Linux)
 
 on:
@@ -11,6 +58,7 @@ on:
   pull_request:
   workflow_dispatch:
 
+# the token this job is given may read the repository and do nothing else
 permissions:
   contents: read
 
@@ -22,7 +70,10 @@ concurrency:
 jobs:
   build-and-test:
     name: ${{ matrix.build_type }}
-    runs-on: [self-hosted, linux]
+    # trusted code on the machine that is kept, anything else on a machine that is thrown away
+    runs-on: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && fromJSON('["self-hosted","linux"]') || 'ubuntu-latest' }}
+    # a build that hangs, or is made to hang, does not keep the machine for a day
+    timeout-minutes: 45
     strategy:
       fail-fast: false       # a Debug failure is worth seeing even when Release fails too
       matrix:
@@ -31,7 +82,19 @@ jobs:
       BUILD_DIR: build-${{ matrix.build_type }}
       CTEST_LOG: ctest-${{ matrix.build_type }}.log
     steps:
+      # The same rule as `runs-on` above, checked where editing a trigger cannot skip it.
+      # `runner.environment` is what the runner reports itself to be, not what this file guessed.
+      - name: A fork may not be built on a self-hosted runner
+        if: ${{ runner.environment == 'self-hosted' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
+        run: |
+          echo "::error::About to build code from a fork on a self-hosted runner. Stopping."
+          exit 1
+
       - uses: actions/checkout@v4
+        with:
+          # the runner keeps its workspace, and this would otherwise leave the job's token in
+          # .git/config for whatever runs on that machine next
+          persist-credentials: false
 
       - name: The tools of the runner
         run: |
@@ -44,7 +107,7 @@ jobs:
       - name: Build
         run: cmake --build "$BUILD_DIR" --parallel "$(nproc)"
 
-      # The whole suite is one CTest test (one executable), so --verbose is what puts the 709 cases of
+      # The whole suite is one CTest test (one executable), so --verbose is what puts the cases of
       # GoogleTest in the log instead of a single "Passed" line. `shell: bash` brings -o pipefail with it,
       # so a failure of ctest is still a failure of the step after the pipe through tee.
       - name: Test
@@ -95,3 +158,10 @@ jobs:
             test-results/
             ctest-${{ matrix.build_type }}.log
           if-no-files-found: warn
+
+      # The self-hosted runner is a machine that stays, and two build trees with a fetched copy of
+      # GoogleTest in them are a few hundred megabytes sitting on it until the next run. A hosted
+      # runner is deleted anyway, so this is only worth doing on the one that is not.
+      - name: Leave the runner as it was found
+        if: ${{ always() && runner.environment == 'self-hosted' }}
+        run: rm -rf "$BUILD_DIR" test-results "$CTEST_LOG"
