@@ -4,15 +4,15 @@ Where this is going: a part drawn in FreeCAD, cut by a toolpath generated there,
 against a real five-axis machine, and posted as a program that machine will run. Five strands, of
 which two are finished, one is half built and two have not started.
 
-Updated 2026-10-13.
+Updated 2026-10-15.
 
 | | strand | state |
 |---|---|---|
 | 1 | The kinematics: solver, machine models, collisions | **done**, and in a C ABI |
 | 2 | A five-axis toolpath generator in FreeCAD | **done** for a single face |
-| 3 | The postprocessor: TCP, direct axes, TWP, Fanuc and Heidenhain | **a third of it**: vector output with TCP |
-| 4 | Simulating the machine from a `.kc.json` model | not started |
-| 5 | Simulating the cutting | library has it, FreeCAD side not started |
+| 3 | The postprocessor: TCP, direct axes, TWP, Fanuc and Heidenhain | **two thirds**: Fanuc with TCP, and direct axes from the solver |
+| 4 | Simulating the machine from a `.kc.json` model | **done**: the machine in the document, a player over the solved job |
+| 5 | Simulating the cutting | **done** as voxels and points: the stock cut step by step, gouges and volume, on a machine or on the path alone |
 
 ## What is done
 
@@ -37,57 +37,65 @@ roadmap needs:
 shape of tool, holds the tool either standing up or along the surface normal leaned over by two
 angles, and writes the tip of the tool with the axis as `I J K`. A row is one pass. 72 tests.
 
+**Python can call kin5ax** (`kin5axcam/kin5axcam/kin5ax.py`): a `ctypes` binding to the C ABI — a
+chain, a tool, the settings, a path solved in memory, its locations and report, the frames of the
+machine. Checked against the forward kinematics of the library.
+
 **The postprocessor** (`kin5axcam/post/fanuc_tcp_kin5ax_post.py`) writes that vector whole and wraps
-an operation that has one in `G43.5`/`G49`. It is FreeCAD's Fanuc post with three changes, and it
-needs no kinematics: the control does the work.
+an operation that has one in `G43.5`/`G49` — FreeCAD's Fanuc post with three changes, no kinematics,
+the control does the work. With `--machine <chain file>` it hands every move to kin5ax instead and
+writes the five axes: direct output, the one mode that runs without a TCP option. A location the
+machine cannot reach is left out and said so.
 
 ## Next, in order
 
-### 1. Python can call kin5ax
+### 1. Done: Python can call kin5ax, and the post writes direct axes
 
-A `ctypes` binding to `kin5axc` inside the addon: open a chain, make a tool, solve a path held in
-memory, read the joint values and the report back. Perhaps two hundred lines and a day, and
-**everything below needs it** — the direct-axes post, the machine simulation, any judging of a path
-before it is cut. Nothing else in this list unblocks as much.
+The binding and the `--machine` mode of the post, 2026-10-14. The decisions were taken the cheap
+way: the post scales by `--machine-unit` (metres by default), and the rotary letters come from the
+names of the links when they are letters, else from an argument. The binding finds the shared
+library through `KIN5AXC_LIBRARY`, `kin5axcam/lib/` or the build tree of a checkout; shipping a
+built `kin5axc.dll` in `lib/` is still to do.
 
-It also needs the shared library built for Windows and found at run time, and it forces two decisions
-that have been open since the ABI was designed (below).
+### 2. The rest of the postprocessor
 
-Worth doing as one vertical slice with step 2 rather than on its own: *a path generated in FreeCAD,
-solved by kin5ax, written as `X Y Z A C`* is the first thing that proves the whole chain works.
-
-### 2. The postprocessor proper
-
-With the binding, the post can hand its points and vectors to kin5ax and get joint values, which is
-what the roadmap item has always meant:
-
-- **direct axes** — `G1 X Y Z A C`, no TCP, no RTCP option needed on the control; the one mode that
-  runs on any machine, and the one that needs the kinematics
-- **TCP** — what exists today, extended with Heidenhain (`M128`/`FUNCTION TCPM` and `LN` blocks with
-  `TX TY TZ`)
+- **Heidenhain**: TCP with `M128`/`FUNCTION TCPM` and `LN` blocks carrying `TX TY TZ`, and direct
+  axes from the solver in its syntax
 - **TWP** — `G68.2`/`G53.1` on Fanuc, `PLANE SPATIAL` on Heidenhain: for paths that lie in one
   tilted plane, which this generator does not make yet but a swarf or a planar operation would
-- the solve report surfaced in the report view: how many locations are unsolved, where limits were
-  exceeded, where the tool collided
+- the rollover of a free rotary axis is handled in the post (the nearest turn is written); the
+  library's own rollover model (#25) would let the trajectory be scored that way too
+- a report of the solve in the task panel of the operation, not only in the report view at post time
 
-Open: whether to grow the one post with a `--machine` argument, or to write a second one. The first
-keeps a single file to maintain; the second keeps the stock-Fanuc copy free of kin5ax.
+### 3. Done: the machine on the screen
 
-### 3. The machine on the screen
+`kin5axcam/machine.py`, `simulation.py`, `machine_gui.py`, 2026-10-15. A part per segment with the
+boxes of the file and an arm to the next, the tool mount and the material as parts, the job's tool
+and model and stock in them, the trajectory in properties, a player with slider, play, step and the
+report. Two calls were added to the ABI for it: `k5_chain_segment_boxes` and
+`k5_chain_set_configuration`. Still to do here: real bodies per segment (a segment part takes
+them by hand already; the file format does not reference them), and the collision verdict of the
+solver shown as a marker in the picture, next to the unreachable ones.
 
-Build the machine from the `.kc.json` in a FreeCAD document — a part per link, placed by
-`k5_chain_frames` — and step it through a solved path. The library already answers every question
-this needs; the work is FreeCAD-side: making the shapes (the file carries collision boxes and
-cylinders, not meshes), a tree of placements, and something to drive the frame number.
+### 4. Done: cutting simulation, as voxels and points
 
-This is also the honest fix for what the stock simulator cannot do: FreeCAD places the tool with a
-fixed upright rotation, so a leaning path is drawn as if the tool stood up.
+Twelve calls in the ABI (`k5_material_*`, `k5_simulation_*`), the binding, and `Cut` on the
+simulation object, 2026-10-15: the stock of the job as a block of voxels, cut step by step with the
+tool of each operation, the surface as a point cloud under the material part, the removed volume
+and the gouges as properties and a marker. The interpolation is made as dense as the voxels when
+cutting, which is what the once-per-location stamp of the library needs.
 
-### 4. Cutting simulation
+2026-10-15, later the same day: the cut **without a machine** — `CToolPathSimulation` in the
+library, the path made dense by the solver's own interpolation (`LocationInterpolation.h`, moved
+out of the solver so both share it), one ABI constructor from positions and axes, and `Machine`
+optional on the simulation object. The tool is drawn leaning in the frame of the part straight
+from the path. Nothing of the densification is in Python.
 
-The voxel material and the cutting are in the library already (`kin5ax/Simulation/`), driven by the
-MFC application. Bringing them to FreeCAD means new ABI calls — a material handle, a step, a mesh or
-a volume out — and is the largest of these. Worth it only after 3 can show the machine moving.
+Next here, in order of value: **a surface instead of points** — a mesh of cube faces first, then
+marching cubes in the library and through the ABI; **the sweep** of the tool between two locations
+in the library, so the interpolation can be coarse again; **the comparison** of what is left with
+the model of the job, which is what a finish pass is judged by; and the collision verdict of the
+solver as a marker next to the unreachable ones.
 
 ### 5. The library's own list
 

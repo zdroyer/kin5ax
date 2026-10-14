@@ -25,12 +25,15 @@ add_library(kin5ax STATIC
   Postprocessor/OrientationPostprocessor.cpp
   Postprocessor/PositionPostprocessor.cpp
   Postprocessor/SolveReport.cpp
+  Simulation/CuttingSimulation.cpp
   Simulation/Material.cpp
   Simulation/MaterialSimulation.cpp
+  Simulation/ToolPathSimulation.cpp
   Simulation/SphereCLDataGenerator.cpp
   Simulation/SimpleSimulation.cpp
   CLDataPostprocessor.cpp
   CutterLocationData.cpp
+  LocationInterpolation.cpp
   PostprocessorSettings.cpp
   SimulationData.cpp
   TrajectoryStart.cpp

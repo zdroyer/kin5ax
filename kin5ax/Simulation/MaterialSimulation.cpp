@@ -1,4 +1,4 @@
-#include "../stdafx.h"
+#include "stdafx.h"
 #include "MaterialSimulation.h"
 
 namespace kin5ax {
@@ -9,36 +9,13 @@ CMaterialSimulation::CMaterialSimulation(CChain &oChain, CMillingTool &oTool, CS
 ,m_oTrajectory(oTrajectory)
 ,m_oMaterial(oMaterial)
 ,m_nNext(0)
-,m_nGougeCount(0)
-,m_nFirstGougeStep(0)
 {
 }
 
 void CMaterialSimulation::Reset()
 {
 	m_nNext = 0;
-	m_nGougeCount = 0;
-	m_nFirstGougeStep = 0;
-}
-
-size_t CMaterialSimulation::GetGougeCount() const
-{
-	return m_nGougeCount;
-}
-
-bool CMaterialSimulation::HasGouged() const
-{
-	return m_nGougeCount>0;
-}
-
-size_t CMaterialSimulation::GetFirstGougeStep() const
-{
-	return m_nFirstGougeStep;
-}
-
-const CR3Point & CMaterialSimulation::GetFirstGougePoint() const
-{
-	return m_r3pFirstGouge;
+	ForgetGouges();
 }
 
 bool CMaterialSimulation::Step()
@@ -55,30 +32,8 @@ bool CMaterialSimulation::Step()
 	m_oMaterial.MachineCut(m_oTool);
 	//after the cut of this location: whatever the shank or the holder still touches is a gouge
 	CR3Point r3pGouge;
-	if(m_oMaterial.HasMaterialInNonCuttingPart(m_oTool,r3pGouge)){
-		if(m_nGougeCount==0){
-			m_nFirstGougeStep = m_nNext-1;
-			m_r3pFirstGouge = r3pGouge;
-		}
-		m_nGougeCount++;
-	}
-	return true;
-}
-
-bool CMaterialSimulation::Run(CProgressCallback *pProgress)
-{
-	const size_t nCount = GetStepCount();
-	while(true){
-		if(pProgress){
-			pProgress->SetProgress(nCount ? (double)m_nNext/(double)nCount : 1.0);
-			if(!pProgress->Continue())
-				return false;
-		}
-		if(!Step())
-			break;
-	}
-	if(pProgress)
-		pProgress->SetProgress(1.0);
+	if(m_oMaterial.HasMaterialInNonCuttingPart(m_oTool,r3pGouge))
+		NoteGouge(m_nNext-1,r3pGouge);
 	return true;
 }
 
