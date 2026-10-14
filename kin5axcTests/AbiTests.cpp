@@ -594,6 +594,69 @@ TEST(Abi, TheLocationsOfASimulationOnAChainAreItsToolPoints)
 	k5_chain_free(chain);
 }
 
+TEST(Abi, APathSaysWhichSolidsMetAndAtHowManyLocations)
+{
+	//the model of the spherical wrist cannot tilt its tool far without meeting itself: a path that
+	//asks it to is where a pair and a count are worth more than "it collides"
+	k5_chain chain = OpenChain("3CWithSphericalWrist_withBaseBox.kc");
+	k5_tool tool = CreateTool();
+	k5_settings oSettings;
+	k5_settings_default(&oSettings);
+	oSettings.interpolate = 0;
+
+	//a line of locations whose tool axis leans further and further over
+	std::vector<double> vPositions, vAxes;
+	const size_t nCount = 12;
+	for(size_t i=0;i<nCount;i++){
+		const double dLean = (double)i*(4.0*atan(1.0)/180.0)*8.0;	//0, 8, 16 ... degrees
+		vPositions.push_back(0.02*(double)i-0.1);
+		vPositions.push_back(0.0);
+		vPositions.push_back(0.1);
+		vAxes.push_back(sin(dLean));
+		vAxes.push_back(0.0);
+		vAxes.push_back(cos(dLean));
+	}
+	k5_path path = NULL;
+	ASSERT_EQ(K5_OK,k5_postprocess_locations(chain,tool,&oSettings,&vPositions[0],&vAxes[0],nCount,&path))
+		<<k5_last_error();
+	size_t nColliding = 0;
+	ASSERT_EQ(K5_OK,k5_path_count_of_status(path,K5_COLLISION,&nColliding));
+	ASSERT_GT(nColliding,(size_t)0)<<"the far end of that path has to collide for this to say anything";
+
+	size_t nPairs = 0;
+	ASSERT_EQ(K5_OK,k5_path_collision_count(path,&nPairs))<<k5_last_error();
+	ASSERT_GT(nPairs,(size_t)0)<<"and the path says which solids met";
+	size_t nWorst = 0;
+	for(size_t i=0;i<nPairs;i++){
+		k5_collision oPair;
+		ASSERT_EQ(K5_OK,k5_path_collision(path,i,&oPair))<<k5_last_error();
+		EXPECT_STRNE("",oPair.first);
+		EXPECT_STRNE("",oPair.second);
+		EXPECT_STRNE(oPair.first,oPair.second);
+		EXPECT_GT(oPair.locations,(size_t)0);
+		EXPECT_LE(oPair.locations,nColliding)<<"no pair can cost more locations than collided";
+		EXPECT_TRUE(oPair.kind==K5_COLLIDING_PARTS || oPair.kind==K5_COLLIDING_TOOL
+			|| oPair.kind==K5_COLLIDING_TOOL_SHANK);
+		nWorst = std::max(nWorst,oPair.locations);
+	}
+	EXPECT_EQ(nColliding,nWorst)<<"the pair that rejected every colliding location costs all of them";
+
+	k5_collision oPair;
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_path_collision(path,nPairs,&oPair));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_path_collision(NULL,0,&oPair));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_path_collision_count(NULL,&nPairs));
+	k5_path_free(path);
+
+	//with the check off nothing is rejected and nothing is reported
+	oSettings.check_collisions = 0;
+	ASSERT_EQ(K5_OK,k5_postprocess_locations(chain,tool,&oSettings,&vPositions[0],&vAxes[0],nCount,&path));
+	ASSERT_EQ(K5_OK,k5_path_collision_count(path,&nPairs));
+	EXPECT_EQ((size_t)0,nPairs);
+	k5_path_free(path);
+	k5_tool_free(tool);
+	k5_chain_free(chain);
+}
+
 TEST(Abi, ATool)
 {
 	k5_tool tool = CreateTool();

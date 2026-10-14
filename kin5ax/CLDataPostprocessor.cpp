@@ -162,6 +162,9 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 					,bFromFile ? LOCATION_FROM_FILE : LOCATION_INTERPOLATED
 					,bFromFile ? nFileLocation : (nPreviousLocation ? nPreviousLocation : nFileLocation)
 					,bFromFile ? nFileLine : nPreviousLine));
+				//one count per pair for this location, however many of its configurations that pair
+				//rejected
+				oResult.m_oCollisions.MergeDistinct(oReport.m_oCollisions);
 			}
 			lastInput.m_p = vIntermediateLocations[j].second.m_p;
 			lastInput.m_v = vIntermediateLocations[j].second.m_v;

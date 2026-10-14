@@ -833,11 +833,32 @@ bool CChain::HasCollision(CMillingTool &oMillingTool,std::string &sLog)
 	return false;
 }
 
+const CCollisionReport &CChain::GetCollisions() const
+{
+	return m_oCollisions;
+}
+
+//The name of one solid of a segment, the way a report reads it: the name the file gives the segment,
+//or its place in its branch when it has none, and the number of the box when the segment has more
+//than one.
+static std::string SolidName(const CChainSegment &oSegment, size_t nBox, size_t nBoxes
+	,CHAIN_PART part, size_t nIndex)
+{
+	std::string sName = oSegment.GetName();
+	if(sName.empty())
+		sName = std::string(part==CHAIN_PART_TOOL ? "tool segment " : "material segment ")
+			+size_to_string(nIndex+1);
+	if(nBoxes>1)
+		sName += (" box "+size_to_string(nBox+1));
+	return sName;
+}
+
 void CChain::DetectCollisions(CMillingTool &oMillingTool)
 {
 	for(int i = -1; i<=(int)this->GetNumberOfRegularLinks();i++)
 		(*this)[i].ClearAllPartCollision();
 
+	m_oCollisions.Clear();
 	oMillingTool.ClearCollisionLog();
 	//material holder part
 	for(size_t i=0;i<m_vMaterialHolderPart.size();i++){
@@ -864,6 +885,9 @@ void CChain::DetectCollisions(CMillingTool &oMillingTool)
 					if(boxes[j].HasIntersectionWithBox(boxes2[m],tr,trInv)){
 						m_vMaterialHolderPart[i].SetPartCollision(j);
 						m_vMaterialHolderPart[k].SetPartCollision(m);
+						m_oCollisions.Add(SolidName(m_vMaterialHolderPart[i],j,boxes.size(),CHAIN_PART_MATERIAL_HOLDER,i)
+							,SolidName(m_vMaterialHolderPart[k],m,boxes2.size(),CHAIN_PART_MATERIAL_HOLDER,k)
+							,COLLIDING_PARTS);
 					}
 				}
 			}
@@ -895,6 +919,9 @@ void CChain::DetectCollisions(CMillingTool &oMillingTool)
 					if(boxes[j].HasIntersectionWithBox(boxes2[m],tr,trInv)){
 						m_vMaterialHolderPart[i].SetPartCollision(j);
 						m_vToolPart[k].SetPartCollision(m);
+						m_oCollisions.Add(SolidName(m_vMaterialHolderPart[i],j,boxes.size(),CHAIN_PART_MATERIAL_HOLDER,i)
+							,SolidName(m_vToolPart[k],m,boxes2.size(),CHAIN_PART_TOOL,k)
+							,COLLIDING_PARTS);
 					}
 				}
 			}
@@ -906,9 +933,15 @@ void CChain::DetectCollisions(CMillingTool &oMillingTool)
 					if(oMillingTool.CauseCollision(boxes[j],trTool,trToolInv)){
 						m_vMaterialHolderPart[i].SetPartCollision(j);
 						oMillingTool.AddToCollisionLog((m_vMaterialHolderPart[i].GetName()+", box_"+size_to_string(j+1)));
+						m_oCollisions.Add("the tool"
+							,SolidName(m_vMaterialHolderPart[i],j,boxes.size(),CHAIN_PART_MATERIAL_HOLDER,i)
+							,COLLIDING_TOOL);
 					} else if(oMillingTool.CauseNonCuttingCollision(boxes[j],trTool,trToolInv)){
 						m_vMaterialHolderPart[i].SetPartCollision(j);
 						oMillingTool.AddToCollisionLog((m_vMaterialHolderPart[i].GetName()+", box_"+size_to_string(j+1)+" (holder or shank)"));
+						m_oCollisions.Add("the shank or the holder"
+							,SolidName(m_vMaterialHolderPart[i],j,boxes.size(),CHAIN_PART_MATERIAL_HOLDER,i)
+							,COLLIDING_TOOL_SHANK);
 					}
 				}
 			}
@@ -938,6 +971,9 @@ void CChain::DetectCollisions(CMillingTool &oMillingTool)
 					if(boxes[j].HasIntersectionWithBox(boxes2[m],tr,trInv)){
 						m_vToolPart[i].SetPartCollision(j);
 						m_vToolPart[k].SetPartCollision(m);
+						m_oCollisions.Add(SolidName(m_vToolPart[i],j,boxes.size(),CHAIN_PART_TOOL,i)
+							,SolidName(m_vToolPart[k],m,boxes2.size(),CHAIN_PART_TOOL,k)
+							,COLLIDING_PARTS);
 					}
 				}
 			}
@@ -948,9 +984,13 @@ void CChain::DetectCollisions(CMillingTool &oMillingTool)
 					if(oMillingTool.CauseCollision(boxes[j],trTool,trToolInv)){
 						m_vToolPart[i].SetPartCollision(j);
 						oMillingTool.AddToCollisionLog((m_vToolPart[i].GetName()+", box_"+size_to_string(j+1)));
+						m_oCollisions.Add("the tool",SolidName(m_vToolPart[i],j,boxes.size(),CHAIN_PART_TOOL,i)
+							,COLLIDING_TOOL);
 					} else if(oMillingTool.CauseNonCuttingCollision(boxes[j],trTool,trToolInv)){
 						m_vToolPart[i].SetPartCollision(j);
 						oMillingTool.AddToCollisionLog((m_vToolPart[i].GetName()+", box_"+size_to_string(j+1)+" (holder or shank)"));
+						m_oCollisions.Add("the shank or the holder"
+							,SolidName(m_vToolPart[i],j,boxes.size(),CHAIN_PART_TOOL,i),COLLIDING_TOOL_SHANK);
 					}
 				}
 			}

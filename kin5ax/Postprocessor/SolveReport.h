@@ -1,5 +1,6 @@
 #pragma once
 
+#include "CollisionReport.h"
 #include <string>
 #include <cstddef>
 
@@ -72,6 +73,10 @@ public:
 	size_t m_nWithinLimits;			//... of them inside the joint limits (one representative of each)
 	size_t m_nCollisionFree;		//... of them without a collision: the returned solutions
 	bool m_bAmbiguous;				//the orientation is singular: the first angle of the solutions is free (ANY)
+	//Which solids met while the configurations of this location were being checked, and in how many of
+	//those checks. Empty when the collision check was off or nothing met. What a location costs is one
+	//count per pair however many of its configurations collided, which is CCollisionReport::MergeDistinct.
+	CCollisionReport m_oCollisions;
 	//the status that follows from the counts
 	SOLVE_STATUS Status() const;
 };

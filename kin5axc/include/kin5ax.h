@@ -75,6 +75,13 @@ typedef enum k5_location_origin {
 	K5_SINGULAR_SECTION			/* from the singular-section solver, which picks its own samples */
 } k5_location_origin;
 
+/* How two solids met: what is read between the names of a pair. */
+typedef enum k5_collision_kind {
+	K5_COLLIDING_PARTS = 0,		/* two solids of the machine: "and" */
+	K5_COLLIDING_TOOL,			/* the cutting part of the tool against a solid: "cuts into" */
+	K5_COLLIDING_TOOL_SHANK		/* its shank or its holder, which may touch nothing at all: "is in" */
+} k5_collision_kind;
+
 typedef enum k5_link_type {
 	K5_LINK_PRISMATIC = 0,			/* slides along its own Z */
 	K5_LINK_REVOLUTE				/* turns about its own Z */
@@ -277,6 +284,20 @@ K5_API k5_status k5_path_count_of_origin(k5_path path, int origin, size_t *out);
  * from where it was asked for, and the length of the error of the tool axis. Below a nanometre on the
  * machines the library is tested with. */
 K5_API k5_status k5_path_errors(k5_path path, double *max_position_error, double *max_orientation_error);
+
+typedef struct k5_collision {
+	char first[K5_NAME_MAX];	/* the two solids that met, named as the chain file names them, cut to fit */
+	char second[K5_NAME_MAX];
+	int kind;					/* k5_collision_kind */
+	size_t locations;			/* at how many locations of the path this pair met */
+} k5_collision;
+
+/* Which solids of the machine met while this path was being solved, and at how many of its locations
+ * each pair did - a location whose every configuration was rejected by the same pair counts once.
+ * Empty when the collision check was off or nothing met; the pairs come in no particular order.
+ * A location counted here has no solution for that reason: these are the K5_COLLISION ones. */
+K5_API k5_status k5_path_collision_count(k5_path path, size_t *out);
+K5_API k5_status k5_path_collision(k5_path path, size_t index, k5_collision *out);
 /* Where the machine is left standing: the configuration chosen for the last location that has one.
  * Hand it back to the next run and the trajectory carries on from there (not in version 1 - the
  * settings have no hint field yet; k5_path_last_configuration is the half that exists). */

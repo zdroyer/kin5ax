@@ -860,6 +860,33 @@ k5_status k5_path_errors(k5_path path, double *max_position_error, double *max_o
 	K5_END(K5_ERROR_ARGUMENT)
 }
 
+k5_status k5_path_collision_count(k5_path path, size_t *out)
+{
+	K5_BEGIN
+	K5_NEED(path && out,"k5_path_collision_count needs a path and somewhere to put the count")
+	*out = path->m_oResult.m_oCollisions.GetPairs().size();
+	return K5_OK;
+	K5_END(K5_ERROR_UNKNOWN)
+}
+
+k5_status k5_path_collision(k5_path path, size_t index, k5_collision *out)
+{
+	K5_BEGIN
+	K5_NEED(path && out,"k5_path_collision needs a path and somewhere to put the answer")
+	const std::vector<CCollidingPair> &vPairs = path->m_oResult.m_oCollisions.GetPairs();
+	K5_NEED(index<vPairs.size(),"there is no colliding pair of that index in this path")
+	CopyName(vPairs[index].m_sFirst,out->first,(size_t)K5_NAME_MAX);
+	CopyName(vPairs[index].m_sSecond,out->second,(size_t)K5_NAME_MAX);
+	switch(vPairs[index].m_nKind){
+	case COLLIDING_TOOL:		out->kind = K5_COLLIDING_TOOL; break;
+	case COLLIDING_TOOL_SHANK:	out->kind = K5_COLLIDING_TOOL_SHANK; break;
+	default:					out->kind = K5_COLLIDING_PARTS; break;
+	}
+	out->locations = vPairs[index].m_nCount;
+	return K5_OK;
+	K5_END(K5_ERROR_UNKNOWN)
+}
+
 k5_status k5_path_last_configuration(k5_path path, double *q)
 {
 	K5_BEGIN
