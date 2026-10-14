@@ -563,6 +563,29 @@ k5_status k5_material_surface_triangles(k5_material material, double *out,
 	K5_END(K5_ERROR_UNKNOWN)
 }
 
+k5_status k5_material_cut(k5_material material, k5_tool tool, const double *position,
+	const double *axis, int *gouged, double *gouge_point)
+{
+	K5_BEGIN
+	K5_NEED(material && tool && position && axis,"k5_material_cut needs a material, a tool, a position and an axis")
+	K5_NEED(tool->m_pTool,"the tool handle holds no tool")
+	const CR3Vector v(axis[0],axis[1],axis[2]);
+	K5_NEED(!v.IsZero(1E-12),"an axis of length zero is no direction")
+	tool->m_pTool->SetPositionAndOrientation(CR3Point(position[0],position[1],position[2]),v.GetUnitVector());
+	material->m_oMaterial.MachineCut(*tool->m_pTool);
+	CR3Point r3pGouge;
+	const bool bGouged = material->m_oMaterial.HasMaterialInNonCuttingPart(*tool->m_pTool,r3pGouge);
+	if(gouged)
+		*gouged = bGouged ? 1 : 0;
+	if(gouge_point && bGouged){
+		gouge_point[0] = r3pGouge.GetX();
+		gouge_point[1] = r3pGouge.GetY();
+		gouge_point[2] = r3pGouge.GetZ();
+	}
+	return K5_OK;
+	K5_END(K5_ERROR_SOLVER)
+}
+
 k5_status k5_simulation_create(k5_chain chain, k5_tool tool, k5_path path, k5_material material,
 	k5_simulation *out)
 {

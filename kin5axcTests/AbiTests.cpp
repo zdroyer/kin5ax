@@ -379,6 +379,50 @@ TEST(Abi, TheSurfaceOfTheMaterialAsTriangles)
 	k5_material_free(material);
 }
 
+TEST(Abi, OneStampOfTheToolWhereverItIsPut)
+{
+	//what a host does for a location its simulation will not cut: put the tool there and stamp it
+	k5_tool tool = CreateTool();
+	k5_material material = NULL;
+	ASSERT_EQ(K5_OK,k5_material_create(0.12,0.06,0.03,0.002,-0.06,-0.03,-0.03,&material))<<k5_last_error();
+	double dTotal=0.0, dRemoved=0.0;
+	ASSERT_EQ(K5_OK,k5_material_volumes(material,&dTotal,&dRemoved));
+	EXPECT_EQ(0.0,dRemoved);
+
+	const double p[3] = {0.0,0.0,0.0};		//the ball centre on the top of the block
+	const double v[3] = {0.0,0.0,1.0};
+	int nGouged = 1;
+	ASSERT_EQ(K5_OK,k5_material_cut(material,tool,p,v,&nGouged,NULL))<<k5_last_error();
+	EXPECT_EQ(0,nGouged)<<"the shank is above the block";
+	ASSERT_EQ(K5_OK,k5_material_volumes(material,&dTotal,&dRemoved));
+	EXPECT_GT(dRemoved,0.0)<<"a bite out of it";
+	const double dOne = dRemoved;
+
+	//the same stamp again takes nothing more: a voxel removed is removed
+	ASSERT_EQ(K5_OK,k5_material_cut(material,tool,p,v,NULL,NULL));
+	ASSERT_EQ(K5_OK,k5_material_volumes(material,&dTotal,&dRemoved));
+	EXPECT_EQ(dOne,dRemoved);
+
+	//and one pushed into the block has its shank in material that is still there - a tool whose
+	//cutting part is 20 mm, since the 64 mm one of CreateTool reaches out of a block 30 mm deep
+	k5_tool stubby = NULL;
+	ASSERT_EQ(K5_OK,k5_tool_create(K5_TOOL_BALL_NOSE,0.016,0.016,0.020,0.030,0.050,0.030,&stubby))
+		<<k5_last_error();
+	const double deep[3] = {0.04,0.0,-0.02};
+	double gouge[3] = {0.0,0.0,0.0};
+	ASSERT_EQ(K5_OK,k5_material_cut(material,stubby,deep,v,&nGouged,gouge))<<k5_last_error();
+	EXPECT_EQ(1,nGouged);
+	EXPECT_GT(gouge[2],-0.03)<<"and the place of it is in the block";
+	k5_tool_free(stubby);
+
+	const double zero[3] = {0.0,0.0,0.0};
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_material_cut(material,tool,p,zero,NULL,NULL))<<"no direction";
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_material_cut(NULL,tool,p,v,NULL,NULL));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_material_cut(material,NULL,p,v,NULL,NULL));
+	k5_material_free(material);
+	k5_tool_free(tool);
+}
+
 TEST(Abi, ThePathCutsTheMaterialWhereItGoes)
 {
 	k5_chain chain = OpenChain();

@@ -376,6 +376,15 @@ K5_API k5_status k5_material_surface(k5_material material, double *out, size_t c
 K5_API k5_status k5_material_surface_triangles(k5_material material, double *out,
 	size_t capacity_in_doubles, size_t *count_out);
 
+/* One cut, with no simulation and no machine: the tool put at position[3] with its axis along
+ * axis[3], both in the frame of the material - the programmed point of the tool, which is the centre
+ * of the ball of a ball nose one - and stamped into the material. gouged, when not null, gets 1 when
+ * the shank or the holder is in material that is still there after the cut, and gouge_point[3] where.
+ * What a host needs for a location its simulation will not cut: one the machine cannot reach, which
+ * is still a place the tool was asked to be. */
+K5_API k5_status k5_material_cut(k5_material material, k5_tool tool, const double *position,
+	const double *axis, int *gouged, double *gouge_point);
+
 /* A simulation of the path cutting the material with that tool on that chain. The four belong to the
  * caller and must outlive the simulation; the chain's joint values and the tool's position are
  * changed by every step. The chain is given the tool as its assembly, as a solve gives it. */
