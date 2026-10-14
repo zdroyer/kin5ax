@@ -1,0 +1,101 @@
+# Builds kin5ax Chain Editor Plus, the MFC application, on every push that could break it.
+#
+# Until this existed the application was compiled on GitHub only as part of cutting a release, which
+# meant that a change breaking the MFC build was found while trying to ship rather than while being
+# made. The library has had Linux CI since the start; this is the half that had none.
+#
+# The runner is the same image the release uses, on purpose: a green run here is then a reason to
+# believe the release will build, which is most of what a standing job is for.
+#
+# Windows minutes are metered at twice the Linux rate on a private repository, so this runs only when
+# something it depends on changes. The application links the kin5ax library, which its own Makefile
+# project builds with CMake, so the library and the root CMakeLists are dependencies as much as the
+# application's own sources are.
+name: kin5ax Chain Editor Plus (Windows)
+
+on:
+  push:
+    paths:
+      - 'kin5axChainEditorPlus/**'
+      - 'kin5ax/**'
+      - 'CMakeLists.txt'
+      - '.github/workflows/app-windows.yml'
+  pull_request:
+    paths:
+      - 'kin5axChainEditorPlus/**'
+      - 'kin5ax/**'
+      - 'CMakeLists.txt'
+      - '.github/workflows/app-windows.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Release x64
+    # the image the release builds on, so that this predicts that
+    runs-on: windows-2022
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      # MFC is an optional component of Visual Studio. If an image stops carrying it, the failure
+      # without this step is a wall of missing headers; with it, it is the name of what to install.
+      - name: Visual Studio has MFC
+        shell: pwsh
+        run: |
+          $mfc = Get-ChildItem "C:\Program Files\Microsoft Visual Studio" -Recurse -Filter afxwin.h `
+            -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $mfc) {
+            Write-Host "::error::This runner has no MFC. The image needs the Visual Studio component Microsoft.VisualStudio.Component.VC.ATLMFC."
+            exit 1
+          }
+          Write-Host "MFC: $($mfc.FullName)"
+
+      # The solution holds two projects: the application, and a Makefile project that builds the
+      # kin5ax library with CMake. That script asks for a named Visual Studio generator only when a
+      # developer environment says which one is running; here nothing does, and CMake chooses.
+      - name: Build
+        shell: pwsh
+        run: |
+          $msbuild = (Get-ChildItem "C:\Program Files\Microsoft Visual Studio\*\*\MSBuild\Current\Bin\MSBuild.exe" |
+                      Select-Object -First 1).FullName
+          Write-Host "MSBuild: $msbuild"
+          & $msbuild kin5axChainEditorPlus\kin5axChainEditorPlus.sln `
+            -p:Configuration=Release -p:Platform=x64 -m -nologo -v:minimal
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      # What a user of the executable reads in its properties. These were the project wizard's TODO
+      # placeholders until the application was renamed, and nothing but a build would notice if a
+      # resource edit broke them again.
+      - name: What the executable says it is
+        shell: pwsh
+        run: |
+          $exe = "kin5axChainEditorPlus\x64\Release\kin5axChainEditorPlus.exe"
+          if (-not (Test-Path $exe)) { Write-Host "::error::no executable was produced"; exit 1 }
+          $info = (Get-Item $exe).VersionInfo
+          $size = [math]::Round((Get-Item $exe).Length / 1KB)
+          Write-Host "product     : $($info.ProductName)"
+          Write-Host "description : $($info.FileDescription)"
+          Write-Host "company     : $($info.CompanyName)"
+          if ($info.ProductName -like "*TODO*" -or $info.FileDescription -like "*TODO*") {
+            Write-Host "::error::the version information is still the project wizard's placeholders"
+            exit 1
+          }
+          "- ``kin5axChainEditorPlus.exe`` built, $size KB, $($info.FileDescription)" |
+            Out-File -Append -Encoding utf8 $env:GITHUB_STEP_SUMMARY
+
+      # So that a build can be tried without cutting a release, which is what it took before. Short
+      # retention: this is a convenience, not an archive, and a release is where a kept copy lives.
+      - name: Keep the executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: kin5axChainEditorPlus-x64
+          path: kin5axChainEditorPlus/x64/Release/kin5axChainEditorPlus.exe
+          retention-days: 7
+          if-no-files-found: error

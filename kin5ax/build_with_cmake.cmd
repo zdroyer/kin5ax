@@ -11,8 +11,15 @@ set BUILD=%ROOT%\build
 set ARCH=x64
 if /I "%2"=="Win32" set BUILD=%ROOT%\build-win32
 if /I "%2"=="Win32" set ARCH=Win32
-set GEN=Visual Studio 18 2026
-if "%VisualStudioVersion%"=="17.0" set GEN=Visual Studio 17 2022
+rem The generator has to be a Visual Studio one that is installed here; what has to match the
+rem application is the toolset, which is given as -T v143 below. Inside Visual Studio, and in a
+rem developer prompt, VisualStudioVersion says which one is running and that one is asked for.
+rem Outside either - a plain shell, a build server - it is not set at all, and then nothing is
+rem asked for and CMake takes the newest Visual Studio it can find. Naming a generator that is
+rem not installed is how this failed on a runner that has no Visual Studio 2026.
+set GEN=
+if "%VisualStudioVersion%"=="18.0" set GEN=-G "Visual Studio 18 2026"
+if "%VisualStudioVersion%"=="17.0" set GEN=-G "Visual Studio 17 2022"
 set EXTRA=
 if "%3"=="rebuild" set EXTRA=--clean-first
 
@@ -21,8 +28,8 @@ if "%3"=="clean" (
   exit /b 0
 )
 if not exist "%BUILD%\CMakeCache.txt" (
-  echo Configuring the CMake build tree %BUILD% with the generator "%GEN%", toolset v143 ...
-  cmake -S "%ROOT%" -B "%BUILD%" -G "%GEN%" -A %ARCH% -T v143 || exit /b 1
+  echo Configuring the CMake build tree %BUILD% %GEN%, toolset v143 ...
+  cmake -S "%ROOT%" -B "%BUILD%" %GEN% -A %ARCH% -T v143 || exit /b 1
 )
 cmake --build "%BUILD%" --config %CONFIG% --target kin5ax %EXTRA% || exit /b 1
 exit /b 0
