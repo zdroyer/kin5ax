@@ -38,6 +38,7 @@ add_library(kin5ax STATIC
   PostprocessorSettings.cpp
   SimulationData.cpp
   TrajectoryStart.cpp
+  Version.cpp
   string_tools.cpp
   3rdParty/pugixml/pugixml.cpp
 )

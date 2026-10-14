@@ -19,8 +19,8 @@ set_target_properties(kin5axc PROPERTIES
   CXX_VISIBILITY_PRESET hidden       # only the k5_* functions leave the shared object
   VISIBILITY_INLINES_HIDDEN ON
   POSITION_INDEPENDENT_CODE ON
-  VERSION 1.0.0
-  SOVERSION 1
+  VERSION ${PROJECT_VERSION}
+  SOVERSION ${PROJECT_VERSION_MAJOR}
 )
 
 # and on a GNU-like linker the standard library's own instantiations are shut in as well

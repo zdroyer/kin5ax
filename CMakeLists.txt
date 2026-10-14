@@ -5,7 +5,20 @@
 #   cmake --build build
 #   ctest --test-dir build --output-on-failure
 cmake_minimum_required(VERSION 3.20)
-project(kin5ax VERSION 0.1 LANGUAGES CXX C)
+
+# The version lives in kin5ax/Version.h, which the Visual Studio build of the MFC application
+# compiles as well, so it is read from there rather than written twice.
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/kin5ax/Version.h" KIN5AX_VERSION_HEADER)
+foreach(part MAJOR MINOR PATCH)
+  if(NOT KIN5AX_VERSION_HEADER MATCHES "KIN5AX_VERSION_${part}[ \t]+([0-9]+)")
+    message(FATAL_ERROR "kin5ax/Version.h does not define KIN5AX_VERSION_${part}")
+  endif()
+  set(KIN5AX_VERSION_${part} ${CMAKE_MATCH_1})
+endforeach()
+
+project(kin5ax
+  VERSION ${KIN5AX_VERSION_MAJOR}.${KIN5AX_VERSION_MINOR}.${KIN5AX_VERSION_PATCH}
+  LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
