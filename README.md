@@ -48,9 +48,10 @@ fast, exact, machine-aware judge of the toolpath. That judge is this library. Se
 | directory | what | platform |
 |---|---|---|
 | [`kin5ax/`](kin5ax/) | the library: C++17, standard library only (pugixml and nlohmann/json vendored), no Windows dependency | Windows (MSVC) and Linux (GCC) built and tested; macOS untried |
-| [`kin5axTests/`](kin5axTests/) | GoogleTest suite, 779 tests, with 11 machine models under `TestChains/` | same |
+| [`kin5axTests/`](kin5axTests/) | GoogleTest suite, 794 tests, with 11 machine models under `TestChains/` | same |
 | [`kin5axc/`](kin5axc/) | the C interface (`kin5axc`, one header `kin5ax.h`): a shared library that exports nothing but its `k5_*` functions | same |
-| [`kin5axcTests/`](kin5axcTests/) | the tests of that interface, linked against the shared library alone | same |
+| [`kin5axcTests/`](kin5axcTests/) | the tests of that interface, 23 tests, linked against the shared library alone | same |
+| [`kin5axcam/`](kin5axcam/) | the FreeCAD addon: the 3D Surface (5axis) operation, a `ctypes` binding to the C interface, the postprocessor, the machine drawn and played in the document, the cutting simulation; 149 tests, of which 72 need no FreeCAD | wherever FreeCAD 1.1 runs |
 | [`Universal5CMillingMachinePostprocessor/`](Universal5CMillingMachinePostprocessor/) | MFC application: kinematic chain editor, 3D viewer, single-location solver with a step-by-step log, batch postprocessing of CL files, a rudimentary voxel simulation that checks the geometry of the postprocessor on a hemisphere sized for the machine | Windows |
 
 Machine models shipped and round-trip tested (catalogue travels and swivel ranges; head and
@@ -174,21 +175,24 @@ machine-specific words are not written to the G-code.
 [`ROADMAP.md`](ROADMAP.md) has the whole of it, with what is done and what each step is waiting on.
 The short form:
 
-1. **Python bindings** to the C interface ([`kin5axc/`](kin5axc/)), which is what everything below
-   needs. The five-axis operation for FreeCAD's CAM workbench is built already
-   ([`kin5axcam/`](kin5axcam/)) and writes the tool axis as `I J K`; what it cannot do without the
-   bindings is ask a machine whether the path is reachable.
-2. The postprocessor proper: direct axes (`X Y Z A C`) from the solver, TCP for Fanuc and
-   Heidenhain, then TWP. Vector output with Fanuc TCP exists
-   ([`kin5axcam/post/`](kin5axcam/post/)).
-3. The machine from a `.kc.json` drawn and moved in FreeCAD, then the cutting simulated there.
-4. Rollover-aware axis model (#25) and the singular-section feasibility check (#21); macOS build;
-   a `kin5ax-post` command-line tool with a JSON machinability report.
-5. **Machinability-in-the-loop demo**: an agent generates a part and a toolpath in FreeCAD,
+1. **Done.** Python bindings to the C interface ([`kin5axc/`](kin5axc/)), the five-axis operation
+   for FreeCAD's CAM workbench, the machine from a `.kc.json` drawn and played in the document, and
+   the cutting simulated there, all in [`kin5axcam/`](kin5axcam/).
+2. **Ship a built `kin5axc` with the addon.** The binding looks for the shared library and today
+   finds it only in a build tree, so nobody can install this without compiling the C++ first.
+3. **Decide the length unit** carried by a chain file, so that callers stop scaling by hand, and
+   let a chain file name the G-code letter of each axis.
+4. The postprocessor proper: TCP and direct axes for Heidenhain, then TWP. Vector output with
+   Fanuc TCP and direct axes from the solver exist ([`kin5axcam/post/`](kin5axcam/post/)).
+5. Rollover-aware axis model (#25, #40, #59) and the singular-section feasibility check (#21),
+   which are the two places where a wrong answer is possible rather than merely a missing feature;
+   macOS build; a `kin5ax-post` command-line tool with a JSON machinability report.
+6. The toolpath generator beyond one face, and the simulation judged against the model of the job.
+7. **Machinability-in-the-loop demo**: an agent generates a part and a toolpath in FreeCAD,
    kin5ax judges it on a real machine, the agent revises. Separate repository, linked here when
    it exists.
 
-Contributions on any of these are welcome; open an issue first for 1 and 4.
+Contributions on any of these are welcome; open an issue first for 3 and 5.
 
 ## Licence
 
