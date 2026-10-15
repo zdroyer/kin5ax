@@ -25,12 +25,26 @@ A machine is two open kinematic sub-chains fixed to a common base:
 - the **tool part** ends in the spindle (terminal segment of type `TOOL`);
 - the **material holder part** ends in the workpiece frame (terminal `MATERIAL_HOLDER`).
 
-The end of the tool branch is the **tool mount**, the place where the holder of the tool is clamped.
-The tool point, which is the point the CL data programs, hangs the length of the assembly below it:
-the holder (`CToolHolder`, declared by the chain file), the tool, and the zero point of the shape of
-the tool, the tip of a flat end mill or the centre of the ball of a ball nose tool. A chain file that
-declares no holder has its tool point at the mount itself, which is how the files were written before
-the holder existed.
+The end of the tool branch is the **tool mount**, the place where the holder of the tool is
+clamped. It is the mount in every chain, whatever the file says: a machine takes a short drill and
+a long slender cutter, and the end of its tool branch is the same place for both. How far the tool
+point - the point the CL data programs - hangs below it is the **gauge length** of whatever is in
+the spindle, less the height of the programmed point above the tip (the tip itself for a flat end
+mill, the centre of the ball for a ball nose tool). That length is measured on a presetter and set
+into the control; `CMillingTool` takes it, and a 0 means nobody measured it, which stands the tool
+right up against its holder.
+
+The end of the workpiece branch is the **workpiece holder**: the vice, the chuck, the plate the
+part is bolted to. A cutter location says where to cut the part and nothing about where the part is
+held, so the holder is a frame of its own - `CChain::SetWorkpieceHolder`, from the frame a location
+is given in to that terminal, the identity until one is given. Everything the library answers about
+a location is in the frame of the part; the frames of the segments are the machine's own and carry
+no holder, so a host draws the part by that transformation.
+
+A chain file may name the tool holder its machine usually carries (`tool_holder`, up to three
+cylinders and the designation on it, `CToolHolder`), and the library has the sizes of ten common
+ones (`ToolHolderCatalogueSize`). Both are defaults to offer and nothing the kinematics depend on:
+the mount is the mount either way.
 
 Every segment is a constant transformation (a translation, then a rotation about an axis by an
 angle) followed by its joint motion: a translation along the local Z for a `PRISMATIC_LINK`, a
@@ -56,7 +70,8 @@ the same shared library, remarks included.
 
 ## The inverse problem
 
-Input: the tool reference point *p* and the unit tool axis *v* in the workpiece frame.
+Input: the tool reference point *p* and the unit tool axis *v* in the frame of the part, which is
+the workpiece frame when no workpiece holder was given.
 Unknowns: two angles and three shifts. The orientation does not depend on the translations, so
 the problem decouples.
 

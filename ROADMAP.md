@@ -8,7 +8,7 @@ The project is two repositories: this one, the library and its C interface, and
 [kin5ax-cam-freecad][addon], everything that runs inside FreeCAD. This roadmap covers both, since
 neither half is worth much without the other.
 
-Updated 2026-10-14.
+Updated 2026-10-15.
 
 | | strand | state |
 |---|---|---|
@@ -37,6 +37,9 @@ roadmap needs:
 - `k5_path_errors`, `k5_path_count_of_status`, `k5_path_last_configuration`
 - `k5_chain_default_gcode_axes`, `k5_path_write_gcode` — direct-axes G-code, `G1 X Y Z A C`
 - `k5_chain_unit`, `k5_unit_in_millimetres` — what the lengths of a chain file are in
+- `k5_tool_create` with a **gauge length**, `k5_tool_set_holder`, `k5_chain_default_holder` and the
+  catalogue — what is in the spindle, which the chain no longer pretends to know
+- **`k5_chain_set_workpiece_holder`** — where the part is held, the other end of the same idea
 - **`kin5axfcm.h`** — the FreeCAD machine file bridge, a header of its own over the same shared
   library: `k5_chain_open_fcm`, `k5_chain_write_fcm` and the remarks of the conversion
 
@@ -137,6 +140,15 @@ feasibility check inside interpolated singular sections (#21); tolerances by kin
 
 ## Decisions these are waiting on
 
+**Where the tool is and where the work is: decided, 2026-10-15.** The two terminals of a chain are
+the tool mount and the workpiece holder, and the chain knows nothing about what is clamped in
+either. The tool point hangs the gauge length of the tool below the mount - a measurement off a
+presetter, given to the tool, never derived from the file - and a cutter location is given in the
+frame of the part, which the workpiece holder places on the table. Both were the terminals
+themselves before, which made a chain file mean one thing to the chain editor and another to the
+FreeCAD addon (KnownBugs #68). A file may still name the holder its machine usually carries, with
+its cylinders and the designation on it, but only as a default for a host to offer.
+
 **The unit: decided, 2026-10-15.** A chain file says what its lengths are in - `unit`, one of `mm`,
 `m` and `in`, required in both forms, and a file without it is refused. The library converts
 nothing: a chain's numbers stay in its own unit, `k5_chain_unit` and `k5_unit_in_millimetres` say
@@ -164,9 +176,12 @@ the postprocessor, with the operation gaining a *check against a machine* button
   with their history carried over by `git subtree split`. It ships a built `kin5axc` for Windows and
   Linux, so that an Addon Manager install needs no compiler, and it refuses a library whose major
   and minor it was not written against. The two are released together for that reason.
-- **The version is 0.1.0**, in `kin5ax/Version.h`, which CMake reads for the project and the shared
+- **The version is 0.3.0**, in `kin5ax/Version.h`, which CMake reads for the project and the shared
   object and which `k5_version` answers with. The C header repeats the numbers, and a test holds the
-  copies together.
+  copies together. 0.2.0 made the unit of a chain file required; 0.3.0 made the two terminals the
+  tool mount and the workpiece holder, which is a breaking change to what a `.kc` file means.
+  `k5_build_string` answers `0.3.0+<commit>`, so a built `.dll` or `.so` can be traced to its
+  source.
 - `kin5axc` is built on Linux by CI and on Windows by hand; a release of the addon is where those
   builds are published. macOS is neither built nor shipped.
 

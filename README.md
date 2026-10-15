@@ -5,7 +5,7 @@ rotary joints in any order: head/head, head/table, table/table, nutating, mill-t
 no per-machine postprocessor. Reads and writes the machine definitions of FreeCAD 1.2 CAM (`.fcm`).
 
 ```
-tool path in the workpiece frame            machine trajectory
+tool path in the frame of the part            machine trajectory
 GOTO/x,y,z,i,j,k  ──►  kin5ax  ──►  N.. G1 X.. Y.. Z.. A.. C..
                           │
               every solution per location (0, 1, 2, 4 or ∞),
@@ -114,7 +114,7 @@ written to one is scaled on the way out.
 
 **Which build is which.** `k5_version` answers with the version a host checks for compatibility,
 and `k5_commit_hash` with the commit the library was built from, compiled in by CMake from
-`git rev-parse`: `0.1.0+09a933bf186c`, with `-dirty` when the working tree held changes that are in
+`git rev-parse`: `0.3.0+09a933bf186c`, with `-dirty` when the working tree held changes that are in
 no commit and `unknown` when it was built outside a checkout. The commit is build metadata in the
 sense of semantic versioning and takes no part in the compatibility check, which is why it is not in
 `k5_version_string`. It matters because the shared library travels on its own, inside the FreeCAD
@@ -195,7 +195,8 @@ collision boxes, singular-section interpolation, trajectory selection, G-code ex
 file formats and every path between them, independence from the numeric locale of the process,
 the voxel material and the cutting simulation (library code, the application only draws and drives it),
 the tool assembly of holder, shank and cutting part with its collisions against the machine and
-against the material that is left.
+against the material that is left; the gauge length of the tool and the frame the part is held in,
+which are the two measurements a chain file does not carry.
 
 What is not: the two non-default orientation methods are wrong on some chains (#39, #22);
 rotary axes are not unwound, so C359→C1 is scored as 2° but programmed as a 358° sweep (#25,
