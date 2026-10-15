@@ -12,6 +12,8 @@ extern CR3Point r3pZero;
 CChain::CChain(void)
 {
 	m_dToolMountToToolPoint = 0.0;
+	//no vice, no chuck: the part sits on the terminal of the workpiece branch itself
+	m_bWorkpieceHolder = false;
 	m_nActivePart=CHAIN_PART_TOOL;
 	m_nActiveSegmentIndex=-1;
 
@@ -287,7 +289,11 @@ void CChain::GetTranslationAxesAndOffset(
 		CR3Point &r3pP1, 
 		const CChainConfiguration & oConfig) const
 {
-	CTransformation m4x4F = m_vMaterialHolderPart.back().GetInvertedConstantTransformation();
+	//the axes and the offset are given in the frame of the part, so the walk begins at the workpiece
+	//holder and not at the terminal it is mounted on
+	CTransformation m4x4F = m_bWorkpieceHolder
+		? m_trWorkpieceHolderInverted * m_vMaterialHolderPart.back().GetInvertedConstantTransformation()
+		: m_vMaterialHolderPart.back().GetInvertedConstantTransformation();
 	size_t k=0;
 	bool bWasT1=false, bWasT2=false;
 	for(size_t i=m_vMaterialHolderPart.size()-1; i>0; i--,k++){
@@ -411,7 +417,8 @@ CTrajectoryStart CChain::GetTrajectoryStart(CHAIN_PART nCountFrom
 
 CTransformation CChain::GetActualToMaterialInvertedTransformation() const
 {
-	CTransformation m4x4Result(1.0);
+	//begins at the frame of the part, which is the workpiece holder above the terminal of the branch
+	CTransformation m4x4Result = m_bWorkpieceHolder ? m_trWorkpieceHolderInverted : CTransformation(1.0);
 	for(size_t i = m_vMaterialHolderPart.size(); i>0; i--){
 		m4x4Result = m4x4Result * 
 			m_vMaterialHolderPart[i-1].GetInvertedParametrizedTransformation(
@@ -469,6 +476,41 @@ void CChain::SetDefaultToolHolder(const CToolHolder &oHolder)
 	m_vToolPart.back().SetToolHolder(oHolder);
 }
 
+void CChain::SetWorkpieceHolder(const CTransformation &trHolder)
+{
+	//The vice, as a frame: where the part being cut sits on the terminal of the workpiece branch. The
+	//inverse is what every walk of the chain needs - the walks work from the part outwards - so it is
+	//worked out once here rather than at every location of a path.
+	//the inverse first: a frame that is no way of holding anything throws, and a chain that refused
+	//one has to be the chain it was rather than half of a vice
+	const CTransformation trInverted = trHolder.Inverted();
+	m_trWorkpieceHolder = trHolder;
+	m_trWorkpieceHolderInverted = trInverted;
+	//An identity is no holder at all, and saying so lets the walks skip a multiplication by it. It is
+	//compared loosely: a holder measured on the machine comes back as 1.0000000001 down the diagonal,
+	//and that is the part sitting on the table.
+	m_bWorkpieceHolder = false;
+	for(int i=0;i<4 && !m_bWorkpieceHolder;i++)
+		for(int j=0;j<4 && !m_bWorkpieceHolder;j++)
+			if(fabs(m_trWorkpieceHolder.M[i][j]-((i==j) ? 1.0 : 0.0))>1E-12)
+				m_bWorkpieceHolder = true;
+}
+
+const CTransformation & CChain::GetWorkpieceHolder() const
+{
+	return m_trWorkpieceHolder;
+}
+
+const CTransformation & CChain::GetWorkpieceHolderInverted() const
+{
+	return m_trWorkpieceHolderInverted;
+}
+
+bool CChain::HasWorkpieceHolder() const
+{
+	return m_bWorkpieceHolder;
+}
+
 void CChain::SetToolAssembly(const CMillingTool &oTool)
 {
 	//Whatever is clamped in the spindle. The terminal of the tool branch is the mount, for every
@@ -491,7 +533,15 @@ CTransformation CChain::GetFirstConstantRotation(size_t &nFirstRotaryLinkIndex) 
 	nFirstRotaryLinkIndex=0;
 	if(!Is5CChain())
 		MY_THROW(CGeneratorException, "Chain is not valid 5C kinematic chain");
+	//the constant rotation between the frame of the part and the first turning joint: a vice that is
+	//clamped at an angle belongs to it, since it stands between the part and the whole machine. Only
+	//its rotation does - a rotation is what this answers - and the middle and last ones are between
+	//joints, where no holder can be.
 	CTransformation res(1.0);
+	if(m_bWorkpieceHolder){
+		res = m_trWorkpieceHolderInverted;
+		res.ZeroTranslation();
+	}
 	for(size_t i = m_vMaterialHolderPart.size() ; i>0; i--){
 		if(m_vMaterialHolderPart[i-1].GetType()==CHAIN_SEGMENT_REVOLUTE_LINK){
 			nFirstRotaryLinkIndex=m_vMaterialHolderPart.size()-i-1;

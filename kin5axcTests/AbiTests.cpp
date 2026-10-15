@@ -868,6 +868,116 @@ TEST(Abi, ATool)
 	k5_tool_free(NULL);
 }
 
+// ---------------------------------------------------------------- the workpiece holder
+
+namespace {
+
+//the frame of a vice 0.08 tall whose jaws are turned a quarter turn about OZ, in the layout of
+//k5_chain_frames: the rows are the images of the axes, the last row the origin
+void ViceFrame(double *m)
+{
+	for(int i=0;i<16;i++)
+		m[i] = 0.0;
+	m[0] = 0.0;  m[1] = 1.0;			//OX of the part points along the OY of the table
+	m[4] = -1.0; m[5] = 0.0;
+	m[10] = 1.0;
+	m[14] = 0.08;						//and the jaws hold it 0.08 above the table
+	m[15] = 1.0;
+}
+
+} // namespace
+
+TEST(Abi, TheWorkpieceHolderIsTheIdentityUntilOneIsGiven)
+{
+	k5_chain chain = OpenChain();
+	ASSERT_TRUE(chain!=NULL);
+	double m[16];
+	for(int i=0;i<16;i++)
+		m[i] = 42.0;
+	ASSERT_EQ(K5_OK,k5_chain_workpiece_holder(chain,m));
+	for(int r=0;r<4;r++)
+		for(int c=0;c<4;c++)
+			EXPECT_DOUBLE_EQ((r==c) ? 1.0 : 0.0,m[4*r+c])<<"row "<<r<<" column "<<c;
+	//null is the identity: a host with nothing to say about the vice says nothing
+	EXPECT_EQ(K5_OK,k5_chain_set_workpiece_holder(chain,NULL));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_set_workpiece_holder(NULL,m));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_workpiece_holder(chain,NULL));
+	k5_chain_free(chain);
+}
+
+TEST(Abi, TheWorkpieceHolderComesBackAsItWasGiven)
+{
+	k5_chain chain = OpenChain();
+	ASSERT_TRUE(chain!=NULL);
+	double m[16], back[16];
+	ViceFrame(m);
+	ASSERT_EQ(K5_OK,k5_chain_set_workpiece_holder(chain,m))<<k5_last_error();
+	ASSERT_EQ(K5_OK,k5_chain_workpiece_holder(chain,back));
+	for(int i=0;i<16;i++)
+		EXPECT_DOUBLE_EQ(m[i],back[i])<<"element "<<i;
+	k5_chain_free(chain);
+}
+
+TEST(Abi, AFrameThatIsNotRigidIsNoWayOfHoldingAnything)
+{
+	k5_chain chain = OpenChain();
+	ASSERT_TRUE(chain!=NULL);
+	double m[16];
+	ViceFrame(m);
+	m[0] = 2.0;							//a scale: twice as big in one direction
+	m[1] = 0.0;
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_set_workpiece_holder(chain,m));
+	EXPECT_NE(std::string::npos,std::string(k5_last_error()).find("rigid"))<<k5_last_error();
+	//and the chain still stands where it did
+	double back[16];
+	ASSERT_EQ(K5_OK,k5_chain_workpiece_holder(chain,back));
+	EXPECT_DOUBLE_EQ(1.0,back[0]);
+	k5_chain_free(chain);
+}
+
+TEST(Abi, ThePartOnAViceIsSolvedInItsOwnFrame)
+{
+	//The whole point of the holder: a cutter location is given in the frame of the part, and where
+	//the part is held is the machine's business. The forward kinematics answers in the same frame,
+	//so a target solved with a vice on the table comes back to the same point of the part - with
+	//the machine standing somewhere else than it would have without one.
+	k5_chain chain = OpenChain();
+	ASSERT_TRUE(chain!=NULL);
+	k5_tool tool = CreateTool();
+	ASSERT_TRUE(tool!=NULL);
+	const std::vector<double> q = QInsideLimits(chain);
+	double target[3] = {0,0,0}, axis[3] = {0,0,0};
+	ASSERT_EQ(K5_OK,k5_chain_tool_point(chain,tool,&q[0],target,axis));
+
+	double m[16];
+	ViceFrame(m);
+	ASSERT_EQ(K5_OK,k5_chain_set_workpiece_holder(chain,m));
+	k5_settings oSettings;
+	k5_settings_default(&oSettings);
+	oSettings.check_collisions = 0;		//the holder meets the head boxes of the models
+	std::vector<double> qOut((size_t)K5_AXES*8,0.0);
+	size_t nCount = 0;
+	int nStatus = 0;
+	ASSERT_EQ(K5_OK,k5_solve_location(chain,tool,&oSettings,target,axis,&qOut[0],8,&nCount,&nStatus))
+		<<k5_last_error();
+	ASSERT_GT(nCount,(size_t)0)<<"the location is reachable with the part on a vice too";
+	for(size_t s=0;s<nCount;s++){
+		double p[3] = {0,0,0}, v[3] = {0,0,0};
+		ASSERT_EQ(K5_OK,k5_chain_tool_point(chain,tool,&qOut[s*K5_AXES],p,v));
+		for(int i=0;i<3;i++){
+			EXPECT_NEAR(target[i],p[i],1E-9)<<"solution "<<s<<" axis "<<i;
+			EXPECT_NEAR(axis[i],v[i],1E-9)<<"solution "<<s<<" axis "<<i;
+		}
+		//and the machine is not where it was: the part came up and turned, so the joints did
+		double dApart = 0.0;
+		for(size_t i=0;i<(size_t)K5_AXES;i++)
+			dApart += fabs(qOut[s*K5_AXES+i]-q[i]);
+		EXPECT_GT(dApart,1E-6)<<"solution "<<s<<" stands where the bare table stood";
+	}
+	k5_tool_free(tool);
+	k5_chain_free(chain);
+}
+
 // ---------------------------------------------------------------- tool holders
 
 TEST(Abi, TheHolderAChainSaysItsMachineCarries)

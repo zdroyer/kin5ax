@@ -839,6 +839,29 @@ k5_status k5_tool_mount_to_point_distance(k5_tool tool, double *out)
 	K5_END(K5_ERROR_ARGUMENT)
 }
 
+// ---------------------------------------------------------------- the workpiece holder
+
+k5_status k5_chain_set_workpiece_holder(k5_chain chain, const double *transformation)
+{
+	K5_BEGIN
+	K5_NEED(chain,"k5_chain_set_workpiece_holder needs a chain")
+	//null is the identity: a host with nothing to say about the vice says nothing
+	chain->m_oChain.SetWorkpieceHolder(transformation ? CTransformation(transformation)
+		: CTransformation(1.0));
+	return K5_OK;
+	K5_END(K5_ERROR_ARGUMENT)
+}
+
+k5_status k5_chain_workpiece_holder(k5_chain chain, double *out)
+{
+	K5_BEGIN
+	K5_NEED(chain && out,"k5_chain_workpiece_holder needs a chain and somewhere to put the frame")
+	CTransformation tr = chain->m_oChain.GetWorkpieceHolder();
+	memcpy(out,tr.toGLMatrix(),16*sizeof(double));
+	return K5_OK;
+	K5_END(K5_ERROR_CHAIN)
+}
+
 // ---------------------------------------------------------------- tool holders
 
 //the header promises how many cylinders a holder is made of, and the library decides it

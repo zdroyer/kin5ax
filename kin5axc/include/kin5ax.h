@@ -261,6 +261,28 @@ K5_API k5_status k5_chain_collision(k5_chain chain, size_t index, k5_collision *
 K5_API k5_status k5_chain_tool_point(k5_chain chain, k5_tool tool, const double *q,
 	double *position, double *axis);
 
+/* ---------------------------------------------------------------- the workpiece holder */
+
+/* The vice, the chuck, the plate the part is bolted to: where the part sits on the terminal of the
+ * workpiece branch, which is where a holder is mounted on every machine.
+ *
+ * It is a frame and not a solid: 16 doubles in the layout of k5_chain_frames, the transformation
+ * from the frame a cutter location is given in - the frame of the part - to that terminal. Lengths
+ * in the unit of the chain file. null is the identity, which is the part sitting on the table with
+ * nothing in between and is what a chain starts with.
+ *
+ * Everything this interface answers about a location is in the frame of the part: k5_solve_location
+ * and the two postprocessing calls take one there, k5_chain_tool_point answers there. The frames of
+ * k5_chain_frames are the machine's own and carry no holder, so a host that draws the part puts it
+ * in the workpiece terminal by this transformation.
+ *
+ * The holder is the mirror image of the gauge length of a tool: the one measurement that says where
+ * the work is, as the gauge length says where the tool is. It is refused when it is not rigid - a
+ * frame that scales or shears is not a way of holding anything. */
+K5_API k5_status k5_chain_set_workpiece_holder(k5_chain chain, const double *transformation);
+/* The holder that was given, or the identity: 16 doubles in the same layout. */
+K5_API k5_status k5_chain_workpiece_holder(k5_chain chain, double *out);
+
 /* ---------------------------------------------------------------- a tool */
 
 /* The tool and its holder, all lengths in the unit of the chain file:

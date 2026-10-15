@@ -87,17 +87,33 @@ public:
 	//from the frame of the tool mount to the frame of the tool point, and back
 	CTransformation GetToolMountToToolPointTransformation() const;
 	CTransformation GetToolPointToToolMountTransformation() const;
-	//true when the chain file declares a tool mount (the tool_holder of its TOOL segment): only then does the
-	//length of a tool assembly move the tool point away from the terminal
 	//whether the file suggests a holder for this machine - a default for a host to offer, nothing more
 	bool HasDefaultToolHolder() const;
-	//the tool holder of the machine, from the chain file; declaring one declares the tool mount
+	//the tool holder the machine usually carries, from the chain file
 	const CToolHolder & GetDefaultToolHolder() const;
 	void SetDefaultToolHolder(const CToolHolder &oHolder);
-	//Takes the distance from the assembly of this tool (holder, shank, cutting part, zero point), or leaves it
-	//at zero when the chain declares no tool mount. Called by Update and by CCLDataPostprocessor::Process;
-	//call it yourself after changing the tool or the holder of a chain you solve directly.
+	//Takes the distance from the assembly of this tool (holder, shank, cutting part, zero point). Called by
+	//Update and by CCLDataPostprocessor::Process; call it yourself after changing the tool or the holder of
+	//a chain you solve directly.
 	void SetToolAssembly(const CMillingTool &oTool);
+
+	//---- the workpiece holder: the vice, the chuck, the plate the part is bolted to.
+	//
+	//The terminal of the workpiece branch is where the holder is mounted, in every chain, and the chain knows
+	//nothing about what is bolted to it. The holder is a frame and not a solid: the transformation from the
+	//frame a cutter location is given in - the frame of the part being cut - to that terminal. It is the
+	//identity until one is given, which is the part sitting on the table with nothing in between, and it is
+	//the mirror image of the tool mount: the one measurement that says where the work is, as the gauge length
+	//says where the tool is.
+	//
+	//Everything the library answers about a location is in the frame of the part: the solver takes a cutter
+	//location there, and GetActualToolPositionAndOrientation answers there. The frames of the segments are
+	//the machine's own and carry no holder, so a host draws the part by this transformation.
+	void SetWorkpieceHolder(const CTransformation &trHolder);
+	const CTransformation & GetWorkpieceHolder() const;
+	const CTransformation & GetWorkpieceHolderInverted() const;
+	//true when a holder was given that is not the identity: a part that sits somewhere else than on the table
+	bool HasWorkpieceHolder() const;
 	//Collision test of every box of every segment against the boxes of every other segment, and of the whole tool
 	//assembly (the cutting part, the shank and the holder) against the boxes of all segments, at the actual parameters. The result is stored in the segments (IsPartInCollision)
 	//and in the collision log of the tool; the tool part and the material holder part are both walked from the base.
@@ -170,6 +186,10 @@ public:
 	CHAIN_PART m_nActivePart;
 
 	double m_dToolMountToToolPoint;		//see GetToolMountToToolPointDistance
+	//see SetWorkpieceHolder; the inverse is kept because every walk of the chain needs that one
+	CTransformation m_trWorkpieceHolder;
+	CTransformation m_trWorkpieceHolderInverted;
+	bool m_bWorkpieceHolder;
 
 	void ComputeAndSetError(CChainConfiguration &oConfig, const CR3AnchoredVector &cv);
 	CR3AnchoredVector m_toolPosition;

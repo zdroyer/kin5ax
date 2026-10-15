@@ -88,15 +88,46 @@ CTransformation CTransformation::T() const
 }
 
 
-//Not implemented, and loud about it since 2026-10-05: it used to return the identity, a wrong answer for
-//every transformation but one, and nothing in the library ever noticed because nothing calls it (KnownBugs
-//#52). The inverses the library needs are built where they are known: CRotation::Inverted (the transpose),
-//CTranslation::Inverted, CScale::Inverted and CChainSegment::GetInverted...Transformation. The day a caller
-//really needs the inverse of an arbitrary transformation, the rigid form (the transposed rotation block with
-//the translation carried through it) belongs here, with a check that the block is orthonormal.
+//The rigid inverse: the transposed rotation block, with the translation carried back through it.
+//
+//It used to return the identity - a wrong answer for every transformation but one - and then, from
+//2026-10-05, it threw, because nothing called it and the inverses the library needed were built where
+//they were known: CRotation::Inverted (the transpose), CTranslation::Inverted, CScale::Inverted,
+//CChainSegment::GetInverted...Transformation (KnownBugs #52). The caller that comment waited for is
+//the workpiece holder of a chain: a frame somebody measured on the machine, which arrives as a whole
+//transformation and not as the rotation and the translation it was built from.
+//
+//Anything that is not rigid is still refused, loudly. The inverse of a scaled or sheared frame is not
+//the transpose, and answering as though it were would be wrong in a way nothing downstream could see.
 CTransformation CTransformation::Inverted() const
 {
-	MY_THROW(CGeneratorException,"CTransformation::Inverted is not implemented: invert the rotation, the translation or the scale it is made of, or ask the chain segment for its inverted transformation");
+	//p' = p*R + t, so p = (p'-t)*R^T. The rows of the block are the images of the basis vectors, and
+	//for the transpose to be the inverse they have to be a unit length and at right angles.
+	for(int i=0;i<3;i++)
+		for(int j=i;j<3;j++){
+			double d = 0.0;
+			for(int k=0;k<3;k++)
+				d += M[i][k]*M[j][k];
+			if(fabs(d-((i==j) ? 1.0 : 0.0))>1E-9)
+				MY_THROW(CGeneratorException,"CTransformation::Inverted takes a rigid transformation,"
+					" and the rotation block of this one is not orthonormal: it scales or shears, and"
+					" the inverse of that is not the transpose. Invert the rotation, the translation"
+					" or the scale it is made of instead.");
+		}
+	if(fabs(M[0][3])>1E-12 || fabs(M[1][3])>1E-12 || fabs(M[2][3])>1E-12 || fabs(M[3][3]-1.0)>1E-12)
+		MY_THROW(CGeneratorException,"CTransformation::Inverted takes a rigid transformation, and this"
+			" one has a perspective part");
+	CTransformation res(1.0);
+	for(int i=0;i<3;i++)
+		for(int j=0;j<3;j++)
+			res.M[i][j] = M[j][i];
+	for(int i=0;i<3;i++){
+		double d = 0.0;
+		for(int k=0;k<3;k++)
+			d += M[3][k]*M[i][k];
+		res.M[3][i] = -d;
+	}
+	return res;
 }
 
 
