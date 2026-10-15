@@ -131,9 +131,9 @@ K5_API const char *k5_last_error(void);
  * ever sees that one. While the major number is 0 the interface may change between minor versions,
  * so a host should refuse a minor it does not know. */
 #define K5_VERSION_MAJOR 0
-#define K5_VERSION_MINOR 2
+#define K5_VERSION_MINOR 3
 #define K5_VERSION_PATCH 0
-#define K5_VERSION_STRING "0.2.0"
+#define K5_VERSION_STRING "0.3.0"
 
 K5_API const char *k5_version_string(void);
 K5_API void k5_version(int *major, int *minor, int *patch);
@@ -266,18 +266,31 @@ K5_API k5_status k5_chain_tool_point(k5_chain chain, k5_tool tool, const double 
  *   r                  the radius of the ball of a ball nose tool (ignored by a flat end mill)
  *   cutting_height     how far the cutting part reaches up from the tip
  *   shank_length       the part above it that must cut nothing and meet nothing
- *   holder_length      the holder between the tool and the tool mount of the machine
+ *   holder_length      the holder hanging from the tool mount of the machine
  *   holder_radius      its radius; without one the holder keeps its length but has no body
+ *   gauge_length       from the tip to the tool mount: the tool length a control is set with
+ *
+ * THE GAUGE LENGTH is the measurement that ties the tool to the machine. The end of the tool branch
+ * of a chain is where a holder is clamped, for every machine and every tool, so how far the tip
+ * reaches below it is a property of what is in the spindle and of nothing else. It is measured on a
+ * presetter, not added up from the dimensions above: the same tool sits at different heights
+ * depending on how far it is pulled out of its holder. Pass 0 for the tool standing right up against
+ * its holder, which is cutting_height + shank_length + holder_length and is a convenience rather
+ * than a measurement.
+ *
  * The programmed point follows the shape: the centre of the ball, or the tip of a flat end mill.
  * Dimensions that do not make a tool are refused with K5_ERROR_ARGUMENT and a message that says why. */
 K5_API k5_status k5_tool_create(int shape, double rz, double r, double cutting_height,
-	double shank_length, double holder_length, double holder_radius, k5_tool *out);
+	double shank_length, double holder_length, double holder_radius, double gauge_length,
+	k5_tool *out);
 K5_API void k5_tool_free(k5_tool tool);
 
 /* From the tip of the tool to the tool mount of the machine: the cutting part, the shank and the holder. */
 K5_API k5_status k5_tool_assembly_length(k5_tool tool, double *out);
 /* How far below the tool mount the programmed point hangs, which is what the solver solves for. */
 K5_API k5_status k5_tool_mount_to_point_distance(k5_tool tool, double *out);
+/* From the tip to the tool mount: what was given to k5_tool_create, or the derived length when 0 was. */
+K5_API k5_status k5_tool_gauge_length(k5_tool tool, double *out);
 
 /* ---------------------------------------------------------------- one cutter location */
 

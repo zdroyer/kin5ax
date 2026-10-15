@@ -788,7 +788,8 @@ k5_status k5_chain_default_gcode_axes(k5_chain chain, k5_gcode_axes *out)
 // ---------------------------------------------------------------- a tool
 
 k5_status k5_tool_create(int shape, double rz, double r, double cutting_height,
-	double shank_length, double holder_length, double holder_radius, k5_tool *out)
+	double shank_length, double holder_length, double holder_radius, double gauge_length,
+	k5_tool *out)
 {
 	K5_BEGIN
 	K5_NEED(out,"k5_tool_create needs somewhere to put the handle")
@@ -798,9 +799,9 @@ k5_status k5_tool_create(int shape, double rz, double r, double cutting_height,
 	//the programmed point follows the shape: the centre of the ball, or the tip
 	std::unique_ptr<k5_tool_t> pHandle(new k5_tool_t());
 	if(shape==K5_TOOL_BALL_NOSE)
-		pHandle->m_pTool.reset(new CMillingToolBall(rz,r,cutting_height,r,shank_length,oHolder));
+		pHandle->m_pTool.reset(new CMillingToolBall(rz,r,cutting_height,r,shank_length,oHolder,gauge_length));
 	else
-		pHandle->m_pTool.reset(new CMillingToolCylinder(rz,0.0,cutting_height,0.0,shank_length,oHolder));
+		pHandle->m_pTool.reset(new CMillingToolCylinder(rz,0.0,cutting_height,0.0,shank_length,oHolder,gauge_length));
 	*out = pHandle.release();
 	return K5_OK;
 	K5_END(K5_ERROR_ARGUMENT)
@@ -816,6 +817,15 @@ k5_status k5_tool_assembly_length(k5_tool tool, double *out)
 	K5_BEGIN
 	K5_NEED(tool && tool->m_pTool && out,"k5_tool_assembly_length needs a tool and somewhere to put the length")
 	*out = tool->m_pTool->GetAssemblyLength();
+	return K5_OK;
+	K5_END(K5_ERROR_ARGUMENT)
+}
+
+k5_status k5_tool_gauge_length(k5_tool tool, double *out)
+{
+	K5_BEGIN
+	K5_NEED(tool && tool->m_pTool && out,"k5_tool_gauge_length needs a tool and somewhere to put the length")
+	*out = tool->m_pTool->GetGaugeLength();
 	return K5_OK;
 	K5_END(K5_ERROR_ARGUMENT)
 }

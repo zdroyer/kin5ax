@@ -41,7 +41,7 @@ k5_chain OpenChain(const char *szFile = szCHAIN)
 k5_tool CreateTool()
 {
 	k5_tool tool = NULL;
-	const k5_status n = k5_tool_create(K5_TOOL_BALL_NOSE,0.016,0.016,0.064,0.030,0.050,0.030,&tool);
+	const k5_status n = k5_tool_create(K5_TOOL_BALL_NOSE,0.016,0.016,0.064,0.030,0.050,0.030,0.0,&tool);
 	EXPECT_EQ(K5_OK,n)<<k5_last_error();
 	return tool;
 }
@@ -436,7 +436,7 @@ TEST(Abi, OneStampOfTheToolWhereverItIsPut)
 	//and one pushed into the block has its shank in material that is still there - a tool whose
 	//cutting part is 20 mm, since the 64 mm one of CreateTool reaches out of a block 30 mm deep
 	k5_tool stubby = NULL;
-	ASSERT_EQ(K5_OK,k5_tool_create(K5_TOOL_BALL_NOSE,0.016,0.016,0.020,0.030,0.050,0.030,&stubby))
+	ASSERT_EQ(K5_OK,k5_tool_create(K5_TOOL_BALL_NOSE,0.016,0.016,0.020,0.030,0.050,0.030,0.0,&stubby))
 		<<k5_last_error();
 	const double deep[3] = {0.04,0.0,-0.02};
 	double gouge[3] = {0.0,0.0,0.0};
@@ -807,7 +807,7 @@ TEST(Abi, ATool)
 
 	//a flat end mill is programmed at its tip, so the whole assembly hangs below the mount
 	k5_tool oFlat = NULL;
-	ASSERT_EQ(K5_OK,k5_tool_create(K5_TOOL_FLAT_END,0.008,0.0,0.040,0.0,0.050,0.030,&oFlat));
+	ASSERT_EQ(K5_OK,k5_tool_create(K5_TOOL_FLAT_END,0.008,0.0,0.040,0.0,0.050,0.030,0.0,&oFlat));
 	ASSERT_EQ(K5_OK,k5_tool_assembly_length(oFlat,&dAssembly));
 	ASSERT_EQ(K5_OK,k5_tool_mount_to_point_distance(oFlat,&dMount));
 	EXPECT_NEAR(dAssembly,dMount,1E-12);
@@ -815,12 +815,56 @@ TEST(Abi, ATool)
 
 	//dimensions that do not make a tool come back as an argument error that says what is wrong
 	k5_tool oBad = (k5_tool)0x1;
-	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_tool_create(K5_TOOL_BALL_NOSE,-0.016,0.016,0.064,0.0,0.0,0.0,&oBad));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_tool_create(K5_TOOL_BALL_NOSE,-0.016,0.016,0.064,0.0,0.0,0.0,0.0,&oBad));
 	EXPECT_NE(std::string::npos,std::string(k5_last_error()).find("negative"))<<k5_last_error();
 	EXPECT_TRUE(oBad==NULL);
-	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_tool_create(K5_TOOL_BALL_NOSE,0.016,0.008,0.064,0.0,0.0,0.0,&oBad))
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_tool_create(K5_TOOL_BALL_NOSE,0.016,0.008,0.064,0.0,0.0,0.0,0.0,&oBad))
 		<<"a ball narrower than the shank";
-	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_tool_create(42,0.016,0.016,0.064,0.0,0.0,0.0,&oBad))<<"no such shape";
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_tool_create(42,0.016,0.016,0.064,0.0,0.0,0.0,0.0,&oBad))<<"no such shape";
+
+	//The gauge length, which is what ties a tool to a machine: the end of a tool branch is where a
+	//holder is clamped, the same place for every tool, so how far the tip reaches below it belongs
+	//to what is in the spindle. Two tools of identical dimensions, one pulled further out of its
+	//holder, put their tips 0.1 apart on the same machine.
+	k5_tool oShort = NULL, oLong = NULL;
+	ASSERT_EQ(K5_OK,k5_tool_create(K5_TOOL_BALL_NOSE,0.016,0.016,0.064,0.030,0.050,0.030,0.150,&oShort));
+	ASSERT_EQ(K5_OK,k5_tool_create(K5_TOOL_BALL_NOSE,0.016,0.016,0.064,0.030,0.050,0.030,0.250,&oLong));
+	double dGauge = 0.0, dToPoint = 0.0;
+	ASSERT_EQ(K5_OK,k5_tool_gauge_length(oShort,&dGauge));
+	EXPECT_DOUBLE_EQ(0.150,dGauge);
+	ASSERT_EQ(K5_OK,k5_tool_mount_to_point_distance(oShort,&dToPoint));
+	EXPECT_DOUBLE_EQ(0.150-0.016,dToPoint)<<"the ball centre, not the tip";
+	ASSERT_EQ(K5_OK,k5_tool_gauge_length(oLong,&dGauge));
+	EXPECT_DOUBLE_EQ(0.250,dGauge);
+
+	//0 is the tool standing right up against its holder, which is what every caller meant before
+	//this length existed
+	k5_tool oDerived = NULL;
+	ASSERT_EQ(K5_OK,k5_tool_create(K5_TOOL_BALL_NOSE,0.016,0.016,0.064,0.030,0.050,0.030,0.0,&oDerived));
+	ASSERT_EQ(K5_OK,k5_tool_gauge_length(oDerived,&dGauge));
+	EXPECT_DOUBLE_EQ(0.064+0.030+0.050,dGauge);
+	dAssembly = 0.0;
+	ASSERT_EQ(K5_OK,k5_tool_assembly_length(oDerived,&dAssembly));
+	EXPECT_DOUBLE_EQ(dGauge,dAssembly)<<"the older name of the same measurement";
+
+	//and on a machine the two tools reach exactly their difference apart
+	k5_chain chain = OpenChain();
+	const std::vector<double> q = QInsideLimits(chain);
+	double pShort[3] = {0,0,0}, pLong[3] = {0,0,0}, v[3] = {0,0,0};
+	ASSERT_EQ(K5_OK,k5_chain_tool_point(chain,oShort,&q[0],pShort,v));
+	ASSERT_EQ(K5_OK,k5_chain_tool_point(chain,oLong,&q[0],pLong,v));
+	double dApart = 0.0;
+	for(int i=0;i<3;i++)
+		dApart += (pShort[i]-pLong[i])*(pShort[i]-pLong[i]);
+	EXPECT_NEAR(0.100,sqrt(dApart),1E-12)<<"the longer tool reaches its extra length further";
+
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_tool_gauge_length(NULL,&dGauge));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_tool_gauge_length(oShort,NULL));
+	k5_chain_free(chain);
+	k5_tool_free(oShort);
+	k5_tool_free(oLong);
+	k5_tool_free(oDerived);
+
 	k5_tool_free(NULL);
 }
 
