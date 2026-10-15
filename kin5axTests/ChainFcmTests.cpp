@@ -347,3 +347,47 @@ TEST_P(ChainFcmFile, ExportSaysWhatItCannotCarry)
 }
 
 INSTANTIATE_TEST_CASE_P(Files, ChainFcmFile, ::testing::ValuesIn(GetChainFiles()), ChainFcmFileName());
+
+//---- the unit: an .fcm file is millimetres, or inches when it says imperial
+
+TEST(ChainFcmReader, AMetricFileGivesAChainInMillimetres)
+{
+	//the numbers are copied, not converted, so the chain is in whatever the file was in
+	CChain oChain = Imported(Template());
+	EXPECT_EQ(CHAIN_UNIT_MM,oChain.GetUnit());
+	EXPECT_NEAR(-350.0,oChain.m_vToolPart[0].m_dParameterValueMinimum,1E-12)<<"the millimetres of the file, as they were";
+}
+
+TEST(ChainFcmReader, AnImperialFileGivesAChainInInches)
+{
+	CChain oChain = Imported(Replaced(Template(),"\"units\": \"metric\"","\"units\": \"imperial\""));
+	EXPECT_EQ(CHAIN_UNIT_IN,oChain.GetUnit());
+}
+
+TEST(ChainFcmReader, AUnitThatIsNeitherIsReported)
+{
+	std::string sError = FcmError(Replaced(Template(),"\"units\": \"metric\"","\"units\": \"furlongs\""));
+	EXPECT_NE(std::string::npos,sError.find("furlongs"))<<sError;
+	EXPECT_NE(std::string::npos,sError.find("metric"))<<sError;
+}
+
+TEST(ChainFcmWriter, AChainInMetresIsWrittenInMillimetres)
+{
+	//FreeCAD reads millimetres whatever the chain was drawn in, so a model shipped with kin5ax -
+	//metres, every one of them - has to come out a thousand times bigger, and a linear limit with it
+	CChain oChain = Imported(Template());
+	oChain.SetUnit(CHAIN_UNIT_M);		//the same numbers, now declared to be metres
+	CFcmOptions oOptions;
+	CFcmReport oReport;
+	CChain oBack = Imported(CChainFcmWriter::ToFcm(oChain,oOptions,oReport));
+	EXPECT_EQ(CHAIN_UNIT_MM,oBack.GetUnit())<<"what came back is an .fcm file, which is millimetres";
+	for(size_t i=0;i<oChain.m_vMaterialHolderPart.size();i++){
+		CR3Point a = FrameAt(oChain.m_vMaterialHolderPart,i+1)*CR3Point(0.0);
+		CR3Point b = FrameAt(oBack.m_vMaterialHolderPart,i+1)*CR3Point(0.0);
+		ExpectVectorNear(a.toR3Vector()*1000.0,b.toR3Vector(),"workpiece origin "+size_to_string(i)+" a thousand times over");
+	}
+	EXPECT_NEAR(-350000.0,oBack.m_vToolPart[0].m_dParameterValueMinimum,1E-6)<<"a linear limit is a length too";
+	//and a chain already in millimetres is written as it is
+	CChain oSame = Imported(CChainFcmWriter::ToFcm(Imported(Template()),oOptions,oReport));
+	EXPECT_NEAR(-350.0,oSame.m_vToolPart[0].m_dParameterValueMinimum,1E-9);
+}

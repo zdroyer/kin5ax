@@ -43,6 +43,12 @@ int k5c_header_check_c(void)
 	oLink.name[0] = 0;
 	if(oLink.type!=K5_LINK_REVOLUTE || oLink.name[0]!=0)
 		return 7;
+	/* the unit enumeration, and the one call about it that needs no chain */
+	{
+		double dMillimetres = 0.0;
+		if(k5_unit_in_millimetres(K5_UNIT_IN,&dMillimetres)!=K5_OK || dMillimetres!=25.4)
+			return 12;
+	}
 	oLocation.status = K5_SOLVED;
 	oLocation.origin = K5_FROM_FILE;
 	oLocation.q[K5_AXES-1] = 0.5;

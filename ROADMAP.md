@@ -134,10 +134,14 @@ feasibility check inside interpolated singular sections (#21); tolerances by kin
 
 ## Decisions these are waiting on
 
-**The unit.** `kin5ax.h` says lengths are in the unit of the chain file, which is metres for every
-model shipped, and the files do not say so themselves. FreeCAD is millimetres. Either the file format
-grows a unit field and the ABI fixes itself to millimetres, or the binding scales at the boundary and
-the host is told to. The binding cannot be written without choosing. (Question 3 of the ABI plan.)
+**The unit: decided, 2026-10-15.** A chain file says what its lengths are in - `unit`, one of `mm`,
+`m` and `in`, required in both forms, and a file without it is refused. The library converts
+nothing: a chain's numbers stay in its own unit, `k5_chain_unit` and `k5_unit_in_millimetres` say
+what they are, and a host scales at its boundary knowing by what. The FreeCAD addon reads the unit
+from the file for the machine in the document and for the post. The other half of question 3 -
+fixing the interface itself to millimetres and converting inside - was not taken: it would have
+changed every length that crosses the interface for a convenience the host can have in one line.
+(Question 3 of the ABI plan.)
 
 **What the control calls the axes.** `k5_chain_default_gcode_axes` guesses `A` and `C` because
 nothing in the chain file says. Either the file carries a letter per link, or the post takes them as

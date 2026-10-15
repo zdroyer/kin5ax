@@ -187,6 +187,21 @@ TEST(Abi, TheJointsOfAMachine)
 	ASSERT_EQ(K5_OK,k5_chain_name(chain,szName,sizeof(szName)));
 	EXPECT_STRNE("",szName)<<"the shipped models carry a name";
 
+	//the unit every length of it is in, and what a host multiplies by: the shipped models are metres
+	int nUnit = -1;
+	ASSERT_EQ(K5_OK,k5_chain_unit(chain,&nUnit));
+	EXPECT_EQ(K5_UNIT_M,nUnit);
+	double dMillimetres = 0.0;
+	ASSERT_EQ(K5_OK,k5_unit_in_millimetres(nUnit,&dMillimetres));
+	EXPECT_DOUBLE_EQ(1000.0,dMillimetres);
+	ASSERT_EQ(K5_OK,k5_unit_in_millimetres(K5_UNIT_MM,&dMillimetres));
+	EXPECT_DOUBLE_EQ(1.0,dMillimetres);
+	ASSERT_EQ(K5_OK,k5_unit_in_millimetres(K5_UNIT_IN,&dMillimetres));
+	EXPECT_DOUBLE_EQ(25.4,dMillimetres);
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_unit_in_millimetres(42,&dMillimetres))<<"not a unit";
+	//that a file saying m comes back as K5_UNIT_M is the check that the two enumerations agree: these
+	//tests see the shared library alone, never the C++ headers, and that is the point of them
+
 	size_t nPrismatic = 0, nRevolute = 0;
 	for(size_t i=0;i<nLinks;i++){
 		k5_link oLink;
@@ -1047,6 +1062,8 @@ TEST(Abi, ANullArgumentIsAnErrorEverywhere)
 	double dLength = 0.0;
 	k5_settings_default(NULL);		//allowed, and does nothing
 	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_is_5c(NULL,&bFlag));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_unit(NULL,&bFlag));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_unit_in_millimetres(K5_UNIT_M,NULL));
 	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_is_5c(NULL,NULL));
 	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_link(NULL,0,&oLink));
 	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_frames(NULL,K5_PART_TOOL,NULL,0,&n));

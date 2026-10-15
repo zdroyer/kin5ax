@@ -265,6 +265,16 @@ CChain CChainFcmReader::Parse(const std::string &sFcm, const std::string &sWhere
 	if(!machine.is_object() || !machine.contains("axes"))
 		ctx.Fail("machine.axes","the file has no machine axes");
 	const tJson &axes = machine["axes"];
+	//FreeCAD keeps its machines in millimetres and says "metric", or "imperial" for inches; a chain
+	//read from one carries that unit, since the numbers are copied and not converted
+	CHAIN_UNIT nUnit = CHAIN_UNIT_MM;
+	if(machine.contains("units")){
+		const std::string sUnits = machine["units"].is_string() ? machine["units"].get<std::string>() : "";
+		if(sUnits=="imperial")
+			nUnit = CHAIN_UNIT_IN;
+		else if(sUnits!="metric")
+			ctx.Fail("machine.units","'"+sUnits+"' is neither metric nor imperial");
+	}
 	if(!axes.is_object())
 		ctx.Fail("machine.axes","an object of axes is expected");
 	//a base frame of its own would move every origin and direction of the file
@@ -389,6 +399,7 @@ CChain CChainFcmReader::Parse(const std::string &sFcm, const std::string &sWhere
 	} catch (CGeneratorException &e){
 		ctx.Fail("",e.Message());
 	}
+	oChain.SetUnit(nUnit);
 	oChain.SetParameters(CChainConfiguration((int)oChain.GetNumberOfRegularLinks()));
 
 	if(!oChain.Is5CChain())
@@ -462,6 +473,8 @@ std::string CChainFcmWriter::ToFcm(const CChain &oChain, const CFcmOptions &oOpt
 	tJson axes = tJson::object();
 	std::vector<std::string> vUsedNames;
 	bool bBoxesDropped = false;
+	//every length of the file in millimetres, which is what FreeCAD reads, whatever the chain is in
+	const double dToMillimetres = oChain.GetUnitInMillimetres();
 
 	for(int nBranch=0;nBranch<2;nBranch++){
 		bool bTable = (nBranch==1);
@@ -477,7 +490,7 @@ std::string CChainFcmWriter::ToFcm(const CChain &oChain, const CFcmOptions &oOpt
 				break;						//the terminal is handled below
 
 			CTransformation trInBase = trToBase*trFrame;
-			CR3Point r3pOrigin = trInBase*CR3Point(0.0);
+			CR3Point r3pOrigin = (trInBase*CR3Point(0.0))*dToMillimetres;
 			CR3Vector r3vDirection = trInBase*CR3Vector(0.0,0.0,1.0);
 			bool bRotary = (oSegment.GetType()==CHAIN_SEGMENT_REVOLUTE_LINK);
 			if(bTable && (bRotary ? oOptions.m_bNegateTableRotaryAxes : oOptions.m_bNegateTableLinearAxes))
@@ -507,9 +520,9 @@ std::string CChainFcmWriter::ToFcm(const CChain &oChain, const CFcmOptions &oOpt
 			if(oSegment.IsParameterConstrained()){
 				tJson limits;
 				limits["min"] = Clean(bRotary ? radians_to_degrees(oSegment.m_dParameterValueMinimum)
-											  : oSegment.m_dParameterValueMinimum);
+											  : oSegment.m_dParameterValueMinimum*dToMillimetres);
 				limits["max"] = Clean(bRotary ? radians_to_degrees(oSegment.m_dParameterValueMaximum)
-											  : oSegment.m_dParameterValueMaximum);
+											  : oSegment.m_dParameterValueMaximum*dToMillimetres);
 				a["limits"] = limits;
 			} else {
 				tJson limits;

@@ -310,7 +310,11 @@ CChain CChainJsonReader::Parse(const std::string &sJson, const std::string &sWhe
 			s += sWhere+", ";
 		MY_THROW(CGeneratorException,"JSON error in "+s+"line "+size_to_string(LineOf(sJson,e.byte))+": "+e.what());
 	}
-	ctx.CheckObject(root,"",{"format","version","tool_branch","workpiece_branch"}
+	//a foreign document is told that it is one before anything about what it lacks
+	if(root.is_object() && root.contains("format") && root["format"].is_string()
+		&& root["format"].get<std::string>()!=szFORMAT)
+		ctx.Fail("format","'"+root["format"].get<std::string>()+"' is not a kinematic chain, expected '"+szFORMAT+"'");
+	ctx.CheckObject(root,"",{"format","version","unit","tool_branch","workpiece_branch"}
 		,{"$schema","name","machine","author","modified"});
 
 	std::string sFormat = ctx.String(ctx.Member(root,"format",""),"format");
@@ -326,6 +330,12 @@ CChain CChainJsonReader::Parse(const std::string &sJson, const std::string &sWhe
 	oChain.SetMachine(ctx.OptionalString(root,"machine",""));
 	oChain.SetAuthor(ctx.OptionalString(root,"author",""));
 	oChain.SetModified(ctx.OptionalString(root,"modified",""));
+	//required, and one of three spellings exactly; see the XML reader for why no guessing
+	const std::string sUnit = ctx.String(ctx.Member(root,"unit",""),"unit");
+	CHAIN_UNIT nUnit;
+	if(!ParseChainUnit(sUnit,nUnit))
+		ctx.Fail("unit","'"+sUnit+"' is none of mm, m and in");
+	oChain.SetUnit(nUnit);
 	oChain.m_vToolPart = ReadBranch(ctx,root,"tool_branch","tool",CHAIN_SEGMENT_TOOL);
 	oChain.m_vMaterialHolderPart = ReadBranch(ctx,root,"workpiece_branch","workpiece_holder",CHAIN_SEGMENT_MATERIAL_HOLDER);
 	try{
@@ -358,6 +368,7 @@ std::string CChainJsonWriter::ToJson(const CChain &oChain)
 	tJson root;
 	root["format"] = szFORMAT;
 	root["version"] = nVERSION;
+	root["unit"] = ChainUnitName(oChain.GetUnit());
 	if(!oChain.GetName().empty())
 		root["name"] = oChain.GetName();
 	if(!oChain.GetMachine().empty())

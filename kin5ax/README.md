@@ -44,8 +44,12 @@ total across the two parts. `CChain::CheckStructure` rejects chains with a wrong
 empty part, or limits in the wrong order; the solver rejects chains whose two revolute axes, or
 second revolute axis and tool axis, are collinear (an ill-designed or redundant machine).
 
-Angles are degrees in the files and radians inside the library; lengths are whatever unit the
-file uses, consistently.
+Angles are degrees in the files and radians inside the library. Lengths are in the unit the file
+declares: `unit` is a required field of both forms of a chain file, `mm`, `m` or `in`, and a file
+without it is refused rather than guessed at. The library converts nothing - a chain's numbers
+stay in its own unit - and `CChain::GetUnitInMillimetres` is what a caller multiplies by. The
+models shipped are metres. An `.fcm` file is millimetres by FreeCAD's definition, so a chain read
+from one says `mm`, and a chain written to one is scaled into millimetres on the way out.
 
 ## The inverse problem
 
@@ -191,8 +195,8 @@ the tool axis points along +Z at home.
   and degeneracy checks alike, so it is a stopgap: the right value follows the unit of the file, and
   the plan is a `CTolerances` of length, angle and relative in the settings (#56). The precision
   field of the settings dialog shows it and cannot change it (#23).
-- Lengths are the unit of the machine file; the CL file must use the same. Angles are degrees in
-  files and dialogs, radians inside.
+- Lengths are the unit the machine file declares; the CL file must use the same. Angles are
+  degrees in files and dialogs, radians inside.
 - `C5CPostprocessor` is safe to use from one thread per instance (the former shared statics are
   locals since #46).
 - Nothing in the library depends on the numeric locale of the process: files are read with

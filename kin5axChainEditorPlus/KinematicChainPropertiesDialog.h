@@ -30,6 +30,8 @@ public:
 	CTreeCtrl m_treeSegments;
 	// types of segment
 	CComboBox m_comboSegmentType;
+	// the unit every length of the chain is in: mm, m or in
+	CComboBox m_comboUnit;
 
 	// coordinates of initial translation of segment	
 	double m_dTrX;
@@ -82,6 +84,7 @@ public:
 	void UpdateActualSegment(CWnd *pControlWnd=0,bool bRestoreFocus=true);
 	void SetSegmentTypeComboValue(CHAIN_SEGMENT_TYPE type);
 	afx_msg void OnCbnSelchangeComboSegmentType();
+	afx_msg void OnCbnSelchangeComboUnit();
 	afx_msg void OnEnChangeEditTrX();
 	afx_msg void OnEnChangeEditTrY();
 	afx_msg void OnEnChangeEditTrZ();
