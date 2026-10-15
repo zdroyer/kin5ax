@@ -1,0 +1,112 @@
+{
+  "format": "kin5ax-chain",
+  "version": 1,
+  "unit": "m",
+  "name": "Reiden RX10, A swivel head, XY cross table with C rotary table",
+  "machine": "Reiden RX10",
+  "author": "Claude, from public catalogue data; the offsets are estimates",
+  "modified": "2026-09-23",
+  "tool_branch": {
+    "links": [
+      {
+        "type": "linear",
+        "name": "Y",
+        "translation": [0.0, 0.0, 0.15],
+        "rotation": {
+          "axis": [1.0, 0.0, 0.0],
+          "angle_deg": 90.0
+        }
+      },
+      {
+        "type": "linear",
+        "name": "Z",
+        "translation": [0.0, 0.1, 0.0],
+        "rotation": {
+          "axis": [1.0, 0.0, 0.0],
+          "angle_deg": -90.0
+        },
+        "limits": {
+          "min": 0.0,
+          "max": 0.41
+        }
+      },
+      {
+        "type": "rotary",
+        "name": "A",
+        "translation": [0.0, 0.0, 0.3],
+        "rotation": {
+          "axis": [0.0, 1.0, 0.0],
+          "angle_deg": 45.0
+        },
+        "limits": {
+          "min": -190.0,
+          "max": 190.0
+        },
+        "boxes": [
+          {
+            "min": [-0.1, 0.0, 0.0],
+            "max": [0.2, 0.1, 0.1]
+          }
+        ]
+      }
+    ],
+    "tool": {
+      "name": "Tool holder",
+      "translation": [0.0, 0.0, -0.5],
+      "rotation": {
+        "axis": [0.0, 1.0, 0.0],
+        "angle_deg": -45.0
+      },
+      "boxes": [
+        {
+          "min": [-0.02, -0.02, 0.08],
+          "max": [0.02, 0.02, 0.2]
+        },
+        {
+          "min": [0.0, -0.05, 0.1],
+          "max": [0.2, 0.05, 0.2]
+        }
+      ]
+    }
+  },
+  "workpiece_branch": {
+    "links": [
+      {
+        "type": "linear",
+        "name": "X",
+        "translation": [0.0, 0.0, 0.0],
+        "rotation": {
+          "axis": [0.0, 1.0, 0.0],
+          "angle_deg": 90.0
+        },
+        "limits": {
+          "min": -0.6,
+          "max": 0.6
+        }
+      },
+      {
+        "type": "rotary",
+        "name": "C",
+        "translation": [-0.2, 0.0, -0.5],
+        "rotation": {
+          "axis": [0.0, -1.0, 0.0],
+          "angle_deg": 90.0
+        }
+      }
+    ],
+    "workpiece_holder": {
+      "name": "Material holder",
+      "translation": [0.0, 0.0, 0.0],
+      "rotation": {
+        "axis": [0.0, 0.0, -1.0],
+        "angle_deg": 0.0
+      },
+      "boxes": [
+        {
+          "min": [-0.07, -0.07, 0.0],
+          "max": [0.07, 0.07, 0.01]
+        }
+      ]
+    }
+  }
+}

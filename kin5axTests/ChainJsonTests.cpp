@@ -315,7 +315,7 @@ TEST(ChainJsonToolHolder, IsReadAndWritten)
 {
 	CChain oChain;
 	ASSERT_EQ(std::string(),JsonError(WithToolHolder(),&oChain));
-	EXPECT_TRUE(oChain.IsToolMountDeclared());
+	EXPECT_TRUE(oChain.HasDefaultToolHolder());
 	EXPECT_DOUBLE_EQ(0.05,oChain.GetDefaultToolHolder().GetLength());
 	EXPECT_DOUBLE_EQ(0.03,oChain.GetDefaultToolHolder().GetRadius());
 
@@ -327,7 +327,7 @@ TEST(ChainJsonToolHolder, IsReadAndWritten)
 
 	CChain oPlain;
 	ASSERT_EQ(std::string(),JsonError(Template(),&oPlain));
-	EXPECT_FALSE(oPlain.IsToolMountDeclared());
+	EXPECT_FALSE(oPlain.HasDefaultToolHolder());
 	EXPECT_EQ(std::string::npos,CChainJsonWriter::ToJson(oPlain).find("tool_holder"))<<"not written when absent";
 }
 

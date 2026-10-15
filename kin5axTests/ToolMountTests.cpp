@@ -1,5 +1,6 @@
-// The tool mount: with a holder declared, the tool point hangs below the TOOL terminal by the length of the
-// assembly, and the solver solves for that point. Without a holder the chain behaves as it always did.
+// The tool mount: the TOOL terminal of every chain is the place a tool holder is clamped, and the tool
+// point hangs below it by the gauge length of whatever tool was given, less the height of the programmed
+// point above the tip. The solver solves for that point.
 #include "stdafx.h"
 #include "gtest/gtest.h"
 #include "TestData.h"
@@ -27,24 +28,32 @@ const double dASSEMBLY_DISTANCE = dCUTTING+dSHANK+dHOLDER_LENGTH-dRADIUS;
 
 } // namespace
 
-TEST(ToolMount, AnUndeclaredMountIgnoresTheAssembly)
+//Every chain hangs the tool below its terminal, whether or not the file suggests a holder. Until
+//2026-10-15 a file without one was read as having its tool point at the terminal, so the same
+//element meant two different places and the hosts disagreed about which.
+TEST(ToolMount, EveryChainHangsTheToolBelowItsTerminal)
 {
 	ASSERT_GE(GetChainFiles().size(),(size_t)1);
 	CChain oChain = LoadChain(GetChainFiles()[0]);
-	EXPECT_TRUE(oChain.IsToolMountDeclared())<<"every shipped model declares a tool holder";
 	CMillingToolBall oTool = Assembly();
 	oChain.SetToolAssembly(oTool);
 	EXPECT_DOUBLE_EQ(dASSEMBLY_DISTANCE,oChain.GetToolMountToToolPointDistance());
 
-	//a chain built in code declares no mount, so the length of a tool does not move its tool point
+	//a chain built in code suggests no holder of its own, and that changes nothing: the holder a
+	//file names is a default for a host to offer, not a switch on what the terminal means
 	CChain oPlain;
-	EXPECT_FALSE(oPlain.IsToolMountDeclared());
+	EXPECT_FALSE(oPlain.HasDefaultToolHolder());
 	oPlain.SetToolAssembly(oTool);
-	EXPECT_DOUBLE_EQ(0.0,oPlain.GetToolMountToToolPointDistance());
+	EXPECT_DOUBLE_EQ(dASSEMBLY_DISTANCE,oPlain.GetToolMountToToolPointDistance())
+		<<"the tool hangs below the terminal of a chain that names no holder too";
 	oPlain.SetDefaultToolHolder(CToolHolder(dHOLDER_LENGTH,dHOLDER_RADIUS));
-	EXPECT_TRUE(oPlain.IsToolMountDeclared());
 	oPlain.SetToolAssembly(oTool);
-	EXPECT_DOUBLE_EQ(dASSEMBLY_DISTANCE,oPlain.GetToolMountToToolPointDistance());
+	EXPECT_DOUBLE_EQ(dASSEMBLY_DISTANCE,oPlain.GetToolMountToToolPointDistance())
+		<<"and naming one changes nothing about where it hangs";
+
+	//the bare machine, with nothing in the spindle
+	CChain oBare;
+	EXPECT_DOUBLE_EQ(0.0,oBare.GetToolMountToToolPointDistance());
 }
 
 TEST(ToolMount, TheToolPointMovesDownTheToolAxis)
@@ -128,3 +137,69 @@ TEST_P(ToolMountChain, TheRoundTripIsExactWithAnAssembly)
 }
 
 INSTANTIATE_TEST_CASE_P(AllChains, ToolMountChain, ::testing::ValuesIn(GetChainFiles()), ToolMountChainName());
+
+//---- the gauge length: the tool length a control is set with, given and not worked out
+
+TEST(GaugeLength, IsGivenAndMovesTheToolPointWithIt)
+{
+	//Two tools of the same solids on the same machine, one gripped deep in its holder and one
+	//standing far out of it. Nothing about the cutting part differs; where the tip sits does, and
+	//that is the whole reason the length is measured rather than added up.
+	const double dShort = 0.120, dLong = 0.260;
+	CMillingToolBall oShort(dRADIUS,dRADIUS,dCUTTING,dRADIUS,dSHANK
+		,CToolHolder(dHOLDER_LENGTH,dHOLDER_RADIUS),dShort);
+	CMillingToolBall oLong(dRADIUS,dRADIUS,dCUTTING,dRADIUS,dSHANK
+		,CToolHolder(dHOLDER_LENGTH,dHOLDER_RADIUS),dLong);
+	EXPECT_DOUBLE_EQ(dShort,oShort.GetGaugeLength());
+	EXPECT_DOUBLE_EQ(dLong,oLong.GetGaugeLength());
+	EXPECT_DOUBLE_EQ(dShort-dRADIUS,oShort.GetMountToToolPointDistance());
+	EXPECT_DOUBLE_EQ(dLong-dRADIUS,oLong.GetMountToToolPointDistance());
+
+	ASSERT_GE(GetChainFiles().size(),(size_t)1);
+	CChain oChain = LoadChain(GetChainFiles()[0]);
+	oChain.SetToolAssembly(oShort);
+	const CR3AnchoredVector cvShort = oChain.GetActualToolPositionAndOrientation();
+	oChain.SetToolAssembly(oLong);
+	const CR3AnchoredVector cvLong = oChain.GetActualToolPositionAndOrientation();
+	EXPECT_NEAR(dLong-dShort,d_E(cvShort.m_p,cvLong.m_p),1E-12)
+		<<"the longer tool reaches exactly its extra length further";
+}
+
+TEST(GaugeLength, NotGivenIsTheToolStandingAgainstItsHolder)
+{
+	//what a caller that has measured nothing means, and what every call of these constructors meant
+	//before the length existed: the holder on top of the shank
+	CMillingToolBall oTool(dRADIUS,dRADIUS,dCUTTING,dRADIUS,dSHANK
+		,CToolHolder(dHOLDER_LENGTH,dHOLDER_RADIUS));
+	EXPECT_DOUBLE_EQ(dCUTTING+dSHANK+dHOLDER_LENGTH,oTool.GetGaugeLength());
+	EXPECT_DOUBLE_EQ(oTool.GetGaugeLength(),oTool.GetAssemblyLength())<<"the older name of the same thing";
+	EXPECT_DOUBLE_EQ(dASSEMBLY_DISTANCE,oTool.GetMountToToolPointDistance());
+
+	//and it can be measured afterwards
+	oTool.SetGaugeLength(0.200);
+	EXPECT_DOUBLE_EQ(0.200,oTool.GetGaugeLength());
+	oTool.SetGaugeLength(0.0);
+	EXPECT_DOUBLE_EQ(dCUTTING+dSHANK+dHOLDER_LENGTH,oTool.GetGaugeLength())<<"back to the derived one";
+}
+
+TEST(GaugeLength, TheHolderHangsFromTheMountAndNotFromTheShank)
+{
+	//A tool standing 0.06 out of its holder: the holder occupies the 0.05 below the mount, which is
+	//0.21 above the tip, and the gap between the top of the shank and the bottom of the holder is
+	//the protrusion. The old model had the holder sitting on the shank, so it moved with the tool.
+	const double dGauge = 0.260;
+	CMillingToolBall oTool(dRADIUS,dRADIUS,dCUTTING,dRADIUS,dSHANK
+		,CToolHolder(dHOLDER_LENGTH,dHOLDER_RADIUS),dGauge);
+	const double dHolderBottom = dGauge-dHOLDER_LENGTH;
+	EXPECT_GT(dHolderBottom,oTool.GetToolLength())<<"this tool protrudes from its holder";
+
+	//a point just inside the holder, and the same point lowered into the gap, which is air
+	EXPECT_TRUE(oTool.IsInOZNonCuttingSpace(CR3Point(0.0,0.0,dHolderBottom+0.001)));
+	EXPECT_TRUE(oTool.IsInOZNonCuttingSpace(CR3Point(0.0,0.0,dGauge-0.001)));
+	EXPECT_FALSE(oTool.IsInOZNonCuttingSpace(CR3Point(0.0,0.0,dHolderBottom-0.001)))
+		<<"between the shank and the holder there is nothing";
+	//the shank is still where it was, measured from the tip
+	EXPECT_TRUE(oTool.IsInOZNonCuttingSpace(CR3Point(0.0,0.0,dCUTTING+0.001)));
+	//and a radius only the holder has reaches no further down than the holder does
+	EXPECT_FALSE(oTool.IsInOZNonCuttingSpace(CR3Point(dHOLDER_RADIUS-0.001,0.0,dCUTTING+0.001)));
+}

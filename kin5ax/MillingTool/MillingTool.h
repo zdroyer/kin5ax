@@ -43,11 +43,19 @@ inline int is_point_in_ANCP(CUT_TYPE type)
 //and orientation. Measured along the axis from the tip, in the tip frame of IsInOZCuttingSpace:
 //  the cutting part    0 .. m_dCuttingHeight                     cuts material, must not meet a machine part
 //  the shank           m_dCuttingHeight .. GetToolLength()       must meet neither material nor a machine part
-//  the holder          GetToolLength() .. GetAssemblyLength()    the same, radius of CToolHolder
+//  the holder          GetGaugeLength()-holder .. GetGaugeLength()   the same, radius of CToolHolder
+//
+//THE GAUGE LENGTH is what a control calls the tool length: from the tip to the tool mount of the machine,
+//which is the origin of the TOOL terminal of the kinematic chain. It is given, not derived, because it is
+//measured on a presetter and because the kinematic chain knows nothing about what is clamped in the
+//spindle: the same machine takes a short drill and a long slender cutter, and the terminal of its chain
+//has to mean the same place for both. The holder hangs from the mount by its own length; the cutting part
+//and the shank rise from the tip. Between them there may be a gap, which is a tool protruding from its
+//holder, or an overlap, which is a tool gripped some way up its shank - both are what real tools do.
+//
 //The tool is placed by its reference point (the programmed point of the CL data), which lies on the axis
 //m_dReferencePointZ above the tip; DefaultZeroPointZ is where that point lies for the shape of the tool.
-//The whole assembly hangs GetMountToToolPointDistance() below the tool mount of the machine, which is the
-//origin of the TOOL terminal of the kinematic chain.
+//The whole assembly hangs GetMountToToolPointDistance() below the tool mount.
 class CMillingTool
 {
 public:
@@ -61,7 +69,8 @@ public:
 
 	double m_dCuttingHeight;	//length of the cutting part from the tip, along the axis
 	double m_dNonCuttingLength;	//the shank between the cutting part and the holder
-	CToolHolder m_oHolder;		//between the tool and the tool mount of the machine
+	CToolHolder m_oHolder;		//hangs from the tool mount of the machine, down towards the tool
+	double m_dGaugeLength;		//see GetGaugeLength; 0 means "derive it", for a caller that has not measured
 	
 /*
 	double m_dSideNotCuttingBegin;
@@ -123,7 +132,13 @@ public:
 
 	//the tool without its holder: the cutting part and the shank
 	double GetToolLength() const;
-	//from the tip to the tool mount: the tool and its holder
+	//From the tip to the tool mount of the machine: the tool length a control is set with, measured on a
+	//presetter rather than worked out from the solids. When the constructor was given 0 it is the tool
+	//standing right up against its holder, GetToolLength() + the length of the holder, which is what a
+	//caller that has not measured anything means.
+	double GetGaugeLength() const;
+	void SetGaugeLength(double dLength);
+	//the same thing under its older name, kept because it reads better where an assembly is meant
 	double GetAssemblyLength() const;
 	//From the tool mount down to the reference point, along the axis: the assembly length less the height of the
 	//reference point above the tip. This is what CChain puts between the TOOL terminal and the tool point.
@@ -153,13 +168,15 @@ public:
 
 
 
+	//dGaugeLength: from the tip to the tool mount. 0 puts the tool right up against its holder.
 	CMillingTool
 		(double dRz
 		,double dR
 		,double dCuttingHeight
 		,double dReferencePointZ
 		,double dNonCuttingLength = 0.0
-		,const CToolHolder &oHolder = CToolHolder());
+		,const CToolHolder &oHolder = CToolHolder()
+		,double dGaugeLength = 0.0);
 
 //	virtual void GetBoundingBox(CR3Point &r3pP1, CR3Point &r3pP2) const = 0;
 	//the tools are owned and deleted through CMillingTool pointers (the document, the tool dialog)

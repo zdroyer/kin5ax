@@ -11,14 +11,16 @@ CMillingToolCylinder::CMillingToolCylinder
 	,double dCuttingHeight
 	,double dReferencePointZ
 	,double dNonCuttingLength
-	,const CToolHolder &oHolder)
+	,const CToolHolder &oHolder
+	,double dGaugeLength)
 :CMillingTool
 		( dRz
 		, 0.0
 		, dCuttingHeight
 		, dReferencePointZ
 		, dNonCuttingLength
-		, oHolder)
+		, oHolder
+		, dGaugeLength)
 
 {
 	m_type = MILLING_TOOL_CYLINDER;

@@ -13,13 +13,15 @@ CMillingTool::CMillingTool
 	,double dCuttingHeight
 	,double dReferencePointZ
 	,double dNonCuttingLength
-	,const CToolHolder &oHolder)
+	,const CToolHolder &oHolder
+	,double dGaugeLength)
 :m_dRz(dRz)
 ,m_dR(dR)
 ,m_dReferencePointZ(dReferencePointZ)
 ,m_dCuttingHeight(dCuttingHeight)
 ,m_dNonCuttingLength(dNonCuttingLength)
 ,m_oHolder(oHolder)
+,m_dGaugeLength(dGaugeLength>0.0 ? dGaugeLength : 0.0)
 ,m_r3pPosition(0.0)
 ,m_r3vOrientation(r3vOZ)
 ,m_m4x4ToOZ(CTransformation(1.0))
@@ -125,9 +127,20 @@ double CMillingTool::GetToolLength() const
 	return m_dCuttingHeight + m_dNonCuttingLength;
 }
 
+double CMillingTool::GetGaugeLength() const
+{
+	//0 was given: the caller has not measured a tool, so it stands right up against its holder
+	return m_dGaugeLength>0.0 ? m_dGaugeLength : GetToolLength()+m_oHolder.GetLength();
+}
+
+void CMillingTool::SetGaugeLength(double dLength)
+{
+	m_dGaugeLength = dLength>0.0 ? dLength : 0.0;
+}
+
 double CMillingTool::GetAssemblyLength() const
 {
-	return GetToolLength() + m_oHolder.GetLength();
+	return GetGaugeLength();
 }
 
 double CMillingTool::GetMountToToolPointDistance() const
@@ -148,8 +161,10 @@ bool CMillingTool::IsInOZNonCuttingSpace(const CR3Point &p) const
 		&& p.GetZ()>=m_dCuttingHeight-dEPSILON && p.GetZ()<=dToolLength+dEPSILON
 		&& dSq<=m_dRzSquare+dEPSILON)
 		return true;
+	//the holder hangs from the mount, which is the gauge length above the tip
+	const double dMount = GetGaugeLength();
 	if(m_oHolder.HasBody()
-		&& p.GetZ()>=dToolLength-dEPSILON && p.GetZ()<=GetAssemblyLength()+dEPSILON
+		&& p.GetZ()>=dMount-m_oHolder.GetLength()-dEPSILON && p.GetZ()<=dMount+dEPSILON
 		&& dSq<=m_oHolder.GetRadius()*m_oHolder.GetRadius()+dEPSILON)
 		return true;
 	return false;
@@ -166,8 +181,11 @@ CR3Box CMillingTool::GetNonCuttingPartBoundingBox() const
 		return CR3Box();
 	const bool bShank = m_dNonCuttingLength>0.0 && m_dRz>0.0;
 	const double dRadius = std::max(bShank ? m_dRz : 0.0, m_oHolder.HasBody() ? m_oHolder.GetRadius() : 0.0);
-	const double dBegin = bShank ? m_dCuttingHeight : GetToolLength();
-	const double dEnd = m_oHolder.HasBody() ? GetAssemblyLength() : GetToolLength();
+	//from the bottom of whichever solid reaches lowest to the top of whichever reaches highest
+	const double dHolderBottom = GetGaugeLength()-m_oHolder.GetLength();
+	const double dBegin = bShank ? m_dCuttingHeight
+		: (m_oHolder.HasBody() ? dHolderBottom : GetToolLength());
+	const double dEnd = m_oHolder.HasBody() ? GetGaugeLength() : GetToolLength();
 	return AxialCylinderBoundingBox(dRadius,dBegin-m_dReferencePointZ,dEnd-m_dReferencePointZ);
 }
 
@@ -187,9 +205,10 @@ bool CMillingTool::CauseNonCuttingCollision(const CR3Box &box, const CTransforma
 	//the shank above the cutting part
 	if(CylinderMeetsBox(box,m_dCuttingHeight,m_dNonCuttingLength,m_dRz,trToBoxFrame,trToToolFrame))
 		return true;
-	//the holder above the tool
+	//the holder, hanging from the mount
 	if(m_oHolder.HasBody()
-		&& CylinderMeetsBox(box,GetToolLength(),m_oHolder.GetLength(),m_oHolder.GetRadius(),trToBoxFrame,trToToolFrame))
+		&& CylinderMeetsBox(box,GetGaugeLength()-m_oHolder.GetLength(),m_oHolder.GetLength()
+			,m_oHolder.GetRadius(),trToBoxFrame,trToToolFrame))
 		return true;
 	return false;
 }

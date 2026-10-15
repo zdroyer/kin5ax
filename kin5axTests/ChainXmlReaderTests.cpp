@@ -376,13 +376,13 @@ TEST(ToolHolderXml, IsReadFromTheToolSegment)
 {
 	CChain oChain;
 	ASSERT_EQ(std::string(),PugiError(WithToolHolder(),&oChain));
-	EXPECT_TRUE(oChain.IsToolMountDeclared());
+	EXPECT_TRUE(oChain.HasDefaultToolHolder());
 	EXPECT_DOUBLE_EQ(0.05,oChain.GetDefaultToolHolder().GetLength());
 	EXPECT_DOUBLE_EQ(0.03,oChain.GetDefaultToolHolder().GetRadius());
 
 	CChain oPlain;
 	ASSERT_EQ(std::string(),PugiError(Template(),&oPlain));
-	EXPECT_FALSE(oPlain.IsToolMountDeclared())<<"a file without a holder declares no mount";
+	EXPECT_FALSE(oPlain.HasDefaultToolHolder())<<"a file without a holder declares no mount";
 	EXPECT_EQ(std::string::npos,oPlain.toXML().find("tool_holder length"))<<"and writes none";
 }
 
@@ -399,7 +399,7 @@ TEST(ToolHolderXml, SurvivesTheRoundTrip)
 		ADD_FAILURE()<<e.Message();
 	}
 	remove(sFilePath.c_str());
-	EXPECT_TRUE(oReloaded.IsToolMountDeclared());
+	EXPECT_TRUE(oReloaded.HasDefaultToolHolder());
 	EXPECT_TRUE(oReloaded.GetDefaultToolHolder()==oChain.GetDefaultToolHolder());
 	EXPECT_EQ(oChain.toXML(),oReloaded.toXML());
 }

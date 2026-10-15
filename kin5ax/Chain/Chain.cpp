@@ -445,7 +445,7 @@ CTransformation CChain::GetToolPointToToolMountTransformation() const
 	return CTransformation(CTranslation(0.0,0.0,m_dToolMountToToolPoint));
 }
 
-bool CChain::IsToolMountDeclared() const
+bool CChain::HasDefaultToolHolder() const
 {
 	return !m_vToolPart.empty() && m_vToolPart.back().IsToolHolderDeclared();
 }
@@ -465,7 +465,11 @@ void CChain::SetDefaultToolHolder(const CToolHolder &oHolder)
 
 void CChain::SetToolAssembly(const CMillingTool &oTool)
 {
-	m_dToolMountToToolPoint = IsToolMountDeclared() ? oTool.GetMountToToolPointDistance() : 0.0;
+	//Whatever is clamped in the spindle. The terminal of the tool branch is the mount, for every
+	//chain and every tool, so the distance down to the programmed point is the tool's business
+	//alone. It used to depend on whether the file happened to declare a holder, which made the
+	//same terminal mean the mount in one file and the tool point in another.
+	m_dToolMountToToolPoint = oTool.GetMountToToolPointDistance();
 }
 
 CR3AnchoredVector CChain::GetActualToolPositionAndOrientation() const

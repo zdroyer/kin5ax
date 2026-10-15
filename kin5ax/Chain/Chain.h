@@ -68,11 +68,20 @@ public:
 	//the actual parameter of segment nIndex of the tool part / the material holder part (0.0 for the tool and the holder)
 	double GetActualParameter(size_t nIndex, bool bToolPart) const;
 
-	//---- the tool mount: the origin of the TOOL terminal, where the tool holder is clamped.
-	//The tool point (the programmed point of the CL data) lies GetToolMountToToolPointDistance() below it,
-	//along the Z axis of the terminal; the forward kinematics, the position solver and the collision test of
-	//the tool all use that distance. It stays zero for a chain file that declares no tool holder, whose TOOL
-	//terminal is the tool point itself, the way the files were written before the holder existed (KnownBugs #68).
+	//---- the tool mount: the origin of the TOOL terminal, where a tool holder is clamped.
+	//
+	//The terminal of the tool branch is the mount, in every chain, and the chain knows nothing about what
+	//is clamped in it: a machine takes a short drill and a long slender cutter, and the end of its tool
+	//branch is the same place for both. SetToolAssembly puts a tool in the spindle, and the tool point - the
+	//programmed point of the CL data - then lies GetToolMountToToolPointDistance() below the terminal along
+	//its Z. The forward kinematics, the position solver and the collision test of the tool all use that
+	//distance. It is zero until a tool is given, which is the bare machine.
+	//
+	//Until 2026-10-15 this depended on whether the file declared a tool holder: without one the terminal was
+	//read as the tool point itself, the way the files were written before holders existed (KnownBugs #68).
+	//That made the same element of the same format mean two different places, and the hosts disagreed about
+	//which - the chain editor hung the tool from the terminal, the FreeCAD addon hung a holder and a tool
+	//below it. There is one meaning now.
 	double GetToolMountToToolPointDistance() const;
 	void SetToolMountToToolPointDistance(double dDistance);
 	//from the frame of the tool mount to the frame of the tool point, and back
@@ -80,7 +89,8 @@ public:
 	CTransformation GetToolPointToToolMountTransformation() const;
 	//true when the chain file declares a tool mount (the tool_holder of its TOOL segment): only then does the
 	//length of a tool assembly move the tool point away from the terminal
-	bool IsToolMountDeclared() const;
+	//whether the file suggests a holder for this machine - a default for a host to offer, nothing more
+	bool HasDefaultToolHolder() const;
 	//the tool holder of the machine, from the chain file; declaring one declares the tool mount
 	const CToolHolder & GetDefaultToolHolder() const;
 	void SetDefaultToolHolder(const CToolHolder &oHolder);
