@@ -52,6 +52,14 @@
     ],
     "tool": {
       "name": "Tool holder",
+      "tool_holder": {
+        "model": "HSK63A ER32",
+        "sections": [
+        { "length": 0.05, "radius": 0.04 },
+        { "length": 0.025, "radius": 0.027 },
+        { "length": 0.04, "radius": 0.025 }
+        ]
+      },
       "translation": [0.0, 0.0, -0.5],
       "rotation": {
         "axis": [0.0, 1.0, 0.0],

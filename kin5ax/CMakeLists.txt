@@ -20,6 +20,7 @@ add_library(kin5ax STATIC
   Chain/ChainFcm.cpp
   Chain/ChainFileReader.cpp
   MillingTool/MillingTool.cpp
+  MillingTool/ToolHolder.cpp
   MillingTool/MillingToolBall.cpp
   MillingTool/MillingToolCylinder.cpp
   Postprocessor/5CPostprocessor.cpp

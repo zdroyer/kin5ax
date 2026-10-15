@@ -839,6 +839,100 @@ k5_status k5_tool_mount_to_point_distance(k5_tool tool, double *out)
 	K5_END(K5_ERROR_ARGUMENT)
 }
 
+// ---------------------------------------------------------------- tool holders
+
+//the header promises how many cylinders a holder is made of, and the library decides it
+static_assert((size_t)K5_HOLDER_SECTIONS==nTOOL_HOLDER_SECTIONS_MAX
+	,"K5_HOLDER_SECTIONS and nTOOL_HOLDER_SECTIONS_MAX have come apart");
+
+namespace {
+
+//the cylinders of a holder, as this interface hands them over: the length then the radius of each
+k5_status CopyHolder(const CToolHolder &oHolder, double *out, size_t nCapacity, size_t *pCount)
+{
+	const std::vector<CToolHolderSection> &vSections = oHolder.GetSections();
+	*pCount = vSections.size();
+	if(!out)
+		return K5_OK;					//the count was the question
+	if(nCapacity<vSections.size()*2)
+		return Fail(K5_ERROR_BUFFER_TOO_SMALL,"2 doubles are needed for every cylinder of the holder");
+	size_t n = 0;
+	for(size_t i=0;i<vSections.size();i++){
+		out[n++] = vSections[i].GetLength();
+		out[n++] = vSections[i].GetRadius();
+	}
+	return K5_OK;
+}
+
+} // namespace
+
+k5_status k5_chain_default_holder_model(k5_chain chain, char *out, size_t capacity)
+{
+	K5_BEGIN
+	K5_NEED(chain && out && capacity,"k5_chain_default_holder_model needs a chain and a buffer")
+	CopyName(chain->m_oChain.HasDefaultToolHolder()
+		? chain->m_oChain.GetDefaultToolHolder().GetModel() : std::string(),out,capacity);
+	return K5_OK;
+	K5_END(K5_ERROR_CHAIN)
+}
+
+k5_status k5_chain_default_holder(k5_chain chain, double *out, size_t capacity_in_doubles,
+	size_t *count_out)
+{
+	K5_BEGIN
+	K5_NEED(chain && count_out,"k5_chain_default_holder needs a chain and somewhere to put the count")
+	if(!chain->m_oChain.HasDefaultToolHolder()){
+		*count_out = 0;					//the file names no holder, which is not an error
+		return K5_OK;
+	}
+	return CopyHolder(chain->m_oChain.GetDefaultToolHolder(),out,capacity_in_doubles,count_out);
+	K5_END(K5_ERROR_CHAIN)
+}
+
+k5_status k5_tool_holder_catalogue_size(size_t *out)
+{
+	K5_BEGIN
+	K5_NEED(out,"k5_tool_holder_catalogue_size needs somewhere to put the count")
+	*out = ToolHolderCatalogueSize();
+	return K5_OK;
+	K5_END(K5_ERROR_ARGUMENT)
+}
+
+k5_status k5_tool_holder_catalogue_model(size_t index, char *out, size_t capacity)
+{
+	K5_BEGIN
+	K5_NEED(out && capacity,"k5_tool_holder_catalogue_model needs a buffer")
+	K5_NEED(index<ToolHolderCatalogueSize(),"the catalogue holds no holder of that index")
+	CopyName(ToolHolderFromCatalogue(index).GetModel(),out,capacity);
+	return K5_OK;
+	K5_END(K5_ERROR_ARGUMENT)
+}
+
+k5_status k5_tool_holder_catalogue(size_t index, double *out, size_t capacity_in_doubles,
+	size_t *count_out)
+{
+	K5_BEGIN
+	K5_NEED(count_out,"k5_tool_holder_catalogue needs somewhere to put the count")
+	K5_NEED(index<ToolHolderCatalogueSize(),"the catalogue holds no holder of that index")
+	return CopyHolder(ToolHolderFromCatalogue(index),out,capacity_in_doubles,count_out);
+	K5_END(K5_ERROR_ARGUMENT)
+}
+
+k5_status k5_tool_set_holder(k5_tool tool, const double *sections, size_t section_count)
+{
+	K5_BEGIN
+	K5_NEED(tool && tool->m_pTool,"k5_tool_set_holder needs a tool")
+	K5_NEED(sections || !section_count,"k5_tool_set_holder was given a count but no cylinders")
+	K5_NEED(section_count<=(size_t)K5_HOLDER_SECTIONS
+		,"a tool holder is made of at most K5_HOLDER_SECTIONS cylinders")
+	std::vector<CToolHolderSection> vSections;
+	for(size_t i=0;i<section_count;i++)
+		vSections.push_back(CToolHolderSection(sections[2*i],sections[2*i+1]));
+	tool->m_pTool->SetToolHolder(CToolHolder(tool->m_pTool->GetToolHolder().GetModel(),vSections));
+	return K5_OK;
+	K5_END(K5_ERROR_ARGUMENT)
+}
+
 // ---------------------------------------------------------------- one cutter location
 
 k5_status k5_solve_location(k5_chain chain, k5_tool tool, const k5_settings *settings,

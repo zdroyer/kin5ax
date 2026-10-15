@@ -143,8 +143,26 @@ CChainSegment ReadSegment(const CFileContext &ctx, const pugi::xml_node &node)
 	if(holder){
 		if(oSegment.GetType()!=CHAIN_SEGMENT_TOOL)
 			ctx.Fail(holder,"segment '"+sName+"': only a TOOL segment carries a tool_holder");
-		CheckAttributes(ctx,holder,{"length","radius"},{});
-		oSegment.SetToolHolder(CToolHolder(Number(ctx,holder,"length"),Number(ctx,holder,"radius")));
+		//length and radius are the one cylinder this element carried before holders had a shape;
+		//a holder of several says so in its own elements, and model names it whatever its shape
+		CheckAttributes(ctx,holder,{},{"length","radius","model"});
+		CheckChildren(ctx,holder,{"section"});
+		std::vector<CToolHolderSection> vSections;
+		for(pugi::xml_node section : holder.children("section")){
+			CheckAttributes(ctx,section,{"length","radius"},{});
+			vSections.push_back(CToolHolderSection(Number(ctx,section,"length")
+				,Number(ctx,section,"radius")));
+		}
+		if(vSections.size()>nTOOL_HOLDER_SECTIONS_MAX)
+			ctx.Fail(holder,"a tool holder is made of at most "
+				+size_to_string(nTOOL_HOLDER_SECTIONS_MAX)+" sections");
+		if(vSections.empty() && (holder.attribute("length") || holder.attribute("radius")))
+			vSections.push_back(CToolHolderSection(Number(ctx,holder,"length")
+				,Number(ctx,holder,"radius")));
+		else if(!vSections.empty() && (holder.attribute("length") || holder.attribute("radius")))
+			ctx.Fail(holder,"a tool holder has sections or a length and a radius, not both");
+		CToolHolder oHolder(holder.attribute("model").value(),vSections);
+		oSegment.SetToolHolder(oHolder);
 	}
 	pugi::xml_node t = SingleChild(ctx,node,"initial_translation");
 	CheckAttributes(ctx,t,{"x","y","z"},{});

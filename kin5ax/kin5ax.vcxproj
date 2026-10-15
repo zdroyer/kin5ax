@@ -91,6 +91,7 @@
     <ClCompile Include="Chain\ChainJson.cpp" />
     <ClCompile Include="Chain\ChainFcm.cpp" />
     <ClCompile Include="MillingTool\MillingTool.cpp" />
+    <ClCompile Include="MillingTool\ToolHolder.cpp" />
     <ClCompile Include="MillingTool\MillingToolBall.cpp" />
     <ClCompile Include="MillingTool\MillingToolCylinder.cpp" />
     <ClCompile Include="Postprocessor\5CPostprocessor.cpp" />

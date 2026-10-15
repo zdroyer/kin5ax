@@ -347,6 +347,91 @@ TEST(ChainJsonToolHolder, AMissingMemberIsNamedByItsPath)
 	EXPECT_ERROR_CONTAINS(sError,"tool_branch.tool.tool_holder");
 }
 
+TEST(ChainJsonToolHolder, AModelAndSectionsSurviveTheRoundTrip)
+{
+	std::string s = Replaced(Template(),"\"name\": \"tool\","
+		,"\"name\": \"tool\",\n      \"tool_holder\": { \"model\": \"BT40 ER32\", \"sections\": ["
+		"{ \"length\": 0.065, \"radius\": 0.0445 },"
+		"{ \"length\": 0.025, \"radius\": 0.027 },"
+		"{ \"length\": 0.035, \"radius\": 0.025 } ] },");
+	CChain oChain;
+	ASSERT_EQ(std::string(),JsonError(s,&oChain));
+	ASSERT_TRUE(oChain.HasDefaultToolHolder());
+	const CToolHolder &oHolder = oChain.GetDefaultToolHolder();
+	EXPECT_EQ(std::string("BT40 ER32"),oHolder.GetModel());
+	ASSERT_EQ(size_t(3),oHolder.GetSections().size());
+	EXPECT_DOUBLE_EQ(0.125,oHolder.GetLength());
+	EXPECT_DOUBLE_EQ(0.0445,oHolder.GetRadius());
+
+	std::string sJson = CChainJsonWriter::ToJson(oChain);
+	EXPECT_NE(std::string::npos,sJson.find("\"model\""));
+	EXPECT_NE(std::string::npos,sJson.find("\"sections\""));
+	CChain oReloaded;
+	ASSERT_EQ(std::string(),JsonError(sJson,&oReloaded));
+	EXPECT_TRUE(oReloaded.GetDefaultToolHolder()==oHolder);
+	EXPECT_EQ(sJson,CChainJsonWriter::ToJson(oReloaded));
+}
+
+TEST(ChainJsonToolHolder, AModelAloneIsAName)
+{
+	std::string s = Replaced(Template(),"\"name\": \"tool\","
+		,"\"name\": \"tool\",\n      \"tool_holder\": { \"model\": \"HSK63A ER32\" },");
+	CChain oChain;
+	ASSERT_EQ(std::string(),JsonError(s,&oChain));
+	ASSERT_TRUE(oChain.HasDefaultToolHolder());
+	EXPECT_EQ(std::string("HSK63A ER32"),oChain.GetDefaultToolHolder().GetModel());
+	EXPECT_FALSE(oChain.GetDefaultToolHolder().HasBody());
+}
+
+TEST(ChainJsonToolHolder, OneCylinderIsStillWrittenAsALengthAndARadius)
+{
+	//a file of one cylinder reads the same to anything that read this format before sections
+	CChain oChain;
+	ASSERT_EQ(std::string(),JsonError(WithToolHolder(),&oChain));
+	std::string sJson = CChainJsonWriter::ToJson(oChain);
+	EXPECT_NE(std::string::npos,sJson.find("\"length\""));
+	EXPECT_EQ(std::string::npos,sJson.find("\"sections\""));
+}
+
+TEST(ChainJsonToolHolder, SectionsAndALengthTogetherAreRefused)
+{
+	std::string s = Replaced(Template(),"\"name\": \"tool\","
+		,"\"name\": \"tool\",\n      \"tool_holder\": { \"length\": 0.05, \"radius\": 0.03,"
+		" \"sections\": [ { \"length\": 0.065, \"radius\": 0.0445 } ] },");
+	std::string sError = JsonError(s);
+	EXPECT_ERROR_CONTAINS(sError,"not both");
+	EXPECT_ERROR_CONTAINS(sError,"tool_branch.tool.tool_holder");
+}
+
+TEST(ChainJsonToolHolder, MoreSectionsThanAHolderHasAreRefused)
+{
+	std::string s = Replaced(Template(),"\"name\": \"tool\","
+		,"\"name\": \"tool\",\n      \"tool_holder\": { \"sections\": ["
+		"{ \"length\": 0.02, \"radius\": 0.04 },"
+		"{ \"length\": 0.02, \"radius\": 0.03 },"
+		"{ \"length\": 0.02, \"radius\": 0.02 },"
+		"{ \"length\": 0.02, \"radius\": 0.01 } ] },");
+	EXPECT_ERROR_CONTAINS(JsonError(s),"at most");
+}
+
+TEST(ChainJsonToolHolder, ASectionIsNamedByItsPlaceInTheArray)
+{
+	std::string s = Replaced(Template(),"\"name\": \"tool\","
+		,"\"name\": \"tool\",\n      \"tool_holder\": { \"sections\": ["
+		"{ \"length\": 0.065, \"radius\": 0.0445 },"
+		"{ \"length\": 0.025 } ] },");
+	std::string sError = JsonError(s);
+	EXPECT_ERROR_CONTAINS(sError,"radius");
+	EXPECT_ERROR_CONTAINS(sError,"tool_holder.sections[1]");
+}
+
+TEST(ChainJsonToolHolder, SectionsMustBeAnArray)
+{
+	std::string s = Replaced(Template(),"\"name\": \"tool\","
+		,"\"name\": \"tool\",\n      \"tool_holder\": { \"sections\": 3 },");
+	EXPECT_ERROR_CONTAINS(JsonError(s),"array");
+}
+
 //---- the unit: required, exact, and kept
 
 TEST(ChainJsonUnit, IsRead)

@@ -138,6 +138,11 @@ public:
 	//caller that has not measured anything means.
 	double GetGaugeLength() const;
 	void SetGaugeLength(double dLength);
+	//What is clamped in the mount, and what the tool is clamped in: up to three cylinders hanging
+	//from the mount. Giving the tool another holder moves nothing when a gauge length was measured;
+	//without one the tool stands against its holder, so the tip follows.
+	const CToolHolder & GetToolHolder() const { return m_oHolder; }
+	void SetToolHolder(const CToolHolder &oHolder) { m_oHolder = oHolder; }
 	//the same thing under its older name, kept because it reads better where an assembly is meant
 	double GetAssemblyLength() const;
 	//From the tool mount down to the reference point, along the axis: the assembly length less the height of the

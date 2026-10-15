@@ -45,6 +45,8 @@ extern "C" {
 #define K5_AXES 5
 /* the longest name of a link this interface hands over, terminating zero included */
 #define K5_NAME_MAX 64
+/* the most cylinders a tool holder of this library is made of (k5_tool_set_holder) */
+#define K5_HOLDER_SECTIONS 3
 
 /* ---------------------------------------------------------------- what a call can answer */
 
@@ -291,6 +293,46 @@ K5_API k5_status k5_tool_assembly_length(k5_tool tool, double *out);
 K5_API k5_status k5_tool_mount_to_point_distance(k5_tool tool, double *out);
 /* From the tip to the tool mount: what was given to k5_tool_create, or the derived length when 0 was. */
 K5_API k5_status k5_tool_gauge_length(k5_tool tool, double *out);
+
+/* ---------------------------------------------------------------- tool holders */
+
+/* A holder hangs from the tool mount of the machine, which is the terminal of the tool branch of
+ * every chain, and the tool is clamped in it. Its shape is up to K5_HOLDER_SECTIONS cylinders given
+ * from the mount downwards - the taper, whatever it narrows to, the nose the tool comes out of -
+ * which is enough to find out whether the holder meets a part of the machine or ploughs through
+ * material. Its model is the designation on the holder, free text: a host matches it against the
+ * holders it has of its own, and this library never reads it.
+ *
+ * A holder is never a tool length. However long the holder is, the tip of the tool reaches the gauge
+ * length of k5_tool_create below the mount. */
+
+/* The holder the chain file says its machine usually carries: the designation, cut to fit, and an
+ * empty string when the file names none. It is a default for a host to offer, nothing more. */
+K5_API k5_status k5_chain_default_holder_model(k5_chain chain, char *out, size_t capacity);
+
+/* The shape of that holder, in the unit of the chain file: 2 doubles per cylinder, the length then
+ * the radius, from the mount downwards. A radius of zero is a cylinder without a body, a distance
+ * only. A holder may have no cylinder at all, which is a name for the host to resolve.
+ * out may be null to ask for the count only; count_out gets the number of cylinders either way. */
+K5_API k5_status k5_chain_default_holder(k5_chain chain, double *out, size_t capacity_in_doubles,
+	size_t *count_out);
+
+/* The holders a five-axis machine usually carries, to be offered in a list instead of measured. The
+ * dimensions are the usual ones for each taper, near enough for a collision check and no substitute
+ * for measuring the holder on the machine; they are in METRES, whatever unit a chain is in. */
+K5_API k5_status k5_tool_holder_catalogue_size(size_t *out);
+/* The designation of the holder at that place in the catalogue, cut to fit. */
+K5_API k5_status k5_tool_holder_catalogue_model(size_t index, char *out, size_t capacity);
+/* Its cylinders, as k5_chain_default_holder gives them. */
+K5_API k5_status k5_tool_holder_catalogue(size_t index, double *out, size_t capacity_in_doubles,
+	size_t *count_out);
+
+/* Gives the tool a holder of several cylinders, instead of the single one k5_tool_create was given:
+ * sections is 2 doubles per cylinder as above, section_count of them, and may be null for a holder
+ * with no body. The lengths are in the unit the tool was made in. When the tool was created with a
+ * gauge length nothing moves, which is the point of measuring one; when it was created with 0 the
+ * tool stands against its holder, so the tip moves with it. */
+K5_API k5_status k5_tool_set_holder(k5_tool tool, const double *sections, size_t section_count);
 
 /* ---------------------------------------------------------------- one cutter location */
 

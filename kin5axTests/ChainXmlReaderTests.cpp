@@ -417,6 +417,83 @@ TEST(ToolHolderXml, AMissingAttributeIsReported)
 	EXPECT_ERROR_CONTAINS(PugiError(s),"radius");
 }
 
+TEST(ToolHolderXml, AModelAndSectionsSurviveTheRoundTrip)
+{
+	std::string s = Replaced(Template(),"</segment>\n</tool_part>"
+		,"<tool_holder model=\"BT40 ER32\">\n"
+		"<section length=\"0.065\" radius=\"0.0445\"/>\n"
+		"<section length=\"0.025\" radius=\"0.027\"/>\n"
+		"<section length=\"0.035\" radius=\"0.025\"/>\n"
+		"</tool_holder>\n</segment>\n</tool_part>");
+	CChain oChain;
+	ASSERT_EQ(std::string(),PugiError(s,&oChain));
+	ASSERT_TRUE(oChain.HasDefaultToolHolder());
+	const CToolHolder &oHolder = oChain.GetDefaultToolHolder();
+	EXPECT_EQ(std::string("BT40 ER32"),oHolder.GetModel());
+	ASSERT_EQ(size_t(3),oHolder.GetSections().size());
+	EXPECT_DOUBLE_EQ(0.125,oHolder.GetLength());
+	EXPECT_DOUBLE_EQ(0.0445,oHolder.GetRadius());
+
+	std::string sXml = oChain.toXML();
+	EXPECT_NE(std::string::npos,sXml.find("<tool_holder model=\"BT40 ER32\">"));
+	EXPECT_NE(std::string::npos,sXml.find("<section length=\"0.025\" radius=\"0.027\"/>"));
+	CChain oReloaded;
+	ASSERT_EQ(std::string(),PugiError(sXml,&oReloaded));
+	EXPECT_TRUE(oReloaded.GetDefaultToolHolder()==oHolder);
+	EXPECT_EQ(sXml,oReloaded.toXML());
+}
+
+TEST(ToolHolderXml, AModelAloneIsAName)
+{
+	//what the machine usually carries, with no solid of its own: a host resolves it
+	std::string s = Replaced(Template(),"</segment>\n</tool_part>"
+		,"<tool_holder model=\"HSK63A ER32\"/>\n</segment>\n</tool_part>");
+	CChain oChain;
+	ASSERT_EQ(std::string(),PugiError(s,&oChain));
+	ASSERT_TRUE(oChain.HasDefaultToolHolder());
+	EXPECT_EQ(std::string("HSK63A ER32"),oChain.GetDefaultToolHolder().GetModel());
+	EXPECT_FALSE(oChain.GetDefaultToolHolder().HasBody());
+	EXPECT_NE(std::string::npos,oChain.toXML().find("<tool_holder model=\"HSK63A ER32\"/>"));
+}
+
+TEST(ToolHolderXml, OneCylinderIsStillWrittenAsAttributes)
+{
+	//a file of one cylinder reads the same to anything that read this format before sections
+	CChain oChain;
+	ASSERT_EQ(std::string(),PugiError(WithToolHolder(),&oChain));
+	EXPECT_NE(std::string::npos,oChain.toXML().find("<tool_holder length=\"0.05\" radius=\"0.03\"/>"));
+	EXPECT_EQ(std::string::npos,oChain.toXML().find("<section"));
+}
+
+TEST(ToolHolderXml, SectionsAndALengthTogetherAreRefused)
+{
+	std::string s = Replaced(Template(),"</segment>\n</tool_part>"
+		,"<tool_holder length=\"0.05\" radius=\"0.03\">\n"
+		"<section length=\"0.065\" radius=\"0.0445\"/>\n"
+		"</tool_holder>\n</segment>\n</tool_part>");
+	EXPECT_ERROR_CONTAINS(PugiError(s),"not both");
+}
+
+TEST(ToolHolderXml, MoreSectionsThanAHolderHasAreRefused)
+{
+	//the file is wrong about the holder, and silently dropping a cylinder would hide a collision
+	std::string s = Replaced(Template(),"</segment>\n</tool_part>"
+		,"<tool_holder>\n"
+		"<section length=\"0.02\" radius=\"0.04\"/>\n"
+		"<section length=\"0.02\" radius=\"0.03\"/>\n"
+		"<section length=\"0.02\" radius=\"0.02\"/>\n"
+		"<section length=\"0.02\" radius=\"0.01\"/>\n"
+		"</tool_holder>\n</segment>\n</tool_part>");
+	EXPECT_ERROR_CONTAINS(PugiError(s),"at most");
+}
+
+TEST(ToolHolderXml, ASectionWithoutARadiusIsReported)
+{
+	std::string s = Replaced(Template(),"</segment>\n</tool_part>"
+		,"<tool_holder>\n<section length=\"0.02\"/>\n</tool_holder>\n</segment>\n</tool_part>");
+	EXPECT_ERROR_CONTAINS(PugiError(s),"radius");
+}
+
 //---- the unit: required, exact, and kept
 
 TEST(ChainUnit, IsReadFromTheRootElement)

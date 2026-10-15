@@ -134,8 +134,14 @@ std::string CChain::toXML() const
 	result += "	parameter_value_minimum CDATA #IMPLIED\n";
 	result += "	parameter_value_maximum CDATA #IMPLIED\n";
 	result += ">\n";
-	result += "<!ELEMENT tool_holder EMPTY>\n";
+	result += "<!ELEMENT tool_holder (section*)>\n";
 	result += "<!ATTLIST tool_holder\n";
+	result += "	length CDATA #IMPLIED\n";
+	result += "	radius CDATA #IMPLIED\n";
+	result += "	model CDATA #IMPLIED\n";
+	result += ">\n";
+	result += "<!ELEMENT section EMPTY>\n";
+	result += "<!ATTLIST section\n";
 	result += "	length CDATA #REQUIRED\n";
 	result += "	radius CDATA #REQUIRED\n";
 	result += ">\n";

@@ -271,8 +271,26 @@ std::string CChainSegment::toXML(void) const
 	sResult +=double_to_string_exact(m_dConstRevoluteAngle);
 	sResult +="\"/>\n";
 	if(m_bToolHolderDeclared){
-		sResult += "<tool_holder length=\""+double_to_string_exact(m_oToolHolder.GetLength());
-		sResult += "\" radius=\""+double_to_string_exact(m_oToolHolder.GetRadius())+"\"/>\n";
+		//the designation on the holder, for a host to match against the ones it has of its own
+		sResult += "<tool_holder";
+		if(!m_oToolHolder.GetModel().empty())
+			sResult += " model=\""+xml_escape(m_oToolHolder.GetModel())+"\"";
+		const std::vector<CToolHolderSection> &vSections = m_oToolHolder.GetSections();
+		if(vSections.empty()){
+			sResult += "/>\n";
+		} else if(vSections.size()==1){
+			//one cylinder stays the shape this element always had, so a file of one holder reads
+			//the same to anything that read it before
+			sResult += " length=\""+double_to_string_exact(vSections[0].GetLength());
+			sResult += "\" radius=\""+double_to_string_exact(vSections[0].GetRadius())+"\"/>\n";
+		} else {
+			sResult += ">\n";
+			for(size_t i=0;i<vSections.size();i++){
+				sResult += "<section length=\""+double_to_string_exact(vSections[i].GetLength());
+				sResult += "\" radius=\""+double_to_string_exact(vSections[i].GetRadius())+"\"/>\n";
+			}
+			sResult += "</tool_holder>\n";
+		}
 	}
 	if(m_vParts.size()){
 		for(size_t i=0;i<m_vParts.size();i++){

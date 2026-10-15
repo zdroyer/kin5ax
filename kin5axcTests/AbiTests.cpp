@@ -868,6 +868,155 @@ TEST(Abi, ATool)
 	k5_tool_free(NULL);
 }
 
+// ---------------------------------------------------------------- tool holders
+
+TEST(Abi, TheHolderAChainSaysItsMachineCarries)
+{
+	//AC_TiltRotaryTable declares one cylinder on its tool terminal and names no model
+	k5_chain chain = OpenChain();
+	ASSERT_TRUE(chain!=NULL);
+	char szModel[K5_NAME_MAX] = "not asked";
+	ASSERT_EQ(K5_OK,k5_chain_default_holder_model(chain,szModel,sizeof(szModel)));
+	EXPECT_EQ(std::string(),std::string(szModel))<<"the file names no holder";
+	size_t nSections = 99;
+	ASSERT_EQ(K5_OK,k5_chain_default_holder(chain,NULL,0,&nSections));
+	ASSERT_EQ((size_t)1,nSections)<<"one cylinder, as the file gives it";
+	double v[2*K5_HOLDER_SECTIONS] = {0};
+	ASSERT_EQ(K5_OK,k5_chain_default_holder(chain,v,sizeof(v)/sizeof(v[0]),&nSections));
+	EXPECT_GT(v[0],0.0)<<"a length";
+	EXPECT_GT(v[1],0.0)<<"and a radius";
+	//a buffer that cannot hold the cylinders says so rather than writing past it
+	EXPECT_EQ(K5_ERROR_BUFFER_TOO_SMALL,k5_chain_default_holder(chain,v,1,&nSections));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_default_holder(NULL,v,2,&nSections));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_default_holder(chain,v,2,NULL));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_default_holder_model(chain,NULL,sizeof(szModel)));
+	k5_chain_free(chain);
+}
+
+TEST(Abi, AChainWithoutAHolderSaysSoWithoutFailing)
+{
+	//A machine file need not name a holder, and then there is nothing for a host to offer: no name,
+	//no cylinder, and no error either. Every chain shipped with the library names one, so this test
+	//makes a file that does not out of one that does.
+	std::string sText;
+	{
+		FILE *pFile = fopen(ChainPath().c_str(),"rb");
+		ASSERT_TRUE(pFile!=NULL);
+		char szBuffer[4096];
+		size_t n = 0;
+		while((n=fread(szBuffer,1,sizeof(szBuffer),pFile))>0)
+			sText.append(szBuffer,n);
+		fclose(pFile);
+	}
+	const size_t nAt = sText.rfind("<tool_holder");
+	ASSERT_NE(std::string::npos,nAt);
+	const size_t nClose = sText.find("</tool_holder>",nAt);
+	const size_t nEnd = (nClose!=std::string::npos) ? nClose+sizeof("</tool_holder>")-1
+		: sText.find("/>",nAt)+2;
+	sText.erase(nAt,nEnd-nAt);
+	const std::string sPath = TempPath("kin5axcTests_no_holder.kc");
+	{
+		FILE *pFile = fopen(sPath.c_str(),"wb");
+		ASSERT_TRUE(pFile!=NULL);
+		fwrite(sText.c_str(),1,sText.size(),pFile);
+		fclose(pFile);
+	}
+	k5_chain chain = NULL;
+	ASSERT_EQ(K5_OK,k5_chain_open(sPath.c_str(),&chain))<<k5_last_error();
+	remove(sPath.c_str());
+	char szModel[K5_NAME_MAX] = "not asked";
+	ASSERT_EQ(K5_OK,k5_chain_default_holder_model(chain,szModel,sizeof(szModel)));
+	EXPECT_EQ(std::string(),std::string(szModel));
+	size_t nSections = 99;
+	ASSERT_EQ(K5_OK,k5_chain_default_holder(chain,NULL,0,&nSections));
+	EXPECT_EQ((size_t)0,nSections);
+	k5_chain_free(chain);
+}
+
+TEST(Abi, TheCatalogueOfTheHoldersAMachineUsuallyCarries)
+{
+	size_t nCount = 0;
+	ASSERT_EQ(K5_OK,k5_tool_holder_catalogue_size(&nCount));
+	ASSERT_GE(nCount,(size_t)5)<<"a list worth offering";
+	for(size_t i=0;i<nCount;i++){
+		char szModel[K5_NAME_MAX] = "";
+		ASSERT_EQ(K5_OK,k5_tool_holder_catalogue_model(i,szModel,sizeof(szModel)))<<k5_last_error();
+		SCOPED_TRACE(szModel);
+		EXPECT_FALSE(std::string(szModel).empty())<<"every holder is named";
+		size_t nSections = 0;
+		double v[2*K5_HOLDER_SECTIONS] = {0};
+		ASSERT_EQ(K5_OK,k5_tool_holder_catalogue(i,v,sizeof(v)/sizeof(v[0]),&nSections));
+		ASSERT_GE(nSections,(size_t)1);
+		ASSERT_LE(nSections,(size_t)K5_HOLDER_SECTIONS)<<"the header says how many there can be";
+		double dLength = 0.0;
+		for(size_t j=0;j<nSections;j++){
+			EXPECT_GT(v[2*j],0.0);
+			EXPECT_GT(v[2*j+1],0.0);
+			dLength += v[2*j];
+		}
+		//metres, whatever unit a chain is in: a holder is a hand's length
+		EXPECT_GT(dLength,0.02);
+		EXPECT_LT(dLength,0.30);
+	}
+	//past the end is an error, not an empty holder: the index came from somewhere wrong
+	char szModel[K5_NAME_MAX] = "";
+	size_t nSections = 0;
+	double v[2*K5_HOLDER_SECTIONS] = {0};
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_tool_holder_catalogue_model(nCount,szModel,sizeof(szModel)));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_tool_holder_catalogue(nCount,v,2*K5_HOLDER_SECTIONS,&nSections));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_tool_holder_catalogue_size(NULL));
+}
+
+TEST(Abi, AToolTakesAHolderOfSeveralCylinders)
+{
+	//a tool measured on a presetter: its tip is 0.2 below the mount, whatever holder it sits in
+	k5_tool tool = NULL;
+	ASSERT_EQ(K5_OK,k5_tool_create(K5_TOOL_BALL_NOSE,0.008,0.008,0.040,0.030,0.050,0.030,0.200,&tool));
+	const double v[6] = {0.065,0.0445, 0.025,0.027, 0.035,0.025};
+	ASSERT_EQ(K5_OK,k5_tool_set_holder(tool,v,3))<<k5_last_error();
+	double dGauge = 0.0;
+	ASSERT_EQ(K5_OK,k5_tool_gauge_length(tool,&dGauge));
+	EXPECT_DOUBLE_EQ(0.200,dGauge)<<"a measured tool does not move when its holder changes";
+
+	//a tool that was never measured stands against its holder, so a longer holder lifts the tip
+	k5_tool oDerived = NULL;
+	ASSERT_EQ(K5_OK,k5_tool_create(K5_TOOL_BALL_NOSE,0.008,0.008,0.040,0.030,0.050,0.030,0.0,&oDerived));
+	ASSERT_EQ(K5_OK,k5_tool_gauge_length(oDerived,&dGauge));
+	ASSERT_DOUBLE_EQ(0.040+0.030+0.050,dGauge);
+	ASSERT_EQ(K5_OK,k5_tool_set_holder(oDerived,v,3));
+	ASSERT_EQ(K5_OK,k5_tool_gauge_length(oDerived,&dGauge));
+	EXPECT_DOUBLE_EQ(0.040+0.030+0.125,dGauge);
+
+	//no cylinder at all is a holder without a body
+	ASSERT_EQ(K5_OK,k5_tool_set_holder(oDerived,NULL,0));
+	ASSERT_EQ(K5_OK,k5_tool_gauge_length(oDerived,&dGauge));
+	EXPECT_DOUBLE_EQ(0.040+0.030,dGauge);
+
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_tool_set_holder(tool,v,K5_HOLDER_SECTIONS+1));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_tool_set_holder(tool,NULL,1));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_tool_set_holder(NULL,v,3));
+	k5_tool_free(tool);
+	k5_tool_free(oDerived);
+}
+
+TEST(Abi, AHolderOfTheCatalogueGoesStraightOntoATool)
+{
+	//what a host does with the list: pick a holder, put it on the tool, and the lengths agree
+	size_t nSections = 0;
+	double v[2*K5_HOLDER_SECTIONS] = {0};
+	ASSERT_EQ(K5_OK,k5_tool_holder_catalogue(0,v,sizeof(v)/sizeof(v[0]),&nSections));
+	k5_tool tool = NULL;
+	ASSERT_EQ(K5_OK,k5_tool_create(K5_TOOL_FLAT_END,0.006,0.0,0.030,0.020,0.0,0.0,0.0,&tool));
+	ASSERT_EQ(K5_OK,k5_tool_set_holder(tool,v,nSections));
+	double dHolder = 0.0;
+	for(size_t j=0;j<nSections;j++)
+		dHolder += v[2*j];
+	double dGauge = 0.0;
+	ASSERT_EQ(K5_OK,k5_tool_gauge_length(tool,&dGauge));
+	EXPECT_NEAR(0.030+0.020+dHolder,dGauge,1E-12);
+	k5_tool_free(tool);
+}
+
 // ---------------------------------------------------------------- the solver through the interface
 
 TEST(Abi, TheSolverFindsTheConfigurationTheMachineWasPutIn)
