@@ -16,6 +16,7 @@ static std::string Template()
 	return R"KC({
   "format": "kin5ax-chain",
   "version": 1,
+  "unit": "m",
   "name": "template",
   "tool_branch": {
     "links": [
@@ -344,4 +345,43 @@ TEST(ChainJsonToolHolder, AMissingMemberIsNamedByItsPath)
 	std::string sError = JsonError(s);
 	EXPECT_ERROR_CONTAINS(sError,"radius");
 	EXPECT_ERROR_CONTAINS(sError,"tool_branch.tool.tool_holder");
+}
+
+//---- the unit: required, exact, and kept
+
+TEST(ChainJsonUnit, IsRead)
+{
+	CChain oChain;
+	ASSERT_EQ(std::string(),JsonError(Template(),&oChain));
+	EXPECT_EQ(CHAIN_UNIT_M,oChain.GetUnit());
+	CChain oMillimetres;
+	ASSERT_EQ(std::string(),JsonError(Replaced(Template(),"\"unit\": \"m\"","\"unit\": \"mm\""),&oMillimetres));
+	EXPECT_EQ(CHAIN_UNIT_MM,oMillimetres.GetUnit());
+}
+
+TEST(ChainJsonUnit, AFileWithoutOneIsRefused)
+{
+	std::string sError = JsonError(Replaced(Template(),"  \"unit\": \"m\",\n",""));
+	EXPECT_ERROR_CONTAINS(sError,"'unit'");
+}
+
+TEST(ChainJsonUnit, AnUnknownOneIsRefusedWithTheThreeThatExist)
+{
+	std::string sError = JsonError(Replaced(Template(),"\"unit\": \"m\"","\"unit\": \"meter\""));
+	EXPECT_ERROR_CONTAINS(sError,"unit");
+	EXPECT_ERROR_CONTAINS(sError,"'meter'");
+	EXPECT_ERROR_CONTAINS(sError,"mm, m and in");
+	//a number is not a spelling either
+	EXPECT_NE(std::string(),JsonError(Replaced(Template(),"\"unit\": \"m\"","\"unit\": 1000")));
+}
+
+TEST(ChainJsonUnit, SurvivesTheJsonRoundTrip)
+{
+	CChain oChain;
+	ASSERT_EQ(std::string(),JsonError(Replaced(Template(),"\"unit\": \"m\"","\"unit\": \"in\""),&oChain));
+	std::string sJson = CChainJsonWriter::ToJson(oChain);
+	EXPECT_NE(std::string::npos,sJson.find("\"unit\": \"in\""))<<sJson;
+	CChain oReloaded;
+	ASSERT_EQ(std::string(),JsonError(sJson,&oReloaded));
+	EXPECT_EQ(CHAIN_UNIT_IN,oReloaded.GetUnit());
 }

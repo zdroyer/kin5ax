@@ -13,7 +13,7 @@ static std::string Template()
 {
 	return
 	"<?xml version=\"1.0\"?>\n"                                                                                          // 1
-	"<kinematic_chain name=\"template\">\n"                                                                              // 2
+	"<kinematic_chain unit=\"m\" name=\"template\">\n"                                                                              // 2
 	"<tool_part>\n"                                                                                                      // 3
 	"<segment type=\"PRISMATIC_LINK\" name=\"Z\" parameter_value_offset=\"0\" default_parameter_value=\"0\" "
 	"parameter_value_minimum=\"-0.5\" parameter_value_maximum=\"0.5\">\n"                                               // 4
@@ -415,4 +415,53 @@ TEST(ToolHolderXml, AMissingAttributeIsReported)
 {
 	std::string s = Replaced(WithToolHolder(),"<tool_holder length=\"0.05\" radius=\"0.03\"/>","<tool_holder length=\"0.05\"/>");
 	EXPECT_ERROR_CONTAINS(PugiError(s),"radius");
+}
+
+//---- the unit: required, exact, and kept
+
+TEST(ChainUnit, IsReadFromTheRootElement)
+{
+	CChain oChain;
+	ASSERT_EQ(std::string(),PugiError(Template(),&oChain));
+	EXPECT_EQ(CHAIN_UNIT_M,oChain.GetUnit());
+	CChain oInches;
+	ASSERT_EQ(std::string(),PugiError(Replaced(Template(),"unit=\"m\"","unit=\"in\""),&oInches));
+	EXPECT_EQ(CHAIN_UNIT_IN,oInches.GetUnit());
+}
+
+TEST(ChainUnit, AFileWithoutOneIsRefused)
+{
+	//the numbers of a chain are not lengths until the file says what they are in; the models
+	//written before the unit existed were all metres, and they all say so now rather than the
+	//reader assuming it for the next file that forgets
+	std::string sError = PugiError(Replaced(Template()," unit=\"m\"",""));
+	EXPECT_ERROR_CONTAINS(sError,"unit");
+	EXPECT_ERROR_CONTAINS(sError,"kinematic_chain");
+}
+
+TEST(ChainUnit, AnUnknownOneIsRefusedWithTheThreeThatExist)
+{
+	std::string sError = PugiError(Replaced(Template(),"unit=\"m\"","unit=\"cm\""));
+	EXPECT_ERROR_CONTAINS(sError,"'cm'");
+	EXPECT_ERROR_CONTAINS(sError,"mm, m and in");
+	//case and synonyms are not read into, see ChainUnit.OnlyTheExactSpellingIsAUnit
+	EXPECT_NE(std::string(),PugiError(Replaced(Template(),"unit=\"m\"","unit=\"M\"")));
+}
+
+TEST(ChainUnit, SurvivesTheXmlRoundTripAndTheDtdSaysItIsRequired)
+{
+	CChain oChain;
+	ASSERT_EQ(std::string(),PugiError(Replaced(Template(),"unit=\"m\"","unit=\"in\""),&oChain));
+	std::string sXml = oChain.toXML();
+	EXPECT_NE(std::string::npos,sXml.find("unit (mm|m|in) #REQUIRED"))<<"the DTD of the file written";
+	EXPECT_NE(std::string::npos,sXml.find("<kinematic_chain unit=\"in\""))<<"and the attribute, first";
+	std::string sFilePath = WriteTemp("kin5axTests_unit_roundtrip.kc",sXml);
+	CChain oReloaded;
+	try{
+		oReloaded = CChainXmlReader::ReadFile(sFilePath);
+	} catch (CGeneratorException &e){
+		ADD_FAILURE()<<e.Message();
+	}
+	remove(sFilePath.c_str());
+	EXPECT_EQ(CHAIN_UNIT_IN,oReloaded.GetUnit());
 }

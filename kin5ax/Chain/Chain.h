@@ -16,6 +16,23 @@ namespace kin5ax {
 
 //Which of the two branches of the chain. Both are stored from the base outwards: index 0 is the segment
 //sitting on the machine base, the last segment is the terminal of the branch.
+//The unit every length in a chain file is in. A file names it, and a file that does not is refused:
+//the models shipped with the library are metres, FreeCAD works in millimetres, and 0.5 in a file is
+//not a length until the file says which. Nothing inside the library converts - a chain's numbers
+//stay in its own unit - but a host can ask, and scale at its boundary knowingly instead of guessing.
+enum CHAIN_UNIT{
+	CHAIN_UNIT_MM = 0,
+	CHAIN_UNIT_M,
+	CHAIN_UNIT_IN,
+	CHAIN_UNIT_COUNT
+};
+//"mm", "m", "in": the spelling the files use
+const char *ChainUnitName(CHAIN_UNIT unit);
+//the unit of that spelling, exactly; false when it is none of the three
+bool ParseChainUnit(const std::string &sName, CHAIN_UNIT &unit);
+//how many millimetres one of that unit is: 1, 1000, 25.4
+double ChainUnitInMillimetres(CHAIN_UNIT unit);
+
 enum CHAIN_PART{
 	CHAIN_PART_TOOL,			//ends with the TOOL segment, whose origin is the tool mount
 	CHAIN_PART_MATERIAL_HOLDER	//ends with the MATERIAL_HOLDER segment, whose origin is the material frame
@@ -136,6 +153,8 @@ public:
 	std::string m_sAuthor;
 	std::string m_sModified;	//last modification, ISO 8601 (e.g. "2026-09-22" or "2026-09-22T14:30:00Z")
 	std::string m_sFileName;
+	//the unit of every length in this chain: required in a file, metres for a chain made in memory
+	CHAIN_UNIT m_nUnit;
 
 	int m_nActiveSegmentIndex;
 	CHAIN_PART m_nActivePart;
@@ -175,6 +194,10 @@ public:
 	std::string GetModified() const;
 	void SetFileName(const std::string &sName);
 	std::string GetFileName() const ;
+	void SetUnit(CHAIN_UNIT unit);
+	CHAIN_UNIT GetUnit() const;
+	//ChainUnitInMillimetres of the unit: what a host multiplies by to get millimetres
+	double GetUnitInMillimetres() const;
 	//resizes the parameters vector if needed, detects collisions and places the tool (to be called before rendering)
 	void Update(CMillingTool *pTool);
 	//gives every regular segment a non-empty name different from the names of the earlier segments

@@ -10,9 +10,9 @@
 //interface may still change between minor versions, and a host should check for the one it needs.
 
 #define KIN5AX_VERSION_MAJOR 0
-#define KIN5AX_VERSION_MINOR 1
+#define KIN5AX_VERSION_MINOR 2
 #define KIN5AX_VERSION_PATCH 0
-#define KIN5AX_VERSION_STRING "0.1.0"
+#define KIN5AX_VERSION_STRING "0.2.0"
 
 namespace kin5ax {
 

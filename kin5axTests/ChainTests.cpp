@@ -225,6 +225,7 @@ static std::string ChainWithBoxlessTool(const std::string &sLinkBoxes, const std
 	std::string s = R"KC({
   "format": "kin5ax-chain",
   "version": 1,
+  "unit": "m",
   "name": "boxless tool",
   "tool_branch": {
     "links": [
@@ -296,3 +297,55 @@ TEST(Collisions, BoxlessToolInABoxOfItsOwnBranch)
 }
 
 INSTANTIATE_TEST_CASE_P(AllChains, ChainFileTest, ::testing::ValuesIn(GetChainFiles()), ChainFileTestName());
+
+//---- the unit of a chain: three spellings, and nothing read into them
+
+TEST(ChainUnit, TheThreeSpellingsAndWhatTheyAreInMillimetres)
+{
+	EXPECT_STREQ("mm",ChainUnitName(CHAIN_UNIT_MM));
+	EXPECT_STREQ("m",ChainUnitName(CHAIN_UNIT_M));
+	EXPECT_STREQ("in",ChainUnitName(CHAIN_UNIT_IN));
+	EXPECT_DOUBLE_EQ(1.0,ChainUnitInMillimetres(CHAIN_UNIT_MM));
+	EXPECT_DOUBLE_EQ(1000.0,ChainUnitInMillimetres(CHAIN_UNIT_M));
+	EXPECT_DOUBLE_EQ(25.4,ChainUnitInMillimetres(CHAIN_UNIT_IN));
+	for(int i=0;i<CHAIN_UNIT_COUNT;i++){
+		CHAIN_UNIT unit = CHAIN_UNIT_COUNT;
+		EXPECT_TRUE(ParseChainUnit(ChainUnitName((CHAIN_UNIT)i),unit))<<"spelling "<<i;
+		EXPECT_EQ((CHAIN_UNIT)i,unit);
+	}
+}
+
+TEST(ChainUnit, OnlyTheExactSpellingIsAUnit)
+{
+	//a file that says "MM" or "meter" was written against the wrong description, and a reader that
+	//guessed what it meant would be right until the day it was not
+	CHAIN_UNIT unit = CHAIN_UNIT_COUNT;
+	EXPECT_FALSE(ParseChainUnit("MM",unit));
+	EXPECT_FALSE(ParseChainUnit("meter",unit));
+	EXPECT_FALSE(ParseChainUnit("inch",unit));
+	EXPECT_FALSE(ParseChainUnit("",unit));
+	EXPECT_FALSE(ParseChainUnit(" m",unit));
+	EXPECT_EQ(CHAIN_UNIT_COUNT,unit)<<"nothing written into the answer when there is none";
+}
+
+TEST(ChainUnit, AChainMadeInMemoryIsMetresLikeEveryModelShipped)
+{
+	CChain oChain;
+	EXPECT_EQ(CHAIN_UNIT_M,oChain.GetUnit());
+	EXPECT_DOUBLE_EQ(1000.0,oChain.GetUnitInMillimetres());
+	oChain.SetUnit(CHAIN_UNIT_IN);
+	EXPECT_EQ(CHAIN_UNIT_IN,oChain.GetUnit());
+	EXPECT_DOUBLE_EQ(25.4,oChain.GetUnitInMillimetres());
+}
+
+TEST(ChainUnit, EveryShippedModelSaysMetres)
+{
+	//the catalogue models were made in metres and the files now say so; one that did not would be
+	//refused, and one that said something else would be a model with its lengths off by a thousand
+	std::vector<std::string> v = GetChainFiles();
+	ASSERT_FALSE(v.empty());
+	for(size_t i=0;i<v.size();i++){
+		CChain oChain = LoadChain(v[i]);
+		EXPECT_EQ(CHAIN_UNIT_M,oChain.GetUnit())<<v[i];
+	}
+}

@@ -21,6 +21,40 @@ CChain::CChain(void)
 	SetActiveSegment(CHAIN_PART_TOOL,-1);
 	AddSegmentAfterActiveSegment(CChainSegment(CHAIN_SEGMENT_TOOL,CR3Vector(1.0,0.0,0.0),0.0,CR3Vector(0.0,0.0,0.5)));
 	m_sFileName = "<chain not saved>";
+	m_nUnit = CHAIN_UNIT_M;		//what every model shipped is in; a file has to say for itself
+}
+
+const char *ChainUnitName(CHAIN_UNIT unit)
+{
+	switch(unit){
+	case CHAIN_UNIT_MM:	return "mm";
+	case CHAIN_UNIT_M:	return "m";
+	case CHAIN_UNIT_IN:	return "in";
+	default:			return "?";
+	}
+}
+
+bool ParseChainUnit(const std::string &sName, CHAIN_UNIT &unit)
+{
+	//exactly the spelling of the file format, no case folding and no synonyms: a file that says
+	//"MM" or "meter" was written by hand against the wrong description, and saying so is worth
+	//more than guessing right
+	for(int i=0;i<CHAIN_UNIT_COUNT;i++)
+		if(sName==ChainUnitName((CHAIN_UNIT)i)){
+			unit = (CHAIN_UNIT)i;
+			return true;
+		}
+	return false;
+}
+
+double ChainUnitInMillimetres(CHAIN_UNIT unit)
+{
+	switch(unit){
+	case CHAIN_UNIT_MM:	return 1.0;
+	case CHAIN_UNIT_M:	return 1000.0;
+	case CHAIN_UNIT_IN:	return 25.4;
+	default:			return 0.0;
+	}
 }
 
 CChain::~CChain(void)
@@ -83,6 +117,7 @@ std::string CChain::toXML() const
 	result += "\n";
 	result += "<!ELEMENT kinematic_chain (tool_part, material_holder_part)>\n";
 	result += "<!ATTLIST kinematic_chain\n";
+	result += "	unit (mm|m|in) #REQUIRED\n";
 	result += "	name CDATA #IMPLIED\n";
 	result += "	machine CDATA #IMPLIED\n";
 	result += "	author CDATA #IMPLIED\n";
@@ -128,6 +163,7 @@ std::string CChain::toXML() const
 	result += ">\n";
 	result += "]>\n";
 	result += "<"+std::string(CHAIN_XML_ROOT_NODE_TYPE_NAME);
+	result += " unit=\""+std::string(ChainUnitName(m_nUnit))+"\"";
 	if(!m_sName.empty())
 		result += " name=\""+xml_escape(m_sName)+"\"";
 	if(!m_sMachine.empty())
@@ -719,6 +755,21 @@ void CChain::SetFileName(const std::string &sName)
 std::string CChain::GetFileName() const
 {
 	return m_sFileName;
+}
+
+void CChain::SetUnit(CHAIN_UNIT unit)
+{
+	m_nUnit = unit;
+}
+
+CHAIN_UNIT CChain::GetUnit() const
+{
+	return m_nUnit;
+}
+
+double CChain::GetUnitInMillimetres() const
+{
+	return ChainUnitInMillimetres(m_nUnit);
 }
 
 //the parameters of the chain are numbered from the base: the material holder part backwards

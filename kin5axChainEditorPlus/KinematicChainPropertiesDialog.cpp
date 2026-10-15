@@ -62,6 +62,8 @@ void CKinematicChainPropertiesDialog::SetActiveDocument(CKin5axChainEditorPlusDo
 		}
 	}
 	m_pDoc = pDoc;
+	if(m_comboUnit.GetSafeHwnd())
+		m_comboUnit.SetCurSel((int)m_pDoc->m_oChain.GetUnit());
 	if(m_pOldParentNode==0)
 		m_pOldParentNode = &m_hToolPart;
 	if(m_nOldIndex<0)
@@ -87,6 +89,7 @@ void CKinematicChainPropertiesDialog::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_SEGMENT_TREE, m_treeSegments);
 	DDX_Control(pDX, IDC_COMBO_SEGMENT_TYPE, m_comboSegmentType);
+	DDX_Control(pDX, IDC_COMBO_UNIT, m_comboUnit);
 	DDX_Text(pDX, IDC_EDIT_TR_X, m_dTrX);
 	DDX_Text(pDX, IDC_EDIT_TR_Y, m_dTrY);
 	DDX_Text(pDX, IDC_EDIT_TR_Z, m_dTrZ);
@@ -136,6 +139,7 @@ BEGIN_MESSAGE_MAP(CKinematicChainPropertiesDialog, CDialog)
 	ON_BN_CLICKED(IDCANCEL, OnBnClickedCancel)
 	ON_CBN_SELCHANGE(IDC_COMBO_PREDEFINED_AXIS, OnCbnSelchangeComboPredefinedAxis)
 	ON_CBN_SELCHANGE(IDC_COMBO_SEGMENT_TYPE, OnCbnSelchangeComboSegmentType)
+	ON_CBN_SELCHANGE(IDC_COMBO_UNIT, OnCbnSelchangeComboUnit)
 	ON_EN_CHANGE(IDC_EDIT_TR_X, OnEnChangeEditTrX)
 	ON_EN_CHANGE(IDC_EDIT_TR_Y, OnEnChangeEditTrY)
 	ON_EN_CHANGE(IDC_EDIT_TR_Z, OnEnChangeEditTrZ)
@@ -190,6 +194,9 @@ BOOL CKinematicChainPropertiesDialog::OnInitDialog()
 	m_treeSegments.SetItemData(m_hMaterialHolderPart,(DWORD_PTR)-1);
 	m_sldParameter.SetRange(0,100,TRUE);
 	m_sldParameter.SetPos(50);
+	//the three units in the order of CHAIN_UNIT, so that the index of the combo is the unit
+	for(int i=0;i<CHAIN_UNIT_COUNT;i++)
+		m_comboUnit.AddString(ChainUnitName((CHAIN_UNIT)i));
 
 	//*/
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -500,6 +507,23 @@ void CKinematicChainPropertiesDialog::UpdateActualSegment(CWnd *pControlWnd,bool
 void CKinematicChainPropertiesDialog::SetSegmentTypeComboValue(CHAIN_SEGMENT_TYPE type)
 {
 	m_nSegmentTypeIndex = (int) (type-1);
+}
+
+void CKinematicChainPropertiesDialog::OnCbnSelchangeComboUnit()
+{
+	//the unit says what every length of the chain is. Changing it changes none of the numbers, it
+	//changes what they mean - which is what somebody who drew a machine in the wrong unit wants,
+	//and the one thing a file cannot be saved without
+	if(!m_pDoc)
+		return;
+	int n = m_comboUnit.GetCurSel();
+	if(n<0 || n>=CHAIN_UNIT_COUNT)
+		return;
+	if(m_pDoc->m_oChain.GetUnit()==(CHAIN_UNIT)n)
+		return;
+	m_pDoc->m_oChain.SetUnit((CHAIN_UNIT)n);
+	m_pDoc->SetModifiedFlag(TRUE);
+	m_pDoc->UpdateAllViews(NULL);
 }
 
 void CKinematicChainPropertiesDialog::OnCbnSelchangeComboSegmentType()

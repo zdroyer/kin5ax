@@ -208,7 +208,7 @@ CChain CChainXmlReader::ReadFile(const std::string &sFilePath)
 		MY_THROW(CGeneratorException,"XML error in "+sFilePath+": no root node");
 	if(strcmp(root.name(),CHAIN_XML_ROOT_NODE_TYPE_NAME)!=0)
 		ctx.Fail(root,"invalid root node "+Tag(root)+", expected <"+CHAIN_XML_ROOT_NODE_TYPE_NAME+">");
-	CheckAttributes(ctx,root,{},{"name","machine","author","modified"});
+	CheckAttributes(ctx,root,{"unit"},{"name","machine","author","modified"});
 	CheckChildren(ctx,root,{"tool_part","material_holder_part"});
 
 	//the default segments of a new chain are replaced below
@@ -218,6 +218,13 @@ CChain CChainXmlReader::ReadFile(const std::string &sFilePath)
 	oChain.SetMachine(root.attribute("machine").value());
 	oChain.SetAuthor(root.attribute("author").value());
 	oChain.SetModified(root.attribute("modified").value());
+	//the unit is required and has to be one of the three spellings exactly: every number in the file
+	//is a length in it, and a file that does not say is a file whose numbers mean nothing yet
+	CHAIN_UNIT nUnit;
+	if(!ParseChainUnit(root.attribute("unit").value(),nUnit))
+		ctx.Fail(root,Tag(root)+" has unit '"+root.attribute("unit").value()
+			+"', which is none of mm, m and in");
+	oChain.SetUnit(nUnit);
 	oChain.m_vToolPart = ReadPart(ctx,root,"tool_part");
 	oChain.m_vMaterialHolderPart = ReadPart(ctx,root,"material_holder_part");
 	oChain.SetFileName(sFilePath);

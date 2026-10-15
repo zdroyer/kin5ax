@@ -281,6 +281,26 @@ k5_status k5_chain_name(k5_chain chain, char *out, size_t capacity)
 	K5_END(K5_ERROR_CHAIN)
 }
 
+k5_status k5_chain_unit(k5_chain chain, int *out)
+{
+	K5_BEGIN
+	K5_NEED(chain && out,"k5_chain_unit needs a chain and somewhere to put the answer")
+	//the two enumerations are kept in the same order, and a test of the interface holds them so
+	*out = (int)chain->m_oChain.GetUnit();
+	return K5_OK;
+	K5_END(K5_ERROR_CHAIN)
+}
+
+k5_status k5_unit_in_millimetres(int unit, double *out)
+{
+	K5_BEGIN
+	K5_NEED(out,"k5_unit_in_millimetres needs somewhere to put the answer")
+	K5_NEED(unit>=0 && unit<(int)CHAIN_UNIT_COUNT,"unit is not one of k5_unit")
+	*out = ChainUnitInMillimetres((CHAIN_UNIT)unit);
+	return K5_OK;
+	K5_END(K5_ERROR_ARGUMENT)
+}
+
 k5_status k5_chain_is_5c(k5_chain chain, int *out)
 {
 	K5_BEGIN

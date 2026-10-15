@@ -28,6 +28,7 @@ std::string ChainWithABoxAt(double dZ, double dRadial)
 	std::string s = R"KC({
   "format": "kin5ax-chain",
   "version": 1,
+  "unit": "m",
   "name": "a box under the tool mount",
   "tool_branch": {
     "links": [

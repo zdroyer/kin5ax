@@ -2,6 +2,7 @@
 
 <!ELEMENT kinematic_chain (tool_part, material_holder_part)>
 <!ATTLIST kinematic_chain
+	unit (mm|m|in) #REQUIRED
 	name CDATA #IMPLIED
 	machine CDATA #IMPLIED
 	author CDATA #IMPLIED

@@ -50,6 +50,7 @@
 #define IDC_EDIT_Y                      1027
 #define IDC_EDIT_Z                      1028
 #define IDC_EDIT_PARAMETER_END          1029
+#define IDC_COMBO_UNIT                  1144
 #define IDC_EDIT_I                      1029
 #define ID_BTN_ZERO_PARAMETER           1030
 #define IDC_EDIT_J                      1030
@@ -233,7 +234,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        146
 #define _APS_NEXT_COMMAND_VALUE         32856
-#define _APS_NEXT_CONTROL_VALUE         1144
+#define _APS_NEXT_CONTROL_VALUE         1145
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif

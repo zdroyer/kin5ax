@@ -48,7 +48,7 @@ fast, exact, machine-aware judge of the toolpath. That judge is this library. Se
 | directory | what | platform |
 |---|---|---|
 | [`kin5ax/`](kin5ax/) | the library: C++17, standard library only (pugixml and nlohmann/json vendored), no Windows dependency | Windows (MSVC) and Linux (GCC) built and tested; macOS untried |
-| [`kin5axTests/`](kin5axTests/) | GoogleTest suite, 794 tests, with 11 machine models under `TestChains/` | same |
+| [`kin5axTests/`](kin5axTests/) | GoogleTest suite, 813 tests, with 11 machine models under `TestChains/` | same |
 | [`kin5axc/`](kin5axc/) | the C interface (`kin5axc`, one header `kin5ax.h`): a shared library that exports nothing but its `k5_*` functions | same |
 | [`kin5axcTests/`](kin5axcTests/) | the tests of that interface, 23 tests, linked against the shared library alone | same |
 | [`kin5axChainEditorPlus/`](kin5axChainEditorPlus/) | **kin5ax Chain Editor Plus**, the MFC application: kinematic chain editor, 3D viewer, single-location solver with a step-by-step log, batch postprocessing of CL files, a rudimentary voxel simulation that checks the geometry of the postprocessor on a hemisphere sized for the machine. The only way to edit a chain file, and the only view of why the solver chose what it chose | Windows |
@@ -205,8 +205,8 @@ The short form:
    copy of `kin5axc` so that it installs without a compiler.
 2. **Ship a built `kin5axc` with the addon.** The binding looks for the shared library and today
    finds it only in a build tree, so nobody can install this without compiling the C++ first.
-3. **Decide the length unit** carried by a chain file, so that callers stop scaling by hand, and
-   let a chain file name the G-code letter of each axis.
+3. **Done, the unit:** a chain file declares it, required, and the interface reports it. Still to
+   do: let a chain file name the G-code letter of each axis.
 4. The postprocessor proper: TCP and direct axes for Heidenhain, then TWP. Vector output with
    Fanuc TCP and direct axes from the solver exist, in the addon repository.
 5. Rollover-aware axis model (#25, #40, #59) and the singular-section feasibility check (#21),

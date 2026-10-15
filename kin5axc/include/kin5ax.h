@@ -6,10 +6,11 @@
  * One header, C and C++ clean, no C++ type ever crossing it. Everything is reached through opaque
  * handles; every call returns a k5_status and leaves a message behind for k5_last_error().
  *
- * Lengths are in the unit of the kinematic chain file that was opened - metres for the models shipped
- * with the library. The files do not carry their unit yet; when they do, this header will say
- * millimetres and convert at the boundary. Angles are radians everywhere except where a function says
- * otherwise (k5_gcode_axes::degrees).
+ * Lengths are in the unit of the kinematic chain file that was opened, and every file says which:
+ * k5_chain_unit answers mm, m or in, and k5_unit_in_millimetres says what to multiply by. Nothing
+ * in here converts - a chain's numbers stay in its own unit, and a host scales at its boundary
+ * knowing what it scales by. The models shipped with the library are metres. Angles are radians
+ * everywhere except where a function says otherwise (k5_gcode_axes::degrees).
  *
  * A handle belongs to one thread at a time: the solver writes the joint values of its chain while it
  * works. Several handles may be used from several threads.
@@ -93,6 +94,13 @@ typedef enum k5_chain_part {
 	K5_PART_MATERIAL_HOLDER			/* ends at the frame of the material */
 } k5_chain_part;
 
+/* The unit every length of a chain file is in. A file names it and a file that does not is refused. */
+typedef enum k5_unit {
+	K5_UNIT_MM = 0,
+	K5_UNIT_M,
+	K5_UNIT_IN
+} k5_unit;
+
 typedef enum k5_tool_shape {
 	K5_TOOL_BALL_NOSE = 0,			/* a ball of radius r at the tip, programmed at its centre */
 	K5_TOOL_FLAT_END				/* a cylinder of radius rz, programmed at the tip */
@@ -123,9 +131,9 @@ K5_API const char *k5_last_error(void);
  * ever sees that one. While the major number is 0 the interface may change between minor versions,
  * so a host should refuse a minor it does not know. */
 #define K5_VERSION_MAJOR 0
-#define K5_VERSION_MINOR 1
+#define K5_VERSION_MINOR 2
 #define K5_VERSION_PATCH 0
-#define K5_VERSION_STRING "0.1.0"
+#define K5_VERSION_STRING "0.2.0"
 
 K5_API const char *k5_version_string(void);
 K5_API void k5_version(int *major, int *minor, int *patch);
@@ -171,6 +179,11 @@ K5_API void k5_chain_free(k5_chain chain);
 K5_API k5_status k5_chain_name(k5_chain chain, char *out, size_t capacity);
 /* 1 when this is a five-axis chain the solver can work with: three linear and two rotary joints. */
 K5_API k5_status k5_chain_is_5c(k5_chain chain, int *out);
+/* The unit of every length of this chain, as its file declared it: a k5_unit. */
+K5_API k5_status k5_chain_unit(k5_chain chain, int *out);
+/* How many millimetres one of that unit is: 1, 1000 or 25.4. K5_ERROR_ARGUMENT for any other value,
+ * so a host that passes what k5_chain_unit gave it can multiply without a table of its own. */
+K5_API k5_status k5_unit_in_millimetres(int unit, double *out);
 /* The joints of the machine, the terminals of the two branches excluded. Five for a 5C machine. */
 K5_API k5_status k5_chain_link_count(k5_chain chain, size_t *out);
 
