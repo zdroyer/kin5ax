@@ -2,6 +2,7 @@
 // doubles instead of the geometry classes. Every function of kin5ax.h is here and nowhere else.
 #include "handles.h"		//brings the prelude of the kin5ax library, which its headers expect first
 #include "kin5ax.h"
+#include "boundary.h"		//the guards, shared with the .fcm bridge in kin5axfcm.cpp
 
 #include "MillingToolBall.h"
 #include "MillingToolCylinder.h"
@@ -18,33 +19,13 @@
 
 using namespace kin5ax;
 
+//the boundary lives in namespace k5c, shared with the .fcm bridge; the calls below name Fail
+//directly, as they always have
+using k5c::Fail;
+
 namespace {
 
-//The message of the last call that failed, per thread: a host that uses two machines on two threads
-//gets its own answer on each of them.
-thread_local std::string g_sLastError;
-
-k5_status Fail(k5_status nStatus, const std::string &sMessage)
-{
-	g_sLastError = sMessage;
-	return nStatus;
-}
-
-//every call starts by forgetting the message of the one before it
-void Clear()
-{
-	g_sLastError.clear();
-}
-
-//the boundary: nothing of C++ escapes through the header, not even an exception
-#define K5_BEGIN	Clear(); try {
-#define K5_END(nDefault)	} \
-	catch(const CArgsMyException &e){ return Fail(K5_ERROR_ARGUMENT,e.Message()); } \
-	catch(const CGeneratorException &e){ return Fail(nDefault,e.Message()); } \
-	catch(const std::exception &e){ return Fail(K5_ERROR_UNKNOWN,e.what()); } \
-	catch(...){ return Fail(K5_ERROR_UNKNOWN,"an exception of a kind this interface does not know"); }
-
-#define K5_NEED(bCondition,szMessage)	if(!(bCondition)) return Fail(K5_ERROR_ARGUMENT,szMessage);
+//the guards and the last message live in boundary.h and just below, shared with the bridge
 
 //the values of the enums are the interface, so they are mapped and never cast
 int ToCStatus(SOLVE_STATUS nStatus)
@@ -207,13 +188,38 @@ k5_status RunPostprocessor(k5_chain_t *pChain, k5_tool_t *pTool, const k5_settin
 
 } // namespace
 
+namespace k5c {
+
+//The message of the last call that failed, per thread: a host that uses two machines on two
+//threads gets its own answer on each of them.
+static thread_local std::string g_sLastError;
+
+k5_status Fail(k5_status nStatus, const std::string &sMessage)
+{
+	g_sLastError = sMessage;
+	return nStatus;
+}
+
+void Clear()
+{
+	g_sLastError.clear();
+}
+
+const char *LastError()
+{
+	return g_sLastError.c_str();
+}
+
+} // namespace k5c
+
+
 // ---------------------------------------------------------------- the library itself
 
 extern "C" {
 
 const char *k5_last_error(void)
 {
-	return g_sLastError.c_str();
+	return k5c::LastError();
 }
 
 const char *k5_version_string(void)

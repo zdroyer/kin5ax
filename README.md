@@ -49,8 +49,8 @@ fast, exact, machine-aware judge of the toolpath. That judge is this library. Se
 |---|---|---|
 | [`kin5ax/`](kin5ax/) | the library: C++17, standard library only (pugixml and nlohmann/json vendored), no Windows dependency | Windows (MSVC) and Linux (GCC) built and tested; macOS untried |
 | [`kin5axTests/`](kin5axTests/) | GoogleTest suite, 813 tests, with 11 machine models under `TestChains/` | same |
-| [`kin5axc/`](kin5axc/) | the C interface (`kin5axc`, one header `kin5ax.h`): a shared library that exports nothing but its `k5_*` functions | same |
-| [`kin5axcTests/`](kin5axcTests/) | the tests of that interface, 23 tests, linked against the shared library alone | same |
+| [`kin5axc/`](kin5axc/) | the C interface (`kin5axc`): `kin5ax.h` for the kinematics, the solving and the simulation, and `kin5axfcm.h` for the FreeCAD machine file bridge. One shared library, exporting nothing but its `k5_*` functions | same |
+| [`kin5axcTests/`](kin5axcTests/) | the tests of that interface, 30 tests, linked against the shared library alone | same |
 | [`kin5axChainEditorPlus/`](kin5axChainEditorPlus/) | **kin5ax Chain Editor Plus**, the MFC application: kinematic chain editor, 3D viewer, single-location solver with a step-by-step log, batch postprocessing of CL files, a rudimentary voxel simulation that checks the geometry of the postprocessor on a hemisphere sized for the machine. The only way to edit a chain file, and the only view of why the solver chose what it chose | Windows |
 
 Machine models shipped and round-trip tested (catalogue travels and swivel ranges; head and
@@ -100,6 +100,17 @@ handed over as two arrays of doubles - an agent or a CAM system that holds a pat
 to write out; the simulation, the `.fcm` bridge and the material model stay inside. Its own tests link the shared library and nothing else, one of them compiles
 the header with the C compiler, and on Linux a `ctest` case checks that every symbol the shared
 object exports is one of its `k5_*` functions and not one is anything else.
+
+**The FreeCAD machine file bridge** is [`kin5axc/include/kin5axfcm.h`](kin5axc/include/kin5axfcm.h),
+a second header over the same shared library: `k5_chain_open_fcm` reads an `.fcm` into a chain
+like any other, `k5_chain_write_fcm` writes one. It stands apart from `kin5ax.h` because the
+conversion is a different kind of thing from the kinematics - it is lossy, it takes conventions
+that are not in the file, and it answers with remarks - and a host that never touches FreeCAD
+machine files should not have to read about it. Nothing is dropped silently: `k5_fcm_remark`
+hands back what the conversion could not carry across, and a host that ignores those hides from
+its user the difference between the machine in the file and the machine about to be solved for.
+An `.fcm` is millimetres by FreeCAD's definition, so a chain read from one says `mm` and a chain
+written to one is scaled on the way out.
 
 **Which build is which.** `k5_version` answers with the version a host checks for compatibility,
 and `k5_commit_hash` with the commit the library was built from, compiled in by CMake from

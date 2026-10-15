@@ -51,6 +51,9 @@ stay in its own unit - and `CChain::GetUnitInMillimetres` is what a caller multi
 models shipped are metres. An `.fcm` file is millimetres by FreeCAD's definition, so a chain read
 from one says `mm`, and a chain written to one is scaled into millimetres on the way out.
 
+The bridge is reachable from C through `kin5axc/include/kin5axfcm.h`, a header of its own over
+the same shared library, remarks included.
+
 ## The inverse problem
 
 Input: the tool reference point *p* and the unit tool axis *v* in the workpiece frame.

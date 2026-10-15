@@ -5,6 +5,7 @@ enable_language(C)
 add_executable(kin5axcTests
   main.cpp
   AbiTests.cpp
+  FcmAbiTests.cpp
   CHeaderCheck.c      # the public header, compiled by the C compiler
 )
 

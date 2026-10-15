@@ -3,6 +3,7 @@
 // What the opaque handles of the C interface really are. Nothing here is visible to a host.
 #include "stdafx.h"		//the prelude of the kin5ax library: its headers expect it to come first
 #include "Chain.h"
+#include "ChainFcm.h"
 #include "ChainFileReader.h"
 #include "MillingTool.h"
 #include "CLDataPostprocessor.h"
@@ -17,6 +18,9 @@
 struct k5_chain_t
 {
 	kin5ax::CChain m_oChain;
+	//what the last .fcm conversion of this chain could not carry across, read or written; empty
+	//for a chain that has been through neither, and read back by k5_fcm_remark
+	kin5ax::CFcmReport m_oFcmReport;
 };
 
 //A milling tool with its holder, owned through the base class the way the library does it.

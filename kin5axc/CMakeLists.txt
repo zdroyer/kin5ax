@@ -2,6 +2,7 @@
 # library is exported, so a host can be built with any compiler and any runtime.
 add_library(kin5axc SHARED
   src/kin5axc.cpp
+  src/kin5axfcm.cpp        # the FreeCAD machine file bridge, a header of its own over the same library
 )
 
 target_include_directories(kin5axc
@@ -44,7 +45,7 @@ install(TARGETS kin5axc
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}        # kin5axc.dll on Windows
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}        # libkin5axc.so and its links on Linux
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})       # kin5axc.lib, the import library of the dll
-install(FILES include/kin5ax.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(FILES include/kin5ax.h include/kin5axfcm.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 # and a test that says so, because this is the kind of promise that rots quietly
 if(UNIX AND NOT APPLE AND KIN5AX_BUILD_TESTS)

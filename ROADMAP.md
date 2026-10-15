@@ -36,6 +36,9 @@ roadmap needs:
 - `k5_path_location` — per location: status, where it came from, and `q[5]`, the joint values
 - `k5_path_errors`, `k5_path_count_of_status`, `k5_path_last_configuration`
 - `k5_chain_default_gcode_axes`, `k5_path_write_gcode` — direct-axes G-code, `G1 X Y Z A C`
+- `k5_chain_unit`, `k5_unit_in_millimetres` — what the lengths of a chain file are in
+- **`kin5axfcm.h`** — the FreeCAD machine file bridge, a header of its own over the same shared
+  library: `k5_chain_open_fcm`, `k5_chain_write_fcm` and the remarks of the conversion
 
 **The FreeCAD operation**, now in its own repository [kin5ax-cam-freecad](https://github.com/zdroyer/kin5ax-cam-freecad), lays a zigzag over the `u,v` space of one face with any
 shape of tool, holds the tool either standing up or along the surface normal leaned over by two
