@@ -33,6 +33,24 @@ public:
 	// the unit every length of the chain is in: mm, m or in
 	CComboBox m_comboUnit;
 
+	//The tool holder the machine of this chain usually carries, which only a TOOL terminal has. It is
+	//a default for whoever puts a tool in the spindle and for a host that has holders of its own to
+	//match against; the end of the tool branch is the tool mount whether a holder is named or not.
+	CComboBox m_comboChainHolderModel;
+	CString m_sChainHolderModel;
+	double m_dChainHolderLength;
+	double m_dChainHolderRadius;
+	CEdit m_editChainHolderLength;
+	CEdit m_editChainHolderRadius;
+	//the holder the three controls describe, empty when they are
+	CToolHolder ChainHolderFromDialog() const;
+	//shows the holder of that segment, and grays the controls for a segment that cannot carry one
+	void UpdateChainHolderFields(const CChainSegment *pSegment);
+	afx_msg void OnCbnSelchangeComboChainHolderModel();
+	afx_msg void OnCbnEditchangeComboChainHolderModel();
+	afx_msg void OnEnChangeEditChainHolderLength();
+	afx_msg void OnEnChangeEditChainHolderRadius();
+
 	// coordinates of initial translation of segment	
 	double m_dTrX;
 	double m_dTrY;

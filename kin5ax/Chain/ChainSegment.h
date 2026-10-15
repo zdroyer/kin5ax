@@ -76,12 +76,16 @@ public:
 	double m_dParameterValueMaximum;
 	bool m_bParameterIsConstrained;
 
-	//The tool holder of a TOOL segment, from the chain file. Declaring it makes the segment the tool mount:
-	//the tool point then hangs the length of the assembly below the origin of the segment, see
-	//CChain::GetToolMountToToolPointDistance. No other type of segment may carry one.
+	//The tool holder a TOOL segment names, from the chain file: the holder the machine usually carries,
+	//which is a default for whoever puts a tool in the spindle and for a host matching it against the
+	//holders it has of its own. The terminal of the tool branch is the tool mount whether a holder is
+	//named or not, and the tool point hangs the gauge length of the tool below it either way. No other
+	//type of segment may carry one.
 	const CToolHolder & GetToolHolder() const { return m_oToolHolder; }
 	bool IsToolHolderDeclared() const { return m_bToolHolderDeclared; }
 	void SetToolHolder(const CToolHolder &oHolder) { m_oToolHolder = oHolder; m_bToolHolderDeclared = true; }
+	//the segment names no holder at all, which is what a file without the element says
+	void ClearToolHolder() { m_oToolHolder = CToolHolder(); m_bToolHolderDeclared = false; }
 
 	bool IsParameterConstrained() const;
 	bool IsRegularJoint() const;

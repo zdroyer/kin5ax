@@ -48,6 +48,17 @@ public:
 	double m_dNonCuttingLength;			//the shank between the cutting part and the holder
 	double m_dHolderLength;
 	double m_dHolderRadius;
+	//The designation of the holder: one of the catalogue, or anything the workshop calls its own. A
+	//name the catalogue knows brings the shape with it, and then the length and the radius are that
+	//holder's and not to be typed over; anything else is the one cylinder of the two fields.
+	CString m_sHolderModel;
+	CComboBox m_comboHolderModel;
+	CEdit m_editHolderLength;
+	CEdit m_editHolderRadius;
+	//the holder the fields of the dialog describe
+	CToolHolder HolderFromDialog() const;
+	//shows the sizes of the holder that was picked, and lets them be typed only when it is nobody's
+	void UpdateHolderFields();
 	int m_nToolShapeIndex;
 
 	CMillingTool *m_pOldTool;
@@ -70,7 +81,12 @@ public:
 	afx_msg void OnBnClickedButtonApply();
 	afx_msg void OnBnClickedCancel();
 	virtual INT_PTR DoModal();
+	virtual BOOL OnInitDialog();
 	afx_msg void OnCbnSelchangeComboShape();
+	afx_msg void OnCbnSelchangeComboHolderModel();
+	afx_msg void OnCbnEditchangeComboHolderModel();
+	afx_msg void OnEnChangeEditHolderLength();
+	afx_msg void OnEnChangeEditHolderRadius();
 	CEdit m_editH;
 	CEdit m_editR;
 };

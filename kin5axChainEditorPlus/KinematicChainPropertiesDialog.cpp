@@ -33,6 +33,9 @@ CKinematicChainPropertiesDialog::CKinematicChainPropertiesDialog(CWnd* pParent /
 	, m_dParameterStart(0)
 	, m_dParameterEnd(0)
 	, m_sSegmentName(_T(""))
+	, m_sChainHolderModel(_T(""))
+	, m_dChainHolderLength(0.0)
+	, m_dChainHolderRadius(0.0)
 	, m_pActiveSegment(0)
 	, m_nActivePart(-1)
 {
@@ -90,6 +93,12 @@ void CKinematicChainPropertiesDialog::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_SEGMENT_TREE, m_treeSegments);
 	DDX_Control(pDX, IDC_COMBO_SEGMENT_TYPE, m_comboSegmentType);
 	DDX_Control(pDX, IDC_COMBO_UNIT, m_comboUnit);
+	DDX_Control(pDX, IDC_COMBO_CHAIN_HOLDER_MODEL, m_comboChainHolderModel);
+	DDX_CBString(pDX, IDC_COMBO_CHAIN_HOLDER_MODEL, m_sChainHolderModel);
+	DDX_Control(pDX, IDC_EDIT_CHAIN_HOLDER_LENGTH, m_editChainHolderLength);
+	DDX_Control(pDX, IDC_EDIT_CHAIN_HOLDER_RADIUS, m_editChainHolderRadius);
+	DDX_Text(pDX, IDC_EDIT_CHAIN_HOLDER_LENGTH, m_dChainHolderLength);
+	DDX_Text(pDX, IDC_EDIT_CHAIN_HOLDER_RADIUS, m_dChainHolderRadius);
 	DDX_Text(pDX, IDC_EDIT_TR_X, m_dTrX);
 	DDX_Text(pDX, IDC_EDIT_TR_Y, m_dTrY);
 	DDX_Text(pDX, IDC_EDIT_TR_Z, m_dTrZ);
@@ -140,6 +149,10 @@ BEGIN_MESSAGE_MAP(CKinematicChainPropertiesDialog, CDialog)
 	ON_CBN_SELCHANGE(IDC_COMBO_PREDEFINED_AXIS, OnCbnSelchangeComboPredefinedAxis)
 	ON_CBN_SELCHANGE(IDC_COMBO_SEGMENT_TYPE, OnCbnSelchangeComboSegmentType)
 	ON_CBN_SELCHANGE(IDC_COMBO_UNIT, OnCbnSelchangeComboUnit)
+	ON_CBN_SELCHANGE(IDC_COMBO_CHAIN_HOLDER_MODEL, OnCbnSelchangeComboChainHolderModel)
+	ON_CBN_EDITCHANGE(IDC_COMBO_CHAIN_HOLDER_MODEL, OnCbnEditchangeComboChainHolderModel)
+	ON_EN_CHANGE(IDC_EDIT_CHAIN_HOLDER_LENGTH, OnEnChangeEditChainHolderLength)
+	ON_EN_CHANGE(IDC_EDIT_CHAIN_HOLDER_RADIUS, OnEnChangeEditChainHolderRadius)
 	ON_EN_CHANGE(IDC_EDIT_TR_X, OnEnChangeEditTrX)
 	ON_EN_CHANGE(IDC_EDIT_TR_Y, OnEnChangeEditTrY)
 	ON_EN_CHANGE(IDC_EDIT_TR_Z, OnEnChangeEditTrZ)
@@ -197,6 +210,10 @@ BOOL CKinematicChainPropertiesDialog::OnInitDialog()
 	//the three units in the order of CHAIN_UNIT, so that the index of the combo is the unit
 	for(int i=0;i<CHAIN_UNIT_COUNT;i++)
 		m_comboUnit.AddString(ChainUnitName((CHAIN_UNIT)i));
+	//the holders a five-axis machine usually carries; any other designation can be typed in, and
+	//then the length and the radius of that holder are given here too
+	for(size_t i=0;i<ToolHolderCatalogueSize();i++)
+		m_comboChainHolderModel.AddString(ToolHolderFromCatalogue(i).GetModel().c_str());
 
 	//*/
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -314,6 +331,7 @@ void CKinematicChainPropertiesDialog::DisableSegmentProperties(void)
 	m_edtParameterValue.EnableWindow(FALSE);
 	m_buttonAddPart.EnableWindow(FALSE);
 	m_buttonDeletePart.EnableWindow(FALSE);
+	UpdateChainHolderFields(0);
 
 	
 
@@ -384,6 +402,7 @@ void CKinematicChainPropertiesDialog::EnableSegmentProperties(const CChainSegmen
 
 	m_buttonAddPart.EnableWindow(TRUE);
 	m_buttonDeletePart.EnableWindow(TRUE);
+	UpdateChainHolderFields(&segment);
 	UpdateSegmentPartsList();
 
 }
@@ -460,6 +479,13 @@ CChainSegment CKinematicChainPropertiesDialog::GetChainSegmentFromDialogData(voi
 	else
 		segment.SetParameterValue(m_dParameterValue);
 	segment.SetName(m_sSegmentName.GetBuffer(0));
+	//Only a TOOL terminal carries a holder, and a segment built without one would drop the holder of
+	//the file the moment anything else on that segment was edited.
+	if(type==CHAIN_SEGMENT_TOOL){
+		const CToolHolder oHolder = ChainHolderFromDialog();
+		if(!oHolder.IsEmpty())
+			segment.SetToolHolder(oHolder);
+	}
 	return segment;
 }
 
@@ -507,6 +533,81 @@ void CKinematicChainPropertiesDialog::UpdateActualSegment(CWnd *pControlWnd,bool
 void CKinematicChainPropertiesDialog::SetSegmentTypeComboValue(CHAIN_SEGMENT_TYPE type)
 {
 	m_nSegmentTypeIndex = (int) (type-1);
+}
+
+//The holder the three controls describe. A designation the catalogue knows brings its cylinders with
+//it, so that this editor and a host reading the file later put the same solid on the machine; any
+//other designation is this workshop's own holder, and then the length and the radius are the single
+//cylinder somebody measured. Nothing typed at all is a chain that names no holder.
+CToolHolder CKinematicChainPropertiesDialog::ChainHolderFromDialog() const
+{
+	const std::string sModel((LPCTSTR)m_sChainHolderModel);
+	const CToolHolder oCatalogue = ToolHolderByModel(sModel);
+	if(!oCatalogue.IsEmpty())
+		return oCatalogue;
+	CToolHolder oHolder(m_dChainHolderLength,m_dChainHolderRadius);
+	oHolder.SetModel(sModel);
+	return oHolder;
+}
+
+void CKinematicChainPropertiesDialog::UpdateChainHolderFields(const CChainSegment *pSegment)
+{
+	const bool bTool = pSegment && pSegment->GetType()==CHAIN_SEGMENT_TOOL;
+	m_comboChainHolderModel.EnableWindow(bTool);
+	m_editChainHolderLength.EnableWindow(bTool);
+	m_editChainHolderRadius.EnableWindow(bTool);
+	if(!bTool){
+		m_sChainHolderModel = "";
+		m_dChainHolderLength = 0.0;
+		m_dChainHolderRadius = 0.0;
+		UpdateData(FALSE);
+		return;
+	}
+	const CToolHolder oHolder = pSegment->IsToolHolderDeclared()
+		? pSegment->GetToolHolder() : CToolHolder();
+	m_sChainHolderModel = oHolder.GetModel().c_str();
+	m_dChainHolderLength = oHolder.GetLength();
+	m_dChainHolderRadius = oHolder.GetRadius();
+	//a holder of the catalogue is three cylinders, and its sizes are the catalogue's to give
+	const bool bFromCatalogue = !ToolHolderByModel(oHolder.GetModel()).IsEmpty();
+	m_editChainHolderLength.SetReadOnly(bFromCatalogue);
+	m_editChainHolderRadius.SetReadOnly(bFromCatalogue);
+	UpdateData(FALSE);
+}
+
+void CKinematicChainPropertiesDialog::OnCbnSelchangeComboChainHolderModel()
+{
+	//the text of a combo box is not exchanged yet when its selection changes, so take the item
+	const int nIndex = m_comboChainHolderModel.GetCurSel();
+	if(nIndex!=CB_ERR)
+		m_comboChainHolderModel.GetLBText(nIndex,m_sChainHolderModel);
+	const CToolHolder oHolder = ToolHolderByModel(std::string((LPCTSTR)m_sChainHolderModel));
+	if(!oHolder.IsEmpty()){
+		m_dChainHolderLength = oHolder.GetLength();
+		m_dChainHolderRadius = oHolder.GetRadius();
+	}
+	m_editChainHolderLength.SetReadOnly(!oHolder.IsEmpty());
+	m_editChainHolderRadius.SetReadOnly(!oHolder.IsEmpty());
+	UpdateData(FALSE);
+	UpdateActualSegment();
+}
+
+void CKinematicChainPropertiesDialog::OnCbnEditchangeComboChainHolderModel()
+{
+	UpdateData(TRUE);
+	m_editChainHolderLength.SetReadOnly(FALSE);
+	m_editChainHolderRadius.SetReadOnly(FALSE);
+	UpdateActualSegment();
+}
+
+void CKinematicChainPropertiesDialog::OnEnChangeEditChainHolderLength()
+{
+	UpdateActualSegment(&m_editChainHolderLength);
+}
+
+void CKinematicChainPropertiesDialog::OnEnChangeEditChainHolderRadius()
+{
+	UpdateActualSegment(&m_editChainHolderRadius);
 }
 
 void CKinematicChainPropertiesDialog::OnCbnSelchangeComboUnit()

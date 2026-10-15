@@ -404,6 +404,22 @@ TEST(ToolHolderXml, SurvivesTheRoundTrip)
 	EXPECT_EQ(oChain.toXML(),oReloaded.toXML());
 }
 
+TEST(ToolHolderXml, AHolderCanBeTakenOffAgain)
+{
+	//an editor that lets a holder be named must let the name be taken back, and then the file says
+	//nothing about a holder at all
+	CChain oChain;
+	ASSERT_EQ(std::string(),PugiError(WithToolHolder(),&oChain));
+	ASSERT_TRUE(oChain.HasDefaultToolHolder());
+	std::vector<CChainSegment> &vTool = oChain.GetPart(CHAIN_PART_TOOL);
+	vTool.back().ClearToolHolder();
+	EXPECT_FALSE(oChain.HasDefaultToolHolder());
+	EXPECT_EQ(std::string::npos,oChain.toXML().find("<tool_holder"));
+	CChain oReloaded;
+	ASSERT_EQ(std::string(),PugiError(oChain.toXML(),&oReloaded));
+	EXPECT_FALSE(oReloaded.HasDefaultToolHolder());
+}
+
 TEST(ToolHolderXml, OnlyTheToolSegmentCarriesOne)
 {
 	std::string s = Replaced(Template(),"</segment>\n<segment type=\"REVOLUTE_LINK\" name=\"B\""
