@@ -575,6 +575,19 @@ void CKinematicChainPropertiesDialog::UpdateChainHolderFields(const CChainSegmen
 	UpdateData(FALSE);
 }
 
+void CKinematicChainPropertiesDialog::ApplyChainHolderToTool()
+{
+	//The holder the machine carries is the holder the tool in the spindle sits in, which is the only
+	//way the 3D view can show what was just picked. A tool whose gauge length was measured keeps its
+	//tip where it is; any other stands against the new holder, and the tip moves with it.
+	if(!m_pDoc || !m_pDoc->m_pMillingTool)
+		return;
+	m_pDoc->m_pMillingTool->SetToolHolder(ChainHolderFromDialog());
+	m_pDoc->m_oChain.SetToolAssembly(*m_pDoc->m_pMillingTool);
+	m_pDoc->SetModifiedFlag(TRUE);
+	m_pDoc->UpdateAllViews(NULL);
+}
+
 void CKinematicChainPropertiesDialog::OnCbnSelchangeComboChainHolderModel()
 {
 	//the text of a combo box is not exchanged yet when its selection changes, so take the item
@@ -590,6 +603,7 @@ void CKinematicChainPropertiesDialog::OnCbnSelchangeComboChainHolderModel()
 	m_editChainHolderRadius.SetReadOnly(!oHolder.IsEmpty());
 	UpdateData(FALSE);
 	UpdateActualSegment();
+	ApplyChainHolderToTool();
 }
 
 void CKinematicChainPropertiesDialog::OnCbnEditchangeComboChainHolderModel()
@@ -598,16 +612,19 @@ void CKinematicChainPropertiesDialog::OnCbnEditchangeComboChainHolderModel()
 	m_editChainHolderLength.SetReadOnly(FALSE);
 	m_editChainHolderRadius.SetReadOnly(FALSE);
 	UpdateActualSegment();
+	ApplyChainHolderToTool();
 }
 
 void CKinematicChainPropertiesDialog::OnEnChangeEditChainHolderLength()
 {
 	UpdateActualSegment(&m_editChainHolderLength);
+	ApplyChainHolderToTool();
 }
 
 void CKinematicChainPropertiesDialog::OnEnChangeEditChainHolderRadius()
 {
 	UpdateActualSegment(&m_editChainHolderRadius);
+	ApplyChainHolderToTool();
 }
 
 void CKinematicChainPropertiesDialog::OnCbnSelchangeComboUnit()

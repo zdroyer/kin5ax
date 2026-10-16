@@ -138,6 +138,9 @@ public:
 	//caller that has not measured anything means.
 	double GetGaugeLength() const;
 	void SetGaugeLength(double dLength);
+	//true when a gauge length was measured and given; false when GetGaugeLength is the tool standing
+	//against its holder, which then moves with the holder
+	bool IsGaugeLengthGiven() const { return m_dGaugeLength>0.0; }
 	//What is clamped in the mount, and what the tool is clamped in: up to three cylinders hanging
 	//from the mount. Giving the tool another holder moves nothing when a gauge length was measured;
 	//without one the tool stands against its holder, so the tip follows.

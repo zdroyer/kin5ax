@@ -40,7 +40,14 @@ public:
 	double m_dNotCuttingSideEnd;
 	double m_dNotCuttingSideRadius;
 //*/
+	//The gauge length shown in the h field. It is only a measurement when somebody typed it: until
+	//then the tool stands against its holder and the field shows what that adds up to, and a holder
+	//picked afterwards moves the tip with it rather than hanging below a frozen length.
 	double m_dH;
+	bool m_bGaugeGiven;
+	//set while the fields are being written from the tool, so that the EN_CHANGE each write sends
+	//does not read them straight back as something the user typed
+	bool m_bRefreshing;
 	double m_dRz;
 	double m_dR;
 	double m_dCuttingPartEnd;

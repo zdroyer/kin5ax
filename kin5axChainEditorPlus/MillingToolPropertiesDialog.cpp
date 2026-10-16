@@ -19,6 +19,8 @@ IMPLEMENT_DYNAMIC(CMillingToolPropertiesDialog, CDialog)
 CMillingToolPropertiesDialog::CMillingToolPropertiesDialog(CWnd* pParent /*=NULL*/)
 	: CDialog(CMillingToolPropertiesDialog::IDD, pParent)
 	,m_dH(0.0)
+	,m_bGaugeGiven(false)
+	,m_bRefreshing(false)
 	,m_dRz(0.012)
 	,m_dR(0.012)
 	,m_dCuttingPartEnd(0.040)
@@ -87,7 +89,9 @@ void CMillingToolPropertiesDialog::UpdateMillingTool()
 	//dimensions that are not a tool (KnownBugs #50): the document keeps the tool it has until the fields
 	//make one again, and Apply says what is wrong with them
 	if(ToolDimensionProblem().size()){
+		m_bRefreshing = true;
 		UpdateData(FALSE);
+		m_bRefreshing = false;
 		return;
 	}
 	((CMainFrame*)AfxGetMainWnd())->StopAndResetSimulation();	//the simulation refers to the tool being replaced
@@ -97,19 +101,21 @@ void CMillingToolPropertiesDialog::UpdateMillingTool()
 	
 	UpdateHolderFields();
 	CToolHolder oHolder = HolderFromDialog();
-	//m_dH is the gauge length: from the tip to the tool mount of the machine, which is where the end
-	//of the tool branch of every chain is. 0 means nobody measured the tool, and then it stands right
-	//up against its holder and the tool works the length out.
+	//The gauge length: from the tip to the tool mount of the machine, which is where the end of the
+	//tool branch of every chain is. Only a length somebody typed is handed over; otherwise the tool
+	//gets 0, stands right up against its holder and works the length out, so that a holder picked
+	//next moves the tip with it instead of hanging below a length that was never measured.
+	const double dGauge = m_bGaugeGiven ? m_dH : 0.0;
 	switch(m_nToolShapeIndex){
 		//ball
 		case 0:
 			m_pDoc->m_pMillingTool = new CMillingToolBall(m_dRz,m_dR
-				,m_dCuttingPartEnd,m_dReferencePointHeight,m_dNonCuttingLength,oHolder,m_dH);
+				,m_dCuttingPartEnd,m_dReferencePointHeight,m_dNonCuttingLength,oHolder,dGauge);
 		break;
 		//cylinder
 		case 1:
 			m_pDoc->m_pMillingTool = new CMillingToolCylinder(m_dRz,m_dR
-				,m_dCuttingPartEnd,m_dReferencePointHeight,m_dNonCuttingLength,oHolder,m_dH);
+				,m_dCuttingPartEnd,m_dReferencePointHeight,m_dNonCuttingLength,oHolder,dGauge);
 		break;
 		default:
 			m_editH.EnableWindow(TRUE);
@@ -120,7 +126,9 @@ void CMillingToolPropertiesDialog::UpdateMillingTool()
 		m_dH = m_pDoc->m_pMillingTool->GetGaugeLength();
 		m_pDoc->m_oChain.SetToolAssembly(*m_pDoc->m_pMillingTool);
 	}
+	m_bRefreshing = true;
 	UpdateData(FALSE);
+	m_bRefreshing = false;
 
 	m_wndMillingToolPreview.SetMillingTool(m_pDoc->m_pMillingTool);
 }
@@ -173,6 +181,8 @@ END_MESSAGE_MAP()
 
 void CMillingToolPropertiesDialog::OnEnChangeEditRz()
 {
+	if(m_bRefreshing)
+		return;
 	UpdateData(TRUE);
 	UpdateMillingTool();
 	m_wndMillingToolPreview.Invalidate(TRUE);
@@ -180,6 +190,8 @@ void CMillingToolPropertiesDialog::OnEnChangeEditRz()
 
 void CMillingToolPropertiesDialog::OnEnChangeEditR()
 {
+	if(m_bRefreshing)
+		return;
 	UpdateData(TRUE);
 	UpdateMillingTool();
 	m_wndMillingToolPreview.Invalidate(TRUE);
@@ -187,13 +199,19 @@ void CMillingToolPropertiesDialog::OnEnChangeEditR()
 
 void CMillingToolPropertiesDialog::OnEnChangeEditH()
 {
+	if(m_bRefreshing)
+		return;
 	UpdateData(TRUE);
+	//typed by the user: a measurement from now on, and 0 takes the measurement back
+	m_bGaugeGiven = m_dH>0.0;
 	UpdateMillingTool();
 	m_wndMillingToolPreview.Invalidate(TRUE);
 }
 
 void CMillingToolPropertiesDialog::OnEnChangeEditCuttingPartHeight()
 {
+	if(m_bRefreshing)
+		return;
 	UpdateData(TRUE);
 	UpdateMillingTool();
 	m_wndMillingToolPreview.Invalidate(TRUE);
@@ -202,6 +220,8 @@ void CMillingToolPropertiesDialog::OnEnChangeEditCuttingPartHeight()
 
 void CMillingToolPropertiesDialog::OnEnChangeEditReferencePointHeight()
 {
+	if(m_bRefreshing)
+		return;
 	UpdateData(TRUE);
 	UpdateMillingTool();
 	m_wndMillingToolPreview.Invalidate(TRUE);
@@ -247,6 +267,7 @@ void CMillingToolPropertiesDialog::SetActiveDocument(CKin5axChainEditorPlusDoc *
 			m_dHolderRadius = oHolder.GetRadius();
 			m_sHolderModel = oHolder.GetModel().c_str();
 			m_dH = m_pOldTool->GetGaugeLength();
+			m_bGaugeGiven = m_pOldTool->IsGaugeLengthGiven();
 		}
 	}
 
@@ -276,7 +297,9 @@ BOOL CMillingToolPropertiesDialog::OnInitDialog()
 	//with holders of its own types their designation in, and then gives the sizes itself
 	for(size_t i=0;i<ToolHolderCatalogueSize();i++)
 		m_comboHolderModel.AddString(ToolHolderFromCatalogue(i).GetModel().c_str());
+	m_bRefreshing = true;
 	UpdateData(FALSE);		//the list is filled, so the model of the tool goes back into it
+	m_bRefreshing = false;
 	UpdateHolderFields();
 	return TRUE;
 }
@@ -288,13 +311,17 @@ void CMillingToolPropertiesDialog::OnCbnSelchangeComboHolderModel()
 	if(nIndex!=CB_ERR)
 		m_comboHolderModel.GetLBText(nIndex,m_sHolderModel);
 	UpdateHolderFields();
+	m_bRefreshing = true;
 	UpdateData(FALSE);
+	m_bRefreshing = false;
 	UpdateMillingTool();
 	m_wndMillingToolPreview.Invalidate(TRUE);
 }
 
 void CMillingToolPropertiesDialog::OnCbnEditchangeComboHolderModel()
 {
+	if(m_bRefreshing)
+		return;
 	UpdateData(TRUE);
 	UpdateMillingTool();
 	m_wndMillingToolPreview.Invalidate(TRUE);
@@ -302,6 +329,8 @@ void CMillingToolPropertiesDialog::OnCbnEditchangeComboHolderModel()
 
 void CMillingToolPropertiesDialog::OnEnChangeEditHolderLength()
 {
+	if(m_bRefreshing)
+		return;
 	UpdateData(TRUE);
 	UpdateMillingTool();
 	m_wndMillingToolPreview.Invalidate(TRUE);
@@ -309,6 +338,8 @@ void CMillingToolPropertiesDialog::OnEnChangeEditHolderLength()
 
 void CMillingToolPropertiesDialog::OnEnChangeEditHolderRadius()
 {
+	if(m_bRefreshing)
+		return;
 	UpdateData(TRUE);
 	UpdateMillingTool();
 	m_wndMillingToolPreview.Invalidate(TRUE);
@@ -331,7 +362,9 @@ void CMillingToolPropertiesDialog::OnCbnSelchangeComboShape()
 		default:
 			m_editH.EnableWindow(TRUE);
 	}
+	m_bRefreshing = true;
 	UpdateData(FALSE);
+	m_bRefreshing = false;
 	UpdateMillingTool();
 	m_wndMillingToolPreview.Invalidate(TRUE);
 

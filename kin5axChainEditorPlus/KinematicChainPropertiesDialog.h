@@ -46,6 +46,8 @@ public:
 	CToolHolder ChainHolderFromDialog() const;
 	//shows the holder of that segment, and grays the controls for a segment that cannot carry one
 	void UpdateChainHolderFields(const CChainSegment *pSegment);
+	//puts the holder the chain names onto the tool of the document, so that the view shows it
+	void ApplyChainHolderToTool();
 	afx_msg void OnCbnSelchangeComboChainHolderModel();
 	afx_msg void OnCbnEditchangeComboChainHolderModel();
 	afx_msg void OnEnChangeEditChainHolderLength();
