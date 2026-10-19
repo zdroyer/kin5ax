@@ -186,7 +186,7 @@ TEST(Fcm, AChainThatCarriedAcrossWholeHasNoRemarks)
 
 	//and a chain that has been through no conversion at all has none either
 	k5_chain kc = NULL;
-	ASSERT_EQ(K5_OK,k5_chain_open((std::string(KIN5AXC_TEST_CHAINS_DIR)+"/AC_TiltRotaryTable.kc").c_str(),&kc));
+	ASSERT_EQ(K5_OK,k5_chain_open((std::string(KIN5AXC_TEST_CHAINS_DIR)+"/AC_TiltRotaryTable.kc.json").c_str(),&kc));
 	nRemarks = 1;
 	ASSERT_EQ(K5_OK,k5_fcm_remark_count(kc,&nRemarks));
 	EXPECT_EQ((size_t)0,nRemarks);
@@ -206,7 +206,7 @@ TEST(Fcm, AChainOfTheLibraryIsWrittenAsAMachineFileAndSaysWhatItLeftBehind)
 	//else does not come back. Both are said in the remarks rather than discovered later by a user
 	//whose collision check finds nothing and whose tool is in the wrong place.
 	k5_chain kc = NULL;
-	ASSERT_EQ(K5_OK,k5_chain_open((std::string(KIN5AXC_TEST_CHAINS_DIR)+"/AC_TiltRotaryTable.kc").c_str(),&kc));
+	ASSERT_EQ(K5_OK,k5_chain_open((std::string(KIN5AXC_TEST_CHAINS_DIR)+"/AC_TiltRotaryTable.kc.json").c_str(),&kc));
 	int nUnit = -1;
 	ASSERT_EQ(K5_OK,k5_chain_unit(kc,&nUnit));
 	ASSERT_EQ(K5_UNIT_M,nUnit)<<"the models shipped are metres";

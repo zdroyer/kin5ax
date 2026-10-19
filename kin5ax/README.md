@@ -131,14 +131,14 @@ does not occur; it is logged when it does.
 
 | format | direction | reader / writer | notes |
 |---|---|---|---|
-| `.kc` | in, out | `CChainXmlReader`, `CChain::toXML` | XML, DTD embedded (`kc.dtd`); not validated against the DTD, the reader (pugixml) checks elements, attributes and numbers itself and names the line of a problem; numbers are written in their shortest exact form |
 | `.kc.json` | in, out | `CChainJsonReader`, `CChainJsonWriter` | JSON, schema `kc.schema.json` (draft 2020-12); terminals are members of their branch, joints are `"rotary"` or `"linear"`, a branch may have no joint; model name, machine, author and date are document members; the reader checks the schema rules itself and names the member at fault by path, e.g. `tool_branch.links[1].rotation.axis` |
 | `.fcm` | in, out | `CChainFcmReader`, `CChainFcmWriter` | FreeCAD 1.2 CAM machine definition; see below |
 | CL data | in | `CCutterLocationData` | APT-like text, one `GOTO/x,y,z,i,j,k` per line; `MSYS/` recognised; other lines reported and skipped; locale independent, CRLF tolerant; inf, nan and out-of-range numbers are errors of their line |
 | G-code | out | `CSimulationData::ExportToGCode` | one `N.. G1 X.. Y.. Z.. A.. B..` block per location; the caller maps joints to axis letters; degrees or radians; no feed rates, tool changes or rollover handling |
 
-`CChainFileReader::ReadFile` opens `.kc` or `.kc.json` by extension (any case), else by the
-first non-blank character of the file; this is the application's single Open. `.fcm` goes
+`CChainFileReader::ReadFile` opens `.kc.json`; a file still in the retired XML form is refused by
+name with a word about `tools/kc2json`. It knows that form by the extension (any case) or by the
+first non-blank character of the file. This is the application's single Open. `.fcm` goes
 through `CChainFcmReader`, which takes the import options and returns the report described below.
 
 ## The FreeCAD bridge (.fcm)
@@ -164,7 +164,7 @@ goes into the `CFcmReport` the reader and writer fill, and the export also write
 | item | import | export |
 |---|---|---|
 | terminal transformations | none in `.fcm`, nothing lost | the workpiece terminal is absorbed into the base frame; the tool terminal must be the base frame too: a rotation about the tool axis costs nothing; a shift *along* the axis is a tool length (G43 or tool table, or the tool's reference point height) and is reported with its vector; a shift *across* the axis is a work offset (G54–G59, or move the zero of the linear joints and export again); a tool axis not +Z at home means the chain's zero is not the machine's home — change the constant rotation of the tilting joint so its parameter is zero with the tool upright; a machine that cannot bring its tool upright cannot be written as `.fcm` |
-| collision boxes | — | dropped; keep `.kc`/`.kc.json` as the master and treat `.fcm` as an export |
+| collision boxes | — | dropped; keep `.kc.json` as the master and treat `.fcm` as an export |
 | joint limits | always present | a segment without limits is written with the full range (a turn either way, or 1000 units) and reported |
 | axis names | — | keys of the axes object: duplicate names refuse the export; a name that is not one upper-case letter is reported (FreeCAD posts expect X, Y, Z, A, B, C) |
 | `max_velocity`, `solution_preference`, `allow_flip`, `wrap_strategy`, `toolheads`, `postprocessor` | dropped, each reported by name | kept from `CFcmOptions::m_sTemplateFilePath`, an existing `.fcm` whose other sections are preserved, so a file round-trips through the chain |

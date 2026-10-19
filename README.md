@@ -68,7 +68,7 @@ pivot offsets estimated and marked as such in the file):
 | `Mazak_VTC800-30SR_B_SwivelHead_C_RotaryTable` | travelling column, B swivel head, C rotary table |
 | `3CWithSphericalWrist_*` | three linear axes with a spherical wrist (the original sample) |
 
-The last three catalogue machines also come as `.kc.json`; the tests check that both forms are the
+Every machine is a `.kc.json`; the tests read each one and check that writing it again gives the
 same machine.
 
 ## Build
@@ -161,7 +161,7 @@ From C++:
 #include "ChainFileReader.h"      // kin5ax/Chain
 #include "5CPostprocessor.h"      // kin5ax/Postprocessor
 
-kin5ax::CChain chain = kin5ax::CChainFileReader::ReadFile("machine.kc");   // .kc or .kc.json
+kin5ax::CChain chain = kin5ax::CChainFileReader::ReadFile("machine.kc.json");
 kin5ax::CPostprocessorSettings settings;             // default: alpha1 then alpha2, axis method
 settings.m_bCheckCollisions = false;                 // no tool model: solve without the collision test
 kin5ax::C5CPostprocessor post(chain, settings);

@@ -47,21 +47,6 @@ CR3Box::CR3Box(const CR3Point &r3pO, double dRadius)
 	m_dMaxZ=r3pO.GetZ()+dRadius;
 }
 
-std::string CR3Box::toXML() const
-{
-	std::string sResult;
-	sResult+="<box ";
-	sResult+="x1=\""+double_to_string_exact(m_dMinX)+"\" ";
-	sResult+="x2=\""+double_to_string_exact(m_dMaxX)+"\" ";
-	sResult+="y1=\""+double_to_string_exact(m_dMinY)+"\" ";
-	sResult+="y2=\""+double_to_string_exact(m_dMaxY)+"\" ";
-	sResult+="z1=\""+double_to_string_exact(m_dMinZ)+"\" ";
-	sResult+="z2=\""+double_to_string_exact(m_dMaxZ)+"\" ";
-	sResult+=" />\n";
-	return sResult;
-}
-
-
 CR3Box CR3Box::OuterBoxFromOZCylinder(double dRadius, double dZ1, double dZ2)
 {
 	return CR3Box(-dRadius,dRadius,-dRadius,dRadius,dZ1,dZ2);

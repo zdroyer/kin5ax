@@ -91,7 +91,6 @@ public:
 	void SetName(const std::string &sName);
 	void SetParameterValue(double dValue);
 	std::string GetName() const;
-	std::string toXML(void) const;
 	std::string GetTypeName() const;
 };
 

@@ -53,28 +53,28 @@ TEST(ChainFiles, MissingFileIsReported)
 	EXPECT_NE(std::string::npos,sError.find("no_such_chain.kc"))<<sError;
 }
 
-TEST(ChainFiles, BrokenXmlIsReportedWithTheLine)
+TEST(ChainFiles, BrokenJsonIsReportedWithTheLine)
 {
-	std::string sFilePath = GetTestChainsDir()+"kin5axTests_broken.kc";
+	std::string sFilePath = GetTestChainsDir()+"kin5axTests_broken.kc.json";
 	FILE *pFile = fopen(sFilePath.c_str(),"wt");
 	ASSERT_TRUE(pFile!=NULL);
-	fputs("<?xml version=\"1.0\"?>\n<kinematic_chain>\n<tool_part>\n<segment name=\"x\" type=\"tool\">\n</kinematic_chain>\n",pFile);
+	fputs("{\n  \"format\": \"kin5ax-chain\",\n  \"version\": 1,\n  \"unit\": \"m\",\n  \"tool_branch\"\n}\n",pFile);
 	fclose(pFile);
 	std::string sError = LoadError(sFilePath);
 	remove(sFilePath.c_str());
-	EXPECT_NE(std::string::npos,sError.find("line 5"))<<sError;
+	EXPECT_NE(std::string::npos,sError.find("line 6"))<<sError;
 }
 
-TEST(ChainFiles, WrongRootElementIsReported)
+TEST(ChainFiles, SomethingThatIsNotAChainIsReported)
 {
-	std::string sFilePath = GetTestChainsDir()+"kin5axTests_wrong_root.kc";
+	std::string sFilePath = GetTestChainsDir()+"kin5axTests_wrong_root.kc.json";
 	FILE *pFile = fopen(sFilePath.c_str(),"wt");
 	ASSERT_TRUE(pFile!=NULL);
-	fputs("<?xml version=\"1.0\"?>\n<not_a_chain/>\n",pFile);
+	fputs("{ \"format\": \"something-else\", \"version\": 1 }\n",pFile);
 	fclose(pFile);
 	std::string sError = LoadError(sFilePath);
 	remove(sFilePath.c_str());
-	EXPECT_NE(std::string::npos,sError.find("root node"))<<sError;
+	EXPECT_NE(std::string::npos,sError.find("kinematic chain"))<<sError;
 }
 
 TEST(XmlEscape, MarkupCharactersBecomeEntities)
@@ -85,8 +85,9 @@ TEST(XmlEscape, MarkupCharactersBecomeEntities)
 	EXPECT_EQ("&lt;a&gt; &quot;b&quot; &apos;c&apos; &amp;amp;",xml_escape("<a> \"b\" 'c' &amp;"));
 }
 
-//KnownBugs #28: a segment name with markup characters must survive toXML -> file -> CChainXmlReader
-TEST(ChainFiles, SegmentNamesAreEscapedInXml)
+//KnownBugs #28: a name with characters that mean something to the format must survive a write
+//and a read. The format is JSON now, so the quotes and the backslashes are what matter.
+TEST(ChainFiles, SegmentNamesSurviveTheFile)
 {
 	ASSERT_GE(GetChainFiles().size(),(size_t)1);
 	CChain oChain;
@@ -99,14 +100,13 @@ TEST(ChainFiles, SegmentNamesAreEscapedInXml)
 	} catch (CGeneratorException &e){
 		FAIL()<<"exception: "<<e.Message();
 	}
-	std::string sXML = oChain.toXML();
-	EXPECT_NE(std::string::npos,sXML.find("name=\"A &quot;quoted&quot; &lt;name&gt; &amp; more\""))<<sXML;
-	EXPECT_EQ(std::string::npos,sXML.find("<name>"))<<"an unescaped name";
+	std::string sJson = CChainJsonWriter::ToJson(oChain);
+	EXPECT_NE(std::string::npos,sJson.find("A \\\"quoted\\\" <name> & more"))<<sJson;
 
-	std::string sFilePath = GetTestChainsDir()+"kin5axTests_escaped_names.kc";
+	std::string sFilePath = GetTestChainsDir()+"kin5axTests_escaped_names.kc.json";
 	FILE *pFile = fopen(sFilePath.c_str(),"wb");
 	ASSERT_TRUE(pFile!=NULL);
-	fwrite(sXML.data(),1,sXML.size(),pFile);
+	fwrite(sJson.data(),1,sJson.size(),pFile);
 	fclose(pFile);
 	std::string sError;
 	try{

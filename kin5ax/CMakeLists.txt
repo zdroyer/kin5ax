@@ -15,7 +15,6 @@ add_library(kin5ax STATIC
   Chain/ChainConfiguration.cpp
   Chain/CollisionReport.cpp
   Chain/ChainSegment.cpp
-  Chain/ChainXmlReader.cpp
   Chain/ChainJson.cpp
   Chain/ChainFcm.cpp
   Chain/ChainFileReader.cpp

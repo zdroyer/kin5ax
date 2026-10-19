@@ -237,53 +237,6 @@ std::string CChainSegment::GetName() const
 
 }
 
-std::string CChainSegment::toXML(void) const
-{
-	std::string sResult;
-	sResult += "<segment type=\""+GetTypeName();
-	sResult += "\" name=\""+xml_escape(GetName())+"\" " ;
-	if(m_bParameterIsConstrained){
-		if(m_type==CHAIN_SEGMENT_PRISMATIC_LINK){
-			sResult += "parameter_value_minimum=\""+double_to_string_exact(m_dParameterValueMinimum)+"\" ";
-			sResult += "parameter_value_maximum=\""+double_to_string_exact(m_dParameterValueMaximum)+"\" ";
-		} else {
-			sResult += "parameter_value_minimum=\""+double_to_string_exact(radians_to_degrees(m_dParameterValueMinimum))+"\" ";
-			sResult += "parameter_value_maximum=\""+double_to_string_exact(radians_to_degrees(m_dParameterValueMaximum))+"\" ";
-
-		}
-	}
-	sResult += ">\n";
-	sResult += "<initial_translation x=\"";
-	sResult += double_to_string_exact(m_r3vConstTranslation.GetX());
-	sResult += "\" y=\"";
-	sResult += double_to_string_exact(m_r3vConstTranslation.GetY());
-	sResult += "\" z=\"";
-	sResult += double_to_string_exact(m_r3vConstTranslation.GetZ());
-	sResult += "\"/>\n";
-
-	sResult +="<initial_rotation x=\"";
-	sResult +=double_to_string_exact(m_r3vConstRevoluteAxis.GetX());
-	sResult +="\" y=\"";
-	sResult +=double_to_string_exact(m_r3vConstRevoluteAxis.GetY());
-	sResult +="\" z=\"";
-	sResult +=double_to_string_exact(m_r3vConstRevoluteAxis.GetZ());
-	sResult +="\" alpha=\"";
-	sResult +=double_to_string_exact(m_dConstRevoluteAngle);
-	sResult +="\"/>\n";
-	if(m_bToolHolderDeclared){
-		sResult += "<tool_holder length=\""+double_to_string_exact(m_oToolHolder.GetLength());
-		sResult += "\" radius=\""+double_to_string_exact(m_oToolHolder.GetRadius())+"\"/>\n";
-	}
-	if(m_vParts.size()){
-		for(size_t i=0;i<m_vParts.size();i++){
-			sResult+=m_vParts[i].toXML();
-		}
-	}
-	sResult += "</segment>\n";	
-	return sResult;
-}
-
-
 void CChainSegment::SetPartVector(std::vector<CR3Box> vNewParts)
 {
 	m_vParts = vNewParts;

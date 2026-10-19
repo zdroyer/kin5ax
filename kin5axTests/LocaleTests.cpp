@@ -6,7 +6,6 @@
 #include "TestData.h"
 #include "CutterLocationData.h"
 #include "SimulationData.h"
-#include "ChainXmlReader.h"
 #include "ChainJson.h"
 #include "string_tools.h"
 #include <clocale>
@@ -135,22 +134,17 @@ TEST(Locale, ChainFilesReadAndWriteTheSameInAnyLocale)
 {
 	ASSERT_GE(GetChainFiles().size(),(size_t)1);
 	std::string sFilePath = GetChainFiles()[0];
-	std::string sXml, sJson;
+	std::string sJson;
 	try{
-		CChain oChain = CChainXmlReader::ReadFile(sFilePath);
-		sXml = oChain.toXML();
-		sJson = CChainJsonWriter::ToJson(oChain);
+		sJson = CChainJsonWriter::ToJson(CChainJsonReader::ReadFile(sFilePath));
 	} catch (CGeneratorException &e){
 		FAIL()<<e.Message();
 	}
 	CCommaLocale oLocale;
 	REQUIRE_COMMA_LOCALE(oLocale);
 	try{
-		CChain oChain = CChainXmlReader::ReadFile(sFilePath);
-		EXPECT_EQ(sXml,oChain.toXML());
-		EXPECT_EQ(sJson,CChainJsonWriter::ToJson(oChain));
-		CChain oFromJson = CChainJsonReader::Parse(sJson,"text");
-		EXPECT_EQ(sXml,oFromJson.toXML());
+		EXPECT_EQ(sJson,CChainJsonWriter::ToJson(CChainJsonReader::ReadFile(sFilePath)));
+		EXPECT_EQ(sJson,CChainJsonWriter::ToJson(CChainJsonReader::Parse(sJson,"text")));
 	} catch (CGeneratorException &e){
 		FAIL()<<e.Message();
 	}

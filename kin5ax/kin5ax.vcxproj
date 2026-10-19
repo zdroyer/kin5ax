@@ -86,7 +86,6 @@
     <ClCompile Include="Chain\Chain.cpp" />
     <ClCompile Include="Chain\ChainConfiguration.cpp" />
     <ClCompile Include="Chain\ChainSegment.cpp" />
-    <ClCompile Include="Chain\ChainXmlReader.cpp" />
     <ClCompile Include="Chain\ChainFileReader.cpp" />
     <ClCompile Include="Chain\ChainJson.cpp" />
     <ClCompile Include="Chain\ChainFcm.cpp" />
@@ -126,7 +125,6 @@
     <ClInclude Include="Exceptions\GeneratorException.h" />
     <ClInclude Include="Exceptions\MemoryMyException.h" />
     <ClInclude Include="Chain\Chain.h" />
-    <ClInclude Include="Chain\ChainXmlReader.h" />
     <ClInclude Include="Chain\ChainFileReader.h" />
     <ClInclude Include="Chain\ChainJson.h" />
     <ClInclude Include="Chain\ChainFcm.h" />

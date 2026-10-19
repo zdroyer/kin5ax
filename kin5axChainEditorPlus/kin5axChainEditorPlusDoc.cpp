@@ -116,7 +116,7 @@ BOOL CKin5axChainEditorPlusDoc::OnOpenDocument(LPCTSTR lpszPathName)
 			case CHAIN_FILE_READER_FCM:
 				m_oChain = CChainFcmReader::ReadFile(std::string(lpszPathName),s_fcmOptions,s_fcmReport);
 				break;
-			default:	//.kc or .kc.json, the reader tells them apart
+			default:	//.kc.json, the only form the library reads
 				m_oChain = CChainFileReader::ReadFile(std::string(lpszPathName));
 				break;
 		}
@@ -150,10 +150,9 @@ BOOL CKin5axChainEditorPlusDoc::OnSaveDocument(LPCTSTR lpszPathName)
 		MessageBox(0,lpszPathName,"Cannot open file to write",MB_OK);
 		return FALSE;
 	}
-	//the form follows the name: a document opened from a .kc.json is saved as JSON
-	std::string sXML = CChainFileReader::FormatOf(std::string(lpszPathName))==CChainFileReader::FORMAT_JSON
-		? CChainJsonWriter::ToJson(m_oChain) : m_oChain.toXML();
-	int nResult = fputs(sXML.c_str(),file);
+	//one form, whatever the name says: the XML one was retired with tools/kc2json as the way out
+	const std::string sText = CChainJsonWriter::ToJson(m_oChain);
+	int nResult = fputs(sText.c_str(),file);
 	fclose(file);
 	m_oChain.SetFileName(std::string(lpszPathName));
 	if(nResult<0)

@@ -142,7 +142,6 @@ public:
 	}
 	
 
-	std::string toXML() const;
 	
 	~CR3Box(void){}
 	

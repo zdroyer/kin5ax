@@ -1,57 +1,53 @@
 #include "../stdafx.h"
 #include "ChainFileReader.h"
-#include "ChainXmlReader.h"
 #include "ChainJson.h"
+#include "GeneratorException.h"
+
+#include <fstream>
+#include <algorithm>
 
 namespace kin5ax {
 
 namespace {
 
-//true when sText ends with sSuffix, letters compared without case
-bool EndsWithNoCase(const std::string &sText, const std::string &sSuffix)
+std::string LowerExtension(const std::string &sFilePath)
 {
-	if(sText.size()<sSuffix.size())
-		return false;
-	for(size_t i=0;i<sSuffix.size();i++)
-		if(tolower((unsigned char)sText[sText.size()-sSuffix.size()+i])!=tolower((unsigned char)sSuffix[i]))
-			return false;
-	return true;
-}
-
-//the first character of the file that is neither blank nor part of a UTF-8 byte order mark; 0 when there is none
-char FirstVisibleCharacter(const std::string &sFilePath)
-{
-	FILE *pFile = fopen(sFilePath.c_str(),"rb");
-	if(!pFile)
-		return 0;
-	char szHead[4096];
-	size_t n = fread(szHead,1,sizeof(szHead),pFile);
-	fclose(pFile);
-	size_t i = 0;
-	if(n>=3 && (unsigned char)szHead[0]==0xEF && (unsigned char)szHead[1]==0xBB && (unsigned char)szHead[2]==0xBF)
-		i = 3;
-	for(;i<n;i++)
-		if(!isspace((unsigned char)szHead[i]))
-			return szHead[i];
-	return 0;
+	const size_t nDot = sFilePath.find_last_of('.');
+	if(nDot==std::string::npos)
+		return std::string();
+	std::string sExtension = sFilePath.substr(nDot);
+	std::transform(sExtension.begin(),sExtension.end(),sExtension.begin()
+		,[](unsigned char c){ return (char)tolower(c); });
+	return sExtension;
 }
 
 } // namespace
 
-CChainFileReader::FORMAT CChainFileReader::FormatOf(const std::string &sFilePath)
+bool CChainFileReader::IsRetiredXml(const std::string &sFilePath)
 {
-	if(EndsWithNoCase(sFilePath,".json"))
-		return FORMAT_JSON;
-	if(EndsWithNoCase(sFilePath,".kc"))
-		return FORMAT_XML;
-	return FirstVisibleCharacter(sFilePath)=='{' ? FORMAT_JSON : FORMAT_XML;
+	const std::string sExtension = LowerExtension(sFilePath);
+	if(sExtension==".json")
+		return false;
+	if(sExtension==".kc")
+		return true;
+	//no extension to go by: the first character that is not a space decides, as it always did
+	std::ifstream oFile(sFilePath.c_str(),std::ios::binary);
+	if(!oFile.is_open())
+		return false;					//unreadable: let the JSON reader report the file itself
+	char c = 0;
+	while(oFile.get(c))
+		if(!isspace((unsigned char)c))
+			return c=='<';
+	return false;
 }
 
 CChain CChainFileReader::ReadFile(const std::string &sFilePath)
 {
-	return FormatOf(sFilePath)==FORMAT_JSON
-		? CChainJsonReader::ReadFile(sFilePath)
-		: CChainXmlReader::ReadFile(sFilePath);
+	if(IsRetiredXml(sFilePath))
+		MY_THROW(CGeneratorException,sFilePath+": this is a kinematic chain in the XML form (.kc), "
+			"which this library no longer reads. Convert it with tools/kc2json and open the "
+			".kc.json it writes.");
+	return CChainJsonReader::ReadFile(sFilePath);
 }
 
 } // namespace kin5ax

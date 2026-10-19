@@ -5,7 +5,6 @@
 #include "gtest/gtest.h"
 #include "TestData.h"
 #include "ChainJson.h"
-#include "ChainXmlReader.h"
 #include "double_tools.h"
 
 using namespace kin5ax;
@@ -245,11 +244,11 @@ TEST(ChainJsonWriter, WritesAndReadsAFile)
 		ADD_FAILURE()<<e.Message()<<" ("<<e.GetThrowingPlace()<<")";
 	}
 	remove(sFilePath.c_str());
-	EXPECT_EQ(oChain.toXML(),oReloaded.toXML());
+	EXPECT_EQ(CChainJsonWriter::ToJson(oChain),CChainJsonWriter::ToJson(oReloaded));
 	EXPECT_EQ(sFilePath,oReloaded.GetFileName());
 }
 
-//---- every test chain: the JSON form carries the same machine as the XML one
+//---- every test chain, written and read again
 class ChainJsonFile : public ::testing::TestWithParam<std::string> {};
 
 struct ChainJsonFileName
@@ -258,24 +257,11 @@ struct ChainJsonFileName
 	{ return GetTestName(oInfo.param); }
 };
 
-TEST_P(ChainJsonFile, XmlToJsonToXmlKeepsTheChain)
-{
-	CChain oFromXml, oFromJson;
-	try{
-		oFromXml = CChainXmlReader::ReadFile(GetParam());
-		oFromJson = CChainJsonReader::Parse(CChainJsonWriter::ToJson(oFromXml),"json");
-	} catch (CGeneratorException &e){
-		FAIL()<<"exception: "<<e.Message()<<" ("<<e.GetThrowingPlace()<<")";
-	}
-	EXPECT_EQ(oFromXml.toXML(),oFromJson.toXML());
-	EXPECT_EQ(oFromXml.GetName(),oFromJson.GetName());
-}
-
 TEST_P(ChainJsonFile, WritingIsStable)
 {
 	std::string sFirst, sSecond;
 	try{
-		CChain oChain = CChainXmlReader::ReadFile(GetParam());
+		CChain oChain = CChainJsonReader::ReadFile(GetParam());
 		sFirst = CChainJsonWriter::ToJson(oChain);
 		sSecond = CChainJsonWriter::ToJson(CChainJsonReader::Parse(sFirst,"json"));
 	} catch (CGeneratorException &e){
@@ -283,24 +269,6 @@ TEST_P(ChainJsonFile, WritingIsStable)
 	}
 	EXPECT_FALSE(sFirst.empty());
 	EXPECT_EQ(sFirst,sSecond)<<"a document read and written again must not change";
-}
-
-//a machine that comes in both forms (X.kc and X.kc.json next to it) is the same machine in both
-TEST_P(ChainJsonFile, TheKcJsonBesideTheKcIsTheSameMachine)
-{
-	std::string sJsonPath = GetParam()+".json";
-	FILE *pFile = fopen(sJsonPath.c_str(),"rb");
-	if(!pFile)
-		return;		//this machine has no JSON twin
-	fclose(pFile);
-	std::string sFromXml, sFromJson;
-	try{
-		sFromXml = CChainXmlReader::ReadFile(GetParam()).toXML();
-		sFromJson = CChainJsonReader::ReadFile(sJsonPath).toXML();
-	} catch (CGeneratorException &e){
-		FAIL()<<"exception: "<<e.Message()<<" ("<<e.GetThrowingPlace()<<")";
-	}
-	EXPECT_EQ(sFromXml,sFromJson)<<sJsonPath;
 }
 
 INSTANTIATE_TEST_CASE_P(Files, ChainJsonFile, ::testing::ValuesIn(GetChainFiles()), ChainJsonFileName());

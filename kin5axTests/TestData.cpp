@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "TestData.h"
-#include "ChainXmlReader.h"
+#include "ChainJson.h"
 #include <filesystem>
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -31,7 +31,7 @@ std::string GetTestChainsDir()
 	return oDir.string()+(char)fs::path::preferred_separator;
 }
 
-//the files of GetTestChainsDir() with the given extension (".kc", ".json"), sorted
+//the files of GetTestChainsDir() with the given extension (".json"), sorted
 static std::vector<std::string> GetFilesWithExtension(const std::string &sExtension)
 {
 	std::vector<std::string> vFiles;
@@ -44,11 +44,6 @@ static std::vector<std::string> GetFilesWithExtension(const std::string &sExtens
 }
 
 std::vector<std::string> GetChainFiles()
-{
-	return GetFilesWithExtension(".kc");
-}
-
-std::vector<std::string> GetJsonChainFiles()
 {
 	return GetFilesWithExtension(".json");
 }
@@ -69,5 +64,5 @@ std::string TempFilePath(const std::string &sName)
 
 CChain LoadChain(const std::string &sFilePath)
 {
-	return CChainXmlReader::ReadFile(sFilePath);
+	return CChainJsonReader::ReadFile(sFilePath);
 }

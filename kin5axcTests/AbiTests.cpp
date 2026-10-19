@@ -15,7 +15,7 @@ extern "C" int k5c_header_check_c(void);		//CHeaderCheck.c
 
 namespace {
 
-const char *szCHAIN = "AC_TiltRotaryTable.kc";	//a trunnion table: A tilts, C turns the workpiece
+const char *szCHAIN = "AC_TiltRotaryTable.kc.json";	//a trunnion table: A tilts, C turns the workpiece
 
 std::string ChainPath(const char *szFile = szCHAIN)
 {
@@ -166,7 +166,7 @@ TEST(Abi, TheVersionAndTheLastError)
 TEST(Abi, AFileThatIsNotAChainIsAnErrorWithAMessage)
 {
 	k5_chain chain = (k5_chain)0x1;
-	EXPECT_EQ(K5_ERROR_FILE,k5_chain_open(ChainPath("there_is_no_such_machine.kc").c_str(),&chain));
+	EXPECT_EQ(K5_ERROR_FILE,k5_chain_open(ChainPath("there_is_no_such_machine.kc.json").c_str(),&chain));
 	EXPECT_STRNE("",k5_last_error());
 	EXPECT_TRUE(chain==NULL)<<"a failed open leaves no handle behind";
 	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_open(NULL,&chain));
@@ -670,7 +670,7 @@ TEST(Abi, TheLocationsOfASimulationOnAChainAreItsToolPoints)
 
 TEST(Abi, AChainSaysWhichOfItsSolidsMetAtThePoseItStandsIn)
 {
-	k5_chain chain = OpenChain("3CWithSphericalWrist_withBaseBox.kc");
+	k5_chain chain = OpenChain("3CWithSphericalWrist_withBaseBox.kc.json");
 	k5_tool tool = CreateTool();
 	std::vector<double> q((size_t)K5_AXES,0.0);
 	ASSERT_EQ(K5_OK,k5_chain_set_configuration(chain,&q[0]));
@@ -735,7 +735,7 @@ TEST(Abi, APathSaysWhichSolidsMetAndAtHowManyLocations)
 {
 	//the model of the spherical wrist cannot tilt its tool far without meeting itself: a path that
 	//asks it to is where a pair and a count are worth more than "it collides"
-	k5_chain chain = OpenChain("3CWithSphericalWrist_withBaseBox.kc");
+	k5_chain chain = OpenChain("3CWithSphericalWrist_withBaseBox.kc.json");
 	k5_tool tool = CreateTool();
 	k5_settings oSettings;
 	k5_settings_default(&oSettings);

@@ -100,7 +100,6 @@ public:
 	//than one. The host that draws a machine needs the same names to show what met.
 	std::string GetSolidName(CHAIN_PART part, size_t nSegment, size_t nBox) const;
 	CChain(void);
-	std::string toXML() const;
 	//the tool part ends with the only TOOL segment, the material holder part with the only
 	//MATERIAL_HOLDER segment, no part is empty, no limit is above its maximum: else CGeneratorException
 	void CheckStructure() const;

@@ -6,7 +6,6 @@
 #include "gtest/gtest.h"
 #include "TestData.h"
 #include "ChainFcm.h"
-#include "ChainXmlReader.h"
 #include "double_tools.h"
 
 using namespace kin5ax;
@@ -322,7 +321,7 @@ TEST_P(ChainFcmFile, ExportSaysWhatItCannotCarry)
 {
 	CChain oChain;
 	try{
-		oChain = CChainXmlReader::ReadFile(GetParam());
+		oChain = LoadChain(GetParam());
 	} catch (CGeneratorException &e){
 		FAIL()<<e.Message();
 	}

@@ -955,7 +955,7 @@ END
 
 STRINGTABLE 
 BEGIN
-    IDR_MAINFRAME           "kin5ax Chain Editor Plus\n\nKinematicChain\nKinematic Chain Files (*.kc;*.kc.json)\n.kc;.kc.json\nkin5axChainEditorPlus.Document\nKinematic chain definition file"
+    IDR_MAINFRAME           "kin5ax Chain Editor Plus\n\nKinematicChain\nKinematic Chain Files (*.kc.json)\n.kc.json\nkin5axChainEditorPlus.Document\nKinematic chain definition file"
 END
 
 STRINGTABLE 

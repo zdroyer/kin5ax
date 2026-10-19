@@ -76,7 +76,7 @@ TEST(CollisionReport, AChainSaysWhichOfItsSolidsMet)
 {
 	//the model of the spherical wrist: tilted far enough, the solid above the wrist meets the plate
 	//below it, which is what that model is for
-	CChain oChain = LoadChain(GetTestChainsDir()+"3CWithSphericalWrist_withBaseBox.kc");
+	CChain oChain = LoadChain(GetTestChainsDir()+"3CWithSphericalWrist_withBaseBox.kc.json");
 	CMillingToolBall oTool = Tool();
 	oChain.SetToolAssembly(oTool);
 

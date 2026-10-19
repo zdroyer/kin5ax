@@ -171,7 +171,8 @@ K5_API void k5_settings_default(k5_settings *out);
 
 /* ---------------------------------------------------------------- a machine */
 
-/* Reads a .kc (XML) or .kc.json file; the format is told by the content, not by the name. */
+/* Reads a .kc.json file. The XML form (.kc) was retired: one is refused by name, with a word
+ * about tools/kc2json, which converts it. */
 K5_API k5_status k5_chain_open(const char *file_path, k5_chain *out);
 K5_API void k5_chain_free(k5_chain chain);
 
