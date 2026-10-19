@@ -1,0 +1,123 @@
+{
+  "format": "kin5ax-chain",
+  "version": 1,
+  "unit": "m",
+  "name": "AC tilt-rotary table",
+  "tool_branch": {
+    "links": [
+      {
+        "type": "linear",
+        "name": "X",
+        "translation": [0.0, 0.45, 0.8],
+        "rotation": {
+          "axis": [0.0, 1.0, 0.0],
+          "angle_deg": 90.0
+        },
+        "limits": {
+          "min": -0.3,
+          "max": 0.3
+        }
+      },
+      {
+        "type": "linear",
+        "name": "Y",
+        "translation": [0.0, 0.0, 0.0],
+        "rotation": {
+          "axis": [1.0, 0.0, 0.0],
+          "angle_deg": -90.0
+        },
+        "limits": {
+          "min": -0.25,
+          "max": 0.25
+        }
+      },
+      {
+        "type": "linear",
+        "name": "Z",
+        "translation": [0.0, 0.0, -0.45],
+        "rotation": {
+          "axis": [0.0, 1.0, 0.0],
+          "angle_deg": -90.0
+        },
+        "limits": {
+          "min": -0.4,
+          "max": 0.2
+        }
+      }
+    ],
+    "tool": {
+      "name": "Tool holder",
+      "translation": [0.0, 0.0, -0.452],
+      "rotation": {
+        "axis": [0.0, 0.0, 1.0],
+        "angle_deg": -90.0
+      },
+      "tool_holder": {
+        "length": 0.05,
+        "radius": 0.03
+      },
+      "boxes": [
+        {
+          "min": [-0.07, -0.07, 0.05],
+          "max": [0.07, 0.07, 0.45]
+        }
+      ]
+    }
+  },
+  "workpiece_branch": {
+    "links": [
+      {
+        "type": "rotary",
+        "name": "A",
+        "translation": [0.0, 0.0, 0.05],
+        "rotation": {
+          "axis": [0.0, 1.0, 0.0],
+          "angle_deg": 90.0
+        },
+        "limits": {
+          "min": -29.999999999999996,
+          "max": 119.99999999999999
+        },
+        "boxes": [
+          {
+            "min": [-0.1, -0.12, 0.3],
+            "max": [0.4, 0.12, 0.4]
+          },
+          {
+            "min": [-0.1, -0.12, -0.4],
+            "max": [0.4, 0.12, -0.3]
+          }
+        ]
+      },
+      {
+        "type": "rotary",
+        "name": "C",
+        "translation": [0.05, 0.0, 0.0],
+        "rotation": {
+          "axis": [0.0, 1.0, 0.0],
+          "angle_deg": -90.0
+        },
+        "boxes": [
+          {
+            "min": [-0.28, -0.2, -0.14],
+            "max": [0.28, 0.2, -0.06]
+          }
+        ]
+      }
+    ],
+    "workpiece_holder": {
+      "name": "Material holder",
+      "translation": [0.0, 0.0, 0.0],
+      "rotation": {
+        "axis": [1.0, 0.0, 0.0],
+        "angle_deg": 0.0
+      },
+      "boxes": [
+        {
+          "min": [-0.16, -0.16, -0.05],
+          "max": [0.16, 0.16, -0.02]
+        }
+      ]
+    }
+  }
+}

@@ -78,6 +78,9 @@ option(KIN5AX_BUILD_C_ABI "Build the C interface of the library (kin5axc)" ON)
 
 add_subdirectory(kin5ax)
 
+# the one-way converter for files still in the retired XML form
+add_subdirectory(tools/kc2json)
+
 if(KIN5AX_BUILD_TESTS)
   # GoogleTest for both suites, fetched once (a network connection the first time)
   enable_testing()
