@@ -1,6 +1,6 @@
 {
   "format": "kin5ax-chain",
-  "version": 1,
+  "version": 2,
   "unit": "m",
   "tool_branch": {
     "links": [
@@ -56,7 +56,7 @@
         }
       }
     ],
-    "tool": {
+    "tool_spindle_nose": {
       "name": "Tool holder",
       "translation": [0.0, -0.3, 0.0],
       "rotation": {
@@ -73,7 +73,7 @@
   },
   "workpiece_branch": {
     "links": [],
-    "workpiece_holder": {
+    "table": {
       "name": "Material holder",
       "translation": [0.0, 0.0, 0.0],
       "rotation": {

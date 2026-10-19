@@ -27,21 +27,21 @@ std::string ChainWithABoxAt(double dZ, double dRadial)
 	const double d = 0.1*dRADIUS;
 	std::string s = R"KC({
   "format": "kin5ax-chain",
-  "version": 1,
+  "version": 2,
   "unit": "m",
   "name": "a box under the tool mount",
   "tool_branch": {
     "links": [
       { "type": "linear", "name": "Z", "translation": [0, 0, 0], "rotation": { "axis": [0, 0, 1], "angle_deg": 0 } }
     ],
-    "tool": { "name": "tool", "translation": [0, 0, 0], "rotation": { "axis": [0, 0, 1], "angle_deg": 0 },
+    "tool_spindle_nose": { "name": "tool", "translation": [0, 0, 0], "rotation": { "axis": [0, 0, 1], "angle_deg": 0 },
       "tool_holder": { "length": HOLDER_LENGTH, "radius": HOLDER_RADIUS } }
   },
   "workpiece_branch": {
     "links": [
       { "type": "rotary", "name": "C", "translation": [0, 0, 0], "rotation": { "axis": [0, 0, 1], "angle_deg": 0 } }
     ],
-    "workpiece_holder": { "name": "holder", "translation": [0, 0, 0], "rotation": { "axis": [0, 0, 1], "angle_deg": 0 },
+    "table": { "name": "holder", "translation": [0, 0, 0], "rotation": { "axis": [0, 0, 1], "angle_deg": 0 },
       "boxes": [ { "min": [BX1, -D, BZ1], "max": [BX2, D, BZ2] } ] }
   }
 }

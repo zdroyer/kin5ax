@@ -34,8 +34,8 @@ bool ParseChainUnit(const std::string &sName, CHAIN_UNIT &unit);
 double ChainUnitInMillimetres(CHAIN_UNIT unit);
 
 enum CHAIN_PART{
-	CHAIN_PART_TOOL,			//ends with the TOOL segment, whose origin is the tool mount
-	CHAIN_PART_MATERIAL_HOLDER	//ends with the MATERIAL_HOLDER segment, whose origin is the material frame
+	CHAIN_PART_SPINDLE,			//ends with the TOOL segment, whose origin is the tool mount
+	CHAIN_PART_TABLE	//ends with the MATERIAL_HOLDER segment, whose origin is the material frame
 };
 
 //One segment of the chain at the actual parameter values, in the frame of the machine base. The walk the
@@ -130,7 +130,7 @@ public:
 	//The policy CSimulationData::FindShortestPath starts a trajectory with, resolved against this chain:
 	//by default the first rotary axis counted from the tool end, closest to zero, which is what the
 	//TWP/TCP functions of the usual controls do. pHint, when given, has to outlive the policy.
-	CTrajectoryStart GetTrajectoryStart(CHAIN_PART nCountFrom = CHAIN_PART_TOOL
+	CTrajectoryStart GetTrajectoryStart(CHAIN_PART nCountFrom = CHAIN_PART_SPINDLE
 		,TRAJECTORY_START_CRITERION nCriterion = TRAJECTORY_START_MIN_ABS
 		,const CChainConfiguration *pHint = NULL) const;
 	CChainConfiguration	GetParameters() const;
@@ -178,8 +178,8 @@ public:
 	std::vector<CChainSegment> & GetPart(CHAIN_PART part);
 	const std::vector<CChainSegment> & GetPart(CHAIN_PART part) const;
 	//One frame per segment of the part, in the order the segments are stored, at the actual parameter
-	//values. GetActualFrames(CHAIN_PART_TOOL).back().m_trOutput is the tool mount, and
-	//GetActualFrames(CHAIN_PART_MATERIAL_HOLDER).back().m_trOutput the frame of the material.
+	//values. GetActualFrames(CHAIN_PART_SPINDLE).back().m_trOutput is the tool mount, and
+	//GetActualFrames(CHAIN_PART_TABLE).back().m_trOutput the frame of the material.
 	std::vector<CSegmentFrame> GetActualFrames(CHAIN_PART part) const;
 	//the frame of one segment; throws CArgsMyException when the index is past the end of the part
 	CSegmentFrame GetActualFrame(CHAIN_PART part, size_t nIndex) const;

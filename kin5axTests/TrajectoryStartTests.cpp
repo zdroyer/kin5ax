@@ -153,8 +153,8 @@ TEST_P(TrajectoryStartChain, TheFirstRotaryAxisFromBothEnds)
 {
 	CChain oChain = LoadChain(GetParam());
 	ASSERT_TRUE(oChain.Is5CChain());
-	const size_t nFromTool = oChain.GetFirstRotaryParameterIndex(CHAIN_PART_TOOL);
-	const size_t nFromPart = oChain.GetFirstRotaryParameterIndex(CHAIN_PART_MATERIAL_HOLDER);
+	const size_t nFromTool = oChain.GetFirstRotaryParameterIndex(CHAIN_PART_SPINDLE);
+	const size_t nFromPart = oChain.GetFirstRotaryParameterIndex(CHAIN_PART_TABLE);
 	EXPECT_NE(nFromTool,nFromPart)<<"the two rotary axes of a 5C machine are not the same axis";
 	//the parameters run from the material terminal to the tool terminal, so the tool end comes second
 	EXPECT_GT(nFromTool,nFromPart);
@@ -167,7 +167,7 @@ TEST_P(TrajectoryStartChain, TheFirstRotaryAxisFromBothEnds)
 	EXPECT_EQ(nFromTool,oStart.m_nParameterIndex);
 	EXPECT_EQ(TRAJECTORY_START_MIN_ABS,oStart.m_nCriterion);
 	EXPECT_TRUE(oStart.FixesTheStart());
-	EXPECT_EQ(nFromPart,oChain.GetTrajectoryStart(CHAIN_PART_MATERIAL_HOLDER).m_nParameterIndex);
+	EXPECT_EQ(nFromPart,oChain.GetTrajectoryStart(CHAIN_PART_TABLE).m_nParameterIndex);
 }
 
 INSTANTIATE_TEST_CASE_P(AllChains, TrajectoryStartChain, ::testing::ValuesIn(GetChainFiles()), TrajectoryStartChainName());
@@ -176,7 +176,7 @@ TEST(TrajectoryStart, AChainThatIsNotFiveAxisHasNoFirstRotaryAxis)
 {
 	CChain oPlain;			//the two terminals and nothing between them
 	ASSERT_FALSE(oPlain.Is5CChain());
-	EXPECT_THROW(oPlain.GetFirstRotaryParameterIndex(CHAIN_PART_TOOL),CGeneratorException);
+	EXPECT_THROW(oPlain.GetFirstRotaryParameterIndex(CHAIN_PART_SPINDLE),CGeneratorException);
 	EXPECT_THROW(oPlain.GetTrajectoryStart(),CGeneratorException);
 }
 

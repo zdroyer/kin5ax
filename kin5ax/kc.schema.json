@@ -2,14 +2,14 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://kin5ax/kc.schema.json",
   "title": "kin5ax kinematic chain",
-  "description": "A 5C milling machine: two branches from a common base, the tool branch ending in the tool, the workpiece branch ending in the workpiece holder. The JSON form of the .kc file; written and read by kin5ax (CChainJsonWriter, CChainJsonReader).",
+  "description": "A 5C milling machine: two branches from a common base, the tool branch ending at the nose of the tool spindle, the workpiece branch ending at the table. Written and read by kin5ax (CChainJsonWriter, CChainJsonReader).",
   "type": "object",
   "required": ["format", "version", "unit", "tool_branch", "workpiece_branch"],
   "additionalProperties": false,
   "properties": {
     "$schema":  { "type": "string" },
     "format":   { "const": "kin5ax-chain" },
-    "version":  { "type": "integer", "const": 1 },
+    "version":  { "type": "integer", "const": 2 },
     "unit":     { "enum": ["mm", "m", "in"], "description": "The unit of every length in the file. Required: a file that does not say is refused, since its numbers are not lengths until it does. The models shipped with kin5ax are metres; FreeCAD works in millimetres." },
     "name":     { "type": "string", "description": "Name of the model, e.g. \"BC tilt-rotary table\"." },
     "machine":  { "type": "string", "description": "Brand and model of the real machine, e.g. \"SHW UniSpeed 3500\"." },
@@ -17,22 +17,22 @@
     "modified": { "type": "string", "description": "Last modification, ISO 8601, e.g. \"2026-09-22\" or \"2026-09-22T14:30:00Z\"." },
     "tool_branch": {
       "type": "object",
-      "required": ["links", "tool"],
+      "required": ["links", "tool_spindle_nose"],
       "additionalProperties": false,
       "properties": {
         "links": { "$ref": "#/$defs/links" },
-        "tool":  { "$ref": "#/$defs/tool_terminal",
-                   "description": "End of the tool branch: the tool mount, the frame in which the tool axis is OZ." }
+        "tool_spindle_nose": { "$ref": "#/$defs/tool_terminal",
+                   "description": "End of the tool branch: the nose of the tool spindle. Its origin is on the spindle axis where that axis meets the convex envelope of the spindle, which is the centre of the entrance to the taper, and its OZ runs along the spindle axis." }
       }
     },
     "workpiece_branch": {
       "type": "object",
-      "required": ["links", "workpiece_holder"],
+      "required": ["links", "table"],
       "additionalProperties": false,
       "properties": {
-        "links":            { "$ref": "#/$defs/links" },
-        "workpiece_holder": { "$ref": "#/$defs/terminal",
-                              "description": "End of the workpiece branch: the frame the workpiece is given in." }
+        "links": { "$ref": "#/$defs/links" },
+        "table": { "$ref": "#/$defs/terminal",
+                   "description": "End of the workpiece branch: the table of the machine, where a workpiece holder is bolted." }
       }
     }
   },
@@ -74,7 +74,7 @@
       "type": "object",
       "required": ["name", "translation", "rotation"],
       "additionalProperties": false,
-      "description": "End of the tool branch: the tool mount, with the tool holder of the machine and collision solids.",
+      "description": "End of the tool branch: the nose of the tool spindle, with the tool holder of the machine and collision solids.",
       "properties": {
         "name":        { "type": "string", "minLength": 1 },
         "translation": { "$ref": "#/$defs/vector3" },

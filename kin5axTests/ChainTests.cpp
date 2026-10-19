@@ -224,7 +224,7 @@ static std::string ChainWithBoxlessTool(const std::string &sLinkBoxes, const std
 {
 	std::string s = R"KC({
   "format": "kin5ax-chain",
-  "version": 1,
+  "version": 2,
   "unit": "m",
   "name": "boxless tool",
   "tool_branch": {
@@ -233,7 +233,7 @@ static std::string ChainWithBoxlessTool(const std::string &sLinkBoxes, const std
         "translation": [0, 0, 0],
         "rotation": { "axis": [0, 0, 1], "angle_deg": 0 } }
     ],
-    "tool": { "name": "tool", "translation": [0, 0, 0], "rotation": { "axis": [0, 0, 1], "angle_deg": 0 } }
+    "tool_spindle_nose": { "name": "tool", "translation": [0, 0, 0], "rotation": { "axis": [0, 0, 1], "angle_deg": 0 } }
   },
   "workpiece_branch": {
     "links": [
@@ -241,7 +241,7 @@ static std::string ChainWithBoxlessTool(const std::string &sLinkBoxes, const std
         "translation": [0, 0, 0],
         "rotation": { "axis": [0, 0, 1], "angle_deg": 0 } }
     ],
-    "workpiece_holder": { HOLDER_BOXES "name": "holder", "translation": [0, 0, 0],
+    "table": { HOLDER_BOXES "name": "holder", "translation": [0, 0, 0],
         "rotation": { "axis": [0, 0, 1], "angle_deg": 0 } }
   }
 }

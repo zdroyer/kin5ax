@@ -86,12 +86,12 @@ bool FromCCriterion(int nCriterion, TRAJECTORY_START_CRITERION &nOut)
 
 bool FromCPart(int nPart, CHAIN_PART &nOut)
 {
-	if(nPart==K5_PART_TOOL){
-		nOut = CHAIN_PART_TOOL;
+	if(nPart==K5_PART_SPINDLE){
+		nOut = CHAIN_PART_SPINDLE;
 		return true;
 	}
-	if(nPart==K5_PART_MATERIAL_HOLDER){
-		nOut = CHAIN_PART_MATERIAL_HOLDER;
+	if(nPart==K5_PART_TABLE){
+		nOut = CHAIN_PART_TABLE;
 		return true;
 	}
 	return false;
@@ -156,7 +156,7 @@ CTrajectoryStart StartOf(const CChain &oChain, const k5_settings &o)
 	TRAJECTORY_START_CRITERION nCriterion = TRAJECTORY_START_SHORTEST_PATH;
 	FromCCriterion(o.start_criterion,nCriterion);	//checked by the caller
 	CTrajectoryStart oStart = oChain.GetTrajectoryStart(
-		o.start_count_from_tool ? CHAIN_PART_TOOL : CHAIN_PART_MATERIAL_HOLDER,nCriterion);
+		o.start_count_from_tool ? CHAIN_PART_SPINDLE : CHAIN_PART_TABLE,nCriterion);
 	oStart.m_nRandomSeed = o.start_random_seed;
 	return oStart;
 }
@@ -345,8 +345,8 @@ k5_status k5_chain_first_rotary_axis(k5_chain chain, int part, size_t *out)
 {
 	K5_BEGIN
 	K5_NEED(chain && out,"k5_chain_first_rotary_axis needs a chain and somewhere to put the index")
-	CHAIN_PART nPart = CHAIN_PART_TOOL;
-	K5_NEED(FromCPart(part,nPart),"part is neither K5_PART_TOOL nor K5_PART_MATERIAL_HOLDER")
+	CHAIN_PART nPart = CHAIN_PART_SPINDLE;
+	K5_NEED(FromCPart(part,nPart),"part is neither K5_PART_SPINDLE nor K5_PART_TABLE")
 	*out = chain->m_oChain.GetFirstRotaryParameterIndex(nPart);
 	return K5_OK;
 	K5_END(K5_ERROR_CHAIN)
@@ -357,8 +357,8 @@ k5_status k5_chain_frames(k5_chain chain, int part, double *out, size_t capacity
 {
 	K5_BEGIN
 	K5_NEED(chain && count_out,"k5_chain_frames needs a chain and somewhere to put the count")
-	CHAIN_PART nPart = CHAIN_PART_TOOL;
-	K5_NEED(FromCPart(part,nPart),"part is neither K5_PART_TOOL nor K5_PART_MATERIAL_HOLDER")
+	CHAIN_PART nPart = CHAIN_PART_SPINDLE;
+	K5_NEED(FromCPart(part,nPart),"part is neither K5_PART_SPINDLE nor K5_PART_TABLE")
 	const std::vector<CSegmentFrame> vFrames = chain->m_oChain.GetActualFrames(nPart);
 	*count_out = vFrames.size();
 	if(!out)
@@ -383,8 +383,8 @@ k5_status k5_chain_segment_boxes(k5_chain chain, int part, size_t index, double 
 {
 	K5_BEGIN
 	K5_NEED(chain && count_out,"k5_chain_segment_boxes needs a chain and somewhere to put the count")
-	CHAIN_PART nPart = CHAIN_PART_TOOL;
-	K5_NEED(FromCPart(part,nPart),"part is neither K5_PART_TOOL nor K5_PART_MATERIAL_HOLDER")
+	CHAIN_PART nPart = CHAIN_PART_SPINDLE;
+	K5_NEED(FromCPart(part,nPart),"part is neither K5_PART_SPINDLE nor K5_PART_TABLE")
 	const std::vector<CChainSegment> &vPart = chain->m_oChain.GetPart(nPart);
 	K5_NEED(index<vPart.size(),"there is no segment of that index in that branch of the chain")
 	const std::vector<CR3Box> &vBoxes = vPart[index].GetPartVector();
@@ -437,8 +437,8 @@ k5_status k5_chain_solid_name(k5_chain chain, int part, size_t segment, size_t b
 {
 	K5_BEGIN
 	K5_NEED(chain && out && capacity,"k5_chain_solid_name needs a chain and somewhere to put the name")
-	CHAIN_PART nPart = CHAIN_PART_TOOL;
-	K5_NEED(FromCPart(part,nPart),"part is neither K5_PART_TOOL nor K5_PART_MATERIAL_HOLDER")
+	CHAIN_PART nPart = CHAIN_PART_SPINDLE;
+	K5_NEED(FromCPart(part,nPart),"part is neither K5_PART_SPINDLE nor K5_PART_TABLE")
 	CopyName(chain->m_oChain.GetSolidName(nPart,segment,box),out,capacity);
 	return K5_OK;
 	K5_END(K5_ERROR_CHAIN)

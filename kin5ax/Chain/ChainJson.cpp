@@ -15,7 +15,7 @@ typedef nlohmann::ordered_json tJson;		//ordered: the file keeps the order the w
 typedef std::initializer_list<const char*> tNames;
 
 const char *const szFORMAT = "kin5ax-chain";
-const int nVERSION = 1;
+const int nVERSION = 2;
 
 bool Contains(const tNames &names, const std::string &sName)
 {
@@ -173,7 +173,7 @@ CChainSegment ReadLink(const CContext &ctx, const tJson &j, const std::string &s
 CChainSegment ReadTerminal(const CContext &ctx, const tJson &j, const std::string &sPath, CHAIN_SEGMENT_TYPE type)
 {
 	//only the end of the tool branch carries the tool holder of the machine
-	if(type==CHAIN_SEGMENT_TOOL)
+	if(type==CHAIN_SEGMENT_TOOL_SPINDLE_NOSE)
 		ctx.CheckObject(j,sPath,{"name","translation","rotation"},{"boxes","tool_holder"});
 	else
 		ctx.CheckObject(j,sPath,{"name","translation","rotation"},{"boxes"});
@@ -321,6 +321,12 @@ CChain CChainJsonReader::Parse(const std::string &sJson, const std::string &sWhe
 	if(sFormat != szFORMAT)
 		ctx.Fail("format","'"+sFormat+"' is not a kinematic chain, expected '"+szFORMAT+"'");
 	const tJson &version = ctx.Member(root,"version","");
+	if(version.is_number_integer() && version.get<int>()==1)
+		//version 1 called the terminals tool and workpiece_holder, and meant something else by the
+		//first of them: its origin was the tool point in a file that named no holder
+		ctx.Fail("version","this is version 1 of the format, which named the terminals differently "
+			"and placed the tool one of them. Convert the file with tools/kc2json, or write the "
+			"terminals as tool_spindle_nose and table and say version 2");
 	if(!version.is_number_integer() || version.get<int>()!=nVERSION)
 		ctx.Fail("version","unsupported version, expected "+size_to_string(nVERSION));
 
@@ -336,8 +342,8 @@ CChain CChainJsonReader::Parse(const std::string &sJson, const std::string &sWhe
 	if(!ParseChainUnit(sUnit,nUnit))
 		ctx.Fail("unit","'"+sUnit+"' is none of mm, m and in");
 	oChain.SetUnit(nUnit);
-	oChain.m_vToolPart = ReadBranch(ctx,root,"tool_branch","tool",CHAIN_SEGMENT_TOOL);
-	oChain.m_vMaterialHolderPart = ReadBranch(ctx,root,"workpiece_branch","workpiece_holder",CHAIN_SEGMENT_MATERIAL_HOLDER);
+	oChain.m_vToolPart = ReadBranch(ctx,root,"tool_branch","tool_spindle_nose",CHAIN_SEGMENT_TOOL_SPINDLE_NOSE);
+	oChain.m_vMaterialHolderPart = ReadBranch(ctx,root,"workpiece_branch","table",CHAIN_SEGMENT_TABLE);
 	try{
 		oChain.CheckStructure();
 	} catch (CGeneratorException &e){
@@ -377,8 +383,8 @@ std::string CChainJsonWriter::ToJson(const CChain &oChain)
 		root["author"] = oChain.GetAuthor();
 	if(!oChain.GetModified().empty())
 		root["modified"] = oChain.GetModified();
-	root["tool_branch"] = BranchToJson(oChain.m_vToolPart,"tool");
-	root["workpiece_branch"] = BranchToJson(oChain.m_vMaterialHolderPart,"workpiece_holder");
+	root["tool_branch"] = BranchToJson(oChain.m_vToolPart,"tool_spindle_nose");
+	root["workpiece_branch"] = BranchToJson(oChain.m_vMaterialHolderPart,"table");
 	return json_numbers_on_one_line(root.dump(2))+"\n";
 }
 

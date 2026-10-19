@@ -12,14 +12,14 @@ extern CR3Point r3pZero;
 CChain::CChain(void)
 {
 	m_dToolMountToToolPoint = 0.0;
-	m_nActivePart=CHAIN_PART_TOOL;
+	m_nActivePart=CHAIN_PART_SPINDLE;
 	m_nActiveSegmentIndex=-1;
 
-	SetActiveSegment(CHAIN_PART_MATERIAL_HOLDER,-1);
-	AddSegmentAfterActiveSegment(CChainSegment(CHAIN_SEGMENT_MATERIAL_HOLDER,CR3Vector(1.0,0.0,0.0),0.0,CR3Vector(0.0,0.0,0.0)));
+	SetActiveSegment(CHAIN_PART_TABLE,-1);
+	AddSegmentAfterActiveSegment(CChainSegment(CHAIN_SEGMENT_TABLE,CR3Vector(1.0,0.0,0.0),0.0,CR3Vector(0.0,0.0,0.0)));
 
-	SetActiveSegment(CHAIN_PART_TOOL,-1);
-	AddSegmentAfterActiveSegment(CChainSegment(CHAIN_SEGMENT_TOOL,CR3Vector(1.0,0.0,0.0),0.0,CR3Vector(0.0,0.0,0.5)));
+	SetActiveSegment(CHAIN_PART_SPINDLE,-1);
+	AddSegmentAfterActiveSegment(CChainSegment(CHAIN_SEGMENT_TOOL_SPINDLE_NOSE,CR3Vector(1.0,0.0,0.0),0.0,CR3Vector(0.0,0.0,0.5)));
 	m_sFileName = "<chain not saved>";
 	m_nUnit = CHAIN_UNIT_M;		//what every model shipped is in; a file has to say for itself
 }
@@ -114,10 +114,10 @@ void CChain::CheckStructure() const
 		MY_THROW(CGeneratorException,"the tool part has no segment");
 	if(m_vMaterialHolderPart.empty())
 		MY_THROW(CGeneratorException,"the material holder part has no segment");
-	if(m_vToolPart.back().GetType()!=CHAIN_SEGMENT_TOOL)
+	if(m_vToolPart.back().GetType()!=CHAIN_SEGMENT_TOOL_SPINDLE_NOSE)
 		MY_THROW(CGeneratorException,"the last segment of the tool part must be the TOOL segment, '"
 			+m_vToolPart.back().GetName()+"' is a "+m_vToolPart.back().GetTypeName());
-	if(m_vMaterialHolderPart.back().GetType()!=CHAIN_SEGMENT_MATERIAL_HOLDER)
+	if(m_vMaterialHolderPart.back().GetType()!=CHAIN_SEGMENT_TABLE)
 		MY_THROW(CGeneratorException,"the last segment of the material holder part must be the MATERIAL_HOLDER segment, '"
 			+m_vMaterialHolderPart.back().GetName()+"' is a "+m_vMaterialHolderPart.back().GetTypeName());
 	const std::vector<CChainSegment> *pvParts[2] = {&m_vToolPart,&m_vMaterialHolderPart};
@@ -125,7 +125,7 @@ void CChain::CheckStructure() const
 		const std::vector<CChainSegment> &v = *pvParts[p];
 		for(size_t i=0;i<v.size();i++){
 			bool bLast = (i+1==v.size());
-			if(!bLast && (v[i].GetType()==CHAIN_SEGMENT_TOOL || v[i].GetType()==CHAIN_SEGMENT_MATERIAL_HOLDER))
+			if(!bLast && (v[i].GetType()==CHAIN_SEGMENT_TOOL_SPINDLE_NOSE || v[i].GetType()==CHAIN_SEGMENT_TABLE))
 				MY_THROW(CGeneratorException,"segment '"+v[i].GetName()+"': a "+v[i].GetTypeName()
 					+" segment may appear only once, at the end of its part");
 			if(v[i].IsParameterConstrained() && v[i].m_dParameterValueMinimum>v[i].m_dParameterValueMaximum)
@@ -312,7 +312,7 @@ size_t CChain::GetFirstRotaryParameterIndex(CHAIN_PART nCountFrom) const
 	GetRotationsIndexes(nFirst,nSecond);
 	//the parameters run from the material terminal through the base to the tool terminal (operator[]),
 	//so the rotary axis nearest the tool is the second of the two and the one nearest the part the first
-	return (nCountFrom==CHAIN_PART_TOOL) ? nSecond : nFirst;
+	return (nCountFrom==CHAIN_PART_SPINDLE) ? nSecond : nFirst;
 }
 
 CTrajectoryStart CChain::GetTrajectoryStart(CHAIN_PART nCountFrom
@@ -565,14 +565,14 @@ void CChain::SetActiveSegment(CHAIN_PART part, int nActiveSegmentIndex)
 
 std::vector<CChainSegment> & CChain::GetPart(CHAIN_PART part)
 {
-	if(part==CHAIN_PART_TOOL)
+	if(part==CHAIN_PART_SPINDLE)
 		return m_vToolPart;
 	return m_vMaterialHolderPart;
 }
 
 const std::vector<CChainSegment> & CChain::GetPart(CHAIN_PART part) const
 {
-	if(part==CHAIN_PART_TOOL)
+	if(part==CHAIN_PART_SPINDLE)
 		return m_vToolPart;
 	return m_vMaterialHolderPart;
 }
@@ -832,7 +832,7 @@ std::string SolidName(const CChainSegment &oSegment, size_t nBox, size_t nBoxes
 {
 	std::string sName = oSegment.GetName();
 	if(sName.empty())
-		sName = std::string(part==CHAIN_PART_TOOL ? "tool segment " : "material segment ")
+		sName = std::string(part==CHAIN_PART_SPINDLE ? "tool segment " : "material segment ")
 			+size_to_string(nIndex+1);
 	if(nBoxes>1)
 		sName += (" box "+size_to_string(nBox+1));
@@ -871,8 +871,8 @@ void CChain::DetectCollisions(CMillingTool &oMillingTool)
 					if(boxes[j].HasIntersectionWithBox(boxes2[m],tr,trInv)){
 						m_vMaterialHolderPart[i].SetPartCollision(j);
 						m_vMaterialHolderPart[k].SetPartCollision(m);
-						m_oCollisions.Add(SolidName(m_vMaterialHolderPart[i],j,boxes.size(),CHAIN_PART_MATERIAL_HOLDER,i)
-							,SolidName(m_vMaterialHolderPart[k],m,boxes2.size(),CHAIN_PART_MATERIAL_HOLDER,k)
+						m_oCollisions.Add(SolidName(m_vMaterialHolderPart[i],j,boxes.size(),CHAIN_PART_TABLE,i)
+							,SolidName(m_vMaterialHolderPart[k],m,boxes2.size(),CHAIN_PART_TABLE,k)
 							,COLLIDING_PARTS);
 					}
 				}
@@ -890,7 +890,7 @@ void CChain::DetectCollisions(CMillingTool &oMillingTool)
 		trToIInv =trToIInv * m_vMaterialHolderPart[i].GetConstantTransformation();
 		for(size_t k=0; k<m_vToolPart.size();k++){
 			const std::vector<CR3Box> &boxes2 = m_vToolPart[k].GetPartVector();
-			if(boxes2.empty() && m_vToolPart[k].GetType()!=CHAIN_SEGMENT_TOOL)
+			if(boxes2.empty() && m_vToolPart[k].GetType()!=CHAIN_SEGMENT_TOOL_SPINDLE_NOSE)
 				continue;	//a TOOL segment without boxes still carries the milling tool (KnownBugs #38)
 			CTransformation tr = trToI;
 			CTransformation trInv = trToIInv;
@@ -905,13 +905,13 @@ void CChain::DetectCollisions(CMillingTool &oMillingTool)
 					if(boxes[j].HasIntersectionWithBox(boxes2[m],tr,trInv)){
 						m_vMaterialHolderPart[i].SetPartCollision(j);
 						m_vToolPart[k].SetPartCollision(m);
-						m_oCollisions.Add(SolidName(m_vMaterialHolderPart[i],j,boxes.size(),CHAIN_PART_MATERIAL_HOLDER,i)
-							,SolidName(m_vToolPart[k],m,boxes2.size(),CHAIN_PART_TOOL,k)
+						m_oCollisions.Add(SolidName(m_vMaterialHolderPart[i],j,boxes.size(),CHAIN_PART_TABLE,i)
+							,SolidName(m_vToolPart[k],m,boxes2.size(),CHAIN_PART_SPINDLE,k)
 							,COLLIDING_PARTS);
 					}
 				}
 			}
-			if(m_vToolPart[k].GetType()==CHAIN_SEGMENT_TOOL){
+			if(m_vToolPart[k].GetType()==CHAIN_SEGMENT_TOOL_SPINDLE_NOSE){
 				//the solids of the tool are measured from the tool point, which hangs below the mount
 				CTransformation trTool = tr * GetToolMountToToolPointTransformation();
 				CTransformation trToolInv = GetToolPointToToolMountTransformation() * trInv;
@@ -920,13 +920,13 @@ void CChain::DetectCollisions(CMillingTool &oMillingTool)
 						m_vMaterialHolderPart[i].SetPartCollision(j);
 						oMillingTool.AddToCollisionLog((m_vMaterialHolderPart[i].GetName()+", box_"+size_to_string(j+1)));
 						m_oCollisions.Add("the tool"
-							,SolidName(m_vMaterialHolderPart[i],j,boxes.size(),CHAIN_PART_MATERIAL_HOLDER,i)
+							,SolidName(m_vMaterialHolderPart[i],j,boxes.size(),CHAIN_PART_TABLE,i)
 							,COLLIDING_TOOL);
 					} else if(oMillingTool.CauseNonCuttingCollision(boxes[j],trTool,trToolInv)){
 						m_vMaterialHolderPart[i].SetPartCollision(j);
 						oMillingTool.AddToCollisionLog((m_vMaterialHolderPart[i].GetName()+", box_"+size_to_string(j+1)+" (holder or shank)"));
 						m_oCollisions.Add("the shank or the holder"
-							,SolidName(m_vMaterialHolderPart[i],j,boxes.size(),CHAIN_PART_MATERIAL_HOLDER,i)
+							,SolidName(m_vMaterialHolderPart[i],j,boxes.size(),CHAIN_PART_TABLE,i)
 							,COLLIDING_TOOL_SHANK);
 					}
 				}
@@ -942,7 +942,7 @@ void CChain::DetectCollisions(CMillingTool &oMillingTool)
 		CTransformation trVariableInv = m_vToolPart[i].GetInvertedVariablePartTransformation(m_vToolPart[i].m_dActualParameterValue);
 		for(size_t k=i+1; k<m_vToolPart.size();k++){
 			const std::vector<CR3Box> &boxes2 = m_vToolPart[k].GetPartVector();
-			if(boxes2.empty() && m_vToolPart[k].GetType()!=CHAIN_SEGMENT_TOOL)
+			if(boxes2.empty() && m_vToolPart[k].GetType()!=CHAIN_SEGMENT_TOOL_SPINDLE_NOSE)
 				continue;	//a TOOL segment without boxes still carries the milling tool (KnownBugs #38)
 			CTransformation tr = trVariable;
 			CTransformation trInv = trVariableInv;
@@ -957,26 +957,26 @@ void CChain::DetectCollisions(CMillingTool &oMillingTool)
 					if(boxes[j].HasIntersectionWithBox(boxes2[m],tr,trInv)){
 						m_vToolPart[i].SetPartCollision(j);
 						m_vToolPart[k].SetPartCollision(m);
-						m_oCollisions.Add(SolidName(m_vToolPart[i],j,boxes.size(),CHAIN_PART_TOOL,i)
-							,SolidName(m_vToolPart[k],m,boxes2.size(),CHAIN_PART_TOOL,k)
+						m_oCollisions.Add(SolidName(m_vToolPart[i],j,boxes.size(),CHAIN_PART_SPINDLE,i)
+							,SolidName(m_vToolPart[k],m,boxes2.size(),CHAIN_PART_SPINDLE,k)
 							,COLLIDING_PARTS);
 					}
 				}
 			}
-			if(m_vToolPart[k].GetType()==CHAIN_SEGMENT_TOOL){
+			if(m_vToolPart[k].GetType()==CHAIN_SEGMENT_TOOL_SPINDLE_NOSE){
 				CTransformation trTool = tr * GetToolMountToToolPointTransformation();
 				CTransformation trToolInv = GetToolPointToToolMountTransformation() * trInv;
 				for(size_t j=0; j<boxes.size();j++){
 					if(oMillingTool.CauseCollision(boxes[j],trTool,trToolInv)){
 						m_vToolPart[i].SetPartCollision(j);
 						oMillingTool.AddToCollisionLog((m_vToolPart[i].GetName()+", box_"+size_to_string(j+1)));
-						m_oCollisions.Add("the tool",SolidName(m_vToolPart[i],j,boxes.size(),CHAIN_PART_TOOL,i)
+						m_oCollisions.Add("the tool",SolidName(m_vToolPart[i],j,boxes.size(),CHAIN_PART_SPINDLE,i)
 							,COLLIDING_TOOL);
 					} else if(oMillingTool.CauseNonCuttingCollision(boxes[j],trTool,trToolInv)){
 						m_vToolPart[i].SetPartCollision(j);
 						oMillingTool.AddToCollisionLog((m_vToolPart[i].GetName()+", box_"+size_to_string(j+1)+" (holder or shank)"));
 						m_oCollisions.Add("the shank or the holder"
-							,SolidName(m_vToolPart[i],j,boxes.size(),CHAIN_PART_TOOL,i),COLLIDING_TOOL_SHANK);
+							,SolidName(m_vToolPart[i],j,boxes.size(),CHAIN_PART_SPINDLE,i),COLLIDING_TOOL_SHANK);
 					}
 				}
 			}

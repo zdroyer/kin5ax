@@ -188,11 +188,11 @@ void CChainSegment::SetType(CHAIN_SEGMENT_TYPE type)
 		case CHAIN_SEGMENT_PRISMATIC_LINK: 
 			m_sTypeName="PRISMATIC_LINK";
 			break;
-		case CHAIN_SEGMENT_MATERIAL_HOLDER:
-			m_sTypeName="MATERIAL_HOLDER";
+		case CHAIN_SEGMENT_TABLE:
+			m_sTypeName="TABLE";
 			break ;
-		case CHAIN_SEGMENT_TOOL:
-			m_sTypeName="TOOL";
+		case CHAIN_SEGMENT_TOOL_SPINDLE_NOSE:
+			m_sTypeName="TOOL_SPINDLE_NOSE";
 			break; 
 		default:
 			MY_THROW(CGeneratorException, "Undefined chain segment type");
@@ -210,12 +210,12 @@ void CChainSegment::SetType(const std::string &sType)
 		SetType(CHAIN_SEGMENT_PRISMATIC_LINK);
 		return;
 	}
-	if(0==strcmp("MATERIAL_HOLDER",sType.c_str())){
-		SetType(CHAIN_SEGMENT_MATERIAL_HOLDER);
+	if(0==strcmp("TABLE",sType.c_str())){
+		SetType(CHAIN_SEGMENT_TABLE);
 		return;
 	}
-	if(0==strcmp("TOOL",sType.c_str())){
-		SetType(CHAIN_SEGMENT_TOOL);
+	if(0==strcmp("TOOL_SPINDLE_NOSE",sType.c_str())){
+		SetType(CHAIN_SEGMENT_TOOL_SPINDLE_NOSE);
 		return;
 	}
 	MY_THROW(CGeneratorException, "Undefined chain segment type");
@@ -231,7 +231,7 @@ std::string CChainSegment::GetName() const
 {
 	if(IsRegularJoint())
 		return m_sName;
-	if(m_type == CHAIN_SEGMENT_MATERIAL_HOLDER)
+	if(m_type == CHAIN_SEGMENT_TABLE)
 		return "Material holder";
 	return "Tool holder";
 

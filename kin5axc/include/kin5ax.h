@@ -90,8 +90,8 @@ typedef enum k5_link_type {
 
 /* Which branch of the kinematic chain, counted from the machine base outwards. */
 typedef enum k5_chain_part {
-	K5_PART_TOOL = 0,				/* ends at the tool mount */
-	K5_PART_MATERIAL_HOLDER			/* ends at the frame of the material */
+	K5_PART_SPINDLE = 0,				/* ends at the tool mount */
+	K5_PART_TABLE			/* ends at the frame of the material */
 } k5_chain_part;
 
 /* The unit every length of a chain file is in. A file names it and a file that does not is refused. */

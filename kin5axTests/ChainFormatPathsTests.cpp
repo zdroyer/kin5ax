@@ -31,8 +31,8 @@ CChainImage Image(const CChain &oChain)
 	o.sMachine = oChain.GetMachine();
 	o.sAuthor = oChain.GetAuthor();
 	o.sModified = oChain.GetModified();
-	o.nToolSegments = oChain.GetPart(CHAIN_PART_TOOL).size();
-	o.nMaterialSegments = oChain.GetPart(CHAIN_PART_MATERIAL_HOLDER).size();
+	o.nToolSegments = oChain.GetPart(CHAIN_PART_SPINDLE).size();
+	o.nMaterialSegments = oChain.GetPart(CHAIN_PART_TABLE).size();
 	return o;
 }
 

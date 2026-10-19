@@ -96,8 +96,8 @@ TEST(ChainFcmReader, TemplateLoads)
 	EXPECT_EQ("X",oChain.m_vToolPart[0].GetName());
 	EXPECT_EQ(CHAIN_SEGMENT_PRISMATIC_LINK,oChain.m_vToolPart[0].GetType());
 	EXPECT_EQ(CHAIN_SEGMENT_REVOLUTE_LINK,oChain.m_vMaterialHolderPart[0].GetType());
-	EXPECT_EQ(CHAIN_SEGMENT_TOOL,oChain.m_vToolPart[3].GetType());
-	EXPECT_EQ(CHAIN_SEGMENT_MATERIAL_HOLDER,oChain.m_vMaterialHolderPart[2].GetType());
+	EXPECT_EQ(CHAIN_SEGMENT_TOOL_SPINDLE_NOSE,oChain.m_vToolPart[3].GetType());
+	EXPECT_EQ(CHAIN_SEGMENT_TABLE,oChain.m_vMaterialHolderPart[2].GetType());
 	EXPECT_TRUE(oChain.Is5CChain())<<"three linear and two rotary joints";
 }
 

@@ -386,8 +386,8 @@ CChain CChainFcmReader::Parse(const std::string &sFcm, const std::string &sWhere
 	vTable = OrderBranch(vTable,"table",oReport);
 
 	CChain oChain;
-	oChain.m_vToolPart = BuildBranch(vHead,false,oOptions,CHAIN_SEGMENT_TOOL);
-	oChain.m_vMaterialHolderPart = BuildBranch(vTable,true,oOptions,CHAIN_SEGMENT_MATERIAL_HOLDER);
+	oChain.m_vToolPart = BuildBranch(vHead,false,oOptions,CHAIN_SEGMENT_TOOL_SPINDLE_NOSE);
+	oChain.m_vMaterialHolderPart = BuildBranch(vTable,true,oOptions,CHAIN_SEGMENT_TABLE);
 	std::string sName = oOptions.m_sMachineName.empty()
 		? machine.value("name",std::string()) : oOptions.m_sMachineName;
 	oChain.SetName(sName);

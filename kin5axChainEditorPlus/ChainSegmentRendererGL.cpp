@@ -47,10 +47,10 @@ void CChainSegmentRendererGL::Render(const CChainSegment &oSegment, bool bDrawBi
 		case CHAIN_SEGMENT_PRISMATIC_LINK:
 			RenderPrismatic(oSegment,bDrawBigFrame);
 			break;
-		case CHAIN_SEGMENT_MATERIAL_HOLDER:
+		case CHAIN_SEGMENT_TABLE:
 			RenderMaterialHolder(oSegment,bDrawBigFrame);
 			break;
-		case CHAIN_SEGMENT_TOOL:
+		case CHAIN_SEGMENT_TOOL_SPINDLE_NOSE:
 			RenderToolHolder(oSegment,bDrawBigFrame);
 			break;
 		default:

@@ -1,6 +1,6 @@
 {
   "format": "kin5ax-chain",
-  "version": 1,
+  "version": 2,
   "unit": "m",
   "name": "Mazak VTC-800/30SR, B swivel head, C rotary table on the fixed table",
   "machine": "Mazak VTC-800/30SR",
@@ -61,7 +61,7 @@
         }
       }
     ],
-    "tool": {
+    "tool_spindle_nose": {
       "name": "Tool holder",
       "translation": [0.352, 0.0, 0.0],
       "rotation": {
@@ -96,7 +96,7 @@
         }
       }
     ],
-    "workpiece_holder": {
+    "table": {
       "name": "Material holder",
       "translation": [0.0, 0.0, 0.0],
       "rotation": {

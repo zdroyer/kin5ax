@@ -239,7 +239,7 @@ void CKinematicChainPropertiesDialog::OnTvnSelchangedSegmentTree(NMHDR *pNMHDR, 
 			bIsToolPartActive = true;
 		}
 	}
-	m_pDoc->m_oChain.SetActiveSegment(bIsToolPartActive ? CHAIN_PART_TOOL : CHAIN_PART_MATERIAL_HOLDER,nIndex);
+	m_pDoc->m_oChain.SetActiveSegment(bIsToolPartActive ? CHAIN_PART_SPINDLE : CHAIN_PART_TABLE,nIndex);
 	m_pDoc->UpdateAllViews(NULL);
 	UpdateParameterSliderUnits();
 	*pResult = 0;

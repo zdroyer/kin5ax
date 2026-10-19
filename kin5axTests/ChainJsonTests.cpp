@@ -14,7 +14,7 @@ static std::string Template()
 {
 	return R"KC({
   "format": "kin5ax-chain",
-  "version": 1,
+  "version": 2,
   "unit": "m",
   "name": "template",
   "tool_branch": {
@@ -29,7 +29,7 @@ static std::string Template()
         "rotation": { "axis": [1, 0, 0], "angle_deg": 90 },
         "limits": { "min": -90, "max": 90 } }
     ],
-    "tool": {
+    "tool_spindle_nose": {
       "name": "tool",
       "translation": [0, 0, 0],
       "rotation": { "axis": [1, 0, 0], "angle_deg": 0 }
@@ -41,7 +41,7 @@ static std::string Template()
         "translation": [0, 0, 0],
         "rotation": { "axis": [0, 0, 1], "angle_deg": 0 } }
     ],
-    "workpiece_holder": {
+    "table": {
       "name": "holder",
       "translation": [0, 0, 0.1],
       "rotation": { "axis": [1, 0, 0], "angle_deg": 0 }
@@ -99,11 +99,11 @@ TEST(ChainJsonReader, TemplateLoads)
 	EXPECT_NEAR(dPiDiv2,b.m_dParameterValueMaximum,1E-12);
 	EXPECT_DOUBLE_EQ(90.0,b.m_dConstRevoluteAngle)<<"angle_deg is stored as written";
 
-	EXPECT_EQ(CHAIN_SEGMENT_TOOL,oChain.m_vToolPart[2].GetType());
+	EXPECT_EQ(CHAIN_SEGMENT_TOOL_SPINDLE_NOSE,oChain.m_vToolPart[2].GetType());
 	//CChainSegment::GetName ignores the stored name at the end of a branch and labels it itself
 	EXPECT_EQ("Tool holder",oChain.m_vToolPart[2].GetName());
 	EXPECT_FALSE(oChain.m_vToolPart[2].IsParameterConstrained())<<"the end of a branch is not a joint";
-	EXPECT_EQ(CHAIN_SEGMENT_MATERIAL_HOLDER,oChain.m_vMaterialHolderPart[1].GetType());
+	EXPECT_EQ(CHAIN_SEGMENT_TABLE,oChain.m_vMaterialHolderPart[1].GetType());
 	EXPECT_EQ("Material holder",oChain.m_vMaterialHolderPart[1].GetName());
 }
 
@@ -116,7 +116,7 @@ TEST(ChainJsonReader, ABranchMayHaveNoJoint)
 	CChain oChain;
 	ASSERT_EQ(std::string(),JsonError(s,&oChain));
 	ASSERT_EQ((size_t)1,oChain.m_vMaterialHolderPart.size());
-	EXPECT_EQ(CHAIN_SEGMENT_MATERIAL_HOLDER,oChain.m_vMaterialHolderPart[0].GetType());
+	EXPECT_EQ(CHAIN_SEGMENT_TABLE,oChain.m_vMaterialHolderPart[0].GetType());
 }
 
 TEST(ChainJsonReader, MetadataIsRead)
@@ -137,28 +137,39 @@ TEST(ChainJsonReader, ASchemaReferenceIsAccepted)
 
 TEST(ChainJsonReader, SyntaxErrorIsReportedWithTheLine)
 {
-	std::string sError = JsonError(Replaced(Template(),"\"version\": 1,","\"version\": 1"));
+	std::string sError = JsonError(Replaced(Template(),"\"version\": 2,","\"version\": 2"));
 	EXPECT_ERROR_CONTAINS(sError,"JSON error");
 	EXPECT_ERROR_CONTAINS(sError,"line ");
 }
 
 TEST(ChainJsonReader, AForeignDocumentIsReported)
 {
-	std::string sError = JsonError("{ \"format\": \"something-else\", \"version\": 1, \"tool_branch\": {}, \"workpiece_branch\": {} }");
+	std::string sError = JsonError("{ \"format\": \"something-else\", \"version\": 2, \"tool_branch\": {}, \"workpiece_branch\": {} }");
 	EXPECT_ERROR_CONTAINS(sError,"format");
 	EXPECT_ERROR_CONTAINS(sError,"kin5ax-chain");
 }
 
+//Version 1 named the terminals tool and workpiece_holder, and the origin of the first of them was
+//the tool point in a file that named no holder. Nothing of that can be guessed at, so a file of
+//that version is refused and told what converts it.
+TEST(ChainJsonReader, TheVersionBeforeThisOneIsRefusedWithAWayOut)
+{
+	std::string sError = JsonError(Replaced(Template(),"\"version\": 2","\"version\": 1"));
+	EXPECT_ERROR_CONTAINS(sError,"version 1");
+	EXPECT_ERROR_CONTAINS(sError,"kc2json");
+	EXPECT_ERROR_CONTAINS(sError,"tool_spindle_nose");
+}
+
 TEST(ChainJsonReader, AnotherVersionIsReported)
 {
-	std::string sError = JsonError(Replaced(Template(),"\"version\": 1","\"version\": 2"));
+	std::string sError = JsonError(Replaced(Template(),"\"version\": 2","\"version\": 3"));
 	EXPECT_ERROR_CONTAINS(sError,"version");
 }
 
 TEST(ChainJsonReader, MissingMemberIsReported)
 {
 	std::string sError = JsonError(Replaced(Template(),"\"name\": \"tool\",\n      ",""));
-	EXPECT_ERROR_CONTAINS(sError,"tool_branch.tool");
+	EXPECT_ERROR_CONTAINS(sError,"tool_branch.tool_spindle_nose");
 	EXPECT_ERROR_CONTAINS(sError,"'name'");
 }
 
@@ -173,7 +184,7 @@ TEST(ChainJsonReader, TheEndOfABranchTakesNoLimits)
 {
 	std::string sError = JsonError(Replaced(Template()
 		,"\"name\": \"tool\",","\"name\": \"tool\", \"limits\": { \"min\": 0, \"max\": 1 },"));
-	EXPECT_ERROR_CONTAINS(sError,"tool_branch.tool");
+	EXPECT_ERROR_CONTAINS(sError,"tool_branch.tool_spindle_nose");
 	EXPECT_ERROR_CONTAINS(sError,"'limits'");
 }
 
@@ -304,7 +315,7 @@ TEST(ChainJsonToolHolder, TheWorkpieceHolderCarriesNone)
 	std::string s = Replaced(Template(),"\"name\": \"holder\",","\"name\": \"holder\",\n      \"tool_holder\": { \"length\": 0.05, \"radius\": 0.03 },");
 	std::string sError = JsonError(s);
 	EXPECT_ERROR_CONTAINS(sError,"tool_holder");
-	EXPECT_ERROR_CONTAINS(sError,"workpiece_branch.workpiece_holder");
+	EXPECT_ERROR_CONTAINS(sError,"workpiece_branch.table");
 }
 
 TEST(ChainJsonToolHolder, AMissingMemberIsNamedByItsPath)
@@ -312,7 +323,7 @@ TEST(ChainJsonToolHolder, AMissingMemberIsNamedByItsPath)
 	std::string s = Replaced(Template(),"\"name\": \"tool\",","\"name\": \"tool\",\n      \"tool_holder\": { \"length\": 0.05 },");
 	std::string sError = JsonError(s);
 	EXPECT_ERROR_CONTAINS(sError,"radius");
-	EXPECT_ERROR_CONTAINS(sError,"tool_branch.tool.tool_holder");
+	EXPECT_ERROR_CONTAINS(sError,"tool_branch.tool_spindle_nose.tool_holder");
 }
 
 //---- the unit: required, exact, and kept

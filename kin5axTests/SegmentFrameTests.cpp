@@ -38,8 +38,8 @@ TEST_P(SegmentFrameChain, TheLastFrameOfAPartIsItsTerminal)
 	std::mt19937 oGenerator(23);
 	for(int s=0;s<20;s++){
 		oChain.SetParameters(RandomJointValues(oChain,oGenerator));
-		std::vector<CSegmentFrame> vTool = oChain.GetActualFrames(CHAIN_PART_TOOL);
-		std::vector<CSegmentFrame> vMaterial = oChain.GetActualFrames(CHAIN_PART_MATERIAL_HOLDER);
+		std::vector<CSegmentFrame> vTool = oChain.GetActualFrames(CHAIN_PART_SPINDLE);
+		std::vector<CSegmentFrame> vMaterial = oChain.GetActualFrames(CHAIN_PART_TABLE);
 		ASSERT_EQ(oChain.m_vToolPart.size(),vTool.size());
 		ASSERT_EQ(oChain.m_vMaterialHolderPart.size(),vMaterial.size());
 
@@ -60,7 +60,7 @@ TEST_P(SegmentFrameChain, TheFramesChainTogether)
 {
 	CChain oChain = LoadChain(GetParam());
 	std::mt19937 oGenerator(29);
-	const CHAIN_PART vParts[2] = {CHAIN_PART_TOOL,CHAIN_PART_MATERIAL_HOLDER};
+	const CHAIN_PART vParts[2] = {CHAIN_PART_SPINDLE,CHAIN_PART_TABLE};
 	for(int s=0;s<10;s++){
 		oChain.SetParameters(RandomJointValues(oChain,oGenerator));
 		for(int p=0;p<2;p++){
@@ -88,7 +88,7 @@ TEST_P(SegmentFrameChain, TheZOfTheJointFrameIsTheAxisOfTheJoint)
 {
 	CChain oChain = LoadChain(GetParam());
 	oChain.ZeroAllParameters();
-	const CHAIN_PART vParts[2] = {CHAIN_PART_TOOL,CHAIN_PART_MATERIAL_HOLDER};
+	const CHAIN_PART vParts[2] = {CHAIN_PART_SPINDLE,CHAIN_PART_TABLE};
 	for(int p=0;p<2;p++){
 		std::vector<CChainSegment> &vPart = oChain.GetPart(vParts[p]);
 		for(size_t i=0;i<vPart.size();i++){
@@ -124,7 +124,7 @@ TEST(SegmentFrame, OneSegmentAgreesWithTheWholePart)
 	CChain oChain = LoadChain(GetChainFiles()[0]);
 	std::mt19937 oGenerator(31);
 	oChain.SetParameters(RandomJointValues(oChain,oGenerator));
-	const CHAIN_PART vParts[2] = {CHAIN_PART_TOOL,CHAIN_PART_MATERIAL_HOLDER};
+	const CHAIN_PART vParts[2] = {CHAIN_PART_SPINDLE,CHAIN_PART_TABLE};
 	for(int p=0;p<2;p++){
 		std::vector<CSegmentFrame> vFrames = oChain.GetActualFrames(vParts[p]);
 		ASSERT_GT(vFrames.size(),(size_t)0);
@@ -146,11 +146,11 @@ TEST(SegmentFrame, TheFramesOfAChainBuiltByHand)
 	oChain.m_vMaterialHolderPart.clear();
 	CR3Vector r3vX(1.0,0.0,0.0), r3vNone(0.0,0.0,0.0);
 	oChain.m_vToolPart.push_back(CChainSegment(CHAIN_SEGMENT_PRISMATIC_LINK,r3vX,0.0,CR3Vector(0.0,0.0,0.3)));
-	oChain.m_vToolPart.push_back(CChainSegment(CHAIN_SEGMENT_TOOL,r3vX,0.0,CR3Vector(0.0,0.0,0.2)));
-	oChain.m_vMaterialHolderPart.push_back(CChainSegment(CHAIN_SEGMENT_MATERIAL_HOLDER,r3vX,0.0,r3vNone));
+	oChain.m_vToolPart.push_back(CChainSegment(CHAIN_SEGMENT_TOOL_SPINDLE_NOSE,r3vX,0.0,CR3Vector(0.0,0.0,0.2)));
+	oChain.m_vMaterialHolderPart.push_back(CChainSegment(CHAIN_SEGMENT_TABLE,r3vX,0.0,r3vNone));
 	oChain.m_vToolPart[0].m_dActualParameterValue = 0.05;
 
-	std::vector<CSegmentFrame> v = oChain.GetActualFrames(CHAIN_PART_TOOL);
+	std::vector<CSegmentFrame> v = oChain.GetActualFrames(CHAIN_PART_SPINDLE);
 	ASSERT_EQ((size_t)2,v.size());
 	CR3Point pJoint = v[0].m_trJoint * CR3Point(0.0,0.0,0.0);
 	EXPECT_NEAR(0.3,pJoint.GetZ(),1E-12)<<"the boxes of the link sit where its constant translation put it";

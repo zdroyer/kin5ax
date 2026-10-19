@@ -78,8 +78,8 @@ TEST(SimpleSimulation, WorkingRangeIsTheShortestLimitedLinearTravel)
 	oChain.m_vMaterialHolderPart.clear();
 	CR3Vector r3vZ(0.0,0.0,1.0), r3vNone(0.0,0.0,0.0);
 	CChainSegment oZ(CHAIN_SEGMENT_PRISMATIC_LINK,r3vZ,0.0,r3vNone,true,-0.5,0.5);
-	CChainSegment oTool(CHAIN_SEGMENT_TOOL,r3vZ,0.0,r3vNone);
-	CChainSegment oHolder(CHAIN_SEGMENT_MATERIAL_HOLDER,r3vZ,0.0,r3vNone);
+	CChainSegment oTool(CHAIN_SEGMENT_TOOL_SPINDLE_NOSE,r3vZ,0.0,r3vNone);
+	CChainSegment oHolder(CHAIN_SEGMENT_TABLE,r3vZ,0.0,r3vNone);
 	oChain.m_vToolPart.push_back(oZ);
 	oChain.m_vToolPart.push_back(oTool);
 	oChain.m_vMaterialHolderPart.push_back(oHolder);

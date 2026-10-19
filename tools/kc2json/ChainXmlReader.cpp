@@ -108,10 +108,16 @@ CChainSegment ReadSegment(const CFileContext &ctx, const pugi::xml_node &node)
 	std::string sType = node.attribute("type").value();
 	if(!Contains({"REVOLUTE_LINK","PRISMATIC_LINK","TOOL","MATERIAL_HOLDER"},sType.c_str()))
 		ctx.Fail(node,"unknown segment type '"+sType+"'");
+	//the retired file calls the terminals TOOL and MATERIAL_HOLDER; the library calls them what
+	//they are, and this is where the one name becomes the other
+	if(sType=="TOOL")
+		sType = "TOOL_SPINDLE_NOSE";
+	else if(sType=="MATERIAL_HOLDER")
+		sType = "TABLE";
 	std::string sName = node.attribute("name").value();
 
 	//the type and the constant transformation are set below
-	CChainSegment oSegment(CHAIN_SEGMENT_TOOL,CR3Vector(1.0,0.0,0.0),0.0,CR3Vector(0.0));
+	CChainSegment oSegment(CHAIN_SEGMENT_TOOL_SPINDLE_NOSE,CR3Vector(1.0,0.0,0.0),0.0,CR3Vector(0.0));
 	oSegment.SetName(sName);
 	oSegment.SetType(sType);
 	oSegment.m_dActualParameterValue = 0.0;
@@ -141,7 +147,7 @@ CChainSegment ReadSegment(const CFileContext &ctx, const pugi::xml_node &node)
 	CheckChildren(ctx,node,{"initial_translation","initial_rotation","tool_holder","box"});
 	pugi::xml_node holder = node.child("tool_holder");
 	if(holder){
-		if(oSegment.GetType()!=CHAIN_SEGMENT_TOOL)
+		if(oSegment.GetType()!=CHAIN_SEGMENT_TOOL_SPINDLE_NOSE)
 			ctx.Fail(holder,"segment '"+sName+"': only a TOOL segment carries a tool_holder");
 		CheckAttributes(ctx,holder,{"length","radius"},{});
 		oSegment.SetToolHolder(CToolHolder(Number(ctx,holder,"length"),Number(ctx,holder,"radius")));

@@ -42,7 +42,7 @@ void CChainRendererGL::Render(const CChain &oChain
 		CGLTools::DrawAxes(1.0,2.2*oConfiguration.m_dUnit);
 
 	for(size_t i=0;i<oChain.m_vMaterialHolderPart.size();i++){	
-		CChainSegmentRendererGL::Render(oChain.m_vMaterialHolderPart[i],oChain.m_nActivePart!=CHAIN_PART_TOOL && i==oChain.m_nActiveSegmentIndex);
+		CChainSegmentRendererGL::Render(oChain.m_vMaterialHolderPart[i],oChain.m_nActivePart!=CHAIN_PART_SPINDLE && i==oChain.m_nActiveSegmentIndex);
 	}
 	
 	if(!oChain.m_toolPosition.m_v.IsZero()){
@@ -74,7 +74,7 @@ void CChainRendererGL::Render(const CChain &oChain
 	glPopMatrix();
 	glPushMatrix();
 	for(size_t i=0;i<oChain.m_vToolPart.size();i++){
-		CChainSegmentRendererGL::Render(oChain.m_vToolPart[i],oChain.m_nActivePart==CHAIN_PART_TOOL && i==oChain.m_nActiveSegmentIndex);
+		CChainSegmentRendererGL::Render(oChain.m_vToolPart[i],oChain.m_nActivePart==CHAIN_PART_SPINDLE && i==oChain.m_nActiveSegmentIndex);
 	}
 	if(pTool && oConfiguration.m_bShowTool){
 		//the frame after the segments is the tool mount; the tool hangs below it
