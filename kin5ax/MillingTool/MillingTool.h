@@ -9,6 +9,7 @@
 #include "Rotation.h"
 #include "Translation.h"
 #include "ToolHolder.h"
+#include "Solid.h"
 
 namespace kin5ax {
 
@@ -144,6 +145,21 @@ public:
 	CR3Box GetNonCuttingPartBoundingBox() const;
 	//Collision of the non-cutting envelope with a box of a machine part; the frames are those of CauseCollision.
 	bool CauseNonCuttingCollision(const CR3Box &box, const CTransformation trToBoxFrame, const CTransformation trToToolFrame) const;
+
+	/**
+	 * @name Against a solid of a chain segment
+	 *
+	 * A segment may carry a piece of a cylinder or a piece of a sphere as well as a box. The tool
+	 * is tested against the box of such a solid, which is exact for a box and conservative for the
+	 * other two in the same direction as everything else here: a pose may be refused that the
+	 * shape itself would have allowed, and none is allowed that breaks something. KnownBugs #72.
+	 * @{
+	 */
+	bool CauseCollision(const CSolid &oSolid, const CTransformation trToSolidFrame
+		,const CTransformation trToToolFrame) const;
+	bool CauseNonCuttingCollision(const CSolid &oSolid, const CTransformation trToSolidFrame
+		,const CTransformation trToToolFrame) const;
+	/// @}
 
 
 	//Places the tool: r3pNewPosition is the new place of the reference point (m_dReferencePointZ above the tip),

@@ -6,6 +6,7 @@
 #include "ToolDescription.h"
 #include "WorkpieceHolder.h"
 #include "ToolAssembly.h"
+#include "../3DGeometry/Solid.h"
 
 #include "Rotation.h"
 
@@ -24,23 +25,28 @@ class CChainSegment
 {
 
 protected:
-	std::vector<CR3Box> m_vParts;		//the solids of the segment, in the frame after its constant transformation
-	std::vector<bool> m_vCollisions;	//one flag per box, set by CChain::DetectCollisions
+	//the solids of the segment - boxes, pieces of cylinders, pieces of spheres - in the frame
+	//after its constant transformation and before its joint motion
+	std::vector<CSolid> m_vParts;
+	std::vector<bool> m_vCollisions;	//one flag per solid, set by CChain::DetectCollisions
 	int m_nHighlightedPart;
 
 public:
-	//Is any box of the segment flagged? Then sLog names the segment and the boxes.
+	//Is any solid of the segment flagged? Then sLog names the segment and the solids.
 	bool HasPartInCollision(std::string &sLog) const;
 	void ClearAllPartCollision();
 
-	//the collision flag of box n (0-based)
+	//the collision flag of solid n (0-based)
 	void SetPartCollision(size_t n);
 	bool IsPartInCollision(size_t n) const;
-	void SetPartVector(std::vector<CR3Box> vNewParts);
-	const std::vector<CR3Box> &GetPartVector()const;
+	//A box is a solid, so a caller that has boxes can still hand them over one by one. The
+	//vector itself is a vector of solids: see Solid.h for what one may be.
+	void SetPartVector(std::vector<CSolid> vNewParts);
+	const std::vector<CSolid> &GetPartVector()const;
 	void HighlightPart(int n);
 	int GetHighlightedPartIndex() const;
-	CR3Box *GetActivePartPointer();
+	//the highlighted solid, to be edited in place by a host; null when none is highlighted
+	CSolid *GetActivePartPointer();
 
 	bool MeetsConstraints(double dParam) const;
 

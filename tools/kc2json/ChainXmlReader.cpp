@@ -166,7 +166,7 @@ CChainSegment ReadSegment(const CFileContext &ctx, const pugi::xml_node &node)
 		oSegment.m_r3vConstRevoluteAxis = CR3Vector(1.0,0.0,0.0);	//no rotation: any axis, the same as the MSXML reader
 	}
 
-	std::vector<CR3Box> vParts;
+	std::vector<CSolid> vParts;
 	for(pugi::xml_node b : node.children("box")){
 		CheckAttributes(ctx,b,{"x1","x2","y1","y2","z1","z2"},{});
 		vParts.push_back(CR3Box(Number(ctx,b,"x1"),Number(ctx,b,"x2")

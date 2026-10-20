@@ -55,7 +55,8 @@
         "translation": { "$ref": "#/$defs/vector3" },
         "rotation":    { "$ref": "#/$defs/rotation" },
         "limits":      { "$ref": "#/$defs/limits" },
-        "boxes":       { "$ref": "#/$defs/boxes" }
+        "boxes":       { "$ref": "#/$defs/boxes" },
+        "solids":      { "$ref": "#/$defs/solids" }
       }
     },
     "terminal": {
@@ -68,6 +69,7 @@
         "translation": { "$ref": "#/$defs/vector3" },
         "rotation":    { "$ref": "#/$defs/rotation" },
         "boxes":       { "$ref": "#/$defs/boxes" },
+        "solids":      { "$ref": "#/$defs/solids" },
         "workpiece_holder": { "$ref": "#/$defs/workpiece_holder" }
       }
     },
@@ -95,6 +97,7 @@
         "translation": { "$ref": "#/$defs/vector3" },
         "rotation":    { "$ref": "#/$defs/rotation" },
         "boxes":       { "$ref": "#/$defs/boxes" },
+        "solids":      { "$ref": "#/$defs/solids" },
         "tool_holder": { "$ref": "#/$defs/tool_holder" },
         "tool":        { "$ref": "#/$defs/tool" }
       }
@@ -176,7 +179,7 @@
     },
     "boxes": {
       "type": "array",
-      "description": "Collision solids, in the frame after the constant transformation of the segment.",
+      "description": "Collision solids that are all boxes, in the frame after the constant transformation of the segment. The shorthand for the common case; solids is the general list and a segment may carry both.",
       "items": {
         "type": "object",
         "required": ["min", "max"],
@@ -185,6 +188,63 @@
           "min": { "$ref": "#/$defs/vector3" },
           "max": { "$ref": "#/$defs/vector3" }
         }
+      }
+    },
+    "solids": {
+      "type": "array",
+      "description": "Collision solids of any kind, in the frame after the constant transformation of the segment: a box, a piece of a cylinder or a piece of a sphere. Every entry names its type. A machine is never allowed a pose that breaks something, but a wedge or a dome may be refused one it could have had: the pieces are tested as the shapes they were cut from (KnownBugs #72).",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": ["type", "min", "max"],
+            "additionalProperties": false,
+            "description": "The same box as an entry of the boxes array.",
+            "properties": {
+              "type": { "const": "box" },
+              "min": { "$ref": "#/$defs/vector3" },
+              "max": { "$ref": "#/$defs/vector3" }
+            }
+          },
+          {
+            "type": "object",
+            "required": ["type", "axis", "base", "top", "radius"],
+            "additionalProperties": false,
+            "description": "A piece of a cylinder: the axis runs along one axis of the frame, through axis_point, from base to top as coordinates along that axis, and the two angles make a wedge of it.",
+            "properties": {
+              "type": { "const": "cylinder" },
+              "axis": { "enum": ["x", "y", "z"],
+                        "description": "Which axis of the frame the cylinder runs along." },
+              "axis_point": { "$ref": "#/$defs/vector3",
+                              "description": "A point the axis passes through; the origin when left out. Only its two coordinates across the axis matter." },
+              "base": { "type": "number",
+                        "description": "The coordinate of the lower end along the axis, read off the frame." },
+              "top": { "type": "number",
+                       "description": "And of the upper end." },
+              "radius": { "type": "number", "exclusiveMinimum": 0 },
+              "min_angle_deg": { "type": "number",
+                                 "description": "The wedge, measured about the axis from the first axis across it towards the second: for a z cylinder from +x towards +y. The whole turn when left out." },
+              "max_angle_deg": { "type": "number" }
+            }
+          },
+          {
+            "type": "object",
+            "required": ["type", "radius"],
+            "additionalProperties": false,
+            "description": "A piece of a sphere: the whole sphere, or what two planes across one axis leave of it - a dome or a band.",
+            "properties": {
+              "type": { "const": "sphere" },
+              "centre": { "$ref": "#/$defs/vector3",
+                          "description": "The centre; the origin when left out." },
+              "radius": { "type": "number", "exclusiveMinimum": 0 },
+              "axis": { "enum": ["x", "y", "z"],
+                        "description": "Which axis the two cuts are perpendicular to. A sphere that is cut says it." },
+              "min": { "type": "number",
+                       "description": "The lower cut, as a coordinate along that axis measured FROM THE CENTRE: 0 .. radius is a half sphere." },
+              "max": { "type": "number" }
+            }
+          }
+        ]
       }
     }
   }

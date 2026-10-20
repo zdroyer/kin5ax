@@ -897,8 +897,8 @@ std::string CChain::GetSolidName(CHAIN_PART part, size_t nSegment, size_t nBox) 
 }
 
 //The name of one solid of a segment, the way a report reads it: the name the file gives the segment,
-//or its place in its branch when it has none, and the number of the box when the segment has more
-//than one.
+//or its place in its branch when it has none, and the kind and the number of the solid when the
+//segment has more than one of them - "the head box 2", "the table cylinder 1".
 std::string SolidName(const CChainSegment &oSegment, size_t nBox, size_t nBoxes
 	,CHAIN_PART part, size_t nIndex)
 {
@@ -906,8 +906,11 @@ std::string SolidName(const CChainSegment &oSegment, size_t nBox, size_t nBoxes
 	if(sName.empty())
 		sName = std::string(part==CHAIN_PART_SPINDLE ? "tool segment " : "material segment ")
 			+size_to_string(nIndex+1);
-	if(nBoxes>1)
-		sName += (" box "+size_to_string(nBox+1));
+	if(nBoxes>1){
+		const std::vector<CSolid> &vSolids = oSegment.GetPartVector();
+		const char *szKind = (nBox<vSolids.size()) ? vSolids[nBox].GetTypeName() : "box";
+		sName += (std::string(" ")+szKind+" "+size_to_string(nBox+1));
+	}
 	return sName;
 }
 
@@ -934,14 +937,14 @@ void CChain::DetectCollisions(CMillingTool *pMillingTool)
 		pMillingTool->ClearCollisionLog();
 	//material holder part
 	for(size_t i=0;i<m_vMaterialHolderPart.size();i++){
-		const std::vector<CR3Box> &boxes = m_vMaterialHolderPart[i].GetPartVector();
+		const std::vector<CSolid> &boxes = m_vMaterialHolderPart[i].GetPartVector();
 		if(boxes.empty())
 			continue;
 		// material part <-> material part
 		CTransformation trVariable = m_vMaterialHolderPart[i].GetVariablePartTransformation(m_vMaterialHolderPart[i].m_dActualParameterValue);
 		CTransformation trVariableInv = m_vMaterialHolderPart[i].GetInvertedVariablePartTransformation(m_vMaterialHolderPart[i].m_dActualParameterValue);
 		for(size_t k=i+1; k<m_vMaterialHolderPart.size();k++){
-			const std::vector<CR3Box> &boxes2 = m_vMaterialHolderPart[k].GetPartVector();
+			const std::vector<CSolid> &boxes2 = m_vMaterialHolderPart[k].GetPartVector();
 			if(boxes2.empty())
 				continue;
 			CTransformation tr = trVariable;
@@ -954,7 +957,7 @@ void CChain::DetectCollisions(CMillingTool *pMillingTool)
 			trInv = m_vMaterialHolderPart[k].GetInvertedConstantTransformation() * trInv;
 			for(size_t j=0; j<boxes.size();j++){
 				for(size_t m=0;m<boxes2.size();m++){
-					if(boxes[j].HasIntersectionWithBox(boxes2[m],tr,trInv)){
+					if(boxes[j].Meets(boxes2[m],tr,trInv)){
 						m_vMaterialHolderPart[i].SetPartCollision(j);
 						m_vMaterialHolderPart[k].SetPartCollision(m);
 						m_oCollisions.Add(SolidName(m_vMaterialHolderPart[i],j,boxes.size(),CHAIN_PART_TABLE,i)
@@ -975,7 +978,7 @@ void CChain::DetectCollisions(CMillingTool *pMillingTool)
 		trToI = m_vMaterialHolderPart[i].GetInvertedConstantTransformation() * trToI;
 		trToIInv =trToIInv * m_vMaterialHolderPart[i].GetConstantTransformation();
 		for(size_t k=0; k<m_vToolPart.size();k++){
-			const std::vector<CR3Box> &boxes2 = m_vToolPart[k].GetPartVector();
+			const std::vector<CSolid> &boxes2 = m_vToolPart[k].GetPartVector();
 			if(boxes2.empty() && m_vToolPart[k].GetType()!=CHAIN_SEGMENT_TOOL_SPINDLE_NOSE)
 				continue;	//a nose segment without boxes still carries the milling tool (KnownBugs #38)
 			CTransformation tr = trToI;
@@ -988,7 +991,7 @@ void CChain::DetectCollisions(CMillingTool *pMillingTool)
 			trInv = m_vToolPart[k].GetInvertedConstantTransformation() * trInv;
 			for(size_t j=0; j<boxes.size();j++){
 				for(size_t m=0;m<boxes2.size();m++){
-					if(boxes[j].HasIntersectionWithBox(boxes2[m],tr,trInv)){
+					if(boxes[j].Meets(boxes2[m],tr,trInv)){
 						m_vMaterialHolderPart[i].SetPartCollision(j);
 						m_vToolPart[k].SetPartCollision(m);
 						m_oCollisions.Add(SolidName(m_vMaterialHolderPart[i],j,boxes.size(),CHAIN_PART_TABLE,i)
@@ -1021,13 +1024,13 @@ void CChain::DetectCollisions(CMillingTool *pMillingTool)
 	}
 	// tool part <-> tool part
 	for(size_t i = 0; i<m_vToolPart.size();i++){
-		const std::vector<CR3Box> &boxes = m_vToolPart[i].GetPartVector();
+		const std::vector<CSolid> &boxes = m_vToolPart[i].GetPartVector();
 		if(boxes.empty())
 			continue;
 		CTransformation trVariable = m_vToolPart[i].GetVariablePartTransformation(m_vToolPart[i].m_dActualParameterValue);
 		CTransformation trVariableInv = m_vToolPart[i].GetInvertedVariablePartTransformation(m_vToolPart[i].m_dActualParameterValue);
 		for(size_t k=i+1; k<m_vToolPart.size();k++){
-			const std::vector<CR3Box> &boxes2 = m_vToolPart[k].GetPartVector();
+			const std::vector<CSolid> &boxes2 = m_vToolPart[k].GetPartVector();
 			if(boxes2.empty() && m_vToolPart[k].GetType()!=CHAIN_SEGMENT_TOOL_SPINDLE_NOSE)
 				continue;	//a nose segment without boxes still carries the milling tool (KnownBugs #38)
 			CTransformation tr = trVariable;
@@ -1040,7 +1043,7 @@ void CChain::DetectCollisions(CMillingTool *pMillingTool)
 			trInv = m_vToolPart[k].GetInvertedConstantTransformation() * trInv;
 			for(size_t j=0; j<boxes.size();j++){
 				for(size_t m=0;m<boxes2.size();m++){
-					if(boxes[j].HasIntersectionWithBox(boxes2[m],tr,trInv)){
+					if(boxes[j].Meets(boxes2[m],tr,trInv)){
 						m_vToolPart[i].SetPartCollision(j);
 						m_vToolPart[k].SetPartCollision(m);
 						m_oCollisions.Add(SolidName(m_vToolPart[i],j,boxes.size(),CHAIN_PART_SPINDLE,i)

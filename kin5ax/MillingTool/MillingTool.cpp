@@ -198,6 +198,20 @@ bool CMillingTool::CylinderMeetsBox(const CR3Box &box, double dBeginZ, double dL
 	return box.HasIntersectionWithOZCylinder(dLength,dRadius,trToBoxFrame*moveFromCylinder,moveToCylinder*trToToolFrame);
 }
 
+bool CMillingTool::CauseCollision(const CSolid &oSolid, const CTransformation trToSolidFrame
+	,const CTransformation trToToolFrame) const
+{
+	//the box of the solid: the solid itself for a box, and the shape a wedge or a dome was cut
+	//from for the other two
+	return CauseCollision(oSolid.GetBoundingBox(),trToSolidFrame,trToToolFrame);
+}
+
+bool CMillingTool::CauseNonCuttingCollision(const CSolid &oSolid, const CTransformation trToSolidFrame
+	,const CTransformation trToToolFrame) const
+{
+	return CauseNonCuttingCollision(oSolid.GetBoundingBox(),trToSolidFrame,trToToolFrame);
+}
+
 bool CMillingTool::CauseNonCuttingCollision(const CR3Box &box, const CTransformation trToBoxFrame, const CTransformation trToToolFrame) const
 {
 	//the shank above the cutting part

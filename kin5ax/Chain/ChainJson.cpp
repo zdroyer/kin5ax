@@ -96,6 +96,92 @@ struct CContext
 	}
 };
 
+//one box of the boxes array, or of the solids array when its type says box
+CR3Box ReadBox(const CContext &ctx, const tJson &box, const std::string &sBox)
+{
+	CR3Vector min = ctx.Vector3(ctx.Member(box,"min",sBox),sBox+".min");
+	CR3Vector max = ctx.Vector3(ctx.Member(box,"max",sBox),sBox+".max");
+	return CR3Box(min.GetX(),max.GetX(),min.GetY(),max.GetY(),min.GetZ(),max.GetZ());
+}
+
+//the axis of a cylinder or of the cut of a sphere: "x", "y" or "z"
+R3_AXIS ReadAxisName(const CContext &ctx, const tJson &j, const std::string &sPath
+	,const char *szMember)
+{
+	const std::string sName = ctx.String(ctx.Member(j,szMember,sPath),sPath+"."+szMember);
+	R3_AXIS nAxis = R3_AXIS_Z;
+	if(!R3AxisFromName(sName,nAxis))
+		ctx.Fail(sPath+"."+szMember,"'"+sName+"' is not an axis: x, y or z");
+	return nAxis;
+}
+
+/**
+ * One solid of the solids array: a box, a piece of a cylinder or a piece of a sphere.
+ *
+ * A cylinder runs along one axis of the frame, through axis_point (the origin when it is left out),
+ * from base to top along that axis, and may be a wedge rather than the whole turn. A sphere sits at
+ * centre and may be cut by two planes across one axis, which is a dome or a band; min and max are
+ * measured from the centre, so 0 .. radius is a half sphere and the whole one needs no cut at all.
+ */
+CSolid ReadSolid(const CContext &ctx, const tJson &j, const std::string &sPath)
+{
+	const std::string sType = ctx.String(ctx.Member(j,"type",sPath),sPath+".type");
+	SOLID_TYPE nType = SOLID_BOX;
+	if(!SolidTypeFromName(sType,nType))
+		ctx.Fail(sPath+".type","'"+sType+"' is not a solid: box, cylinder or sphere");
+	if(nType==SOLID_BOX){
+		ctx.CheckObject(j,sPath,{"type","min","max"},{});
+		return CSolid(ReadBox(ctx,j,sPath));
+	}
+	if(nType==SOLID_CYLINDER){
+		ctx.CheckObject(j,sPath,{"type","axis","base","top","radius"}
+			,{"axis_point","min_angle_deg","max_angle_deg"});
+		const R3_AXIS nAxis = ReadAxisName(ctx,j,sPath,"axis");
+		CR3Vector vPoint(0.0,0.0,0.0);
+		tJson::const_iterator itPoint = j.find("axis_point");
+		if(itPoint != j.end())
+			vPoint = ctx.Vector3(*itPoint,sPath+".axis_point");
+		const double dBase = ctx.Number(ctx.Member(j,"base",sPath),sPath+".base");
+		const double dTop = ctx.Number(ctx.Member(j,"top",sPath),sPath+".top");
+		const double dRadius = ctx.Number(ctx.Member(j,"radius",sPath),sPath+".radius");
+		double dMin = 0.0, dMax = 360.0;
+		tJson::const_iterator itMin = j.find("min_angle_deg");
+		if(itMin != j.end())
+			dMin = ctx.Number(*itMin,sPath+".min_angle_deg");
+		tJson::const_iterator itMax = j.find("max_angle_deg");
+		if(itMax != j.end())
+			dMax = ctx.Number(*itMax,sPath+".max_angle_deg");
+		const CSolid oSolid(CR3CylinderSegment(nAxis
+			,CR3Point(vPoint.GetX(),vPoint.GetY(),vPoint.GetZ()),dBase,dTop,dRadius,dMin,dMax));
+		if(oSolid.Problem().size())
+			ctx.Fail(sPath,oSolid.Problem());
+		return oSolid;
+	}
+	ctx.CheckObject(j,sPath,{"type","radius"},{"centre","axis","min","max"});
+	CR3Vector vCentre(0.0,0.0,0.0);
+	tJson::const_iterator itCentre = j.find("centre");
+	if(itCentre != j.end())
+		vCentre = ctx.Vector3(*itCentre,sPath+".centre");
+	const double dRadius = ctx.Number(ctx.Member(j,"radius",sPath),sPath+".radius");
+	const CR3Point pCentre(vCentre.GetX(),vCentre.GetY(),vCentre.GetZ());
+	CR3SphereSegment oSphere(pCentre,dRadius);
+	const bool bHasAxis = j.find("axis") != j.end();
+	const bool bHasMin = j.find("min") != j.end();
+	const bool bHasMax = j.find("max") != j.end();
+	if(bHasAxis || bHasMin || bHasMax){
+		if(!bHasAxis)
+			ctx.Fail(sPath,"a sphere that is cut says which axis the cuts are across");
+		const R3_AXIS nAxis = ReadAxisName(ctx,j,sPath,"axis");
+		const double dMin = bHasMin ? ctx.Number(ctx.Member(j,"min",sPath),sPath+".min") : -dRadius;
+		const double dMax = bHasMax ? ctx.Number(ctx.Member(j,"max",sPath),sPath+".max") : dRadius;
+		oSphere = CR3SphereSegment(pCentre,dRadius,nAxis,dMin,dMax);
+	}
+	const CSolid oSolid(oSphere);
+	if(oSolid.Problem().size())
+		ctx.Fail(sPath,oSolid.Problem());
+	return oSolid;
+}
+
 //name, translation, rotation and the collision boxes: common to a joint and to the end of a branch
 void ReadCommon(const CContext &ctx, const tJson &j, const std::string &sPath, CChainSegment &oSegment)
 {
@@ -117,27 +203,30 @@ void ReadCommon(const CContext &ctx, const tJson &j, const std::string &sPath, C
 		oSegment.m_r3vConstRevoluteAxis = CR3Vector(1.0,0.0,0.0);	//no rotation: any axis will do
 	}
 
-	std::vector<CR3Box> vBoxes;
+	std::vector<CSolid> vSolids;
 	tJson::const_iterator itBoxes = j.find("boxes");
 	if(itBoxes != j.end()){
 		std::string sBoxes = sPath+".boxes";
 		if(!itBoxes->is_array())
 			ctx.Fail(sBoxes,"an array is expected");
-		for(size_t i=0;i<itBoxes->size();i++){
-			std::string sBox = Index(sBoxes,i);
-			const tJson &box = (*itBoxes)[i];
-			ctx.CheckObject(box,sBox,{"min","max"},{});
-			CR3Vector min = ctx.Vector3(ctx.Member(box,"min",sBox),sBox+".min");
-			CR3Vector max = ctx.Vector3(ctx.Member(box,"max",sBox),sBox+".max");
-			vBoxes.push_back(CR3Box(min.GetX(),max.GetX(),min.GetY(),max.GetY(),min.GetZ(),max.GetZ()));
-		}
+		for(size_t i=0;i<itBoxes->size();i++)
+			vSolids.push_back(ReadBox(ctx,(*itBoxes)[i],Index(sBoxes,i)));
 	}
-	oSegment.SetPartVector(vBoxes);
+	//and the general list, which may hold boxes as well: the two are read one after the other
+	tJson::const_iterator itSolids = j.find("solids");
+	if(itSolids != j.end()){
+		std::string sSolids = sPath+".solids";
+		if(!itSolids->is_array())
+			ctx.Fail(sSolids,"an array is expected");
+		for(size_t i=0;i<itSolids->size();i++)
+			vSolids.push_back(ReadSolid(ctx,(*itSolids)[i],Index(sSolids,i)));
+	}
+	oSegment.SetPartVector(vSolids);
 }
 
 CChainSegment ReadLink(const CContext &ctx, const tJson &j, const std::string &sPath)
 {
-	ctx.CheckObject(j,sPath,{"type","name","translation","rotation"},{"limits","boxes"});
+	ctx.CheckObject(j,sPath,{"type","name","translation","rotation"},{"limits","boxes","solids"});
 	std::string sType = ctx.String(ctx.Member(j,"type",sPath),sPath+".type");
 	CHAIN_SEGMENT_TYPE type;
 	if(sType=="rotary")
@@ -257,9 +346,11 @@ CChainSegment ReadTerminal(const CContext &ctx, const tJson &j, const std::strin
 {
 	//only the end of the tool branch carries the tool holder of the machine
 	if(type==CHAIN_SEGMENT_TOOL_SPINDLE_NOSE)
-		ctx.CheckObject(j,sPath,{"name","translation","rotation"},{"boxes","tool_holder","tool"});
+		ctx.CheckObject(j,sPath,{"name","translation","rotation"}
+			,{"boxes","solids","tool_holder","tool"});
 	else
-		ctx.CheckObject(j,sPath,{"name","translation","rotation"},{"boxes","workpiece_holder"});
+		ctx.CheckObject(j,sPath,{"name","translation","rotation"}
+			,{"boxes","solids","workpiece_holder"});
 	CChainSegment oSegment(type,CR3Vector(1.0,0.0,0.0),0.0,CR3Vector(0.0));
 	oSegment.SetType(type);
 	oSegment.m_bParameterIsConstrained = false;
@@ -347,19 +438,72 @@ void CommonToJson(const CChainSegment &oSegment, tJson &j)
 	j["rotation"] = rotation;
 }
 
+void BoxToJson(const CR3Box &oBox, tJson &j)
+{
+	j["min"] = Vector3ToJson(oBox.GetMinPoint().toR3Vector());
+	j["max"] = Vector3ToJson(oBox.GetMaxPoint().toR3Vector());
+}
+
+//A segment whose solids are all boxes is written the way it always was, with a boxes array, so that
+//a file that has not grown a cylinder reads the same and compares the same. Anything else is
+//written as a solids array, where every entry names its type.
 void BoxesToJson(const CChainSegment &oSegment, tJson &j)
 {
-	const std::vector<CR3Box> &vBoxes = oSegment.GetPartVector();
-	if(vBoxes.empty())
+	const std::vector<CSolid> &vSolids = oSegment.GetPartVector();
+	if(vSolids.empty())
 		return;
-	tJson boxes = tJson::array();
-	for(size_t i=0;i<vBoxes.size();i++){
-		tJson box;
-		box["min"] = Vector3ToJson(vBoxes[i].GetMinPoint().toR3Vector());
-		box["max"] = Vector3ToJson(vBoxes[i].GetMaxPoint().toR3Vector());
-		boxes.push_back(box);
+	bool bAllBoxes = true;
+	for(size_t i=0;i<vSolids.size();i++)
+		if(vSolids[i].GetType()!=SOLID_BOX)
+			bAllBoxes = false;
+	if(bAllBoxes){
+		tJson boxes = tJson::array();
+		for(size_t i=0;i<vSolids.size();i++){
+			tJson box;
+			BoxToJson(vSolids[i].GetBox(),box);
+			boxes.push_back(box);
+		}
+		j["boxes"] = boxes;
+		return;
 	}
-	j["boxes"] = boxes;
+	tJson solids = tJson::array();
+	for(size_t i=0;i<vSolids.size();i++){
+		tJson solid;
+		solid["type"] = vSolids[i].GetTypeName();
+		switch(vSolids[i].GetType()){
+		case SOLID_CYLINDER:
+			{
+				const CR3CylinderSegment &oC = vSolids[i].GetCylinder();
+				solid["axis"] = R3AxisName(oC.GetAxis());
+				solid["axis_point"] = Vector3ToJson(oC.GetAxisPoint().toR3Vector());
+				solid["base"] = oC.GetBase();
+				solid["top"] = oC.GetTop();
+				solid["radius"] = oC.GetRadius();
+				if(!oC.IsWholeTurn()){
+					solid["min_angle_deg"] = oC.GetMinAngleDegrees();
+					solid["max_angle_deg"] = oC.GetMaxAngleDegrees();
+				}
+			}
+			break;
+		case SOLID_SPHERE:
+			{
+				const CR3SphereSegment &oS = vSolids[i].GetSphere();
+				solid["centre"] = Vector3ToJson(oS.GetCentre().toR3Vector());
+				solid["radius"] = oS.GetRadius();
+				if(!oS.IsWholeSphere()){
+					solid["axis"] = R3AxisName(oS.GetAxis());
+					solid["min"] = oS.GetMin();
+					solid["max"] = oS.GetMax();
+				}
+			}
+			break;
+		default:
+			BoxToJson(vSolids[i].GetBox(),solid);
+			break;
+		}
+		solids.push_back(solid);
+	}
+	j["solids"] = solids;
 }
 
 tJson LinkToJson(const CChainSegment &oSegment)

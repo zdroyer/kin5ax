@@ -390,7 +390,10 @@ k5_status k5_chain_segment_boxes(k5_chain chain, int part, size_t index, double 
 	K5_NEED(FromCPart(part,nPart),"part is neither K5_PART_SPINDLE nor K5_PART_TABLE")
 	const std::vector<CChainSegment> &vPart = chain->m_oChain.GetPart(nPart);
 	K5_NEED(index<vPart.size(),"there is no segment of that index in that branch of the chain")
-	const std::vector<CR3Box> &vBoxes = vPart[index].GetPartVector();
+	//every solid as the box that holds it: k5_chain_segment_solid hands over the shapes themselves
+	std::vector<CR3Box> vBoxes;
+	for(size_t i=0;i<vPart[index].GetPartVector().size();i++)
+		vBoxes.push_back(vPart[index].GetPartVector()[i].GetBoundingBox());
 	*count_out = vBoxes.size();
 	if(!out)
 		return K5_OK;				//the count was the question

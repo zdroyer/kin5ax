@@ -241,12 +241,12 @@ std::string CChainSegment::GetName() const
 	return (m_type == CHAIN_SEGMENT_TABLE) ? "Table" : "Spindle nose";
 }
 
-void CChainSegment::SetPartVector(std::vector<CR3Box> vNewParts)
+void CChainSegment::SetPartVector(std::vector<CSolid> vNewParts)
 {
 	m_vParts = vNewParts;
 	m_vCollisions = std::vector<bool>(vNewParts.size(),false);
 }
-const std::vector<CR3Box> &CChainSegment::GetPartVector() const
+const std::vector<CSolid> &CChainSegment::GetPartVector() const
 {
 	return m_vParts;
 }
@@ -269,7 +269,7 @@ void CChainSegment::ClearAllPartCollision()
 {
 	m_vCollisions = std::vector<bool>(m_vCollisions.size(),false);
 }
-CR3Box *CChainSegment::GetActivePartPointer()
+CSolid *CChainSegment::GetActivePartPointer()
 {
 	if(m_nHighlightedPart<0 || m_nHighlightedPart>=(int)m_vParts.size())
 		return 0;

@@ -90,8 +90,8 @@ TEST(ChainJsonReader, TemplateLoads)
 	EXPECT_DOUBLE_EQ(-0.5,z.m_dParameterValueMinimum)<<"a linear limit is a length";
 	EXPECT_DOUBLE_EQ(0.5,z.m_dParameterValueMaximum);
 	ASSERT_EQ((size_t)1,z.GetPartVector().size());
-	EXPECT_DOUBLE_EQ(-0.1,z.GetPartVector()[0].GetMinPoint().GetX());
-	EXPECT_DOUBLE_EQ(0.2,z.GetPartVector()[0].GetMaxPoint().GetZ());
+	EXPECT_DOUBLE_EQ(-0.1,z.GetPartVector()[0].GetBox().GetMinPoint().GetX());
+	EXPECT_DOUBLE_EQ(0.2,z.GetPartVector()[0].GetBox().GetMaxPoint().GetZ());
 
 	const CChainSegment &b = oChain.m_vToolPart[1];
 	EXPECT_EQ(CHAIN_SEGMENT_REVOLUTE_LINK,b.GetType())<<"rotary is the revolute joint of the model";
@@ -630,4 +630,129 @@ TEST(ChainJsonUnit, SurvivesTheJsonRoundTrip)
 	CChain oReloaded;
 	ASSERT_EQ(std::string(),JsonError(sJson,&oReloaded));
 	EXPECT_EQ(CHAIN_UNIT_IN,oReloaded.GetUnit());
+}
+
+// ---------------------------------------------------------------- the solids of a segment
+
+//A segment carries boxes, and now also pieces of cylinders and of spheres. The two arrays are read
+//one after the other, so a file may use either or both.
+static std::string WithSolids()
+{
+	return Replaced(Template()
+		,R"KC("boxes": [ { "min": [-0.1, -0.1, 0], "max": [0.1, 0.1, 0.2] } ] })KC"
+		,R"KC("solids": [
+          { "type": "box", "min": [-0.1, -0.1, 0], "max": [0.1, 0.1, 0.2] },
+          { "type": "cylinder", "axis": "z", "axis_point": [0.05, 0, 0],
+            "base": 0.2, "top": 0.5, "radius": 0.06,
+            "min_angle_deg": -30, "max_angle_deg": 30 },
+          { "type": "sphere", "centre": [0, 0, 0.6], "radius": 0.08,
+            "axis": "z", "min": 0, "max": 0.08 }
+        ] })KC");
+}
+
+TEST(ChainJsonReader, ASegmentCarriesCylindersAndSpheresAsWellAsBoxes)
+{
+	CChain oChain;
+	ASSERT_EQ("",JsonError(WithSolids(),&oChain));
+	const std::vector<CSolid> &vSolids = oChain.m_vToolPart[0].GetPartVector();
+	ASSERT_EQ((size_t)3,vSolids.size());
+
+	EXPECT_EQ(SOLID_BOX,vSolids[0].GetType());
+	EXPECT_DOUBLE_EQ(-0.1,vSolids[0].GetBox().GetMinPoint().GetX());
+	EXPECT_DOUBLE_EQ(0.2,vSolids[0].GetBox().GetMaxPoint().GetZ());
+
+	ASSERT_EQ(SOLID_CYLINDER,vSolids[1].GetType());
+	const CR3CylinderSegment &oC = vSolids[1].GetCylinder();
+	EXPECT_EQ(R3_AXIS_Z,oC.GetAxis());
+	EXPECT_DOUBLE_EQ(0.05,oC.GetAxisPoint().GetX());
+	EXPECT_DOUBLE_EQ(0.2,oC.GetBase());
+	EXPECT_DOUBLE_EQ(0.5,oC.GetTop());
+	EXPECT_DOUBLE_EQ(0.06,oC.GetRadius());
+	EXPECT_FALSE(oC.IsWholeTurn());
+	EXPECT_DOUBLE_EQ(330.0,oC.GetMinAngleDegrees())<<"-30 degrees is 330, kept as the start of the wedge";
+	EXPECT_DOUBLE_EQ(390.0,oC.GetMaxAngleDegrees());
+
+	ASSERT_EQ(SOLID_SPHERE,vSolids[2].GetType());
+	const CR3SphereSegment &oS = vSolids[2].GetSphere();
+	EXPECT_DOUBLE_EQ(0.6,oS.GetCentre().GetZ());
+	EXPECT_DOUBLE_EQ(0.08,oS.GetRadius());
+	EXPECT_FALSE(oS.IsWholeSphere());
+	EXPECT_EQ(R3_AXIS_Z,oS.GetAxis());
+	EXPECT_DOUBLE_EQ(0.0,oS.GetMin());
+	EXPECT_DOUBLE_EQ(0.08,oS.GetMax());
+}
+
+TEST(ChainJsonWriter, TheSolidsOfASegmentSurviveTheRoundTrip)
+{
+	CChain oChain;
+	ASSERT_EQ("",JsonError(WithSolids(),&oChain));
+	const std::string sWritten = CChainJsonWriter::ToJson(oChain);
+	EXPECT_NE(std::string::npos,sWritten.find("\"solids\""))
+		<<"a segment with a cylinder in it is written as a solids array";
+	CChain oBack;
+	ASSERT_EQ("",JsonError(sWritten,&oBack));
+	const std::vector<CSolid> &vOne = oChain.m_vToolPart[0].GetPartVector();
+	const std::vector<CSolid> &vTwo = oBack.m_vToolPart[0].GetPartVector();
+	ASSERT_EQ(vOne.size(),vTwo.size());
+	for(size_t i=0;i<vOne.size();i++)
+		EXPECT_TRUE(vOne[i]==vTwo[i])<<"solid "<<i+1<<" of the segment, a "<<vOne[i].GetTypeName();
+}
+
+TEST(ChainJsonWriter, ASegmentOfNothingButBoxesIsStillWrittenAsBoxes)
+{
+	//the shipped machines have no cylinder in them, and their files must not change because the
+	//format can carry one now
+	CChain oChain;
+	ASSERT_EQ("",JsonError(Template(),&oChain));
+	const std::string sWritten = CChainJsonWriter::ToJson(oChain);
+	EXPECT_NE(std::string::npos,sWritten.find("\"boxes\""));
+	EXPECT_EQ(std::string::npos,sWritten.find("\"solids\""));
+}
+
+TEST(ChainJsonReader, TheWholeShapesNeedNothingButTheirSizes)
+{
+	//a cylinder with no wedge is the whole turn, and a sphere with no cut is the whole sphere
+	CChain oChain;
+	ASSERT_EQ("",JsonError(Replaced(Template()
+		,R"KC("boxes": [ { "min": [-0.1, -0.1, 0], "max": [0.1, 0.1, 0.2] } ] })KC"
+		,R"KC("solids": [
+          { "type": "cylinder", "axis": "x", "base": 0, "top": 0.4, "radius": 0.05 },
+          { "type": "sphere", "radius": 0.1 }
+        ] })KC"),&oChain));
+	const std::vector<CSolid> &vSolids = oChain.m_vToolPart[0].GetPartVector();
+	ASSERT_EQ((size_t)2,vSolids.size());
+	EXPECT_TRUE(vSolids[0].GetCylinder().IsWholeTurn());
+	EXPECT_EQ(R3_AXIS_X,vSolids[0].GetCylinder().GetAxis());
+	EXPECT_DOUBLE_EQ(0.0,vSolids[0].GetCylinder().GetAxisPoint().GetY())<<"the axis is the X of the frame";
+	EXPECT_TRUE(vSolids[1].GetSphere().IsWholeSphere());
+	EXPECT_DOUBLE_EQ(0.0,vSolids[1].GetSphere().GetCentre().GetZ())<<"the origin of the frame";
+}
+
+TEST(ChainJsonReader, ASolidThatIsNotOneIsReportedByItsPath)
+{
+	const std::string sBoxes = R"KC("boxes": [ { "min": [-0.1, -0.1, 0], "max": [0.1, 0.1, 0.2] } ] })KC";
+	//an unknown type
+	std::string sError = JsonError(Replaced(Template(),sBoxes
+		,R"KC("solids": [ { "type": "torus", "radius": 0.1 } ] })KC"));
+	EXPECT_ERROR_CONTAINS(sError,"torus");
+	EXPECT_ERROR_CONTAINS(sError,"solids[0].type");
+	//an axis that is not one
+	sError = JsonError(Replaced(Template(),sBoxes
+		,R"KC("solids": [ { "type": "cylinder", "axis": "w", "base": 0, "top": 1, "radius": 0.1 } ] })KC"));
+	EXPECT_ERROR_CONTAINS(sError,"not an axis");
+	//a cylinder of no radius, which is not a solid
+	sError = JsonError(Replaced(Template(),sBoxes
+		,R"KC("solids": [ { "type": "cylinder", "axis": "z", "base": 0, "top": 1, "radius": 0 } ] })KC"));
+	EXPECT_ERROR_CONTAINS(sError,"no radius");
+	//a sphere cut without saying across which axis
+	sError = JsonError(Replaced(Template(),sBoxes
+		,R"KC("solids": [ { "type": "sphere", "radius": 0.1, "min": 0, "max": 0.1 } ] })KC"));
+	EXPECT_ERROR_CONTAINS(sError,"which axis");
+	//a member nobody knows
+	sError = JsonError(Replaced(Template(),sBoxes
+		,R"KC("solids": [ { "type": "sphere", "radius": 0.1, "colour": "red" } ] })KC"));
+	EXPECT_ERROR_CONTAINS(sError,"colour");
+	//and the array itself has to be one
+	sError = JsonError(Replaced(Template(),sBoxes,R"KC("solids": 7 })KC"));
+	EXPECT_ERROR_CONTAINS(sError,"array");
 }
