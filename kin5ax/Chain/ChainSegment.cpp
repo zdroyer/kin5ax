@@ -22,6 +22,7 @@ CChainSegment::CChainSegment(CHAIN_SEGMENT_TYPE type
 		,m_dConstRevoluteAngle(dConstRevoluteAngle)
 		,m_r3vConstTranslation(r3vConstTranslation)
 		,m_bToolHolderDeclared(false)
+		,m_bWorkpieceHolderDeclared(false)
 		,m_dActualParameterValue(dParameterMinimum)
 		,m_dParameterValueMinimum(dParameterMinimum)
 		,m_dParameterValueMaximum(dParameterMaximum)

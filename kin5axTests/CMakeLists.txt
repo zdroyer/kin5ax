@@ -41,6 +41,7 @@ add_executable(kin5axTests
   TrajectoryStartTests.cpp
   VersionTests.cpp
   ToolDescriptionTests.cpp
+  WorkpieceHolderTests.cpp
   ToolHolderTests.cpp
   ToolMountTests.cpp
 )

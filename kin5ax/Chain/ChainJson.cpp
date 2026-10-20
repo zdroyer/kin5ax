@@ -211,13 +211,55 @@ CToolDescription ReadTool(const CContext &ctx, const tJson &j, const std::string
 	return oTool;
 }
 
+/**
+ * The workpiece holder a chain file describes for its table: a designation, the frame the part sits
+ * in and the solids the holder is. The frame is given the way a segment gives its constant one.
+ */
+CWorkpieceHolder ReadWorkpieceHolder(const CContext &ctx, const tJson &j, const std::string &sPath)
+{
+	ctx.CheckObject(j,sPath,{},{"model","translation","rotation","boxes"});
+	CWorkpieceHolder oHolder;
+	oHolder.SetModel(ctx.OptionalString(j,"model",sPath));
+	CR3Vector r3vTranslation(0.0,0.0,0.0), r3vAxis(0.0,0.0,1.0);
+	double dAngle = 0.0;
+	tJson::const_iterator itTranslation = j.find("translation");
+	if(itTranslation != j.end())
+		r3vTranslation = ctx.Vector3(*itTranslation,sPath+".translation");
+	tJson::const_iterator itRotation = j.find("rotation");
+	if(itRotation != j.end()){
+		const std::string sRotation = sPath+".rotation";
+		ctx.CheckObject(*itRotation,sRotation,{"axis","angle_deg"},{});
+		r3vAxis = ctx.Vector3(ctx.Member(*itRotation,"axis",sRotation),sRotation+".axis");
+		dAngle = ctx.Number(ctx.Member(*itRotation,"angle_deg",sRotation),sRotation+".angle_deg");
+		if(r3vAxis.IsZero(dEPSILON) && !is_zero(dAngle))
+			ctx.Fail(sRotation+".axis","a turn about no axis");
+	}
+	oHolder.SetFrame(r3vTranslation,r3vAxis,dAngle);
+	tJson::const_iterator itBoxes = j.find("boxes");
+	if(itBoxes != j.end()){
+		if(!itBoxes->is_array())
+			ctx.Fail(sPath+".boxes","an array of boxes is expected");
+		std::vector<CR3Box> vBoxes;
+		for(size_t i=0;i<itBoxes->size();i++){
+			const tJson &box = (*itBoxes)[i];
+			const std::string sBox = sPath+".boxes["+size_to_string(i)+"]";
+			ctx.CheckObject(box,sBox,{"min","max"},{});
+			const CR3Vector min = ctx.Vector3(ctx.Member(box,"min",sBox),sBox+".min");
+			const CR3Vector max = ctx.Vector3(ctx.Member(box,"max",sBox),sBox+".max");
+			vBoxes.push_back(CR3Box(min.GetX(),max.GetX(),min.GetY(),max.GetY(),min.GetZ(),max.GetZ()));
+		}
+		oHolder.SetBoxes(vBoxes);
+	}
+	return oHolder;
+}
+
 CChainSegment ReadTerminal(const CContext &ctx, const tJson &j, const std::string &sPath, CHAIN_SEGMENT_TYPE type)
 {
 	//only the end of the tool branch carries the tool holder of the machine
 	if(type==CHAIN_SEGMENT_TOOL_SPINDLE_NOSE)
 		ctx.CheckObject(j,sPath,{"name","translation","rotation"},{"boxes","tool_holder","tool"});
 	else
-		ctx.CheckObject(j,sPath,{"name","translation","rotation"},{"boxes"});
+		ctx.CheckObject(j,sPath,{"name","translation","rotation"},{"boxes","workpiece_holder"});
 	CChainSegment oSegment(type,CR3Vector(1.0,0.0,0.0),0.0,CR3Vector(0.0));
 	oSegment.SetType(type);
 	oSegment.m_bParameterIsConstrained = false;
@@ -257,6 +299,9 @@ CChainSegment ReadTerminal(const CContext &ctx, const tJson &j, const std::strin
 	tJson::const_iterator itTool = j.find("tool");
 	if(itTool != j.end())
 		oSegment.SetTool(ReadTool(ctx,*itTool,sPath+".tool"));
+	tJson::const_iterator itWorkpiece = j.find("workpiece_holder");
+	if(itWorkpiece != j.end())
+		oSegment.SetWorkpieceHolder(ReadWorkpieceHolder(ctx,*itWorkpiece,sPath+".workpiece_holder"));
 	return oSegment;
 }
 
@@ -362,6 +407,32 @@ tJson TerminalToJson(const CChainSegment &oSegment)
 			holder["sections"] = sections;
 		}
 		j["tool_holder"] = holder;
+	}
+	if(oSegment.IsWorkpieceHolderDeclared()){
+		const CWorkpieceHolder &oHolder = oSegment.GetWorkpieceHolder();
+		tJson holder;
+		if(!oHolder.GetModel().empty())
+			holder["model"] = oHolder.GetModel();
+		if(!oHolder.IsFrameIdentity()){
+			holder["translation"] = Vector3ToJson(oHolder.GetTranslation());
+			tJson rotation;
+			rotation["axis"] = Vector3ToJson(oHolder.GetRotationAxis());
+			rotation["angle_deg"] = oHolder.GetRotationAngleDegrees();
+			holder["rotation"] = rotation;
+		}
+		if(oHolder.HasBody()){
+			tJson boxes = tJson::array();
+			for(size_t i=0;i<oHolder.GetBoxes().size();i++){
+				tJson box;
+				const CR3Point min = oHolder.GetBoxes()[i].GetMinPoint();
+				const CR3Point max = oHolder.GetBoxes()[i].GetMaxPoint();
+				box["min"] = tJson::array({min.GetX(),min.GetY(),min.GetZ()});
+				box["max"] = tJson::array({max.GetX(),max.GetY(),max.GetZ()});
+				boxes.push_back(box);
+			}
+			holder["boxes"] = boxes;
+		}
+		j["workpiece_holder"] = holder;
 	}
 	if(oSegment.GetTool().IsGiven()){
 		const CToolDescription &oTool = oSegment.GetTool();

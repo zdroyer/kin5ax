@@ -531,6 +531,68 @@ TEST(ChainJsonTool, AChainWithoutOneSaysSo)
 	EXPECT_EQ(std::string::npos,CChainJsonWriter::ToJson(oChain).find("\"tool\":"));
 }
 
+//---- the workpiece holder of the table
+
+static std::string WithWorkpieceHolder(const std::string &sHolder)
+{
+	return Replaced(Template(),"\"name\": \"holder\",",
+		"\"name\": \"holder\",\n      \"workpiece_holder\": "+sHolder+",");
+}
+
+TEST(ChainJsonWorkpieceHolder, ADesignationAFrameAndSolidsSurviveTheFile)
+{
+	CChain oChain;
+	ASSERT_EQ(std::string(),JsonError(WithWorkpieceHolder(
+		"{ \"model\": \"X_VICE\", \"translation\": [0, 0, 0.08],"
+		" \"rotation\": { \"axis\": [0, 0, 1], \"angle_deg\": 0 },"
+		" \"boxes\": [ { \"min\": [-0.15, -0.075, 0], \"max\": [0.15, 0.075, 0.08] } ] }"),&oChain));
+	ASSERT_TRUE(oChain.HasDefaultWorkpieceHolder());
+	const CWorkpieceHolder &oHolder = oChain.GetDefaultWorkpieceHolder();
+	EXPECT_EQ(std::string("X_VICE"),oHolder.GetModel());
+	EXPECT_DOUBLE_EQ(0.08,oHolder.GetTranslation().GetZ());
+	ASSERT_EQ(size_t(1),oHolder.GetBoxes().size());
+	EXPECT_DOUBLE_EQ(0.15,oHolder.GetBoxes()[0].GetMaxPoint().GetX());
+
+	CChain oReloaded;
+	ASSERT_EQ(std::string(),JsonError(CChainJsonWriter::ToJson(oChain),&oReloaded));
+	EXPECT_TRUE(oReloaded.GetDefaultWorkpieceHolder()==oHolder)<<"written and read again";
+}
+
+TEST(ChainJsonWorkpieceHolder, ADesignationAloneIsAName)
+{
+	//what the machine usually carries, for a host to resolve from its own
+	CChain oChain;
+	ASSERT_EQ(std::string(),JsonError(WithWorkpieceHolder("{ \"model\": \"NO_HOLDER\" }"),&oChain));
+	ASSERT_TRUE(oChain.HasDefaultWorkpieceHolder());
+	EXPECT_EQ(std::string("NO_HOLDER"),oChain.GetDefaultWorkpieceHolder().GetModel());
+	EXPECT_TRUE(oChain.GetDefaultWorkpieceHolder().IsFrameIdentity());
+	EXPECT_FALSE(oChain.GetDefaultWorkpieceHolder().HasBody());
+}
+
+TEST(ChainJsonWorkpieceHolder, ATurnAboutNoAxisIsReported)
+{
+	const std::string sError = JsonError(WithWorkpieceHolder(
+		"{ \"model\": \"TOMBSTONE\", \"translation\": [0.15, 0, 0.25],"
+		" \"rotation\": { \"axis\": [0, 0, 0], \"angle_deg\": 90 } }"));
+	EXPECT_ERROR_CONTAINS(sError,"axis");
+}
+
+TEST(ChainJsonWorkpieceHolder, OnlyTheTableCarriesOne)
+{
+	const std::string sError = JsonError(Replaced(Template(),"\"name\": \"tool\",",
+		"\"name\": \"tool\",\n      \"workpiece_holder\": { \"model\": \"X_VICE\" },"));
+	EXPECT_ERROR_CONTAINS(sError,"workpiece_holder");
+	EXPECT_ERROR_CONTAINS(sError,"tool_branch.tool_spindle_nose");
+}
+
+TEST(ChainJsonWorkpieceHolder, AChainWithoutOneSaysSo)
+{
+	CChain oChain;
+	ASSERT_EQ(std::string(),JsonError(Template(),&oChain));
+	EXPECT_FALSE(oChain.HasDefaultWorkpieceHolder());
+	EXPECT_EQ(std::string::npos,CChainJsonWriter::ToJson(oChain).find("workpiece_holder"));
+}
+
 //---- the unit: required, exact, and kept
 
 TEST(ChainJsonUnit, IsRead)

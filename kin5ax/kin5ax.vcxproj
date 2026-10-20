@@ -86,6 +86,7 @@
     <ClCompile Include="Chain\Chain.cpp" />
     <ClCompile Include="Chain\ChainConfiguration.cpp" />
     <ClCompile Include="Chain\ChainSegment.cpp" />
+    <ClCompile Include="Chain\WorkpieceHolder.cpp" />
     <ClCompile Include="Chain\ChainFileReader.cpp" />
     <ClCompile Include="Chain\ChainJson.cpp" />
     <ClCompile Include="Chain\ChainFcm.cpp" />

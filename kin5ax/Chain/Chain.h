@@ -84,6 +84,11 @@ public:
 	//the tool holder of the machine, from the chain file; declaring one declares the tool mount
 	const CToolHolder & GetDefaultToolHolder() const;
 	void SetDefaultToolHolder(const CToolHolder &oHolder);
+	/// Whether the file names a workpiece holder for the table: a default to offer, nothing more.
+	bool HasDefaultWorkpieceHolder() const;
+	/// The workpiece holder of the table, as the file describes it.
+	const CWorkpieceHolder & GetDefaultWorkpieceHolder() const;
+	void SetDefaultWorkpieceHolder(const CWorkpieceHolder &oHolder);
 	/// Whether the file describes a tool for this machine: a default to offer, nothing more.
 	bool HasDefaultTool() const;
 	/// The tool of the spindle nose, as the file describes it.

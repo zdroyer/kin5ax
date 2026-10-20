@@ -372,6 +372,23 @@ bool CChain::HasDefaultToolHolder() const
 	return !m_vToolPart.empty() && m_vToolPart.back().IsToolHolderDeclared();
 }
 
+bool CChain::HasDefaultWorkpieceHolder() const
+{
+	return !m_vMaterialHolderPart.empty() && m_vMaterialHolderPart.back().IsWorkpieceHolderDeclared();
+}
+
+const CWorkpieceHolder & CChain::GetDefaultWorkpieceHolder() const
+{
+	static const CWorkpieceHolder oNone;
+	return m_vMaterialHolderPart.empty() ? oNone : m_vMaterialHolderPart.back().GetWorkpieceHolder();
+}
+
+void CChain::SetDefaultWorkpieceHolder(const CWorkpieceHolder &oHolder)
+{
+	if(!m_vMaterialHolderPart.empty())
+		m_vMaterialHolderPart.back().SetWorkpieceHolder(oHolder);
+}
+
 bool CChain::HasDefaultTool() const
 {
 	return !m_vToolPart.empty() && m_vToolPart.back().GetTool().IsGiven();

@@ -4,6 +4,7 @@
 #include "R3Box.h"
 #include "ToolHolder.h"
 #include "ToolDescription.h"
+#include "WorkpieceHolder.h"
 
 #include "Rotation.h"
 
@@ -73,6 +74,8 @@ public:
 	CToolHolder m_oToolHolder;
 	bool m_bToolHolderDeclared;
 	CToolDescription m_oTool;
+	CWorkpieceHolder m_oWorkpieceHolder;
+	bool m_bWorkpieceHolderDeclared;
 	double m_dActualParameterValue;
 	double m_dParameterValueMinimum;
 	double m_dParameterValueMaximum;
@@ -89,6 +92,15 @@ public:
 	 */
 	const CToolDescription & GetTool() const { return m_oTool; }
 	void SetTool(const CToolDescription &oTool) { m_oTool = oTool; }
+	/**
+	 * The workpiece holder the machine usually carries, from the chain file, on a TABLE segment and
+	 * nowhere else: the vice, the chuck, the plate the part is bolted to. A default to offer, like
+	 * the tool and its holder at the other end of the machine.
+	 */
+	const CWorkpieceHolder & GetWorkpieceHolder() const { return m_oWorkpieceHolder; }
+	bool IsWorkpieceHolderDeclared() const { return m_bWorkpieceHolderDeclared; }
+	void SetWorkpieceHolder(const CWorkpieceHolder &oHolder)
+	{ m_oWorkpieceHolder = oHolder; m_bWorkpieceHolderDeclared = true; }
 	bool IsToolHolderDeclared() const { return m_bToolHolderDeclared; }
 	void SetToolHolder(const CToolHolder &oHolder) { m_oToolHolder = oHolder; m_bToolHolderDeclared = true; }
 

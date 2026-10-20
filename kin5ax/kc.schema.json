@@ -62,11 +62,26 @@
       "type": "object",
       "required": ["name", "translation", "rotation"],
       "additionalProperties": false,
-      "description": "End of a branch: a constant transformation with collision solids, not a joint.",
+      "description": "End of a branch: a constant transformation with collision solids, not a joint. The table also carries the workpiece holder the machine usually has.",
       "properties": {
         "name":        { "type": "string", "minLength": 1 },
         "translation": { "$ref": "#/$defs/vector3" },
         "rotation":    { "$ref": "#/$defs/rotation" },
+        "boxes":       { "$ref": "#/$defs/boxes" },
+        "workpiece_holder": { "$ref": "#/$defs/workpiece_holder" }
+      }
+    },
+    "workpiece_holder": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "What stands on the table and holds the part: a vice, a chuck, a tombstone, a plate. The frame says where the workpiece sits, read from the table, and the boxes are what the tool must not run into. A default for a host to offer; NO_HOLDER is the part bolted to the table itself and CUSTOM_HOLDER the one a host fills in.",
+      "properties": {
+        "model": { "type": "string",
+                   "description": "The designation: X_VICE, Y_VICE, THREE_JAW_CHUCK, FOUR_JAW_CHUCK, TOMBSTONE, FIXTURE_PLATE, NO_HOLDER, CUSTOM_HOLDER, or anything a workshop calls its own. The library never reads it." },
+        "translation": { "$ref": "#/$defs/vector3",
+                         "description": "Where the workpiece sits, read from the table; the origin when left out." },
+        "rotation":    { "$ref": "#/$defs/rotation",
+                         "description": "How its frame is turned, for a holder that does not hold the part flat on top of itself, such as a tombstone." },
         "boxes":       { "$ref": "#/$defs/boxes" }
       }
     },
