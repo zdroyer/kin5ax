@@ -3,6 +3,7 @@
 #include "R3Point.h"
 #include "R3Box.h"
 #include "ToolHolder.h"
+#include "ToolDescription.h"
 
 #include "Rotation.h"
 
@@ -71,6 +72,7 @@ public:
 
 	CToolHolder m_oToolHolder;
 	bool m_bToolHolderDeclared;
+	CToolDescription m_oTool;
 	double m_dActualParameterValue;
 	double m_dParameterValueMinimum;
 	double m_dParameterValueMaximum;
@@ -80,6 +82,13 @@ public:
 	//the tool point then hangs the length of the assembly below the origin of the segment, see
 	//CChain::GetToolMountToToolPointDistance. No other type of segment may carry one.
 	const CToolHolder & GetToolHolder() const { return m_oToolHolder; }
+	/**
+	 * The tool the machine usually holds, from the chain file, on a TOOL_SPINDLE_NOSE segment and
+	 * nowhere else. A default for whoever puts something in the spindle: it takes no part in the
+	 * kinematics, which work from the tool offset given at run time.
+	 */
+	const CToolDescription & GetTool() const { return m_oTool; }
+	void SetTool(const CToolDescription &oTool) { m_oTool = oTool; }
 	bool IsToolHolderDeclared() const { return m_bToolHolderDeclared; }
 	void SetToolHolder(const CToolHolder &oHolder) { m_oToolHolder = oHolder; m_bToolHolderDeclared = true; }
 

@@ -84,6 +84,11 @@ public:
 	//the tool holder of the machine, from the chain file; declaring one declares the tool mount
 	const CToolHolder & GetDefaultToolHolder() const;
 	void SetDefaultToolHolder(const CToolHolder &oHolder);
+	/// Whether the file describes a tool for this machine: a default to offer, nothing more.
+	bool HasDefaultTool() const;
+	/// The tool of the spindle nose, as the file describes it.
+	const CToolDescription & GetDefaultTool() const;
+	void SetDefaultTool(const CToolDescription &oTool);
 	//Takes the distance from the assembly of this tool (holder, shank, cutting part, zero point), or leaves it
 	//at zero when the chain declares no tool mount. Called by Update and by CCLDataPostprocessor::Process;
 	//call it yourself after changing the tool or the holder of a chain you solve directly.

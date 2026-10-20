@@ -40,6 +40,7 @@ add_executable(kin5axTests
   ToolPathSimulationTests.cpp
   TrajectoryStartTests.cpp
   VersionTests.cpp
+  ToolDescriptionTests.cpp
   ToolHolderTests.cpp
   ToolMountTests.cpp
 )

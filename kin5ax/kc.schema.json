@@ -80,8 +80,32 @@
         "translation": { "$ref": "#/$defs/vector3" },
         "rotation":    { "$ref": "#/$defs/rotation" },
         "boxes":       { "$ref": "#/$defs/boxes" },
-        "tool_holder": { "$ref": "#/$defs/tool_holder" }
+        "tool_holder": { "$ref": "#/$defs/tool_holder" },
+        "tool":        { "$ref": "#/$defs/tool" }
       }
+    },
+    "tool": {
+      "type": "object",
+      "required": ["type", "radius", "cutting_height", "length"],
+      "additionalProperties": false,
+      "description": "The tool the machine usually holds, sticking out of the holder. A default for whoever puts something in the spindle: it takes no part in the kinematics, which work from the tool offset given at run time.",
+      "properties": {
+        "type": { "enum": ["ball_end", "cylinder", "toroidal"],
+                  "description": "ball_end is a ball of the corner radius at the tip, cylinder a flat end, toroidal a flat end with the bottom edge rounded by the corner radius." },
+        "radius": { "type": "number", "exclusiveMinimum": 0,
+                    "description": "The radius of the tool: half the cutting diameter." },
+        "corner_radius": { "type": "number", "minimum": 0,
+                           "description": "The rounding of the bottom edge, which for a ball nose tool is the ball itself. Left out it is the radius for a ball_end and zero for the other two." },
+        "cutting_height": { "type": "number", "exclusiveMinimum": 0,
+                            "description": "How far the cutting part reaches up from the tip." },
+        "length": { "type": "number", "exclusiveMinimum": 0,
+                    "description": "The whole length that sticks out of the holder, cutting part included. What is gripped inside the holder is not described." },
+        "reference_point": { "enum": ["tip", "ball_centre", "custom"],
+                             "description": "Where the point a cutter location programs lies on the tool; the tip when left out. ball_centre is for a ball nose tool only." },
+        "reference_height": { "type": "number", "minimum": 0,
+                              "description": "For a custom reference point: how far it sits above the tip, measured towards the spindle. Required then, meaningless otherwise." }
+      },
+      "dependentRequired": { "reference_height": ["reference_point"] }
     },
     "tool_holder": {
       "type": "object",

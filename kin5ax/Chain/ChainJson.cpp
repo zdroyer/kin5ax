@@ -170,11 +170,52 @@ CChainSegment ReadLink(const CContext &ctx, const tJson &j, const std::string &s
 	return oSegment;
 }
 
+/**
+ * The tool a chain file describes for the nose of its spindle: a shape, its sizes, how far it sticks
+ * out of the holder and where the point a cutter location programs lies on it.
+ */
+CToolDescription ReadTool(const CContext &ctx, const tJson &j, const std::string &sPath)
+{
+	ctx.CheckObject(j,sPath,{"type","radius","cutting_height","length"}
+		,{"corner_radius","reference_point","reference_height"});
+	CToolDescription oTool;
+	const std::string sType = ctx.String(ctx.Member(j,"type",sPath),sPath+".type");
+	if(!MillingToolTypeFromName(sType,oTool.m_nType))
+		ctx.Fail(sPath+".type","unknown tool type '"+sType
+			+"', expected \"ball_end\", \"cylinder\" or \"toroidal\"");
+	oTool.m_dRadius = ctx.Number(ctx.Member(j,"radius",sPath),sPath+".radius");
+	oTool.m_dCuttingHeight = ctx.Number(ctx.Member(j,"cutting_height",sPath),sPath+".cutting_height");
+	oTool.m_dLength = ctx.Number(ctx.Member(j,"length",sPath),sPath+".length");
+	//the ball of a ball nose tool is its corner radius; a file that leaves it out means a full ball
+	tJson::const_iterator itCorner = j.find("corner_radius");
+	if(itCorner != j.end())
+		oTool.m_dCornerRadius = ctx.Number(*itCorner,sPath+".corner_radius");
+	else
+		oTool.m_dCornerRadius = (oTool.m_nType==MILLING_TOOL_BALL) ? oTool.m_dRadius : 0.0;
+	tJson::const_iterator itReference = j.find("reference_point");
+	if(itReference != j.end()){
+		const std::string sReference = ctx.String(*itReference,sPath+".reference_point");
+		if(!ToolReferencePointFromName(sReference,oTool.m_nReference))
+			ctx.Fail(sPath+".reference_point","unknown reference point '"+sReference
+				+"', expected \"tip\", \"ball_centre\" or \"custom\"");
+	}
+	tJson::const_iterator itHeight = j.find("reference_height");
+	if(itHeight != j.end())
+		oTool.m_dReferenceHeight = ctx.Number(*itHeight,sPath+".reference_height");
+	else if(oTool.m_nReference==TOOL_REFERENCE_CUSTOM)
+		ctx.Fail(sPath+".reference_height","a custom reference point needs the height it sits at");
+	oTool.SetGiven(true);
+	const std::string sProblem = oTool.DimensionProblem();
+	if(!sProblem.empty())
+		ctx.Fail(sPath,sProblem);
+	return oTool;
+}
+
 CChainSegment ReadTerminal(const CContext &ctx, const tJson &j, const std::string &sPath, CHAIN_SEGMENT_TYPE type)
 {
 	//only the end of the tool branch carries the tool holder of the machine
 	if(type==CHAIN_SEGMENT_TOOL_SPINDLE_NOSE)
-		ctx.CheckObject(j,sPath,{"name","translation","rotation"},{"boxes","tool_holder"});
+		ctx.CheckObject(j,sPath,{"name","translation","rotation"},{"boxes","tool_holder","tool"});
 	else
 		ctx.CheckObject(j,sPath,{"name","translation","rotation"},{"boxes"});
 	CChainSegment oSegment(type,CR3Vector(1.0,0.0,0.0),0.0,CR3Vector(0.0));
@@ -213,6 +254,9 @@ CChainSegment ReadTerminal(const CContext &ctx, const tJson &j, const std::strin
 				,ctx.Number(ctx.Member(*itHolder,"radius",sHolder),sHolder+".radius")));
 		oSegment.SetToolHolder(CToolHolder(ctx.OptionalString(*itHolder,"model",sHolder),vSections));
 	}
+	tJson::const_iterator itTool = j.find("tool");
+	if(itTool != j.end())
+		oSegment.SetTool(ReadTool(ctx,*itTool,sPath+".tool"));
 	return oSegment;
 }
 
@@ -318,6 +362,22 @@ tJson TerminalToJson(const CChainSegment &oSegment)
 			holder["sections"] = sections;
 		}
 		j["tool_holder"] = holder;
+	}
+	if(oSegment.GetTool().IsGiven()){
+		const CToolDescription &oTool = oSegment.GetTool();
+		tJson tool;
+		tool["type"] = MillingToolTypeName(oTool.m_nType);
+		tool["radius"] = oTool.m_dRadius;
+		if(oTool.m_dCornerRadius!=0.0)
+			tool["corner_radius"] = oTool.m_dCornerRadius;
+		tool["cutting_height"] = oTool.m_dCuttingHeight;
+		tool["length"] = oTool.m_dLength;
+		if(oTool.m_nReference!=TOOL_REFERENCE_TIP){
+			tool["reference_point"] = ToolReferencePointName(oTool.m_nReference);
+			if(oTool.m_nReference==TOOL_REFERENCE_CUSTOM)
+				tool["reference_height"] = oTool.m_dReferenceHeight;
+		}
+		j["tool"] = tool;
 	}
 	BoxesToJson(oSegment,j);
 	return j;

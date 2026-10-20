@@ -47,6 +47,13 @@ std::string CMillingTool::DimensionProblem(MILLING_TOOL_TYPE type, double dRz, d
 		if(dR>dCuttingHeight+dEPSILON)
 			return "the ball is taller than the cutting part (R > the cutting height)";
 	}
+	if(type==MILLING_TOOL_TORUS){
+		//the corner radius rounds the bottom edge: it fits across the tool and up the cutting part
+		if(dR>dRz+dEPSILON)
+			return "the corner radius is wider than the tool (R > Rz), so the rounding would not fit on it";
+		if(dR>dCuttingHeight+dEPSILON)
+			return "the corner radius is taller than the cutting part (R > the cutting height)";
+	}
 	if(!is_between_or_equal(dReferencePointZ,0.0,dCuttingHeight+dNonCuttingLength))
 		return "the programmed point is not on the tool: its height above the tip is outside 0 .. the length of the tool";
 	return "";

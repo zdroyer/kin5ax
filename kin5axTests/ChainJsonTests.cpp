@@ -437,6 +437,100 @@ TEST(ChainJsonToolHolder, OnlyTheSpindleNoseCarriesOne)
 	EXPECT_ERROR_CONTAINS(sError,"workpiece_branch.table");
 }
 
+//---- the tool of the spindle nose
+
+static std::string WithTool(const std::string &sTool)
+{
+	return Replaced(Template(),"\"name\": \"tool\",","\"name\": \"tool\",\n      \"tool\": "+sTool+",");
+}
+
+TEST(ChainJsonTool, AToolSurvivesTheFile)
+{
+	CChain oChain;
+	ASSERT_EQ(std::string(),JsonError(WithTool(
+		"{ \"type\": \"toroidal\", \"radius\": 0.008, \"corner_radius\": 0.003,"
+		" \"cutting_height\": 0.03, \"length\": 0.06 }"),&oChain));
+	ASSERT_TRUE(oChain.HasDefaultTool());
+	const CToolDescription &oTool = oChain.GetDefaultTool();
+	EXPECT_EQ(MILLING_TOOL_TORUS,oTool.m_nType);
+	EXPECT_DOUBLE_EQ(0.008,oTool.m_dRadius);
+	EXPECT_DOUBLE_EQ(0.003,oTool.m_dCornerRadius);
+	EXPECT_DOUBLE_EQ(0.03,oTool.m_dCuttingHeight);
+	EXPECT_DOUBLE_EQ(0.06,oTool.m_dLength);
+	EXPECT_EQ(TOOL_REFERENCE_TIP,oTool.m_nReference);
+
+	CChain oReloaded;
+	ASSERT_EQ(std::string(),JsonError(CChainJsonWriter::ToJson(oChain),&oReloaded));
+	EXPECT_TRUE(oReloaded.GetDefaultTool()==oTool)<<"written and read again";
+}
+
+TEST(ChainJsonTool, ABallNoseRoundsByItsWholeRadiusUnlessToldOtherwise)
+{
+	CChain oChain;
+	ASSERT_EQ(std::string(),JsonError(WithTool(
+		"{ \"type\": \"ball_end\", \"radius\": 0.008, \"cutting_height\": 0.03, \"length\": 0.06 }"),&oChain));
+	EXPECT_DOUBLE_EQ(0.008,oChain.GetDefaultTool().m_dCornerRadius)<<"the ball is the whole radius";
+}
+
+TEST(ChainJsonTool, TheReferencePointIsCarried)
+{
+	CChain oChain;
+	ASSERT_EQ(std::string(),JsonError(WithTool(
+		"{ \"type\": \"ball_end\", \"radius\": 0.008, \"cutting_height\": 0.03, \"length\": 0.06,"
+		" \"reference_point\": \"ball_centre\" }"),&oChain));
+	EXPECT_EQ(TOOL_REFERENCE_BALL_CENTRE,oChain.GetDefaultTool().m_nReference);
+	EXPECT_DOUBLE_EQ(0.008,oChain.GetDefaultTool().GetReferencePointZ());
+	EXPECT_NE(std::string::npos,CChainJsonWriter::ToJson(oChain).find("ball_centre"));
+
+	CChain oCustom;
+	ASSERT_EQ(std::string(),JsonError(WithTool(
+		"{ \"type\": \"toroidal\", \"radius\": 0.008, \"corner_radius\": 0.003,"
+		" \"cutting_height\": 0.03, \"length\": 0.06,"
+		" \"reference_point\": \"custom\", \"reference_height\": 0.003 }"),&oCustom));
+	EXPECT_DOUBLE_EQ(0.003,oCustom.GetDefaultTool().GetReferencePointZ());
+}
+
+TEST(ChainJsonTool, ACustomReferencePointNeedsItsHeight)
+{
+	const std::string sError = JsonError(WithTool(
+		"{ \"type\": \"cylinder\", \"radius\": 0.006, \"cutting_height\": 0.03, \"length\": 0.06,"
+		" \"reference_point\": \"custom\" }"));
+	EXPECT_ERROR_CONTAINS(sError,"reference_height");
+}
+
+TEST(ChainJsonTool, AnUnknownShapeIsReportedWithTheOnesThereAre)
+{
+	const std::string sError = JsonError(WithTool(
+		"{ \"type\": \"barrel\", \"radius\": 0.008, \"cutting_height\": 0.03, \"length\": 0.06 }"));
+	EXPECT_ERROR_CONTAINS(sError,"barrel");
+	EXPECT_ERROR_CONTAINS(sError,"toroidal");
+}
+
+TEST(ChainJsonTool, DimensionsThatAreNotAToolAreRefusedByTheReader)
+{
+	const std::string sError = JsonError(WithTool(
+		"{ \"type\": \"toroidal\", \"radius\": 0.008, \"corner_radius\": 0.02,"
+		" \"cutting_height\": 0.03, \"length\": 0.06 }"));
+	EXPECT_ERROR_CONTAINS(sError,"corner radius");
+}
+
+TEST(ChainJsonTool, OnlyTheSpindleNoseCarriesATool)
+{
+	const std::string sError = JsonError(Replaced(Template(),"\"name\": \"holder\",",
+		"\"name\": \"holder\",\n      \"tool\": { \"type\": \"cylinder\", \"radius\": 0.006,"
+		" \"cutting_height\": 0.03, \"length\": 0.06 },"));
+	EXPECT_ERROR_CONTAINS(sError,"'tool'");
+	EXPECT_ERROR_CONTAINS(sError,"workpiece_branch.table");
+}
+
+TEST(ChainJsonTool, AChainWithoutOneSaysSo)
+{
+	CChain oChain;
+	ASSERT_EQ(std::string(),JsonError(Template(),&oChain));
+	EXPECT_FALSE(oChain.HasDefaultTool());
+	EXPECT_EQ(std::string::npos,CChainJsonWriter::ToJson(oChain).find("\"tool\":"));
+}
+
 //---- the unit: required, exact, and kept
 
 TEST(ChainJsonUnit, IsRead)
