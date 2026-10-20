@@ -134,8 +134,10 @@ public:
 	void SetParameterValue(double dNewValue , int nSliderPosition);
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	
-	std::vector<CR3Box> m_vBoxes;
-	int m_nActivePart;	//index into m_vBoxes, -1 when no box is selected
+	//the solids of the selected segment, which may be boxes, pieces of cylinders or pieces of
+	//spheres: a copy, written back to the segment whenever the list is rebuilt
+	std::vector<CSolid> m_vSolids;
+	int m_nActivePart;	//index into m_vSolids, -1 when no solid is selected
 protected:
 	void UpdateParameterSliderUnits(void);
 	void UpdateSegmentPartsList(void);

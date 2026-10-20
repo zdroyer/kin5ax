@@ -69,6 +69,12 @@
     <ClCompile Include="SpindleNoseDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SolidDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SolidRendererGL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="TableDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -153,6 +159,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SpindleNoseDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SolidDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SolidRendererGL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TableDialog.h">

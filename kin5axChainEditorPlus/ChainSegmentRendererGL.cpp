@@ -2,6 +2,7 @@
 #include "ChainSegmentRendererGL.h"
 #include "GLTools.h"
 #include "R3BoxRendererGL.h"
+#include "SolidRendererGL.h"
 #include "MillingToolRendererGL.h"
 #include "ToolAssembly.h"
 #include <memory>
@@ -15,20 +16,20 @@ void CChainSegmentRendererGL::RenderParts(const CChainSegment &oSegment)
 		if(i==oSegment.GetHighlightedPartIndex()){
 			if(oSegment.IsPartInCollision(i)){
 				glColor3d(1.0,0.0,0.0);
-				CR3BoxRendererGL::RenderSolid(oSegment.GetPartVector()[i]);
+				CSolidRendererGL::RenderSolid(oSegment.GetPartVector()[i]);
 				glColor3d(0.3,0.3,0.3);
 			} else {
 				glColor3d(0.6,0.6,0.6);	
-				CR3BoxRendererGL::RenderSolid(oSegment.GetPartVector()[i]);
+				CSolidRendererGL::RenderSolid(oSegment.GetPartVector()[i]);
 				glColor3d(0.3,0.3,0.3);
 			}
 		} else {
 			if(oSegment.IsPartInCollision(i)){
 				glColor3d(0.5,0.0,0.0);
-				CR3BoxRendererGL::RenderSolid(oSegment.GetPartVector()[i]);
+				CSolidRendererGL::RenderSolid(oSegment.GetPartVector()[i]);
 				glColor3d(0.3,0.3,0.3);
 			} else {
-				CR3BoxRendererGL::RenderSolid(oSegment.GetPartVector()[i]);
+				CSolidRendererGL::RenderSolid(oSegment.GetPartVector()[i]);
 			}
 		}
 

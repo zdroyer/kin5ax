@@ -7,6 +7,7 @@
 #include "KinematicChainPropertiesDialog.h"
 #include "SpindleNoseDialog.h"
 #include "TableDialog.h"
+#include "SolidDialog.h"
 #include ".\kinematicchainpropertiesdialog.h"
 #include "boxdialog.h"
 
@@ -385,7 +386,7 @@ void CKinematicChainPropertiesDialog::EnableSegmentProperties(const CChainSegmen
 	m_comboPredefinedAxes.SetCurSel(0);
 	
 	m_nActivePart = segment.GetHighlightedPartIndex();
-	m_vBoxes = segment.GetPartVector();
+	m_vSolids = segment.GetPartVector();
 
 	m_buttonAddPart.EnableWindow(TRUE);
 	m_buttonDeletePart.EnableWindow(TRUE);
@@ -463,7 +464,7 @@ CChainSegment CKinematicChainPropertiesDialog::GetChainSegmentFromDialogData(voi
 				m_bParameterIsConstrained==TRUE,
 				(type==CHAIN_SEGMENT_REVOLUTE_LINK ? degrees_to_radians(m_dParameterMinimum):m_dParameterMinimum),
 				(type==CHAIN_SEGMENT_REVOLUTE_LINK ? degrees_to_radians(m_dParameterMaximum):m_dParameterMaximum));
-	segment.SetPartVector(m_vBoxes);
+	segment.SetPartVector(m_vSolids);
 	segment.HighlightPart(m_nActivePart);
 	if(segment.GetType()==CHAIN_SEGMENT_REVOLUTE_LINK)
 		segment.SetParameterValue(degrees_to_radians( m_dParameterValue));	//the dialog holds degrees, the segment radians
@@ -827,32 +828,36 @@ void CKinematicChainPropertiesDialog::OnLbnSelchangeListParts()
 void CKinematicChainPropertiesDialog::OnLbnDblclkListParts()
 {
 	OnLbnSelchangeListParts();
-	if(m_pActiveSegment && m_nActivePart>=0 && m_nActivePart<(int)m_vBoxes.size()){
-		CBoxDialog dlg;
-		dlg.SetBox(m_vBoxes[m_nActivePart]);
-		dlg.SetWindowAndBoxForUpdates(GetParent(),m_pActiveSegment->GetActivePartPointer());
-		if(dlg.DoModal()==IDOK){
-			m_vBoxes[m_nActivePart] = dlg.GetBox();
-		}
+	if(m_pActiveSegment && m_nActivePart>=0 && m_nActivePart<(int)m_vSolids.size()){
+		const CSolid oBefore = m_vSolids[m_nActivePart];
+		CSolidDialog dlg;
+		dlg.SetSolid(oBefore);
+		//the dialog writes into the solid of the segment, so the 3D view follows every keystroke
+		dlg.SetWindowAndSolidForUpdates(GetParent(),m_pActiveSegment->GetActivePartPointer());
+		if(dlg.DoModal()==IDOK)
+			m_vSolids[m_nActivePart] = dlg.GetSolid();
+		else
+			m_vSolids[m_nActivePart] = oBefore;
 		UpdateSegmentPartsList();
-
 	}
 }
 
 void CKinematicChainPropertiesDialog::OnBnClickedButtonAddPart()
 {
 	if(m_pActiveSegment){
-		m_vBoxes.push_back(CR3Box());
-		m_pActiveSegment->SetPartVector(m_vBoxes);
-		m_pActiveSegment->HighlightPart((int)m_vBoxes.size()-1);
-		CBoxDialog dlg;
-		dlg.SetWindowAndBoxForUpdates(GetParent(),m_pActiveSegment->GetActivePartPointer());
+		//the new solid goes into the segment first, so that the dialog can write into it and the
+		//view can show it being measured; Cancel takes it out again
+		m_vSolids.push_back(CSolid());
+		m_pActiveSegment->SetPartVector(m_vSolids);
+		m_pActiveSegment->HighlightPart((int)m_vSolids.size()-1);
+		CSolidDialog dlg;
+		dlg.SetWindowAndSolidForUpdates(GetParent(),m_pActiveSegment->GetActivePartPointer());
 		if(dlg.DoModal()==IDOK){
-			m_nActivePart = (int)m_vBoxes.size()-1;
-			m_vBoxes = m_pActiveSegment->GetPartVector();
+			m_nActivePart = (int)m_vSolids.size()-1;
+			m_vSolids = m_pActiveSegment->GetPartVector();
 		} else {
-			m_vBoxes.pop_back();
-			m_pActiveSegment->SetPartVector(m_vBoxes);
+			m_vSolids.pop_back();
+			m_pActiveSegment->SetPartVector(m_vSolids);
 			m_pActiveSegment->HighlightPart(m_nActivePart);
 		}
 		UpdateSegmentPartsList();
@@ -888,13 +893,14 @@ void CKinematicChainPropertiesDialog::UpdateSegmentPartsList(void)
 {
 	m_listboxSegmentParts.ResetContent();
 	if(m_pActiveSegment){
-		for(size_t i=0;i<m_vBoxes.size();i++){
-			std::string s("box_");
-			s+=size_to_string(i+1);
+		for(size_t i=0;i<m_vSolids.size();i++){
+			//the kind and the number, which is also how a collision report names it
+			std::string s(m_vSolids[i].GetTypeName());
+			s += ("_"+size_to_string(i+1));
 			m_listboxSegmentParts.AddString(s.c_str());
 		}
 		m_listboxSegmentParts.SetCurSel(m_nActivePart);
-		m_pActiveSegment->SetPartVector(m_vBoxes);
+		m_pActiveSegment->SetPartVector(m_vSolids);
 		m_pActiveSegment->HighlightPart(m_nActivePart);
 		m_pDoc->UpdateAllViews(NULL);
 	} 
@@ -902,11 +908,11 @@ void CKinematicChainPropertiesDialog::UpdateSegmentPartsList(void)
 void CKinematicChainPropertiesDialog::OnBnClickedButtonDeletePart()
 {
 	if(m_pActiveSegment){
-		if(m_nActivePart>=0 && m_nActivePart<(int)m_vBoxes.size()){
-			m_vBoxes.erase(m_vBoxes.begin()+m_nActivePart);
+		if(m_nActivePart>=0 && m_nActivePart<(int)m_vSolids.size()){
+			m_vSolids.erase(m_vSolids.begin()+m_nActivePart);
 			//the selection stays at the same place, or on the new last box, or nowhere
-			if(m_nActivePart>=(int)m_vBoxes.size())
-				m_nActivePart = (int)m_vBoxes.size()-1;
+			if(m_nActivePart>=(int)m_vSolids.size())
+				m_nActivePart = (int)m_vSolids.size()-1;
 			UpdateSegmentPartsList();
 		}
 	}

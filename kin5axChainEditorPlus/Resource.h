@@ -112,6 +112,33 @@
 #define IDC_BUTTON_WP_ADD_BOX           1173
 #define IDC_BUTTON_WP_DELETE_BOX        1174
 #define ID_BTN_TERMINAL_PROPERTIES      1175
+#define ID_SOLID_DIALOG                 148
+#define IDC_COMBO_SOLID_TYPE            1176
+#define IDC_EDIT_SOLID_X1               1177
+#define IDC_EDIT_SOLID_X2               1178
+#define IDC_EDIT_SOLID_Y1               1179
+#define IDC_EDIT_SOLID_Y2               1180
+#define IDC_EDIT_SOLID_Z1               1181
+#define IDC_EDIT_SOLID_Z2               1182
+#define IDC_COMBO_SOLID_AXIS            1183
+#define IDC_EDIT_SOLID_BASE             1184
+#define IDC_EDIT_SOLID_TOP              1185
+#define IDC_EDIT_SOLID_RADIUS           1186
+#define IDC_EDIT_SOLID_PX               1187
+#define IDC_EDIT_SOLID_PY               1188
+#define IDC_EDIT_SOLID_PZ               1189
+#define IDC_EDIT_SOLID_ANGLE1           1190
+#define IDC_EDIT_SOLID_ANGLE2           1191
+#define IDC_CHECK_WHOLE_TURN            1192
+#define IDC_EDIT_SOLID_CX               1193
+#define IDC_EDIT_SOLID_CY               1194
+#define IDC_EDIT_SOLID_CZ               1195
+#define IDC_EDIT_SPHERE_RADIUS          1196
+#define IDC_COMBO_SOLID_CUT_AXIS        1197
+#define IDC_EDIT_SOLID_CUT_MIN          1198
+#define IDC_EDIT_SOLID_CUT_MAX          1199
+#define IDC_CHECK_WHOLE_SPHERE          1200
+#define IDC_STATIC_SOLID_PROBLEM        1201
 #define IDC_BUTTON_APPLY                1049
 #define IDC_RADIO_CALCULATION_ORDER_1   1050
 #define IDC_RADIO_CALCULATION_ORDER_2   1051
@@ -265,9 +292,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        148
+#define _APS_NEXT_RESOURCE_VALUE        149
 #define _APS_NEXT_COMMAND_VALUE         32856
-#define _APS_NEXT_CONTROL_VALUE         1176
+#define _APS_NEXT_CONTROL_VALUE         1202
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif
