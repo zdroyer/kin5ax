@@ -126,6 +126,16 @@ public:
 		m_dMinZ=Min(r3pP1.GetZ(),r3pP2.GetZ());
 		m_dMaxZ=Max(r3pP1.GetZ(),r3pP2.GetZ());
 	}
+	//The same six limits, within the tolerance of the library: a box is a value, and the solids of a
+	//segment are compared when a chain is compared.
+	bool operator==(const CR3Box &b) const
+	{
+		return are_equal(m_dMinX,b.m_dMinX) && are_equal(m_dMaxX,b.m_dMaxX)
+			&& are_equal(m_dMinY,b.m_dMinY) && are_equal(m_dMaxY,b.m_dMaxY)
+			&& are_equal(m_dMinZ,b.m_dMinZ) && are_equal(m_dMaxZ,b.m_dMaxZ);
+	}
+	bool operator!=(const CR3Box &b) const { return !(*this==b); }
+
 	CR3Point GetMinPoint()const
 	{
 		return CR3Point(m_dMinX,m_dMinY,m_dMinZ);

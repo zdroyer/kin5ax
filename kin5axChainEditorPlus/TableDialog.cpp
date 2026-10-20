@@ -146,8 +146,10 @@ void CTableDialog::OnCbnSelchangeComboWorkpieceHolder()
 		for(size_t i=0;i<oCatalogue.GetBoxes().size();i++){
 			const CR3Point p1 = oCatalogue.GetBoxes()[i].GetMinPoint();
 			const CR3Point p2 = oCatalogue.GetBoxes()[i].GetMaxPoint();
-			m_vBoxes.push_back(CR3Box(p1.GetX()*dFactor,p1.GetY()*dFactor,p1.GetZ()*dFactor
-				,p2.GetX()*dFactor,p2.GetY()*dFactor,p2.GetZ()*dFactor));
+			//the two corners, not six loose numbers: the six-double constructor takes them as
+			//min and max per axis, which is not the order a corner comes in
+			m_vBoxes.push_back(CR3Box(CR3Point(p1.GetX()*dFactor,p1.GetY()*dFactor,p1.GetZ()*dFactor)
+				,CR3Point(p2.GetX()*dFactor,p2.GetY()*dFactor,p2.GetZ()*dFactor)));
 		}
 	}
 	UpdateData(FALSE);

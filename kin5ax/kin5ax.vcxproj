@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- kin5ax in the Visual Studio solution of the application: a Makefile project that builds the library with
      CMake (build_with_cmake.cmd, the source list lives in CMakeLists.txt) and publishes build\kin5ax\<Config>\kin5ax.lib.
      The source items below are for browsing and IntelliSense only; they are not compiled by this project. -->
@@ -75,6 +75,10 @@
   <ItemGroup>
     <ClCompile Include="3DGeometry\M4x4.cpp" />
     <ClCompile Include="3DGeometry\R3Box.cpp" />
+    <ClCompile Include="3DGeometry\R3Axis.cpp" />
+    <ClCompile Include="3DGeometry\R3CylinderSegment.cpp" />
+    <ClCompile Include="3DGeometry\R3SphereSegment.cpp" />
+    <ClCompile Include="3DGeometry\Solid.cpp" />
     <ClCompile Include="3DGeometry\R3AnchoredVector.cpp" />
     <ClCompile Include="3DGeometry\R3Point.cpp" />
     <ClCompile Include="3DGeometry\R3Vector.cpp" />
@@ -118,6 +122,10 @@
     <ClInclude Include="3DGeometry\double_tools.h" />
     <ClInclude Include="3DGeometry\M4x4.h" />
     <ClInclude Include="3DGeometry\R3Box.h" />
+    <ClInclude Include="3DGeometry\R3Axis.h" />
+    <ClInclude Include="3DGeometry\R3CylinderSegment.h" />
+    <ClInclude Include="3DGeometry\R3SphereSegment.h" />
+    <ClInclude Include="3DGeometry\Solid.h" />
     <ClInclude Include="3DGeometry\R3AnchoredVector.h" />
     <ClInclude Include="3DGeometry\R3Point.h" />
     <ClInclude Include="3DGeometry\R3Vector.h" />
