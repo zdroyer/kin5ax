@@ -43,9 +43,18 @@ CKin5axChainEditorPlusDoc::CKin5axChainEditorPlusDoc()
 ,m_pMillingTool(0)
 
 {
-	m_pMillingTool = new CMillingToolBall(0.016,0.016
-		,0.064,0.016);
+	//the tool comes from the machine file; an empty chain names none, so there is none yet
+	UpdateToolFromChain();
+}
 
+void CKin5axChainEditorPlusDoc::UpdateToolFromChain()
+{
+	delete m_pMillingTool;
+	const CToolAssembly oAssembly = m_oChain.GetDefaultToolAssembly();
+	m_pMillingTool = oAssembly.MakeTool();		//null when the file names no tool
+	//the offset is given to the chain whether or not there are solids to check: a holder with no
+	//tool in it still holds the programmed point away from the nose
+	m_oChain.SetToolOffset(oAssembly.GetToolOffset());
 }
 
 CKin5axChainEditorPlusDoc::~CKin5axChainEditorPlusDoc()
@@ -120,12 +129,8 @@ BOOL CKin5axChainEditorPlusDoc::OnOpenDocument(LPCTSTR lpszPathName)
 				m_oChain = CChainFileReader::ReadFile(std::string(lpszPathName));
 				break;
 		}
-		if(m_pMillingTool){
-			//the machine brings its own tool holder; a tool that has one of its own keeps it
-			if(!m_pMillingTool->m_oHolder.HasBody() && m_oChain.HasDefaultToolHolder())
-				m_pMillingTool->m_oHolder = m_oChain.GetDefaultToolHolder();
-			m_oChain.SetToolOffsetFromTool(*m_pMillingTool);
-		}
+		//the machine brings its own holder and its own tool: that assembly is what is in the spindle
+		UpdateToolFromChain();
 	} catch (CGeneratorException &e){
 		AfxMessageBox(e.Message().c_str());
 		return FALSE;

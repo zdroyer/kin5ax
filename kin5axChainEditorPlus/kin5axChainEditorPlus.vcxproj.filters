@@ -63,9 +63,6 @@
     <ClCompile Include="MillingToolPreview.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MillingToolPropertiesDialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="SpindleNoseDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -153,9 +150,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MillingToolPreview.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MillingToolPropertiesDialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SpindleNoseDialog.h">

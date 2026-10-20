@@ -4,7 +4,6 @@
 #include "stdafx.h"
 #include "kin5axChainEditorPlus.h"
 #include "kinematicchainpropertiesdialog.h"
-#include "MillingToolPropertiesDialog.h"
 #include "settingsdialog.h"
 #include ".\mainfrm.h"
 #include "string_tools.h"
@@ -31,7 +30,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_POSTPROCESSOR_SINGLEINPUT, OnPostprocessorSingleinput)
 	ON_COMMAND(ID_CHAIN_PROPERTIES, OnChainProperties)
 	ON_COMMAND(ID_MATERIALBLOCK_GENERATEINITIALBLOCK, OnMaterialblockGenerateinitialblock)
-	ON_COMMAND(ID_SIMULATION_SETUPMILLINGTOOL, OnSimulationSetupmillingtool)
 	ON_COMMAND(ID_SHOW_MATERIAL, OnShowMaterial)
 	ON_COMMAND(ID_SHOW_MATERIAL_CONTOUR, OnShowMaterialContour)
 	ON_COMMAND(ID_SHOW_MATERIAL_FRAME, OnShowMaterialFrame)
@@ -196,13 +194,6 @@ void CMainFrame::OnMaterialblockGenerateinitialblock()
 	}
 	m_dlgMaterialBlockDialog.SetActiveDocument((CKin5axChainEditorPlusDoc*)GetActiveDocument());
 	m_dlgMaterialBlockDialog.ShowWindow(SW_SHOW);
-}
-
-void CMainFrame::OnSimulationSetupmillingtool()
-{
-	CMillingToolPropertiesDialog m_dlg(this);
-	m_dlg.SetActiveDocument((CKin5axChainEditorPlusDoc*)GetActiveDocument());
-	m_dlg.DoModal();
 }
 
 void CMainFrame::OnShowMaterial()
@@ -370,7 +361,8 @@ bool CMainFrame::StartSimulation(void)
 		return false;
 	if(!m_pSimulation){
 		if(!pDoc->m_pMillingTool){
-			MessageBox("Cannot start simulation - no milling tool defined");
+			MessageBox("Cannot start the simulation: this machine names no tool. Chain properties, "
+				"the spindle nose, Tool holder and tool.");
 			return false;
 		}
 		if(!pDoc->m_oChain.Is5CChain()){
@@ -464,7 +456,8 @@ void CMainFrame::OnSimulationSimple()
 		return;
 	}
 	if(!pDoc->m_pMillingTool){
-		MessageBox("Simple simulation needs a milling tool");
+		MessageBox("The simple simulation needs a tool: Chain properties, the spindle nose, "
+			"Tool holder and tool.");
 		return;
 	}
 	StopAndResetSimulation();

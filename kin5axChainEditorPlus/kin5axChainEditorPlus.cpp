@@ -8,6 +8,7 @@
 
 #include "kin5axChainEditorPlusDoc.h"
 #include "ChainJson.h"
+#include "Version.h"
 #include "ChainFcm.h"
 #include "kin5axChainEditorPlusView.h"
 
@@ -106,6 +107,9 @@ public:
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	//the version of the library this was built against and the commit it came from: what a bug
+	//report needs, and the one line of this window that is not written by hand
+	virtual BOOL OnInitDialog();
 
 // Implementation
 protected:
@@ -119,6 +123,15 @@ CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
 void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
+}
+
+BOOL CAboutDlg::OnInitDialog()
+{
+	CDialog::OnInitDialog();
+	if(GetDlgItem(IDC_STATIC_ABOUT_LIBRARY))
+		GetDlgItem(IDC_STATIC_ABOUT_LIBRARY)->SetWindowText(
+			(std::string("kin5ax ")+BuildString()).c_str());
+	return TRUE;
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)

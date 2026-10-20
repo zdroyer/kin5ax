@@ -86,6 +86,7 @@ void CSpindleNoseDialog::DoDataExchange(CDataExchange *pDX)
 	DDX_Control(pDX, IDC_COMBO_TOOL_SHAPE, m_comboShape);
 	DDX_Control(pDX, IDC_COMBO_TOOL_REFERENCE, m_comboReference);
 	DDX_Control(pDX, IDC_EDIT_TOOL_REFERENCE_HEIGHT, m_editReferenceHeight);
+	DDX_Control(pDX, IDC_PICTURE_TOOL_PREVIEW, m_wndPreview);
 }
 
 BEGIN_MESSAGE_MAP(CSpindleNoseDialog, CDialog)
@@ -231,6 +232,12 @@ void CSpindleNoseDialog::UpdateTheSums()
 	const std::string sProblem = oAssembly.Problem();
 	m_sProblem = sProblem.empty() ? CString("") : CString(sProblem.c_str());
 	UpdateData(FALSE);
+	//and the picture of it, which is empty while the fields are not an assembly yet
+	m_wndPreview.SetMillingTool(0);
+	m_pTool.reset(sProblem.empty() ? oAssembly.MakeTool() : 0);
+	m_wndPreview.SetMillingTool(m_pTool.get());
+	if(m_wndPreview.GetSafeHwnd())
+		m_wndPreview.Invalidate(TRUE);
 }
 
 void CSpindleNoseDialog::OnCbnSelchangeComboNoseHolder()

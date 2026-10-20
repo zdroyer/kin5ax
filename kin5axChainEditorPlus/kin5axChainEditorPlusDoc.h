@@ -62,7 +62,14 @@ public:
 	virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);
 	C5CPostprocessor * GetPostprocessor(void);
 	CMaterial m_oMaterial;
+	//The tool in the spindle, built from the tool assembly of the spindle nose of the chain: the
+	//holder and the tool the machine file names. Null when the file names no tool, and then there
+	//is nothing to simulate or to check collisions against until one is given in the properties of
+	//that terminal. Owned here.
 	CMillingTool *m_pMillingTool;
+	//Rebuilds it from the chain, and tells the chain the offset of that assembly. To be called
+	//whenever the spindle nose may have changed: a file opened, a terminal edited.
+	void UpdateToolFromChain();
 	CSimulationData m_oSimulationData;
 };
 

@@ -3,6 +3,9 @@
 #include "afxwin.h"
 #include "ChainSegment.h"
 #include "ToolAssembly.h"
+#include "MillingToolPreview.h"
+
+#include <memory>
 
 /**
  * @brief The terminal of the tool branch: its name, the holder hanging from it and the tool in it.
@@ -60,6 +63,9 @@ public:
 protected:
 	CChainSegment *m_pSegment;
 	double m_dUnitInMillimetres;
+	//the assembly of the fields, drawn to scale from the nose of the spindle down to the tip
+	CMillingToolPreview m_wndPreview;
+	std::unique_ptr<CMillingTool> m_pTool;		//what the preview draws; the dialog owns it
 	CComboBox m_comboHolder;
 	CComboBox m_comboShape;
 	CComboBox m_comboReference;

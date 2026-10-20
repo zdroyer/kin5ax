@@ -318,8 +318,11 @@ void CKinematicChainPropertiesDialog::DisableSegmentProperties(void)
 	m_edtParameterValue.EnableWindow(FALSE);
 	m_buttonAddPart.EnableWindow(FALSE);
 	m_buttonDeletePart.EnableWindow(FALSE);
-	if(GetDlgItem(ID_BTN_TERMINAL_PROPERTIES))
+	if(GetDlgItem(ID_BTN_TERMINAL_PROPERTIES)){
 		GetDlgItem(ID_BTN_TERMINAL_PROPERTIES)->EnableWindow(FALSE);
+		GetDlgItem(ID_BTN_TERMINAL_PROPERTIES)->SetWindowText(
+			"&Terminal... (select the spindle nose or the table)");
+	}
 
 	
 
@@ -390,11 +393,17 @@ void CKinematicChainPropertiesDialog::EnableSegmentProperties(const CChainSegmen
 
 	m_buttonAddPart.EnableWindow(TRUE);
 	m_buttonDeletePart.EnableWindow(TRUE);
-	//only a terminal has a holder, so the button is for the two of them alone
-	if(GetDlgItem(ID_BTN_TERMINAL_PROPERTIES))
-		GetDlgItem(ID_BTN_TERMINAL_PROPERTIES)->EnableWindow(
-			(segment.GetType()==CHAIN_SEGMENT_TOOL_SPINDLE_NOSE
-			|| segment.GetType()==CHAIN_SEGMENT_TABLE) ? TRUE : FALSE);
+	//only a terminal has one, so the button is for the two of them alone - and it says which one it
+	//will open, since that is the only place the tool assembly and the workpiece holder are edited
+	if(GetDlgItem(ID_BTN_TERMINAL_PROPERTIES)){
+		const bool bNose = segment.GetType()==CHAIN_SEGMENT_TOOL_SPINDLE_NOSE;
+		const bool bTable = segment.GetType()==CHAIN_SEGMENT_TABLE;
+		GetDlgItem(ID_BTN_TERMINAL_PROPERTIES)->EnableWindow((bNose || bTable) ? TRUE : FALSE);
+		GetDlgItem(ID_BTN_TERMINAL_PROPERTIES)->SetWindowText(bNose
+			? "Tool &holder and tool of the spindle nose..."
+			: (bTable ? "&Workpiece holder of the table..."
+			: "&Terminal... (select the spindle nose or the table)"));
+	}
 	UpdateSegmentPartsList();
 
 }
@@ -885,6 +894,8 @@ void CKinematicChainPropertiesDialog::OnBnClickedBtnTerminalProperties()
 	//the name of a terminal may have changed, and the 3D view draws what hangs from the nose
 	m_sSegmentName = m_pActiveSegment->GetName().c_str();
 	UpdateData(FALSE);
+	//the tool of a run is the one the spindle nose names, so it follows the dialog
+	m_pDoc->UpdateToolFromChain();
 	m_pDoc->SetModifiedFlag();
 	m_pDoc->UpdateAllViews(NULL);
 }

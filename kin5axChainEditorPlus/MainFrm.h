@@ -70,7 +70,6 @@ public:
 	afx_msg void OnChainProperties();
 	void UpdateDialogs(void);
 	afx_msg void OnMaterialblockGenerateinitialblock();
-	afx_msg void OnSimulationSetupmillingtool();
 	afx_msg void OnShowMaterial();
 	afx_msg void OnShowMaterialContour();
 	afx_msg void OnShowMaterialFrame();
