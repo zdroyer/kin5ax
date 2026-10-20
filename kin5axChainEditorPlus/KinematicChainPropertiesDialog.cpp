@@ -5,6 +5,8 @@
 #include "string_tools.h"
 #include "kin5axChainEditorPlus.h"
 #include "KinematicChainPropertiesDialog.h"
+#include "SpindleNoseDialog.h"
+#include "TableDialog.h"
 #include ".\kinematicchainpropertiesdialog.h"
 #include "boxdialog.h"
 
@@ -177,6 +179,7 @@ ON_LBN_SELCHANGE(IDC_LIST_PARTS, OnLbnSelchangeListParts)
 ON_LBN_DBLCLK(IDC_LIST_PARTS, OnLbnDblclkListParts)
 ON_BN_CLICKED(IDC_BUTTON_ADD_PART, OnBnClickedButtonAddPart)
 ON_BN_CLICKED(IDC_BUTTON_DELETE_PART, OnBnClickedButtonDeletePart)
+ON_BN_CLICKED(ID_BTN_TERMINAL_PROPERTIES, OnBnClickedBtnTerminalProperties)
 END_MESSAGE_MAP()
 
 
@@ -314,6 +317,8 @@ void CKinematicChainPropertiesDialog::DisableSegmentProperties(void)
 	m_edtParameterValue.EnableWindow(FALSE);
 	m_buttonAddPart.EnableWindow(FALSE);
 	m_buttonDeletePart.EnableWindow(FALSE);
+	if(GetDlgItem(ID_BTN_TERMINAL_PROPERTIES))
+		GetDlgItem(ID_BTN_TERMINAL_PROPERTIES)->EnableWindow(FALSE);
 
 	
 
@@ -384,6 +389,11 @@ void CKinematicChainPropertiesDialog::EnableSegmentProperties(const CChainSegmen
 
 	m_buttonAddPart.EnableWindow(TRUE);
 	m_buttonDeletePart.EnableWindow(TRUE);
+	//only a terminal has a holder, so the button is for the two of them alone
+	if(GetDlgItem(ID_BTN_TERMINAL_PROPERTIES))
+		GetDlgItem(ID_BTN_TERMINAL_PROPERTIES)->EnableWindow(
+			(segment.GetType()==CHAIN_SEGMENT_TOOL_SPINDLE_NOSE
+			|| segment.GetType()==CHAIN_SEGMENT_TABLE) ? TRUE : FALSE);
 	UpdateSegmentPartsList();
 
 }
@@ -847,6 +857,31 @@ void CKinematicChainPropertiesDialog::OnBnClickedButtonAddPart()
 		}
 		UpdateSegmentPartsList();
 	}
+}
+
+void CKinematicChainPropertiesDialog::OnBnClickedBtnTerminalProperties()
+{
+	if(!m_pDoc || !m_pActiveSegment)
+		return;
+	//the catalogues of the library are in metres and this chain is in its own unit
+	const double dUnit = m_pDoc->m_oChain.GetUnitInMillimetres();
+	bool bChanged = false;
+	if(m_pActiveSegment->GetType()==CHAIN_SEGMENT_TOOL_SPINDLE_NOSE){
+		CSpindleNoseDialog dlg;
+		dlg.SetTerminal(m_pActiveSegment,dUnit);
+		bChanged = (dlg.DoModal()==IDOK);
+	} else if(m_pActiveSegment->GetType()==CHAIN_SEGMENT_TABLE){
+		CTableDialog dlg;
+		dlg.SetTerminal(m_pActiveSegment,dUnit);
+		bChanged = (dlg.DoModal()==IDOK);
+	}
+	if(!bChanged)
+		return;
+	//the name of a terminal may have changed, and the 3D view draws what hangs from the nose
+	m_sSegmentName = m_pActiveSegment->GetName().c_str();
+	UpdateData(FALSE);
+	m_pDoc->SetModifiedFlag();
+	m_pDoc->UpdateAllViews(NULL);
 }
 
 void CKinematicChainPropertiesDialog::UpdateSegmentPartsList(void)

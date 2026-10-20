@@ -240,6 +240,8 @@
     <ClCompile Include="MaterialBlockDialog.cpp" />
     <ClCompile Include="MillingToolPreview.cpp" />
     <ClCompile Include="MillingToolPropertiesDialog.cpp" />
+    <ClCompile Include="SpindleNoseDialog.cpp" />
+    <ClCompile Include="TableDialog.cpp" />
     <ClCompile Include="PostprocessingDialog.cpp" />
     <ClCompile Include="SettingsDialog.cpp" />
     <ClCompile Include="SimulationDialog.cpp" />
@@ -273,6 +275,8 @@
     <ClInclude Include="MaterialBlockDialog.h" />
     <ClInclude Include="MillingToolPreview.h" />
     <ClInclude Include="MillingToolPropertiesDialog.h" />
+    <ClInclude Include="SpindleNoseDialog.h" />
+    <ClInclude Include="TableDialog.h" />
     <ClInclude Include="PostprocessingDialog.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SettingsDialog.h" />

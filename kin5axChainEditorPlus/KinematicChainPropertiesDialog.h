@@ -151,4 +151,7 @@ public:
 	CButton m_buttonAddPart;
 	afx_msg void OnBnClickedButtonAddPart();
 	afx_msg void OnBnClickedButtonDeletePart();
+	//The terminals of the two branches carry more than a joint does - the nose of the spindle its
+	//holder and its default tool, the table its workpiece holder - and each has a dialog of its own.
+	afx_msg void OnBnClickedBtnTerminalProperties();
 };

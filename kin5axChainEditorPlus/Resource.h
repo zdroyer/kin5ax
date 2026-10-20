@@ -80,6 +80,38 @@
 #define IDC_EDIT_HOLDER_LENGTH          1142
 #define IDC_EDIT_HOLDER_RADIUS          1143
 #define IDC_COMBO_TOOL_HOLDER           1145
+#define ID_TOOL_SPINDLE_NOSE_DIALOG     146
+#define ID_TABLE_DIALOG                 147
+#define IDC_EDIT_TERMINAL_NAME          1146
+#define IDC_COMBO_NOSE_HOLDER           1147
+#define IDC_EDIT_SECTION1_LENGTH        1148
+#define IDC_EDIT_SECTION1_RADIUS        1149
+#define IDC_EDIT_SECTION2_LENGTH        1150
+#define IDC_EDIT_SECTION2_RADIUS        1151
+#define IDC_EDIT_SECTION3_LENGTH        1152
+#define IDC_EDIT_SECTION3_RADIUS        1153
+#define IDC_COMBO_TOOL_SHAPE            1154
+#define IDC_EDIT_TOOL_RZ                1155
+#define IDC_EDIT_TOOL_R                 1156
+#define IDC_EDIT_TOOL_CUTTING_HEIGHT    1157
+#define IDC_EDIT_TOOL_LENGTH            1158
+#define IDC_COMBO_TOOL_REFERENCE        1159
+#define IDC_EDIT_TOOL_REFERENCE_HEIGHT  1160
+#define IDC_EDIT_ASSEMBLY_LENGTH        1161
+#define IDC_EDIT_TOOL_OFFSET            1162
+#define IDC_STATIC_ASSEMBLY_PROBLEM     1163
+#define IDC_COMBO_WORKPIECE_HOLDER      1164
+#define IDC_EDIT_WP_TR_X                1165
+#define IDC_EDIT_WP_TR_Y                1166
+#define IDC_EDIT_WP_TR_Z                1167
+#define IDC_EDIT_WP_AXIS_X              1168
+#define IDC_EDIT_WP_AXIS_Y              1169
+#define IDC_EDIT_WP_AXIS_Z              1170
+#define IDC_EDIT_WP_ANGLE               1171
+#define IDC_LIST_WP_BOXES               1172
+#define IDC_BUTTON_WP_ADD_BOX           1173
+#define IDC_BUTTON_WP_DELETE_BOX        1174
+#define ID_BTN_TERMINAL_PROPERTIES      1175
 #define IDC_BUTTON_APPLY                1049
 #define IDC_RADIO_CALCULATION_ORDER_1   1050
 #define IDC_RADIO_CALCULATION_ORDER_2   1051
@@ -233,9 +265,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        146
+#define _APS_NEXT_RESOURCE_VALUE        148
 #define _APS_NEXT_COMMAND_VALUE         32856
-#define _APS_NEXT_CONTROL_VALUE         1146
+#define _APS_NEXT_CONTROL_VALUE         1176
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif
