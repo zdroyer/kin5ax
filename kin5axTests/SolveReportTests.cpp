@@ -72,6 +72,7 @@ TEST_P(SolveReportChain, CountsAreConsistentOnRandomPoses)
 	CChain oChain = Load();
 	ASSERT_TRUE(oChain.Is5CChain());
 	CMillingToolBall oTool(0.016,0.016,0.064,0.016);
+	oChain.SetToolOffsetFromTool(oTool);
 	C5CPostprocessor oPostprocessor(oChain,CPostprocessorSettings());
 	std::mt19937 oGenerator(2026);
 	size_t nByStatus[SOLVE_STATUS_COUNT] = {0};
@@ -111,6 +112,7 @@ TEST_P(SolveReportChain, AKilometreAwayIsDecidedByTheLinearLimits)
 	CChain oChain = Load();
 	ASSERT_TRUE(oChain.Is5CChain());
 	CMillingToolBall oTool(0.016,0.016,0.064,0.016);
+	oChain.SetToolOffsetFromTool(oTool);
 	C5CPostprocessor oPostprocessor(oChain,CPostprocessorSettings());
 	CSolveReport oReport;
 	std::string sLog;
@@ -143,6 +145,7 @@ TEST(SolveReport, AnUnreachableOrientationIsReported)
 	}
 	CChain oChain = LoadChain(sFile);
 	CMillingToolBall oTool(0.016,0.016,0.064,0.016);
+	oChain.SetToolOffsetFromTool(oTool);
 	C5CPostprocessor oPostprocessor(oChain,CPostprocessorSettings());
 	CSolveReport oReport;
 	std::string sLog;
@@ -157,6 +160,7 @@ TEST_P(SolveReportChain, CollisionsOffNeedNoTool)
 {
 	CChain oChain = Load();
 	ASSERT_TRUE(oChain.Is5CChain());
+	oChain.SetToolOffset(0.144);			//a tool is still in the spindle, it is just not checked
 	CPostprocessorSettings oSettings;
 	oSettings.m_bCheckCollisions = false;
 	C5CPostprocessor oPostprocessor(oChain,oSettings);
@@ -179,6 +183,7 @@ TEST_P(SolveReportChain, LimitsOffReachAKilometreAway)
 	CChain oChain = Load();
 	ASSERT_TRUE(oChain.Is5CChain());
 	CMillingToolBall oTool(0.016,0.016,0.064,0.016);
+	oChain.SetToolOffsetFromTool(oTool);
 	CPostprocessorSettings oSettings;
 	oSettings.m_bCheckLimits = false;
 	C5CPostprocessor oPostprocessor(oChain,oSettings);
@@ -194,6 +199,7 @@ TEST_P(SolveReportChain, CollisionsOnWithoutAToolThrow)
 {
 	CChain oChain = Load();
 	ASSERT_TRUE(oChain.Is5CChain());
+	oChain.SetToolOffset(0.144);			//a tool of some length: this test is about the lack of one
 	C5CPostprocessor oPostprocessor(oChain,CPostprocessorSettings());
 	CSolveReport oReport;
 	std::string sLog;

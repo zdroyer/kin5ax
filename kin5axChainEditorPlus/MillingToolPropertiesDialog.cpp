@@ -83,7 +83,7 @@ void CMillingToolPropertiesDialog::UpdateMillingTool()
 	if(m_pDoc->m_pMillingTool){
 		//the tool point hangs the length of the assembly below the tool mount of the machine
 		m_dH = m_pDoc->m_pMillingTool->GetAssemblyLength();
-		m_pDoc->m_oChain.SetToolAssembly(*m_pDoc->m_pMillingTool);
+		m_pDoc->m_oChain.SetToolOffsetFromTool(*m_pDoc->m_pMillingTool);
 	}
 	UpdateData(FALSE);
 

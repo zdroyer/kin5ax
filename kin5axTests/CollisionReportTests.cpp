@@ -78,7 +78,7 @@ TEST(CollisionReport, AChainSaysWhichOfItsSolidsMet)
 	//below it, which is what that model is for
 	CChain oChain = LoadChain(GetTestChainsDir()+"3CWithSphericalWrist_withBaseBox.kc.json");
 	CMillingToolBall oTool = Tool();
-	oChain.SetToolAssembly(oTool);
+	oChain.SetToolOffsetFromTool(oTool);
 
 	CChainConfiguration oUpright((int)oChain.GetNumberOfRegularLinks());
 	oChain.SetParameters(oUpright);

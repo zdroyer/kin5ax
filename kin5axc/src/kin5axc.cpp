@@ -449,7 +449,7 @@ k5_status k5_chain_check_collisions(k5_chain chain, k5_tool tool, int *collides)
 	K5_BEGIN
 	K5_NEED(chain && tool,"k5_chain_check_collisions needs a chain and a tool")
 	K5_NEED(tool->m_pTool,"the tool handle holds no tool")
-	chain->m_oChain.SetToolAssembly(*tool->m_pTool);
+	chain->m_oChain.SetToolOffsetFromTool(*tool->m_pTool);
 	std::string sLog;
 	const bool b = chain->m_oChain.HasCollision(*tool->m_pTool,sLog);
 	if(collides)
@@ -487,7 +487,7 @@ k5_status k5_chain_tool_point(k5_chain chain, k5_tool tool, const double *q,
 	if(nFive!=K5_OK)
 		return nFive;
 	if(tool && tool->m_pTool)
-		chain->m_oChain.SetToolAssembly(*tool->m_pTool);
+		chain->m_oChain.SetToolOffsetFromTool(*tool->m_pTool);
 	chain->m_oChain.SetParameters(FromQ(chain->m_oChain,q));
 	const CR3AnchoredVector cv = chain->m_oChain.GetActualToolPositionAndOrientation();
 	if(position){
@@ -631,7 +631,7 @@ k5_status k5_simulation_create(k5_chain chain, k5_tool tool, k5_path path, k5_ma
 	const k5_status nFive = NeedFiveAxes(chain->m_oChain);
 	if(nFive!=K5_OK)
 		return nFive;
-	chain->m_oChain.SetToolAssembly(*tool->m_pTool);
+	chain->m_oChain.SetToolOffsetFromTool(*tool->m_pTool);
 	*out = new k5_simulation_t(chain,tool,path,material);
 	return K5_OK;
 	K5_END(K5_ERROR_CHAIN)
@@ -847,7 +847,7 @@ k5_status k5_solve_location(k5_chain chain, k5_tool tool, const k5_settings *set
 	CMillingTool *pTool = (tool && tool->m_pTool) ? tool->m_pTool.get() : NULL;
 	K5_NEED(pTool || !settings->check_collisions,"the collision check needs a tool")
 	if(pTool)
-		chain->m_oChain.SetToolAssembly(*pTool);
+		chain->m_oChain.SetToolOffsetFromTool(*pTool);
 
 	const CPostprocessorSettings oSettings = FromCSettings(*settings);
 	C5CPostprocessor oPostprocessor(chain->m_oChain,oSettings);

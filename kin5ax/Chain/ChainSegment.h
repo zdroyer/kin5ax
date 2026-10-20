@@ -83,7 +83,7 @@ public:
 
 	//The tool holder of a TOOL segment, from the chain file. Declaring it makes the segment the tool mount:
 	//the tool point then hangs the length of the assembly below the origin of the segment, see
-	//CChain::GetToolMountToToolPointDistance. No other type of segment may carry one.
+	//CChain::GetToolOffset. No other type of segment may carry one.
 	const CToolHolder & GetToolHolder() const { return m_oToolHolder; }
 	/**
 	 * The tool the machine usually holds, from the chain file, on a TOOL_SPINDLE_NOSE segment and

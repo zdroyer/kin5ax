@@ -11,7 +11,8 @@ extern CR3Point r3pZero;
 
 CChain::CChain(void)
 {
-	m_dToolMountToToolPoint = 0.0;
+	m_dToolOffset = 0.0;
+	m_bToolOffsetGiven = false;
 	m_nActivePart=CHAIN_PART_SPINDLE;
 	m_nActiveSegmentIndex=-1;
 
@@ -347,24 +348,31 @@ CTransformation CChain::GetActualToToolTransformation() const
 	return m4x4Result * GetToolMountToToolPointTransformation();
 }
 
-double CChain::GetToolMountToToolPointDistance() const
+double CChain::GetToolOffset() const
 {
-	return m_dToolMountToToolPoint;
+	return m_dToolOffset;
 }
 
-void CChain::SetToolMountToToolPointDistance(double dDistance)
+bool CChain::IsToolOffsetGiven() const
 {
-	m_dToolMountToToolPoint = dDistance;
+	return m_bToolOffsetGiven;
+}
+
+void CChain::SetToolOffset(double dOffset)
+{
+	//a distance down the spindle axis: which way round somebody wrote it is not a place
+	m_dToolOffset = fabs(dOffset);
+	m_bToolOffsetGiven = true;
 }
 
 CTransformation CChain::GetToolMountToToolPointTransformation() const
 {
-	return CTransformation(CTranslation(0.0,0.0,-m_dToolMountToToolPoint));
+	return CTransformation(CTranslation(0.0,0.0,-m_dToolOffset));
 }
 
 CTransformation CChain::GetToolPointToToolMountTransformation() const
 {
-	return CTransformation(CTranslation(0.0,0.0,m_dToolMountToToolPoint));
+	return CTransformation(CTranslation(0.0,0.0,m_dToolOffset));
 }
 
 bool CChain::HasDefaultToolHolder() const
@@ -419,9 +427,11 @@ void CChain::SetDefaultToolHolder(const CToolHolder &oHolder)
 	m_vToolPart.back().SetToolHolder(oHolder);
 }
 
-void CChain::SetToolAssembly(const CMillingTool &oTool)
+void CChain::SetToolOffsetFromTool(const CMillingTool &oTool)
 {
-	m_dToolMountToToolPoint = HasDefaultToolHolder() ? oTool.GetMountToToolPointDistance() : 0.0;
+	//whatever is in the spindle: the holder, the tool sticking out of it, and the reference point
+	//somewhere on that tool. The nose is the nose whether the file names a holder or not.
+	SetToolOffset(oTool.GetMountToToolPointDistance());
 }
 
 CR3AnchoredVector CChain::GetActualToolPositionAndOrientation() const
@@ -657,7 +667,7 @@ void CChain::Update(CMillingTool *pTool)
 		SetParameters(CChainConfiguration((int)this->GetNumberOfRegularLinks()));
 
 	if(pTool){
-		SetToolAssembly(*pTool);
+		SetToolOffsetFromTool(*pTool);
 		DetectCollisions(*pTool);
 		pTool->SetPositionAndOrientation(GetActualToolPositionAndOrientation());
 	}

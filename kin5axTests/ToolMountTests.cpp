@@ -27,24 +27,68 @@ const double dASSEMBLY_DISTANCE = dCUTTING+dSHANK+dHOLDER_LENGTH-dRADIUS;
 
 } // namespace
 
-TEST(ToolMount, AnUndeclaredMountIgnoresTheAssembly)
+//Every chain hangs the tool below its spindle nose, whether or not the file names a holder. Until
+//2026-10-20 a file that named none was read as having its tool point at the terminal, so the same
+//element meant two different places and the hosts disagreed about which (KnownBugs #68).
+TEST(ToolMount, EveryChainHangsTheToolBelowItsSpindleNose)
 {
 	ASSERT_GE(GetChainFiles().size(),(size_t)1);
 	CChain oChain = LoadChain(GetChainFiles()[0]);
-	EXPECT_TRUE(oChain.HasDefaultToolHolder())<<"every shipped model declares a tool holder";
+	EXPECT_TRUE(oChain.HasDefaultToolHolder())<<"every shipped model names a tool holder";
 	CMillingToolBall oTool = Assembly();
-	oChain.SetToolAssembly(oTool);
-	EXPECT_DOUBLE_EQ(dASSEMBLY_DISTANCE,oChain.GetToolMountToToolPointDistance());
+	oChain.SetToolOffsetFromTool(oTool);
+	EXPECT_DOUBLE_EQ(dASSEMBLY_DISTANCE,oChain.GetToolOffset());
 
-	//a chain built in code declares no mount, so the length of a tool does not move its tool point
+	//a chain built in code names no holder, and that changes nothing: what the file names is a
+	//default to offer, not a switch on what the terminal means
 	CChain oPlain;
 	EXPECT_FALSE(oPlain.HasDefaultToolHolder());
-	oPlain.SetToolAssembly(oTool);
-	EXPECT_DOUBLE_EQ(0.0,oPlain.GetToolMountToToolPointDistance());
-	oPlain.SetDefaultToolHolder(CToolHolder(dHOLDER_LENGTH,dHOLDER_RADIUS));
-	EXPECT_TRUE(oPlain.HasDefaultToolHolder());
-	oPlain.SetToolAssembly(oTool);
-	EXPECT_DOUBLE_EQ(dASSEMBLY_DISTANCE,oPlain.GetToolMountToToolPointDistance());
+	oPlain.SetToolOffsetFromTool(oTool);
+	EXPECT_DOUBLE_EQ(dASSEMBLY_DISTANCE,oPlain.GetToolOffset());
+}
+
+//The offset is a measurement of what is in the spindle, so nothing invents one: a chain says
+//whether it was told, and the solver refuses to work on a chain that was not.
+TEST(ToolMount, AChainIsNotToldTheOffsetUntilSomebodyTellsIt)
+{
+	CChain oChain;
+	EXPECT_FALSE(oChain.IsToolOffsetGiven());
+	EXPECT_DOUBLE_EQ(0.0,oChain.GetToolOffset())<<"the nose itself, which is the bare machine";
+	oChain.SetToolOffset(0.144);
+	EXPECT_TRUE(oChain.IsToolOffsetGiven());
+	EXPECT_DOUBLE_EQ(0.144,oChain.GetToolOffset());
+	//a distance down the axis: which way round it was written is not a place
+	oChain.SetToolOffset(-0.2);
+	EXPECT_DOUBLE_EQ(0.2,oChain.GetToolOffset());
+}
+
+//The rule with teeth: a chain that was never told how far the tool reaches refuses to solve, and
+//says what to tell it. Solving for the nose itself would put the tool through the part.
+TEST(ToolMount, TheSolverRefusesAChainThatWasNotToldTheOffset)
+{
+	ASSERT_GE(GetChainFiles().size(),(size_t)1);
+	CChain oChain = LoadChain(GetChainFiles()[0]);
+	ASSERT_TRUE(oChain.Is5CChain());
+	ASSERT_FALSE(oChain.IsToolOffsetGiven())<<"a chain is not told by reading a file";
+	CPostprocessorSettings oSettings;
+	oSettings.m_bCheckCollisions = false;
+	C5CPostprocessor oPostprocessor(oChain,oSettings);
+	std::string sLog;
+	CSolveReport oReport;
+	std::string sError;
+	try{
+		oPostprocessor.Solve(CR3Point(0.0,0.0,0.05),CR3Vector(0.0,0.0,1.0),oChain
+			,(CMillingTool*)NULL,sLog,oReport);
+	} catch (CGeneratorException &e){
+		sError = e.Message();
+	}
+	EXPECT_NE(std::string::npos,sError.find("tool offset"))<<sError;
+	EXPECT_NE(std::string::npos,sError.find("SetToolOffset"))<<"it says what to call: "<<sError;
+
+	//told, and it solves
+	oChain.SetToolOffsetFromTool(Assembly());
+	EXPECT_NO_THROW(oPostprocessor.Solve(CR3Point(0.0,0.0,0.05),CR3Vector(0.0,0.0,1.0),oChain
+		,(CMillingTool*)NULL,sLog,oReport));
 }
 
 TEST(ToolMount, TheToolPointMovesDownTheToolAxis)
@@ -54,9 +98,9 @@ TEST(ToolMount, TheToolPointMovesDownTheToolAxis)
 	std::mt19937 oGenerator(5);
 	for(int s=0;s<20;s++){
 		oChain.SetParameters(RandomJointValues(oChain,oGenerator));
-		oChain.SetToolMountToToolPointDistance(0.0);
+		oChain.SetToolOffset(0.0);
 		CR3AnchoredVector cvMount = oChain.GetActualToolPositionAndOrientation();
-		oChain.SetToolMountToToolPointDistance(dASSEMBLY_DISTANCE);
+		oChain.SetToolOffset(dASSEMBLY_DISTANCE);
 		CR3AnchoredVector cvTool = oChain.GetActualToolPositionAndOrientation();
 		//the axis points from the tip towards the spindle, so the tool point is below the mount
 		CR3Point pExpected = cvMount.m_p - (cvMount.m_v.GetUnitVector()*dASSEMBLY_DISTANCE);
@@ -81,8 +125,8 @@ TEST_P(ToolMountChain, TheSolverSolvesForTheToolPoint)
 	ASSERT_TRUE(oChain.Is5CChain());
 	CMillingToolBall oTool = Assembly();
 	oChain.SetDefaultToolHolder(CToolHolder(dHOLDER_LENGTH,dHOLDER_RADIUS));
-	oChain.SetToolAssembly(oTool);
-	ASSERT_DOUBLE_EQ(dASSEMBLY_DISTANCE,oChain.GetToolMountToToolPointDistance());
+	oChain.SetToolOffsetFromTool(oTool);
+	ASSERT_DOUBLE_EQ(dASSEMBLY_DISTANCE,oChain.GetToolOffset());
 
 	CPostprocessorSettings oSettings;
 	oSettings.m_bCheckCollisions = false;	//the holder meets the head boxes of the models (KnownBugs #67)
@@ -119,7 +163,7 @@ TEST_P(ToolMountChain, TheRoundTripIsExactWithAnAssembly)
 	ASSERT_TRUE(oChain.Is5CChain());
 	CMillingToolBall oTool = Assembly();
 	oChain.SetDefaultToolHolder(CToolHolder(dHOLDER_LENGTH,dHOLDER_RADIUS));
-	oChain.SetToolAssembly(oTool);
+	oChain.SetToolOffsetFromTool(oTool);
 	CSolverRoundTripResult oResult = RunSolverRoundTrip(oChain,oTool,300,1E-9);
 	EXPECT_EQ((size_t)0,oResult.m_nWrongSolutions)<<oResult.m_sFirstProblem;
 	EXPECT_EQ((size_t)0,oResult.m_nNotRecovered)<<oResult.m_sFirstProblem;

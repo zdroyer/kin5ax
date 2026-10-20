@@ -48,7 +48,7 @@ struct CSegmentFrame
 	//the joint turns about or slides along
 	CTransformation m_trJoint;
 	//after the joint motion as well: the input frame of the next segment. For the last segment of the
-	//tool part this is the tool mount - the tool point hangs GetToolMountToToolPointDistance below it
+	//tool part this is the tool mount - the tool point hangs GetToolOffset below it
 	//along its Z - and for the last of the material holder part it is the frame of the material.
 	CTransformation m_trOutput;
 };
@@ -68,18 +68,32 @@ public:
 	//the actual parameter of segment nIndex of the tool part / the material holder part (0.0 for the tool and the holder)
 	double GetActualParameter(size_t nIndex, bool bToolPart) const;
 
-	//---- the tool mount: the origin of the TOOL terminal, where the tool holder is clamped.
-	//The tool point (the programmed point of the CL data) lies GetToolMountToToolPointDistance() below it,
-	//along the Z axis of the terminal; the forward kinematics, the position solver and the collision test of
-	//the tool all use that distance. It stays zero for a chain file that declares no tool holder, whose TOOL
-	//terminal is the tool point itself, the way the files were written before the holder existed (KnownBugs #68).
-	double GetToolMountToToolPointDistance() const;
-	void SetToolMountToToolPointDistance(double dDistance);
-	//from the frame of the tool mount to the frame of the tool point, and back
+	/**
+	 * @name The tool offset
+	 *
+	 * The terminal of the tool branch is the nose of the tool spindle, in every chain. The point a
+	 * cutter location programs lies the TOOL OFFSET below it, along the Z of the nose: a positive
+	 * distance, measured from the nose down to the reference point of whatever is in the spindle -
+	 * the tip of the tool, the centre of its ball, or a height somebody gave. That measurement
+	 * belongs to the tool and the holder, not to the machine, so the chain is told it at run time
+	 * and never guesses: a chain that was not told refuses to solve (CChain::IsToolOffsetGiven).
+	 *
+	 * Until 2026-10-20 the distance stayed zero for a file that named no holder, whose terminal was
+	 * then read as the tool point itself. The same element meant two different places and the hosts
+	 * disagreed about which (KnownBugs #68).
+	 * @{
+	 */
+	double GetToolOffset() const;
+	void SetToolOffset(double dOffset);
+	/// True once somebody has said how far the tool reaches below the nose.
+	bool IsToolOffsetGiven() const;
+	/// Takes the offset from a tool and its holder: what the assembly adds up to, less the reference point.
+	void SetToolOffsetFromTool(const CMillingTool &oTool);
+	/// From the frame of the spindle nose to the frame of the programmed point, and back.
 	CTransformation GetToolMountToToolPointTransformation() const;
 	CTransformation GetToolPointToToolMountTransformation() const;
-	//true when the chain file declares a tool mount (the tool_holder of its TOOL segment): only then does the
-	//length of a tool assembly move the tool point away from the terminal
+	/// @}
+	/// Whether the file names a tool holder for the spindle: a default to offer, nothing more.
 	bool HasDefaultToolHolder() const;
 	//the tool holder of the machine, from the chain file; declaring one declares the tool mount
 	const CToolHolder & GetDefaultToolHolder() const;
@@ -94,10 +108,7 @@ public:
 	/// The tool of the spindle nose, as the file describes it.
 	const CToolDescription & GetDefaultTool() const;
 	void SetDefaultTool(const CToolDescription &oTool);
-	//Takes the distance from the assembly of this tool (holder, shank, cutting part, zero point), or leaves it
-	//at zero when the chain declares no tool mount. Called by Update and by CCLDataPostprocessor::Process;
-	//call it yourself after changing the tool or the holder of a chain you solve directly.
-	void SetToolAssembly(const CMillingTool &oTool);
+
 	//Collision test of every box of every segment against the boxes of every other segment, and of the whole tool
 	//assembly (the cutting part, the shank and the holder) against the boxes of all segments, at the actual parameters. The result is stored in the segments (IsPartInCollision)
 	//and in the collision log of the tool; the tool part and the material holder part are both walked from the base.
@@ -168,7 +179,8 @@ public:
 	int m_nActiveSegmentIndex;
 	CHAIN_PART m_nActivePart;
 
-	double m_dToolMountToToolPoint;		//see GetToolMountToToolPointDistance
+	double m_dToolOffset;				//see GetToolOffset
+	bool m_bToolOffsetGiven;
 
 	void ComputeAndSetError(CChainConfiguration &oConfig, const CR3AnchoredVector &cv);
 	CR3AnchoredVector m_toolPosition;

@@ -84,7 +84,7 @@ CCLDataPostprocessingResult CCLDataPostprocessor::Process
 	CCLDataPostprocessingResult oResult;
 	FILE *pFile = pDetailedReport;
 	if(pTool)
-		oChain.SetToolAssembly(*pTool);	//the tool point hangs below the tool mount by the length of the assembly
+		oChain.SetToolOffsetFromTool(*pTool);	//the tool point hangs below the tool mount by the length of the assembly
 	C5CPostprocessor oPostprocessor(oChain,m_oSettings);
 	CCutterLocationData &data = oData;
 	CR3Point p1,p2,pi;

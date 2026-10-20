@@ -124,7 +124,7 @@ BOOL CKin5axChainEditorPlusDoc::OnOpenDocument(LPCTSTR lpszPathName)
 			//the machine brings its own tool holder; a tool that has one of its own keeps it
 			if(!m_pMillingTool->m_oHolder.HasBody() && m_oChain.HasDefaultToolHolder())
 				m_pMillingTool->m_oHolder = m_oChain.GetDefaultToolHolder();
-			m_oChain.SetToolAssembly(*m_pMillingTool);
+			m_oChain.SetToolOffsetFromTool(*m_pMillingTool);
 		}
 	} catch (CGeneratorException &e){
 		AfxMessageBox(e.Message().c_str());

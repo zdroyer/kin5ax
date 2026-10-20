@@ -242,6 +242,7 @@ TEST(SolvedLocation, TheSingularSolverMayReturnFewerSetsThanItGotLocations)
 	ASSERT_NE("",sChain);
 	CChain oChain = LoadChain(sChain);
 	CMillingToolBall oTool(0.016,0.016,0.064,0.016);
+	oChain.SetToolOffsetFromTool(oTool);
 	CPostprocessorSettings oSettings;
 	oSettings.m_bCheckCollisions = false;
 	C5CPostprocessor oPostprocessor(oChain,oSettings);

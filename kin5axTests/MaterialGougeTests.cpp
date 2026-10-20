@@ -86,7 +86,7 @@ TEST(MaterialGouge, TheSimulationCountsTheGouges)
 	CChain oChain = LoadChain(GetChainFiles()[0]);
 	CMillingToolBall oTool = Assembly();
 	oChain.SetDefaultToolHolder(CToolHolder(dHOLDER_LENGTH,dHOLDER_RADIUS));
-	oChain.SetToolAssembly(oTool);
+	oChain.SetToolOffsetFromTool(oTool);
 
 	//three locations of the same pose: a block around the tool point, tall enough to hold the holder
 	std::mt19937 oGenerator(23);
@@ -119,7 +119,7 @@ TEST(MaterialGouge, ABareToolInTheSameSceneDoesNotGouge)
 	ASSERT_GE(GetChainFiles().size(),(size_t)1);
 	CChain oChain = LoadChain(GetChainFiles()[0]);
 	CMillingToolBall oBare(dRADIUS,dRADIUS,dCUTTING,dRADIUS);
-	oChain.SetToolAssembly(oBare);
+	oChain.SetToolOffsetFromTool(oBare);
 	std::mt19937 oGenerator(23);
 	CChainConfiguration oSet = RandomJointValues(oChain,oGenerator);
 	oChain.SetParameters(oSet);

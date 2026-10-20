@@ -32,6 +32,9 @@ CSolverRoundTripResult RunSolverRoundTrip(CChain &oChain, CMillingTool &oTool, s
 {
 	CSolverRoundTripResult oResult = CSolverRoundTripResult();
 	oResult.m_nSamples = nSamples;
+	//what is in the spindle decides where the programmed point is, and the solver is never left to
+	//guess it: this is the sequence a host follows too
+	oChain.SetToolOffsetFromTool(oTool);
 	C5CPostprocessor oPostprocessor(oChain,CPostprocessorSettings());
 	const int n = (int)oChain.GetNumberOfRegularLinks();
 

@@ -79,7 +79,7 @@ std::string CollisionLog(double dZ, double dRadial)
 	}
 	EXPECT_TRUE(oChain.HasDefaultToolHolder())<<"the document declares a tool holder";
 	CMillingToolBall oTool = Assembly();
-	oChain.SetToolAssembly(oTool);
+	oChain.SetToolOffsetFromTool(oTool);
 	std::string sLog;
 	return oChain.HasCollision(oTool,sLog) ? sLog : std::string();
 }
@@ -115,8 +115,8 @@ TEST(ChainToolCollision, WithoutAnAssemblyNothingIsAHolderOrAShank)
 	//below the mount, so its cutting part occupies the space the holder would have (KnownBugs #68)
 	CChain oChain = CChainJsonReader::Parse(ChainWithABoxAt(dHOLDER_Z,0.0),"text");
 	CMillingToolBall oBare(dRADIUS,dRADIUS,dCUTTING,dRADIUS);
-	oChain.SetToolAssembly(oBare);
-	EXPECT_DOUBLE_EQ(dCUTTING-dRADIUS,oChain.GetToolMountToToolPointDistance());
+	oChain.SetToolOffsetFromTool(oBare);
+	EXPECT_DOUBLE_EQ(dCUTTING-dRADIUS,oChain.GetToolOffset());
 	std::string sLog;
 	EXPECT_TRUE(oChain.HasCollision(oBare,sLog))<<"the cutting part reaches the box under the mount";
 	EXPECT_EQ(std::string::npos,sLog.find("holder or shank"))<<sLog;

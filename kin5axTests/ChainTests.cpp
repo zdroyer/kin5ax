@@ -201,6 +201,7 @@ TEST_P(ChainFileTest, SingularSectionOutOfReachGivesNoSolution)
 		return;
 	}
 	CMillingToolBall oTool(0.016,0.016,0.064,0.016);
+	oChain.SetToolOffsetFromTool(oTool);
 	C5CPostprocessor oPostprocessor(oChain,CPostprocessorSettings());
 	//three locations of a vertical tool, a kilometre away: beyond the limits of the linear axes
 	std::vector<CR3AnchoredVector> vInput;

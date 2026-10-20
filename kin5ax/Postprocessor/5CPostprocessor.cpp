@@ -213,6 +213,12 @@ tChainConfigurationVector C5CPostprocessor::SolveWithKnownAlpha1(const CR3Point 
 }
 tChainConfigurationVector C5CPostprocessor::SolveTheoretically(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,std::string &sLog, CSolveReport *pReport)
 {
+	//How far the programmed point hangs below the nose of the spindle is a measurement of what
+	//is in the spindle, which this library never invents: a chain that was not told refuses
+	//rather than solving for the nose itself and putting the tool through the part.
+	if(!oChain.IsToolOffsetGiven())
+		MY_THROW(CArgsMyException,"The chain has not been given a tool offset: say how far the "
+			"programmed point of the tool is below the nose of the spindle (CChain::SetToolOffset)");
 	CR3Vector r3vV0 =  m_m4x4InitialOrientationTransformation * r3vOrientation;
 	std::vector<CChainConfiguration> vRotations;
 	try{
