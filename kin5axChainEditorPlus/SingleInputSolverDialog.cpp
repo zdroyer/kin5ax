@@ -87,7 +87,10 @@ void CSingleInputSolverDialog::OnBnClickedBtnSolve()
 			MY_THROW(CArgsMyException,"Zero-length orientation vector");
 		m_pDoc->m_oChain.SetVirtualToolPosition(r3vV0,r3pP0);
 		std::string sLog;
-		m_vConfigurations = m_pDoc->GetPostprocessor()->SolveWithLocations(r3pP0,r3vV0,m_pDoc->m_oChain,*m_pDoc->m_pMillingTool,sLog);
+		//a machine may name no tool at all, and then there are no solids to check: the offset the
+		//chain was given still places the point, so the geometry is solved all the same
+		m_vConfigurations = m_pDoc->GetPostprocessor()->SolveWithLocations(r3pP0,r3vV0
+			,m_pDoc->m_oChain,m_pDoc->m_pMillingTool,sLog);
 		m_listboxSolutions.ResetContent();
 		if(m_vConfigurations.size()==0)
 			m_listboxSolutions.AddString("NO SOLUTION");

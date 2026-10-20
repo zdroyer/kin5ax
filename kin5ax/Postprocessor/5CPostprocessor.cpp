@@ -65,7 +65,15 @@ C5CPostprocessor::~C5CPostprocessor(void)
 
 std::vector<tChainConfigurationWithResult> C5CPostprocessor::SolveWithLocations(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,CMillingTool &oMillingTool, std::string &sLog)
 {
-	tChainConfigurationVector vResult2 = Solve(r3pPosition,r3vOrientation,oChain,oMillingTool,sLog);
+	return SolveWithLocations(r3pPosition,r3vOrientation,oChain,&oMillingTool,sLog);
+}
+
+std::vector<tChainConfigurationWithResult> C5CPostprocessor::SolveWithLocations(const CR3Point r3pPosition
+	,const CR3Vector r3vOrientation, CChain &oChain, CMillingTool *pMillingTool, std::string &sLog)
+{
+	CSolveReport oReport;
+	tChainConfigurationVector vResult2 = Solve(r3pPosition,r3vOrientation,oChain,pMillingTool,sLog
+		,oReport);
 	std::vector<tChainConfigurationWithResult> v(vResult2.size());
 	for(size_t i=0;i<vResult2.size();i++){
 		v[i].first = vResult2[i];

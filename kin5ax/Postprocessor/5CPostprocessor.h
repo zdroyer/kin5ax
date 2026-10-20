@@ -21,6 +21,9 @@ public:
 	C5CPostprocessor(const CChain &oChain, const CPostprocessorSettings &oSettings);
 	~C5CPostprocessor(void);
 	std::vector<tChainConfigurationWithResult> SolveWithLocations(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,CMillingTool &oMillingTool,std::string &sLog);
+	//the same with no tool at all, which the settings must then not be checking collisions with
+	std::vector<tChainConfigurationWithResult> SolveWithLocations(const CR3Point r3pPosition
+		,const CR3Vector r3vOrientation, CChain &oChain, CMillingTool *pMillingTool, std::string &sLog);
 	//all configurations that reach the cutter location (reference point r3pPosition, tool axis r3vOrientation),
 	//are within the joint limits (when the settings check them) and do not collide (when the settings check
 	//collisions; the tool may then be NULL, otherwise a NULL tool throws). sLog tells what was found and

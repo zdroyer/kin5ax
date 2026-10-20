@@ -171,7 +171,8 @@ void CPostprocessingDialog::OnBnClickedStart()
 		return;
 	}
 	if(!m_pDoc->m_pMillingTool){
-		MessageBox("No milling tool defined - set up the milling tool first");
+		MessageBox("This machine names no tool: Chain properties, the spindle nose, "
+			"Tool holder and tool.");
 		return;
 	}
 		
