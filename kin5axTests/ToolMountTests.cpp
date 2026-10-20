@@ -57,9 +57,9 @@ TEST(ToolMount, AChainIsNotToldTheOffsetUntilSomebodyTellsIt)
 	oChain.SetToolOffset(0.144);
 	EXPECT_TRUE(oChain.IsToolOffsetGiven());
 	EXPECT_DOUBLE_EQ(0.144,oChain.GetToolOffset());
-	//a distance down the axis: which way round it was written is not a place
-	oChain.SetToolOffset(-0.2);
-	EXPECT_DOUBLE_EQ(0.2,oChain.GetToolOffset());
+	//a distance down the axis, and only down: a negative one would end the tool inside the spindle
+	EXPECT_THROW(oChain.SetToolOffset(-0.2),CGeneratorException);
+	EXPECT_DOUBLE_EQ(0.144,oChain.GetToolOffset())<<"a refused offset changes nothing";
 }
 
 //The rule with teeth: a chain that was never told how far the tool reaches refuses to solve, and

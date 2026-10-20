@@ -5,6 +5,7 @@
 #include "ToolHolder.h"
 #include "ToolDescription.h"
 #include "WorkpieceHolder.h"
+#include "ToolAssembly.h"
 
 #include "Rotation.h"
 

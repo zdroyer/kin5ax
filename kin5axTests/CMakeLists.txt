@@ -37,6 +37,7 @@ add_executable(kin5axTests
   SolveReportTests.cpp
   StringToolsTests.cpp
   ToolAssemblyTests.cpp
+  ToolEnvelopeTests.cpp
   ToolPathSimulationTests.cpp
   TrajectoryStartTests.cpp
   VersionTests.cpp

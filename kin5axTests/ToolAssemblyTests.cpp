@@ -1,189 +1,205 @@
-// The tool assembly: the cutting part, the shank above it and the holder above that (CToolHolder), the lengths
-// they add up to, and the collision of the two non-cutting solids with a box of a machine part.
+// CToolAssembly: a holder with the tool installed in it, and the two lengths a machine needs.
+// The nose of the spindle is one end; the tip of the tool and the point a cutter location programs
+// are the other two. An empty assembly - NO_HOLDER with NO_TOOL - is nothing in the spindle, which a
+// postprocessor takes like any other.
 #include "stdafx.h"
 #include "gtest/gtest.h"
-#include "MillingToolBall.h"
-#include "MillingToolCylinder.h"
-#include "Translation.h"
+#include "TestData.h"
+#include "ToolAssembly.h"
+#include "5CPostprocessor.h"
+#include <memory>
 
 using namespace kin5ax;
 
 namespace {
 
-const double dRADIUS = 0.016;			//the ball and the shank of the default tool of the application
-const double dCUTTING = 0.064;			//its cutting length
-const double dSHANK = 0.030;			//the non-cutting part above the cutting part
-const double dHOLDER_LENGTH = 0.050;
-const double dHOLDER_RADIUS = 0.030;
-
 CToolHolder Holder()
 {
-	return CToolHolder(dHOLDER_LENGTH,dHOLDER_RADIUS);
+	std::vector<CToolHolderSection> v;
+	v.push_back(CToolHolderSection(0.050,0.040));
+	v.push_back(CToolHolderSection(0.025,0.027));
+	v.push_back(CToolHolderSection(0.040,0.025));
+	return CToolHolder("HSK63A ER32",v);		//0.115 long
 }
 
-//a ball nose tool with a shank and a holder, placed with its reference point at the origin and the axis along OZ
-CMillingToolBall BallAssembly(double dReferencePointZ = dRADIUS)
+CToolDescription BallNose()
 {
-	CMillingToolBall oTool(dRADIUS,dRADIUS,dCUTTING,dReferencePointZ,dSHANK,Holder());
-	oTool.SetPositionAndOrientation(CR3Point(0.0,0.0,0.0),CR3Vector(0.0,0.0,1.0));
-	return oTool;
-}
-
-//a point of the tip frame as a point of the world frame, for a tool placed as above
-CR3Point InTipFrame(double dZ, double dRadial, double dReferencePointZ = dRADIUS)
-{
-	return CR3Point(dRadial,0.0,dZ-dReferencePointZ);
+	CToolDescription o;
+	o.m_nType = MILLING_TOOL_BALL;
+	o.m_dRadius = 0.008;
+	o.m_dCornerRadius = 0.008;
+	o.m_dCuttingHeight = 0.030;
+	o.m_dLength = 0.060;						//what sticks out of the holder
+	o.SetGiven(true);
+	return o;
 }
 
 } // namespace
 
-TEST(ToolHolder, LengthAndRadiusAreNeverNegative)
+TEST(ToolAssembly, TheLengthIsTheHolderAndWhatSticksOutOfIt)
 {
-	CToolHolder o(-0.05,-0.03);
-	EXPECT_DOUBLE_EQ(0.05,o.GetLength());
-	EXPECT_DOUBLE_EQ(0.03,o.GetRadius());
-	EXPECT_TRUE(o.HasBody());
-	EXPECT_TRUE(o==CToolHolder(0.05,0.03));
-	EXPECT_TRUE(o!=CToolHolder());
-
-	CToolHolder oNone;
-	EXPECT_DOUBLE_EQ(0.0,oNone.GetLength());
-	EXPECT_FALSE(oNone.HasBody())<<"no holder at all";
-	EXPECT_FALSE(CToolHolder(0.05,0.0).HasBody())<<"a distance to the tool, but no solid";
-	CToolHolder oSet;
-	oSet.SetLength(0.1);
-	oSet.SetRadius(0.02);
-	EXPECT_TRUE(oSet==CToolHolder(0.1,0.02));
+	const CToolAssembly oAssembly(Holder(),BallNose());
+	EXPECT_DOUBLE_EQ(0.115,oAssembly.GetHolderLength());
+	EXPECT_DOUBLE_EQ(0.175,oAssembly.GetLength())<<"the nose to the tip";
+	EXPECT_DOUBLE_EQ(0.175,oAssembly.GetToolOffset())<<"programmed at the tip, so the same";
+	EXPECT_TRUE(oAssembly.HasBody());
+	EXPECT_FALSE(oAssembly.IsEmpty());
+	EXPECT_EQ("",oAssembly.Problem());
 }
 
-TEST(ToolAssembly, LengthsAddUp)
+TEST(ToolAssembly, TheOffsetFollowsTheProgrammedPointUpTheTool)
 {
-	CMillingToolBall oBall(dRADIUS,dRADIUS,dCUTTING,dRADIUS,dSHANK,Holder());
-	EXPECT_DOUBLE_EQ(dCUTTING+dSHANK,oBall.GetToolLength());
-	EXPECT_DOUBLE_EQ(dCUTTING+dSHANK+dHOLDER_LENGTH,oBall.GetAssemblyLength());
-	EXPECT_DOUBLE_EQ(dCUTTING+dSHANK+dHOLDER_LENGTH-dRADIUS,oBall.GetMountToToolPointDistance())
-		<<"the ball centre is the programmed point, one ball radius above the tip";
-	EXPECT_DOUBLE_EQ(dRADIUS,oBall.DefaultZeroPointZ())<<"a ball nose tool is programmed at the centre of its ball";
-	EXPECT_TRUE(oBall.HasNonCuttingPart());
-
-	CMillingToolCylinder oFlat(dRADIUS,0.0,dCUTTING,0.0,dSHANK,Holder());
-	EXPECT_DOUBLE_EQ(0.0,oFlat.DefaultZeroPointZ())<<"a flat end mill is programmed at its tip";
-	EXPECT_DOUBLE_EQ(dCUTTING+dSHANK+dHOLDER_LENGTH,oFlat.GetMountToToolPointDistance());
-
-	//the tool of the application before the holder existed: no shank, no holder, nothing changes
-	CMillingToolBall oBare(dRADIUS,dRADIUS,dCUTTING,dRADIUS);
-	EXPECT_DOUBLE_EQ(dCUTTING,oBare.GetToolLength());
-	EXPECT_DOUBLE_EQ(dCUTTING,oBare.GetAssemblyLength());
-	EXPECT_DOUBLE_EQ(dCUTTING-dRADIUS,oBare.GetMountToToolPointDistance());
-	EXPECT_FALSE(oBare.HasNonCuttingPart());
-	EXPECT_TRUE(oBare.GetNonCuttingPartBoundingBox().IsEmpty())<<"no solid, no box";
+	CToolDescription oTool = BallNose();
+	oTool.m_nReference = TOOL_REFERENCE_BALL_CENTRE;
+	const CToolAssembly oAssembly(Holder(),oTool);
+	EXPECT_DOUBLE_EQ(0.175,oAssembly.GetLength())<<"the tip has not moved";
+	EXPECT_DOUBLE_EQ(0.175-0.008,oAssembly.GetToolOffset())<<"the ball centre is a radius higher";
 }
 
-TEST(ToolAssembly, TheNonCuttingEnvelopeIsTheShankAndTheHolder)
+TEST(ToolAssembly, AnEmptyOneIsNothingInTheSpindle)
 {
-	CMillingToolBall oTool = BallAssembly();
-	const double dTool = dCUTTING+dSHANK;
-	//the shank: from the end of the cutting part up to the end of the tool, the radius of the shank
-	EXPECT_TRUE(oTool.IsInOZNonCuttingSpace(CR3Point(0.0,0.0,dCUTTING+0.5*dSHANK)));
-	EXPECT_TRUE(oTool.IsInOZNonCuttingSpace(CR3Point(0.9*dRADIUS,0.0,dCUTTING+0.5*dSHANK)));
-	EXPECT_FALSE(oTool.IsInOZNonCuttingSpace(CR3Point(1.1*dRADIUS,0.0,dCUTTING+0.5*dSHANK)))<<"beside the shank";
-	//the holder: wider, from the end of the tool up to the mount
-	EXPECT_TRUE(oTool.IsInOZNonCuttingSpace(CR3Point(0.0,0.0,dTool+0.5*dHOLDER_LENGTH)));
-	EXPECT_TRUE(oTool.IsInOZNonCuttingSpace(CR3Point(0.0,0.9*dHOLDER_RADIUS,dTool+0.5*dHOLDER_LENGTH)));
-	EXPECT_FALSE(oTool.IsInOZNonCuttingSpace(CR3Point(0.0,1.1*dHOLDER_RADIUS,dTool+0.5*dHOLDER_LENGTH)))<<"beside the holder";
-	//neither below the cutting part nor above the mount
-	EXPECT_FALSE(oTool.IsInOZNonCuttingSpace(CR3Point(0.0,0.0,0.5*dCUTTING)))<<"the cutting part is not part of it";
-	EXPECT_FALSE(oTool.IsInOZNonCuttingSpace(CR3Point(0.0,0.0,-0.01)))<<"below the tip";
-	EXPECT_FALSE(oTool.IsInOZNonCuttingSpace(CR3Point(0.0,0.0,dTool+dHOLDER_LENGTH+0.01)))<<"above the mount";
-	//the cutting part and the non-cutting envelope do not overlap
-	for(int i=1;i<10;i++){
-		CR3Point p(0.0,0.0,0.1*i*dCUTTING);
-		EXPECT_FALSE(oTool.IsInOZNonCuttingSpace(p))<<"z = "<<p.GetZ();
+	const CToolAssembly oEmpty = CToolAssembly::Empty();
+	EXPECT_TRUE(oEmpty.IsEmpty());
+	EXPECT_FALSE(oEmpty.HasBody());
+	EXPECT_DOUBLE_EQ(0.0,oEmpty.GetLength());
+	EXPECT_DOUBLE_EQ(0.0,oEmpty.GetToolOffset());
+	EXPECT_EQ("",oEmpty.Problem())<<"nothing in the spindle is a perfectly good answer";
+	EXPECT_EQ(std::string(szNO_HOLDER),oEmpty.GetHolder().GetModel());
+	EXPECT_FALSE(oEmpty.GetTool().IsGiven());
+	EXPECT_EQ(NULL,oEmpty.MakeTool())<<"and there are no solids to make";
+}
+
+TEST(ToolAssembly, AHolderWithNoToolIsAMachineBetweenJobs)
+{
+	const CToolAssembly oAssembly(Holder(),NoTool());
+	EXPECT_FALSE(oAssembly.IsEmpty());
+	EXPECT_DOUBLE_EQ(0.115,oAssembly.GetLength())<<"the holder alone";
+	EXPECT_EQ("",oAssembly.Problem());
+	EXPECT_EQ(NULL,oAssembly.MakeTool())<<"no tool, so no tool solids";
+}
+
+TEST(ToolAssembly, MakesTheSolidsOfTheToolInItsHolder)
+{
+	const CToolAssembly oAssembly(Holder(),BallNose());
+	std::unique_ptr<CMillingTool> pTool(oAssembly.MakeTool());
+	ASSERT_TRUE(pTool.get()!=NULL);
+	EXPECT_EQ(MILLING_TOOL_BALL,pTool->m_type);
+	EXPECT_DOUBLE_EQ(0.060,pTool->GetToolLength());
+	EXPECT_DOUBLE_EQ(0.175,pTool->GetAssemblyLength())<<"the same length the assembly says";
+	EXPECT_DOUBLE_EQ(oAssembly.GetToolOffset(),pTool->GetMountToToolPointDistance());
+}
+
+TEST(ToolAssembly, DimensionsThatAreNotAToolAreTheAssemblysProblem)
+{
+	CToolDescription oTool = BallNose();
+	oTool.m_dLength = 0.010;					//less than the cutting part is long
+	const CToolAssembly oAssembly(Holder(),oTool);
+	EXPECT_NE("",oAssembly.Problem());
+}
+
+//---- the chain hands over what its file describes
+
+TEST(ToolAssembly, AChainGivesTheAssemblyItsFileDescribes)
+{
+	CChain oChain = LoadChain(GetChainFiles()[0]);
+	const CToolAssembly oFromFile = oChain.GetDefaultToolAssembly();
+	//every shipped machine names a holder and none of them describes a tool yet
+	EXPECT_TRUE(oChain.HasDefaultToolHolder());
+	EXPECT_FALSE(oChain.HasDefaultTool());
+	EXPECT_FALSE(oFromFile.IsEmpty())<<"the holder of the file is in it";
+	EXPECT_DOUBLE_EQ(oChain.GetDefaultToolHolder().GetLength(),oFromFile.GetLength());
+
+	//a chain that describes neither gives an empty assembly
+	CChain oPlain;
+	EXPECT_TRUE(oPlain.GetDefaultToolAssembly().IsEmpty());
+}
+
+//---- the postprocessor takes one or the other, and never assumes
+
+TEST(ToolAssembly, TheOffsetAloneSolvesTheGeometry)
+{
+	CChain oChain = LoadChain(GetChainFiles()[0]);
+	ASSERT_TRUE(oChain.Is5CChain());
+	CPostprocessorSettings oSettings;
+	oSettings.m_bCheckCollisions = false;
+	C5CPostprocessor oPostprocessor(oChain,oSettings);
+
+	//a pose of the machine with a 144 mm assembly, and the location it puts the tool on
+	oChain.SetToolOffset(0.144);
+	oChain.SetParameters(CChainConfiguration((int)oChain.GetNumberOfRegularLinks()));
+	const CR3AnchoredVector cv = oChain.GetActualToolPositionAndOrientation();
+
+	CChain oFresh = LoadChain(GetChainFiles()[0]);
+	ASSERT_FALSE(oFresh.IsToolOffsetGiven());
+	std::string sLog;
+	CSolveReport oReport;
+	const tChainConfigurationVector v = oPostprocessor.Solve(cv.m_p,cv.m_v,oFresh,0.144,sLog,oReport);
+	EXPECT_TRUE(oFresh.IsToolOffsetGiven())<<"the call said it, so the chain knows it";
+	EXPECT_DOUBLE_EQ(0.144,oFresh.GetToolOffset());
+	EXPECT_FALSE(v.empty())<<sLog;
+}
+
+TEST(ToolAssembly, TheOffsetAloneCannotCheckCollisions)
+{
+	CChain oChain = LoadChain(GetChainFiles()[0]);
+	C5CPostprocessor oPostprocessor(oChain,CPostprocessorSettings());	//checks collisions
+	std::string sLog;
+	CSolveReport oReport;
+	std::string sError;
+	try{
+		oPostprocessor.Solve(CR3Point(0.0,0.0,0.05),CR3Vector(0.0,0.0,1.0),oChain,0.144,sLog,oReport);
+	} catch (CGeneratorException &e){
+		sError = e.Message();
 	}
+	EXPECT_NE(std::string::npos,sError.find("tool assembly"))<<sError;
 }
 
-TEST(ToolAssembly, TheEnvelopeFollowsThePlacementOfTheTool)
+TEST(ToolAssembly, TheWholeAssemblyBringsItsOwnOffsetAndItsSolids)
 {
-	CMillingToolBall oTool = BallAssembly();
-	//placed at the origin with the axis along OZ: the tip frame is the world frame lowered by the reference point
-	EXPECT_TRUE(oTool.IsInNonCuttingPart(InTipFrame(dCUTTING+0.5*dSHANK,0.0)));
-	EXPECT_FALSE(oTool.IsInNonCuttingPart(InTipFrame(0.5*dCUTTING,0.0)));
-	EXPECT_TRUE(is_point_cut(oTool.IsCut(InTipFrame(0.5*dCUTTING,0.0))))<<"and the cut volume is unchanged";
+	CChain oChain = LoadChain(GetChainFiles()[0]);
+	ASSERT_TRUE(oChain.Is5CChain());
+	CPostprocessorSettings oSettings;
+	oSettings.m_bCheckCollisions = false;		//the shipped boxes sit in the part area (KnownBugs #67)
+	C5CPostprocessor oPostprocessor(oChain,oSettings);
+	const CToolAssembly oAssembly(Holder(),BallNose());
 
-	//the same assembly lying along +X: the solids follow the axis
-	oTool.SetPositionAndOrientation(CR3Point(0.0,0.0,0.0),CR3Vector(1.0,0.0,0.0));
-	EXPECT_TRUE(oTool.IsInNonCuttingPart(CR3Point(dCUTTING+0.5*dSHANK-dRADIUS,0.0,0.0)));
-	EXPECT_FALSE(oTool.IsInNonCuttingPart(CR3Point(0.0,0.0,dCUTTING+0.5*dSHANK-dRADIUS)))<<"not along OZ any more";
+	oChain.SetToolOffset(oAssembly.GetToolOffset());
+	oChain.SetParameters(CChainConfiguration((int)oChain.GetNumberOfRegularLinks()));
+	const CR3AnchoredVector cv = oChain.GetActualToolPositionAndOrientation();
 
-	//the bounding box holds the shank and the holder and nothing of the cutting part below the tip
-	oTool.SetPositionAndOrientation(CR3Point(0.0,0.0,0.0),CR3Vector(0.0,0.0,1.0));
-	CR3Box oBox = oTool.GetNonCuttingPartBoundingBox();
-	EXPECT_FALSE(oBox.IsEmpty());
-	EXPECT_TRUE(oBox.Contains(InTipFrame(dCUTTING+0.5*dSHANK,0.0)));
-	EXPECT_TRUE(oBox.Contains(InTipFrame(dCUTTING+dSHANK+0.5*dHOLDER_LENGTH,0.9*dHOLDER_RADIUS)));
-	EXPECT_FALSE(oBox.Contains(InTipFrame(0.5*dCUTTING,0.0)))<<"the cutting part is outside the box";
+	CChain oFresh = LoadChain(GetChainFiles()[0]);
+	std::string sLog;
+	CSolveReport oReport;
+	const tChainConfigurationVector v = oPostprocessor.Solve(cv.m_p,cv.m_v,oFresh,oAssembly,sLog,oReport);
+	EXPECT_DOUBLE_EQ(oAssembly.GetToolOffset(),oFresh.GetToolOffset());
+	EXPECT_FALSE(v.empty())<<sLog;
 }
 
-// ---------------------------------------------------------------- collisions with a machine part
-
-//the boxes are given in the tip frame, so the box frame is the tool frame lifted by the reference point
-class ToolAssemblyCollisionTest : public ::testing::TestWithParam<double>	//the reference point height
+TEST(ToolAssembly, AnEmptyAssemblyIsSolvedLikeAnyOtherAndChecksNothing)
 {
-protected:
-	bool NonCuttingCollides(const CMillingTool &oTool, const CR3Box &oBoxInTipFrame) const
-	{
-		CTranslation oToolToTip(0.0,0.0,GetParam()), oTipToTool(0.0,0.0,-GetParam());
-		return oTool.CauseNonCuttingCollision(oBoxInTipFrame,oToolToTip,oTipToTool);
-	}
-	bool CuttingCollides(const CMillingTool &oTool, const CR3Box &oBoxInTipFrame) const
-	{
-		CTranslation oToolToTip(0.0,0.0,GetParam()), oTipToTool(0.0,0.0,-GetParam());
-		return oTool.CauseCollision(oBoxInTipFrame,oToolToTip,oTipToTool);
-	}
-	//a small box around the point (dRadial, 0, dZ) of the tip frame
-	static CR3Box BoxAt(double dZ, double dRadial)
-	{
-		const double d = 0.02*dRADIUS;
-		return CR3Box(dRadial-d,dRadial+d,-d,d,dZ-d,dZ+d);
-	}
-};
+	CChain oChain = LoadChain(GetChainFiles()[0]);
+	ASSERT_TRUE(oChain.Is5CChain());
+	C5CPostprocessor oPostprocessor(oChain,CPostprocessorSettings());	//checks collisions
+	oChain.SetToolOffset(0.0);
+	oChain.SetParameters(CChainConfiguration((int)oChain.GetNumberOfRegularLinks()));
+	const CR3AnchoredVector cv = oChain.GetActualToolPositionAndOrientation();
 
-TEST_P(ToolAssemblyCollisionTest, TheShankAndTheHolderCollide)
-{
-	CMillingToolBall oTool(dRADIUS,dRADIUS,dCUTTING,GetParam(),dSHANK,Holder());
-	const double dTool = dCUTTING+dSHANK;
-	EXPECT_TRUE(NonCuttingCollides(oTool,BoxAt(dCUTTING+0.5*dSHANK,0.0)))<<"the shank";
-	EXPECT_TRUE(NonCuttingCollides(oTool,BoxAt(dCUTTING+0.5*dSHANK,0.9*dRADIUS)))<<"the side of the shank";
-	EXPECT_TRUE(NonCuttingCollides(oTool,BoxAt(dTool+0.5*dHOLDER_LENGTH,0.0)))<<"the holder";
-	EXPECT_TRUE(NonCuttingCollides(oTool,BoxAt(dTool+0.5*dHOLDER_LENGTH,0.9*dHOLDER_RADIUS)))<<"the side of the holder";
-	EXPECT_FALSE(NonCuttingCollides(oTool,BoxAt(dCUTTING+0.5*dSHANK,1.5*dRADIUS)))<<"beside the shank, inside the holder radius";
-	EXPECT_FALSE(NonCuttingCollides(oTool,BoxAt(0.5*dCUTTING,0.0)))<<"the cutting part is not the business of this test";
-	EXPECT_FALSE(NonCuttingCollides(oTool,BoxAt(dTool+dHOLDER_LENGTH+0.1*dHOLDER_LENGTH,0.0)))<<"above the mount";
-	//the cutting part keeps its own test
-	EXPECT_TRUE(CuttingCollides(oTool,BoxAt(0.5*dCUTTING,0.0)));
-	EXPECT_FALSE(CuttingCollides(oTool,BoxAt(dTool+0.5*dHOLDER_LENGTH,0.0)))<<"the holder is not the cutting part";
+	CChain oFresh = LoadChain(GetChainFiles()[0]);
+	std::string sLog;
+	CSolveReport oReport;
+	const tChainConfigurationVector v = oPostprocessor.Solve(cv.m_p,cv.m_v,oFresh
+		,CToolAssembly::Empty(),sLog,oReport);
+	EXPECT_TRUE(oFresh.IsToolOffsetGiven())<<"zero, but said out loud";
+	EXPECT_DOUBLE_EQ(0.0,oFresh.GetToolOffset());
+	EXPECT_FALSE(v.empty())<<sLog;
+	EXPECT_NE(std::string::npos,sLog.find("nothing is in the spindle"))<<sLog;
 }
 
-TEST_P(ToolAssemblyCollisionTest, WithoutAShankAndAHolderNothingCollides)
+TEST(ToolAssembly, ANegativeOffsetWouldEndTheToolInsideTheSpindle)
 {
-	CMillingToolBall oTool(dRADIUS,dRADIUS,dCUTTING,GetParam());
-	EXPECT_FALSE(NonCuttingCollides(oTool,BoxAt(0.5*dCUTTING,0.0)));
-	EXPECT_FALSE(NonCuttingCollides(oTool,BoxAt(dCUTTING+0.01,0.0)));
-	EXPECT_FALSE(NonCuttingCollides(oTool,BoxAt(dCUTTING+1.0,0.0)));
-	//a holder with a length but no radius keeps the tool away from the mount and has no body
-	CMillingToolBall oNoBody(dRADIUS,dRADIUS,dCUTTING,GetParam(),0.0,CToolHolder(dHOLDER_LENGTH,0.0));
-	EXPECT_DOUBLE_EQ(dCUTTING+dHOLDER_LENGTH,oNoBody.GetAssemblyLength());
-	EXPECT_FALSE(oNoBody.HasNonCuttingPart());
-	EXPECT_FALSE(NonCuttingCollides(oNoBody,BoxAt(dCUTTING+0.5*dHOLDER_LENGTH,0.0)));
+	CChain oChain;
+	EXPECT_THROW(oChain.SetToolOffset(-0.001),CGeneratorException);
+	EXPECT_FALSE(oChain.IsToolOffsetGiven())<<"a refused offset tells it nothing";
+	EXPECT_NO_THROW(oChain.SetToolOffset(0.0))<<"the nose itself is a place";
+	EXPECT_TRUE(oChain.IsToolOffsetGiven());
 }
-
-TEST_P(ToolAssemblyCollisionTest, AFlatEndMillHasTheSameEnvelope)
-{
-	CMillingToolCylinder oTool(dRADIUS,0.0,dCUTTING,GetParam(),dSHANK,Holder());
-	EXPECT_TRUE(NonCuttingCollides(oTool,BoxAt(dCUTTING+0.5*dSHANK,0.0)))<<"the shank";
-	EXPECT_TRUE(NonCuttingCollides(oTool,BoxAt(dCUTTING+dSHANK+0.5*dHOLDER_LENGTH,0.0)))<<"the holder";
-	EXPECT_FALSE(NonCuttingCollides(oTool,BoxAt(0.5*dCUTTING,0.0)));
-	EXPECT_TRUE(CuttingCollides(oTool,BoxAt(0.5*dCUTTING,0.0)));
-}
-
-INSTANTIATE_TEST_CASE_P(ReferencePoints, ToolAssemblyCollisionTest, ::testing::Values(0.0,dRADIUS,0.04));

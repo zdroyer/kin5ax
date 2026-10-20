@@ -358,10 +358,21 @@ bool CChain::IsToolOffsetGiven() const
 	return m_bToolOffsetGiven;
 }
 
+/**
+ * How far the programmed point of the tool is below the nose of the spindle.
+ *
+ * A negative offset would put that point inside the spindle, which is not a machine: it is refused
+ * rather than taken for its distance. Zero is allowed and means the nose itself, which is what an
+ * empty assembly - NO_HOLDER with NO_TOOL - measures.
+ *
+ * @throws CArgsMyException when the offset is negative.
+ */
 void CChain::SetToolOffset(double dOffset)
 {
-	//a distance down the spindle axis: which way round somebody wrote it is not a place
-	m_dToolOffset = fabs(dOffset);
+	if(dOffset<0.0)
+		MY_THROW(CArgsMyException,"A tool offset is a distance below the nose of the spindle and "
+			"cannot be negative: "+double_to_string(dOffset)+" would end the tool inside the spindle");
+	m_dToolOffset = dOffset;
 	m_bToolOffsetGiven = true;
 }
 
@@ -378,6 +389,18 @@ CTransformation CChain::GetToolPointToToolMountTransformation() const
 bool CChain::HasDefaultToolHolder() const
 {
 	return !m_vToolPart.empty() && m_vToolPart.back().IsToolHolderDeclared();
+}
+
+CToolAssembly CChain::GetDefaultToolAssembly() const
+{
+	//what the file says is in the spindle: the holder it names and the tool it describes. Either may
+	//be missing, and then that half of the assembly is nothing.
+	CToolAssembly oAssembly = CToolAssembly::Empty();
+	if(HasDefaultToolHolder())
+		oAssembly.SetHolder(GetDefaultToolHolder());
+	if(HasDefaultTool())
+		oAssembly.SetTool(GetDefaultTool());
+	return oAssembly;
 }
 
 bool CChain::HasDefaultWorkpieceHolder() const
@@ -834,15 +857,20 @@ CHAIN_CONSTRAINTS_RESULT CChain::MeetsParametersConstraints(const CChainConfigur
 }
 bool CChain::HasCollision(CMillingTool &oMillingTool,std::string &sLog)
 {
-	DetectCollisions(oMillingTool);
+	return HasCollision(&oMillingTool,sLog);
+}
+
+bool CChain::HasCollision(CMillingTool *pMillingTool,std::string &sLog)
+{
+	DetectCollisions(pMillingTool);
 
 	std::string s="";
 	std::string s2;
 	for(int i=-1; i<(int)GetNumberOfRegularLinks()+1; i++)
 		if((*this)[i].HasPartInCollision(s2))
 			s+=("\t"+s2+"\n");
-	if(oMillingTool.GetCollisionLog().size())
-		s+=("\t"+oMillingTool.GetCollisionLog()+"\n");
+	if(pMillingTool && pMillingTool->GetCollisionLog().size())
+		s+=("\t"+pMillingTool->GetCollisionLog()+"\n");
 	if(s.length()){
 		sLog=("Chain parameters "+m_oActualParameters.toString()+"\n"+s);	
 		return true;
@@ -885,11 +913,25 @@ std::string SolidName(const CChainSegment &oSegment, size_t nBox, size_t nBoxes
 
 void CChain::DetectCollisions(CMillingTool &oMillingTool)
 {
+	DetectCollisions(&oMillingTool);
+}
+
+/**
+ * Everything that met at the pose the chain stands in: every box of every segment against
+ * every box of the other branch, and the tool against all of them.
+ *
+ * A null tool is nothing in the spindle - an empty tool assembly, NO_HOLDER with NO_TOOL -
+ * and then only the machine is checked against itself. That is a real answer, not a missing
+ * one: a machine can run into itself with an empty spindle.
+ */
+void CChain::DetectCollisions(CMillingTool *pMillingTool)
+{
 	for(int i = -1; i<=(int)this->GetNumberOfRegularLinks();i++)
 		(*this)[i].ClearAllPartCollision();
 
 	m_oCollisions.Clear();
-	oMillingTool.ClearCollisionLog();
+	if(pMillingTool)
+		pMillingTool->ClearCollisionLog();
 	//material holder part
 	for(size_t i=0;i<m_vMaterialHolderPart.size();i++){
 		const std::vector<CR3Box> &boxes = m_vMaterialHolderPart[i].GetPartVector();
@@ -960,15 +1002,15 @@ void CChain::DetectCollisions(CMillingTool &oMillingTool)
 				CTransformation trTool = tr * GetToolMountToToolPointTransformation();
 				CTransformation trToolInv = GetToolPointToToolMountTransformation() * trInv;
 				for(size_t j=0; j<boxes.size();j++){
-					if(oMillingTool.CauseCollision(boxes[j],trTool,trToolInv)){
+					if(pMillingTool && pMillingTool->CauseCollision(boxes[j],trTool,trToolInv)){
 						m_vMaterialHolderPart[i].SetPartCollision(j);
-						oMillingTool.AddToCollisionLog((m_vMaterialHolderPart[i].GetName()+", box_"+size_to_string(j+1)));
+						pMillingTool->AddToCollisionLog((m_vMaterialHolderPart[i].GetName()+", box_"+size_to_string(j+1)));
 						m_oCollisions.Add("the tool"
 							,SolidName(m_vMaterialHolderPart[i],j,boxes.size(),CHAIN_PART_TABLE,i)
 							,COLLIDING_TOOL);
-					} else if(oMillingTool.CauseNonCuttingCollision(boxes[j],trTool,trToolInv)){
+					} else if(pMillingTool && pMillingTool->CauseNonCuttingCollision(boxes[j],trTool,trToolInv)){
 						m_vMaterialHolderPart[i].SetPartCollision(j);
-						oMillingTool.AddToCollisionLog((m_vMaterialHolderPart[i].GetName()+", box_"+size_to_string(j+1)+" (holder or shank)"));
+						pMillingTool->AddToCollisionLog((m_vMaterialHolderPart[i].GetName()+", box_"+size_to_string(j+1)+" (holder or shank)"));
 						m_oCollisions.Add("the shank or the holder"
 							,SolidName(m_vMaterialHolderPart[i],j,boxes.size(),CHAIN_PART_TABLE,i)
 							,COLLIDING_TOOL_SHANK);
@@ -1011,14 +1053,14 @@ void CChain::DetectCollisions(CMillingTool &oMillingTool)
 				CTransformation trTool = tr * GetToolMountToToolPointTransformation();
 				CTransformation trToolInv = GetToolPointToToolMountTransformation() * trInv;
 				for(size_t j=0; j<boxes.size();j++){
-					if(oMillingTool.CauseCollision(boxes[j],trTool,trToolInv)){
+					if(pMillingTool && pMillingTool->CauseCollision(boxes[j],trTool,trToolInv)){
 						m_vToolPart[i].SetPartCollision(j);
-						oMillingTool.AddToCollisionLog((m_vToolPart[i].GetName()+", box_"+size_to_string(j+1)));
+						pMillingTool->AddToCollisionLog((m_vToolPart[i].GetName()+", box_"+size_to_string(j+1)));
 						m_oCollisions.Add("the tool",SolidName(m_vToolPart[i],j,boxes.size(),CHAIN_PART_SPINDLE,i)
 							,COLLIDING_TOOL);
-					} else if(oMillingTool.CauseNonCuttingCollision(boxes[j],trTool,trToolInv)){
+					} else if(pMillingTool && pMillingTool->CauseNonCuttingCollision(boxes[j],trTool,trToolInv)){
 						m_vToolPart[i].SetPartCollision(j);
-						oMillingTool.AddToCollisionLog((m_vToolPart[i].GetName()+", box_"+size_to_string(j+1)+" (holder or shank)"));
+						pMillingTool->AddToCollisionLog((m_vToolPart[i].GetName()+", box_"+size_to_string(j+1)+" (holder or shank)"));
 						m_oCollisions.Add("the shank or the holder"
 							,SolidName(m_vToolPart[i],j,boxes.size(),CHAIN_PART_SPINDLE,i),COLLIDING_TOOL_SHANK);
 					}

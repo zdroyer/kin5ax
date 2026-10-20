@@ -98,6 +98,12 @@ public:
 	//the tool holder of the machine, from the chain file; declaring one declares the tool mount
 	const CToolHolder & GetDefaultToolHolder() const;
 	void SetDefaultToolHolder(const CToolHolder &oHolder);
+	/**
+	 * The holder and the tool the file describes, as one assembly: what a host would put in the
+	 * spindle unless told otherwise, and what a postprocessor call takes like any other assembly.
+	 * An empty assembly when the file describes neither.
+	 */
+	CToolAssembly GetDefaultToolAssembly() const;
 	/// Whether the file names a workpiece holder for the table: a default to offer, nothing more.
 	bool HasDefaultWorkpieceHolder() const;
 	/// The workpiece holder of the table, as the file describes it.
@@ -113,6 +119,8 @@ public:
 	//assembly (the cutting part, the shank and the holder) against the boxes of all segments, at the actual parameters. The result is stored in the segments (IsPartInCollision)
 	//and in the collision log of the tool; the tool part and the material holder part are both walked from the base.
 	void DetectCollisions(CMillingTool &oMillingTool);
+	/// The same with nothing in the spindle: the machine against itself, and no tool to test.
+	void DetectCollisions(CMillingTool *pMillingTool);
 	//Which solids met in the last DetectCollisions - and so in the last HasCollision, and in the last
 	//check the solver made on this chain. Empty when nothing met.
 	const CCollisionReport &GetCollisions() const;
@@ -229,6 +237,8 @@ public:
 	//DetectCollisions and a report: returns true when any part is in collision, then sLog names the parameters,
 	//the segments and their boxes, and the boxes hit by the tool.
 	bool HasCollision(CMillingTool &oMillingTool,std::string &sLog);
+	/// The same with nothing in the spindle.
+	bool HasCollision(CMillingTool *pMillingTool,std::string &sLog);
 
 
 

@@ -1,5 +1,6 @@
 #pragma once
 #include "Chain.h"
+#include "ToolAssembly.h"
 #include "OrientationPostprocessor.h"
 #include "PositionPostprocessor.h"
 #include "PostprocessorSettings.h"
@@ -27,6 +28,27 @@ public:
 	tChainConfigurationVector Solve(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,CMillingTool &oMillingTool,std::string &sLog);
 	tChainConfigurationVector Solve(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,CMillingTool &oMillingTool,std::string &sLog, CSolveReport &oReport);
 	tChainConfigurationVector Solve(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,CMillingTool *pMillingTool,std::string &sLog, CSolveReport &oReport);
+	/**
+	 * @name Solving for what is in the spindle
+	 *
+	 * The two ways of saying it, and a call has to use one of them: nothing is assumed about the
+	 * tool. The offset alone is enough for the geometry - it is the only thing about the tool the
+	 * five axes depend on - and the whole assembly is needed to check collisions, since that takes
+	 * the solids of the holder and the tool.
+	 *
+	 * An empty assembly (NO_HOLDER with NO_TOOL) is nothing in the spindle: the offset is zero and
+	 * there are no solids, so the collision check has nothing of the tool to test and says so. The
+	 * processing is otherwise the same.
+	 *
+	 * CChain::GetDefaultToolAssembly gives the assembly a chain file describes, which goes in here
+	 * like any other.
+	 * @{
+	 */
+	tChainConfigurationVector Solve(const CR3Point r3pPosition, const CR3Vector r3vOrientation,
+		CChain &oChain, double dToolOffset, std::string &sLog, CSolveReport &oReport);
+	tChainConfigurationVector Solve(const CR3Point r3pPosition, const CR3Vector r3vOrientation,
+		CChain &oChain, const CToolAssembly &oAssembly, std::string &sLog, CSolveReport &oReport);
+	/// @}
 	tChainConfigurationVector SolveWithKnownAlpha1(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,std::string &sLog,std::vector<double> vAlpha1,CMillingTool &oMillingTool);
 	tChainConfigurationVector SolveWithKnownAlpha1(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,std::string &sLog,std::vector<double> vAlpha1,CMillingTool *pMillingTool);
 
@@ -41,7 +63,11 @@ protected:
 	tChainConfigurationVector SolveTheoretically(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,std::string &sLog, CSolveReport *pReport = NULL);
 	tChainConfigurationVector ApplyParameterConstraints(const tChainConfigurationVector &vSolutions, CChain &oChain,std::string &sLog);
 	//pCollisions, when given, receives the pairs met while the configurations were being checked
-	tChainConfigurationVector ApplyCollisionDetection(const tChainConfigurationVector &vSolutions, CChain &oChain,CMillingTool &oMillingTool,std::string &sLog,CCollisionReport *pCollisions = NULL);
+	tChainConfigurationVector ApplyCollisionDetection(const tChainConfigurationVector &vSolutions, CChain &oChain,CMillingTool *pMillingTool,std::string &sLog,CCollisionReport *pCollisions = NULL);
+	//the three stages, with nothing assumed about the tool: a null one is an empty assembly, and
+	//then only the machine is checked against itself
+	tChainConfigurationVector SolveInternal(const CR3Point r3pPosition, const CR3Vector r3vOrientation,
+		CChain &oChain, CMillingTool *pMillingTool, std::string &sLog, CSolveReport &oReport);
 
 
 	void CreateSigns(const CChain &oChain);

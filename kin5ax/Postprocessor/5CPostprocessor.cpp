@@ -2,6 +2,8 @@
 #include "5CPostprocessor.h"
 #include "string_tools.h"
 
+#include <memory>
+
 namespace kin5ax {
 
 extern CR3Vector r3vOZ;
@@ -86,10 +88,53 @@ tChainConfigurationVector C5CPostprocessor::Solve(const CR3Point  r3pPosition, c
 	return Solve(r3pPosition,r3vOrientation,oChain,&oMillingTool,sLog,oReport);
 }
 
+/**
+ * The geometry alone: the offset is the one thing about the tool the five axes depend on.
+ *
+ * The settings must not ask for a collision check here - there are no solids to check - and a call
+ * that does is refused rather than quietly passed through.
+ */
+tChainConfigurationVector C5CPostprocessor::Solve(const CR3Point r3pPosition, const CR3Vector r3vOrientation,
+	CChain &oChain, double dToolOffset, std::string &sLog, CSolveReport &oReport)
+{
+	if(m_oSettings.m_bCheckCollisions)
+		MY_THROW(CArgsMyException,"The collision check needs the solids of the tool: hand over the "
+			"tool assembly instead of its offset, or switch the check off in the settings");
+	oChain.SetToolOffset(dToolOffset);
+	return Solve(r3pPosition,r3vOrientation,oChain,(CMillingTool*)NULL,sLog,oReport);
+}
+
+/**
+ * What is in the spindle, whole: the offset for the geometry and the solids for the collisions.
+ *
+ * An empty assembly has neither a holder nor a tool, so the offset is zero and nothing of the tool
+ * is tested; the rest of the processing is the same as for any other assembly.
+ */
+tChainConfigurationVector C5CPostprocessor::Solve(const CR3Point r3pPosition, const CR3Vector r3vOrientation,
+	CChain &oChain, const CToolAssembly &oAssembly, std::string &sLog, CSolveReport &oReport)
+{
+	const std::string sProblem = oAssembly.Problem();
+	if(!sProblem.empty())
+		MY_THROW(CArgsMyException,"The tool assembly handed to the postprocessor is not one: "+sProblem);
+	oChain.SetToolOffset(oAssembly.GetToolOffset());
+	std::unique_ptr<CMillingTool> pTool(oAssembly.MakeTool());
+	if(!pTool.get() && m_oSettings.m_bCheckCollisions)
+		sLog += "nothing is in the spindle: the collision check has no tool to test\n";
+	return SolveInternal(r3pPosition,r3vOrientation,oChain,pTool.get(),sLog,oReport);
+}
+
 tChainConfigurationVector C5CPostprocessor::Solve(const CR3Point  r3pPosition, const CR3Vector  r3vOrientation, CChain &oChain,CMillingTool *pMillingTool, std::string &sLog, CSolveReport &oReport)
 {
+	//a caller who hands over no tool at all has most likely forgotten one; a caller who means it
+	//says so with an empty tool assembly, which goes through the overload above
 	if(m_oSettings.m_bCheckCollisions && !pMillingTool)
-		MY_THROW(CArgsMyException,"The collision check needs a milling tool (switch the check off in the settings to solve without one)");
+		MY_THROW(CArgsMyException,"The collision check needs a milling tool (switch the check off in the settings to solve without one, or hand over an empty tool assembly to say that nothing is in the spindle)");
+	return SolveInternal(r3pPosition,r3vOrientation,oChain,pMillingTool,sLog,oReport);
+}
+
+tChainConfigurationVector C5CPostprocessor::SolveInternal(const CR3Point r3pPosition, const CR3Vector r3vOrientation,
+	CChain &oChain, CMillingTool *pMillingTool, std::string &sLog, CSolveReport &oReport)
+{
 	oReport.Clear();
 	tChainConfigurationVector  vResult = SolveTheoretically(r3pPosition,r3vOrientation,oChain,sLog,&oReport);
 	if(m_oSettings.m_bCheckLimits)
@@ -98,7 +143,7 @@ tChainConfigurationVector C5CPostprocessor::Solve(const CR3Point  r3pPosition, c
 		sLog+="joint limits not checked\n";
 	oReport.m_nWithinLimits = vResult.size();
 	if(m_oSettings.m_bCheckCollisions)
-		vResult = ApplyCollisionDetection(vResult,oChain,*pMillingTool,sLog,&oReport.m_oCollisions);
+		vResult = ApplyCollisionDetection(vResult,oChain,pMillingTool,sLog,&oReport.m_oCollisions);
 	else
 		sLog+="collisions not checked\n";
 	oReport.m_nCollisionFree = vResult.size();
@@ -139,13 +184,13 @@ tChainConfigurationVector C5CPostprocessor::ApplyParameterConstraints(const tCha
 	return vResults;
 }
 
-tChainConfigurationVector C5CPostprocessor::ApplyCollisionDetection(const tChainConfigurationVector &vSolutions, CChain &oChain,CMillingTool &oMillingTool,std::string &sLog,CCollisionReport *pCollisions)
+tChainConfigurationVector C5CPostprocessor::ApplyCollisionDetection(const tChainConfigurationVector &vSolutions, CChain &oChain,CMillingTool *pMillingTool,std::string &sLog,CCollisionReport *pCollisions)
 {
 	std::string sCollisionLog;
 	tChainConfigurationVector vResults;
 	for(size_t i=0;i<vSolutions.size();i++){
 		oChain.SetParameters(vSolutions[i]);
-		if(oChain.HasCollision(oMillingTool,sCollisionLog)){
+		if(oChain.HasCollision(pMillingTool,sCollisionLog)){
 			sLog+=sCollisionLog;
 			if(pCollisions)
 				pCollisions->MergeDistinct(oChain.GetCollisions());
