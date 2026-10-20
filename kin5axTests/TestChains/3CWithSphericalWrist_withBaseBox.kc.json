@@ -57,7 +57,7 @@
       }
     ],
     "tool_spindle_nose": {
-      "name": "Tool holder",
+      "name": "Spindle nose",
       "translation": [0.0, -0.252, 0.0],
       "rotation": {
         "axis": [1.0, 0.0, 0.0],
@@ -78,7 +78,7 @@
   "workpiece_branch": {
     "links": [],
     "table": {
-      "name": "Material holder",
+      "name": "Table",
       "translation": [0.0, 0.0, 0.0],
       "rotation": {
         "axis": [1.0, 0.0, 0.0],

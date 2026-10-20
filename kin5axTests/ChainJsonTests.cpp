@@ -101,10 +101,10 @@ TEST(ChainJsonReader, TemplateLoads)
 
 	EXPECT_EQ(CHAIN_SEGMENT_TOOL_SPINDLE_NOSE,oChain.m_vToolPart[2].GetType());
 	//CChainSegment::GetName ignores the stored name at the end of a branch and labels it itself
-	EXPECT_EQ("Tool holder",oChain.m_vToolPart[2].GetName());
+	EXPECT_EQ("tool",oChain.m_vToolPart[2].GetName())<<"the name of the file, not a label";
 	EXPECT_FALSE(oChain.m_vToolPart[2].IsParameterConstrained())<<"the end of a branch is not a joint";
 	EXPECT_EQ(CHAIN_SEGMENT_TABLE,oChain.m_vMaterialHolderPart[1].GetType());
-	EXPECT_EQ("Material holder",oChain.m_vMaterialHolderPart[1].GetName());
+	EXPECT_EQ("holder",oChain.m_vMaterialHolderPart[1].GetName())<<"the name of the file";
 }
 
 TEST(ChainJsonReader, ABranchMayHaveNoJoint)
@@ -324,6 +324,35 @@ TEST(ChainJsonToolHolder, AMissingMemberIsNamedByItsPath)
 	std::string sError = JsonError(s);
 	EXPECT_ERROR_CONTAINS(sError,"radius");
 	EXPECT_ERROR_CONTAINS(sError,"tool_branch.tool_spindle_nose.tool_holder");
+}
+
+//KnownBugs #64: a terminal answered with a fixed label and the writer wrote that back, so the name
+//of the file was lost on the first save. Both terminals carry a free-form name now.
+TEST(ChainJsonTerminals, TheNameOfATerminalSurvivesTheFile)
+{
+	const std::string sSpindle = "HSK63A spindle of the right head";
+	const std::string sTable = "the big table";
+	std::string sText = Replaced(Template(),"\"name\": \"tool\"","\"name\": \""+sSpindle+"\"");
+	sText = Replaced(sText,"\"name\": \"holder\"","\"name\": \""+sTable+"\"");
+
+	CChain oChain;
+	ASSERT_EQ(std::string(),JsonError(sText,&oChain));
+	EXPECT_EQ(sSpindle,oChain.m_vToolPart.back().GetName());
+	EXPECT_EQ(sTable,oChain.m_vMaterialHolderPart.back().GetName());
+
+	CChain oReloaded;
+	ASSERT_EQ(std::string(),JsonError(CChainJsonWriter::ToJson(oChain),&oReloaded));
+	EXPECT_EQ(sSpindle,oReloaded.m_vToolPart.back().GetName())<<"written and read again";
+	EXPECT_EQ(sTable,oReloaded.m_vMaterialHolderPart.back().GetName());
+}
+
+//a terminal of a chain built in code, which no file ever named, says what it is
+TEST(ChainJsonTerminals, ATerminalWithNoNameSaysWhatItIs)
+{
+	CChainSegment oSpindle(CHAIN_SEGMENT_TOOL_SPINDLE_NOSE,CR3Vector(1.0,0.0,0.0),0.0,CR3Vector(0.0));
+	CChainSegment oTable(CHAIN_SEGMENT_TABLE,CR3Vector(1.0,0.0,0.0),0.0,CR3Vector(0.0));
+	EXPECT_EQ("Spindle nose",oSpindle.GetName());
+	EXPECT_EQ("Table",oTable.GetName());
 }
 
 //---- the unit: required, exact, and kept

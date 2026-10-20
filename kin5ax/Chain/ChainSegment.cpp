@@ -229,12 +229,15 @@ void CChainSegment::SetName(const std::string &sName)
 
 std::string CChainSegment::GetName() const
 {
+	//A terminal used to answer with a fixed label and throw away the name of the file, which the
+	//writer then wrote back over it, so a name given to a spindle nose or to a table was lost on
+	//the first save (KnownBugs #64). Every segment answers with its own name now; a terminal that
+	//was never given one falls back on what it is.
+	if(!m_sName.empty())
+		return m_sName;
 	if(IsRegularJoint())
 		return m_sName;
-	if(m_type == CHAIN_SEGMENT_TABLE)
-		return "Material holder";
-	return "Tool holder";
-
+	return (m_type == CHAIN_SEGMENT_TABLE) ? "Table" : "Spindle nose";
 }
 
 void CChainSegment::SetPartVector(std::vector<CR3Box> vNewParts)

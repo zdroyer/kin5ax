@@ -46,7 +46,7 @@
       }
     ],
     "tool_spindle_nose": {
-      "name": "Tool holder",
+      "name": "Spindle nose",
       "translation": [0.0, 0.0, -0.502],
       "rotation": {
         "axis": [0.0, 0.0, 1.0],
@@ -106,7 +106,7 @@
       }
     ],
     "table": {
-      "name": "Material holder",
+      "name": "Table",
       "translation": [0.0, 0.0, 0.08],
       "rotation": {
         "axis": [1.0, 0.0, 0.0],
