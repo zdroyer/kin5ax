@@ -2,6 +2,9 @@
 #include "ChainSegmentRendererGL.h"
 #include "GLTools.h"
 #include "R3BoxRendererGL.h"
+#include "MillingToolRendererGL.h"
+#include "ToolAssembly.h"
+#include <memory>
 
 extern CApplicationConfiguration oConfiguration;
 
@@ -118,6 +121,10 @@ void CChainSegmentRendererGL::RenderPrismatic(const CChainSegment &oSegment, boo
 	
 
 }
+//The terminal of the tool branch is the nose of the tool spindle, and what the chain file says is
+//usually clamped in it hangs below: the holder, and the tool sticking out of it. This is the default
+//assembly of the machine, not the tool of a run - that one the view draws at its own place - so it
+//follows the same switch that shows a tool at all.
 void CChainSegmentRendererGL::RenderToolHolder(const CChainSegment &oSegment, bool bDrawBigFrame)
 {
 	if(bDrawBigFrame || oConfiguration.m_bShowToolFrame)
@@ -126,16 +133,22 @@ void CChainSegmentRendererGL::RenderToolHolder(const CChainSegment &oSegment, bo
 		if(oConfiguration.m_bShowLinksFrames)
 			CGLTools::DrawAxes(0.3,0.3*oConfiguration.m_dUnit);
 	
-	return;
-	static double *pdU = &oConfiguration.m_dUnit;
-	static GLUquadricObj *pQObj = gluNewQuadric();
-	//glTranslated(0.0,0.0,-oSegment.m_dActualParameterValue-m_dParameterValueOffset);
-	//gluSphere(pQObj,0.01,10,10);
-	glColor3d(1.0,0.0,1.0);
-	//static GLUquadricObj *pQObj2 = gluNewQuadric();
-	glTranslated(0.0,0.0,-0.2*(*pdU));
-	gluCylinder(pQObj,0.02*(*pdU),0.02*(*pdU),0.2*(*pdU),20,10);
-	glTranslated(0.0,0.0,0.2*(*pdU));
+	if(!oConfiguration.m_bShowTool)
+		return;
+	const CToolAssembly oAssembly(oSegment.GetToolHolder(),oSegment.GetTool());
+	if(!oAssembly.HasBody())
+		return;								//nothing in this spindle, or a holder with no radius
+	std::unique_ptr<CMillingTool> pTool(oAssembly.MakeTool());
+	glEnable(GL_LIGHTING);
+	if(!pTool.get()){
+		CMillingToolRendererGL::RenderHolder(oSegment.GetToolHolder());
+		return;								//a holder waiting for a tool
+	}
+	//the renderer draws an assembly from the reference point of its tool, and that point hangs the
+	//tool offset below the nose
+	glTranslated(0.0,0.0,-oAssembly.GetToolOffset());
+	CMillingToolRendererGL::Render(*pTool);
+	glTranslated(0.0,0.0,oAssembly.GetToolOffset());
 
 }
 void CChainSegmentRendererGL::RenderMaterialHolder(const CChainSegment &oSegment, bool bDrawBigFrame)
