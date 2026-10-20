@@ -13,24 +13,27 @@ of the code are in the [repository README](../README.md); this file is the refer
 3. [Singularities](#singularities)
 4. [Single and batch solving](#single-and-batch-solving)
 5. [File formats](#file-formats)
-6. [The FreeCAD bridge (.fcm)](#the-freecad-bridge-fcm)
-7. [Main classes](#main-classes)
-8. [Tolerances, units, threads, locale](#tolerances-units-threads-locale)
-9. [Known limitations](#known-limitations)
+6. [What is in the spindle and what is on the table](doc/tool-and-workpiece.md)
+7. [The FreeCAD bridge (.fcm)](#the-freecad-bridge-fcm)
+8. [Main classes](#main-classes)
+9. [Tolerances, units, threads, locale](#tolerances-units-threads-locale)
+10. [Known limitations](#known-limitations)
 
 ## The machine model
 
 A machine is two open kinematic sub-chains fixed to a common base:
 
-- the **tool part** ends in the spindle (terminal segment of type `TOOL`);
-- the **material holder part** ends in the workpiece frame (terminal `MATERIAL_HOLDER`).
+- the **tool part** ends at the spindle (terminal segment of type `TOOL_SPINDLE_NOSE`);
+- the **material holder part** ends in the workpiece frame (terminal `TABLE`).
 
-The end of the tool branch is the **tool mount**, the place where the holder of the tool is clamped.
-The tool point, which is the point the CL data programs, hangs the length of the assembly below it:
-the holder (`CToolHolder`, declared by the chain file), the tool, and the zero point of the shape of
-the tool, the tip of a flat end mill or the centre of the ball of a ball nose tool. A chain file that
-declares no holder has its tool point at the mount itself, which is how the files were written before
-the holder existed.
+The end of the tool branch is the **nose of the tool spindle**: the point on the spindle axis where
+the axis meets the envelope of the spindle, which is the centre of the taper entrance, with OZ along
+the axis. The point the CL data programs hangs the **tool offset** below it, and that offset is given
+at run time - `CChain::SetToolOffset`, or the whole `CToolAssembly` when the collisions are to be
+checked as well. It is never derived from the file and never defaulted: a chain that was not told it
+refuses to solve. What the file does carry is a default to offer - the holder its spindle usually
+takes and the tool that goes in it - which is
+[doc/tool-and-workpiece.md](doc/tool-and-workpiece.md).
 
 Every segment is a constant transformation (a translation, then a rotation about an axis by an
 angle) followed by its joint motion: a translation along the local Z for a `PRISMATIC_LINK`, a
@@ -141,6 +144,17 @@ name with a word about `tools/kc2json`. It knows that form by the extension (any
 first non-blank character of the file. This is the application's single Open. `.fcm` goes
 through `CChainFcmReader`, which takes the import options and returns the report described below.
 
+## What is in the spindle and what is on the table
+
+The two terminals carry what the kinematics does not: the nose of the tool spindle carries a
+holder and the tool in it, the table carries the workpiece holder. The tool offset - the nose
+down to the point a cutter location programs - is the whole of what the five axes know about the
+tool, and it is always given, never guessed at.
+
+[doc/tool-and-workpiece.md](doc/tool-and-workpiece.md) draws all of it: the assembly and its
+three lengths, the three tool shapes, the workpiece holder and its frame, the JSON of each and
+the two catalogues.
+
 ## The FreeCAD bridge (.fcm)
 
 An `.fcm` file names every axis and gives its joint as an origin and a direction in the machine
@@ -184,7 +198,7 @@ the tool axis points along +Z at home.
 |---|---|
 | geometry (`3DGeometry/`) | `CR3Point`, `CR3Vector`, `CR3AnchoredVector` (position + axis), `CM4x4`, `CTransformation`, `CTranslation`, `CRotation`, `CScale`, `CR3Box` (collision boxes: exact box/box, box/segment, box/sphere, box/cylinder tests) |
 | machine (`Chain/`) | `CChain` (two segment vectors, forward kinematics, limits, collisions with a `CCollisionReport` of which solids met, XML out), `CChainSegment`, `CChainParameter` (value, unit, type single/any/none), `CChainConfiguration` (the five joint values, distance, equivalents), `CChainXmlReader`, `CChainJsonReader`/`Writer`, `CChainFcmReader`/`Writer`, `CChainFileReader` |
-| tool (`MillingTool/`) | `CMillingTool`, `CMillingToolBall`, `CMillingToolCylinder`: the cutting part (the cut volume of the simulation and a collision solid), the non-cutting shank and the holder (`CToolHolder`), the lengths they add up to and the distance from the tool mount to the tool point |
+| tool (`MillingTool/`) | `CMillingTool`, `CMillingToolBall`, `CMillingToolCylinder`: the cutting part (the cut volume of the simulation and a collision solid), the non-cutting shank and the holder (`CToolHolder`), the lengths they add up to and the distance from the nose of the spindle to the programmed point; `CToolDescription` and `CToolAssembly`, the holder with its tool as a chain file describes it |
 | solver (`Postprocessor/`) | `COrientationPostprocessor` (the angles), `CPositionPostprocessor` (the shifts), `C5CPostprocessor` (signs, limits, collisions, singular sections), `CSolveReport` and `SOLVE_STATUS` |
 | batch | `CCutterLocationData`, `CCLDataPostprocessor` (+ `CCLDataPostprocessingResult`), `CSimulationData` (solution sets, shortest path, G-code), `CPostprocessorSettings`, `CProgressCallback`, `LocationInterpolation.h` (the densification between two cutter locations the solver and the chain-less simulation share: `InterpolateLocation`, `DensifyLocations`) |
 | simulation (`Simulation/`) | `CMaterial` (the voxel block: material, surface, removed; the cut of the tool at its position; volumes), `CCuttingSimulation` (what every cutting simulation offers its driver: `Step`, `Run` with progress and stop, where it is, the gouges), `CMaterialSimulation` (the trajectory replayed on the chain, the tool following, the material cut), `CToolPathSimulation` (the same with no chain: a path of programmed points and tool axes, made dense by `LocationInterpolation.h`, the tool put at each location), `CSimpleSimulationSetup` (a hemisphere job sized for a machine). No thread of their own. The simulation is deliberately simple and not efficient: a voxel grid sampled at the voxel corners, no sweep between two locations. It is there to check the geometry of the postprocessor and to see how a machine model moves, not to predict a machined surface. |

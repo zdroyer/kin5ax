@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 420" width="880" height="420"
+     font-family="DejaVu Sans, Segoe UI, Helvetica, Arial, sans-serif">
+  <title>The workpiece holder: the frame it holds the part in and the solids it is</title>
+  <rect width="880" height="420" fill="#ffffff"/>
+  <defs>
+    <marker id="dim" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#111827"/>
+    </marker>
+    <marker id="dim2" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M10 0 L0 5 L10 10 z" fill="#111827"/>
+    </marker>
+    <marker id="tb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#1f6feb"/>
+    </marker>
+    <marker id="gr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#15803d"/>
+    </marker>
+  </defs>
+
+  <rect x="16" y="16" width="848" height="388" rx="6" fill="#ffffff" stroke="#d7dce3"/>
+  <text x="36" y="46" font-size="15" font-weight="bold" fill="#111827">The workpiece holder</text>
+  <text x="36" y="68" font-size="11.5" fill="#6b7280">What stands on the table: a frame, which says where the part sits, and a few boxes, which the tool must not run into.</text>
+
+  <!-- the table: the terminal of the workpiece branch -->
+  <line x1="60" y1="300" x2="420" y2="300" stroke="#111827" stroke-width="2.5"/>
+  <text x="60" y="320" font-size="12" font-weight="bold" fill="#1f6feb">table</text>
+  <g stroke="#1f6feb" stroke-width="1.5" fill="none">
+    <line x1="120" y1="300" x2="120" y2="272" marker-end="url(#tb)"/>
+    <line x1="120" y1="300" x2="150" y2="300" marker-end="url(#tb)"/>
+  </g>
+  <circle cx="120" cy="300" r="3" fill="#1f6feb"/>
+  <text x="125" y="268" font-size="10.5" fill="#1f6feb">Z</text>
+  <text x="152" y="313" font-size="10.5" fill="#1f6feb">X</text>
+
+  <!-- the solids of the holder: a vice, as one box -->
+  <rect x="200" y="240" width="180" height="60" stroke="#6b7280" fill="#e5e7eb"/>
+  <text x="290" y="276" font-size="11.5" fill="#374151" text-anchor="middle">a box, in the frame of the table</text>
+  <line x1="190" y1="240" x2="190" y2="300" stroke="#111827" stroke-width="1"
+        marker-start="url(#dim2)" marker-end="url(#dim)"/>
+  <text x="182" y="274" font-size="10.5" fill="#111827" text-anchor="end">0.080</text>
+
+  <!-- the frame the workpiece sits in -->
+  <rect x="236" y="196" width="108" height="44" stroke="#15803d" fill="#dcfce7"/>
+  <text x="290" y="222" font-size="11.5" fill="#15803d" text-anchor="middle">the workpiece</text>
+  <g stroke="#15803d" stroke-width="1.5" fill="none">
+    <line x1="290" y1="240" x2="290" y2="212" marker-end="url(#gr)"/>
+    <line x1="290" y1="240" x2="320" y2="240" marker-end="url(#gr)"/>
+  </g>
+  <circle cx="290" cy="240" r="3.5" fill="#15803d"/>
+  <text x="295" y="208" font-size="10.5" fill="#15803d">Z</text>
+  <text x="322" y="253" font-size="10.5" fill="#15803d">X</text>
+  <text x="352" y="196" font-size="11.5" font-weight="bold" fill="#15803d">the frame of the holder</text>
+
+  <!-- the translation that puts it there -->
+  <line x1="120" y1="300" x2="290" y2="300" stroke="#15803d" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <line x1="290" y1="300" x2="290" y2="242" stroke="#15803d" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text x="200" y="296" font-size="10.5" fill="#15803d">translation</text>
+
+  <text x="60" y="356" font-size="11.5" fill="#6b7280">Composed the way a chain segment composes its constant transformation: the translation, then the rotation about the axis.</text>
+  <text x="60" y="376" font-size="11.5" fill="#6b7280">A tombstone is the one in the catalogue whose frame really turns - it holds the part on a face, a quarter turn about Y.</text>
+
+  <line x1="450" y1="92" x2="450" y2="380" stroke="#e5e7eb"/>
+
+  <rect x="476" y="96" width="368" height="86" rx="5" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="492" y="118" font-size="12.5" font-weight="bold" fill="#111827">NO_HOLDER</text>
+  <text x="492" y="138" font-size="11.5" fill="#374151">The workpiece bolted to the table itself: the identity</text>
+  <text x="492" y="154" font-size="11.5" fill="#374151">frame and no solid. A holder in the data all the same, so</text>
+  <text x="492" y="170" font-size="11.5" fill="#374151">that a host can tell it from a file that says nothing.</text>
+
+  <rect x="476" y="196" width="368" height="86" rx="5" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="492" y="218" font-size="12.5" font-weight="bold" fill="#111827">CUSTOM_HOLDER</text>
+  <text x="492" y="238" font-size="11.5" fill="#374151">The one a host fills in: its own frame and its own boxes.</text>
+  <text x="492" y="254" font-size="11.5" fill="#374151">It is in the catalogue for that reason - something has to</text>
+  <text x="492" y="270" font-size="11.5" fill="#374151">be picked before anything can be typed in.</text>
+
+  <rect x="476" y="296" width="368" height="86" rx="5" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="492" y="318" font-size="12.5" font-weight="bold" fill="#111827">the six that are holders</text>
+  <text x="492" y="338" font-size="11.5" fill="#374151">X_VICE and Y_VICE, which differ by the direction the jaws</text>
+  <text x="492" y="354" font-size="11.5" fill="#374151">open; THREE_JAW_CHUCK and FOUR_JAW_CHUCK; TOMBSTONE;</text>
+  <text x="492" y="370" font-size="11.5" fill="#374151">FIXTURE_PLATE. Metres, and near enough for a check.</text>
+</svg>
