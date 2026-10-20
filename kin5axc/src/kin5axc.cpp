@@ -175,6 +175,9 @@ k5_status RunPostprocessor(k5_chain_t *pChain, k5_tool_t *pTool, const k5_settin
 	CMillingTool *pMillingTool = (pTool && pTool->m_pTool) ? pTool->m_pTool.get() : NULL;
 	if(!pMillingTool && oCSettings.check_collisions)
 		return Fail(K5_ERROR_ARGUMENT,"the collision check needs a tool");
+	if(!pMillingTool && !pChain->m_oChain.IsToolOffsetGiven())
+		return Fail(K5_ERROR_ARGUMENT
+			,"without a tool the chain has to be told how far the tool reaches: k5_chain_set_tool_offset");
 
 	const CPostprocessorSettings oSettings = FromCSettings(oCSettings);
 	std::unique_ptr<k5_path_t> pHandle(new k5_path_t());
@@ -442,6 +445,27 @@ k5_status k5_chain_solid_name(k5_chain chain, int part, size_t segment, size_t b
 	CopyName(chain->m_oChain.GetSolidName(nPart,segment,box),out,capacity);
 	return K5_OK;
 	K5_END(K5_ERROR_CHAIN)
+}
+
+k5_status k5_chain_set_tool_offset(k5_chain chain, double offset)
+{
+	K5_BEGIN
+	K5_NEED(chain,"k5_chain_set_tool_offset needs a chain")
+	chain->m_oChain.SetToolOffset(offset);		//a negative one is refused by the chain itself
+	return K5_OK;
+	K5_END(K5_ERROR_ARGUMENT)
+}
+
+k5_status k5_chain_tool_offset(k5_chain chain, double *offset, int *given)
+{
+	K5_BEGIN
+	K5_NEED(chain,"k5_chain_tool_offset needs a chain")
+	if(offset)
+		*offset = chain->m_oChain.GetToolOffset();
+	if(given)
+		*given = chain->m_oChain.IsToolOffsetGiven() ? 1 : 0;
+	return K5_OK;
+	K5_END(K5_ERROR_ARGUMENT)
 }
 
 k5_status k5_chain_check_collisions(k5_chain chain, k5_tool tool, int *collides)
@@ -846,6 +870,8 @@ k5_status k5_solve_location(k5_chain chain, k5_tool tool, const k5_settings *set
 		return nFive;
 	CMillingTool *pTool = (tool && tool->m_pTool) ? tool->m_pTool.get() : NULL;
 	K5_NEED(pTool || !settings->check_collisions,"the collision check needs a tool")
+	K5_NEED(pTool || chain->m_oChain.IsToolOffsetGiven()
+		,"without a tool the chain has to be told how far the tool reaches: k5_chain_set_tool_offset")
 	if(pTool)
 		chain->m_oChain.SetToolOffsetFromTool(*pTool);
 

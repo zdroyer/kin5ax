@@ -280,6 +280,23 @@ K5_API k5_status k5_tool_assembly_length(k5_tool tool, double *out);
 /* How far below the tool mount the programmed point hangs, which is what the solver solves for. */
 K5_API k5_status k5_tool_mount_to_point_distance(k5_tool tool, double *out);
 
+/* ---------------------------------------------------------------- the offset, said out loud */
+
+/* How far below the nose of the tool spindle the programmed point of the tool hangs, in the unit of
+ * the chain file: the tool assembly measured from the mount down to the point a cutter location
+ * programs. Nothing about it is ever assumed - a chain that was never told refuses to solve, and
+ * says so - and a host tells it one of two ways:
+ *   with a k5_tool, the whole assembly, which is the only way to check collisions: every call that
+ *     takes one takes its offset from it;
+ *   with this call, which is all the geometry needs and all a host that has no solids can give.
+ * An offset of zero is the nose of the spindle itself and has to be said as plainly as any other. A
+ * negative one would end the tool inside the spindle and is refused with K5_ERROR_ARGUMENT. */
+K5_API k5_status k5_chain_set_tool_offset(k5_chain chain, double offset);
+/* The offset the chain stands with, and whether anything has told it one: given gets 1 when
+ * something has, and while nothing has the offset reads 0 - the bare nose of the spindle - which is
+ * not the same as having been told zero. Either out parameter may be null. */
+K5_API k5_status k5_chain_tool_offset(k5_chain chain, double *offset, int *given);
+
 /* ---------------------------------------------------------------- one cutter location */
 
 /* Every configuration that puts the programmed point of the tool at position[3] with the tool axis
@@ -290,7 +307,8 @@ K5_API k5_status k5_tool_mount_to_point_distance(k5_tool tool, double *out);
  * ask for it first. status_out, when not null, gets the k5_solve_status that says why the answer is
  * empty. A location with no solution is not an error: the call returns K5_OK with a count of 0.
  *
- * tool may be null when the settings do not check collisions. */
+ * tool may be null when the settings do not check collisions, and then the offset of the tool
+ * has to come from k5_chain_set_tool_offset: nothing is guessed about it. */
 K5_API k5_status k5_solve_location(k5_chain chain, k5_tool tool, const k5_settings *settings,
 	const double *position, const double *axis,
 	double *q_out, size_t capacity_in_configurations, size_t *count_out, int *status_out);
@@ -300,7 +318,8 @@ K5_API k5_status k5_solve_location(k5_chain chain, k5_tool tool, const k5_settin
 /* Reads a cutter-location file (GOTO/x,y,z,i,j,k lines), solves every location and the locations
  * interpolated between them, and picks the trajectory: the shortest one, starting where the settings
  * say. The result is a k5_path to be read with the calls below and released with k5_path_free.
- * tool may be null when the settings do not check collisions. */
+ * tool may be null when the settings do not check collisions, and then the offset of the tool
+ * has to come from k5_chain_set_tool_offset: nothing is guessed about it. */
 K5_API k5_status k5_postprocess_file(k5_chain chain, k5_tool tool, const k5_settings *settings,
 	const char *cl_file_path, k5_path *out);
 

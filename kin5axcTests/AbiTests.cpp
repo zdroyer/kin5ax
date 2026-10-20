@@ -1152,6 +1152,7 @@ TEST(Abi, APathHandedOverIsCheckedBeforeItIsSolved)
 	k5_settings oSettings;
 	k5_settings_default(&oSettings);
 	oSettings.check_collisions = 0;				//no tool needed, so the arrays are the only subject
+	ASSERT_EQ(K5_OK,k5_chain_set_tool_offset(chain,0.144));	//but the offset is told even so
 	const double vPositions[6] = {0.1,0.2,0.03, 0.12,0.2,0.03};
 	const double vGoodAxes[6] = {0.3,0.4,0.866025, 0.3,0.4,0.866025};
 	const double vZeroAxis[6] = {0.3,0.4,0.866025, 0.0,0.0,0.0};
@@ -1177,5 +1178,91 @@ TEST(Abi, APathHandedOverIsCheckedBeforeItIsSolved)
 	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_postprocess_locations(chain,NULL,&oSettings,vPositions,NULL,2,&path));
 	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_postprocess_locations(NULL,NULL,&oSettings,vPositions,vGoodAxes,2,&path));
 	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_postprocess_locations(chain,NULL,NULL,vPositions,vGoodAxes,2,&path));
+	k5_chain_free(chain);
+}
+
+// ---------------------------------------------------------------- what is in the spindle
+
+TEST(Abi, AChainIsToldHowFarTheToolReaches)
+{
+	k5_chain chain = OpenChain();
+	double dOffset = -1.0;
+	int nGiven = -1;
+	ASSERT_EQ(K5_OK,k5_chain_tool_offset(chain,&dOffset,&nGiven))<<k5_last_error();
+	EXPECT_EQ(0,nGiven)<<"opening a file tells a chain nothing about the tool in the spindle";
+	EXPECT_DOUBLE_EQ(0.0,dOffset)<<"the bare nose of the spindle, which is not the same as told zero";
+
+	ASSERT_EQ(K5_OK,k5_chain_set_tool_offset(chain,0.144))<<k5_last_error();
+	ASSERT_EQ(K5_OK,k5_chain_tool_offset(chain,&dOffset,&nGiven));
+	EXPECT_EQ(1,nGiven);
+	EXPECT_DOUBLE_EQ(0.144,dOffset);
+
+	//zero is a place and is told like any other; a negative offset would end the tool in the spindle
+	ASSERT_EQ(K5_OK,k5_chain_set_tool_offset(chain,0.0))<<k5_last_error();
+	ASSERT_EQ(K5_OK,k5_chain_tool_offset(chain,&dOffset,&nGiven));
+	EXPECT_EQ(1,nGiven);
+	EXPECT_DOUBLE_EQ(0.0,dOffset);
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_set_tool_offset(chain,-0.001));
+	EXPECT_NE(std::string::npos,std::string(k5_last_error()).find("negative"))<<k5_last_error();
+
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_set_tool_offset(NULL,0.1));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_tool_offset(NULL,&dOffset,&nGiven));
+	ASSERT_EQ(K5_OK,k5_chain_tool_offset(chain,NULL,NULL))<<"asking nothing is no error";
+	k5_chain_free(chain);
+}
+
+//A tool says the offset; without one the host says it. Neither is assumed, and the same location
+//solves the same way whichever told it.
+TEST(Abi, TheOffsetComesFromTheToolOrFromTheHostAndNeverFromNowhere)
+{
+	k5_chain chain = OpenChain();
+	k5_tool tool = CreateTool();
+	k5_settings oSettings;
+	k5_settings_default(&oSettings);
+	oSettings.check_collisions = 0;				//the subject is the offset, not the boxes
+
+	double dFromTool = 0.0;
+	ASSERT_EQ(K5_OK,k5_tool_mount_to_point_distance(tool,&dFromTool))<<k5_last_error();
+	EXPECT_GT(dFromTool,0.0);
+
+	//the machine standing somewhere, and the location the tool of that assembly ends up at
+	const std::vector<double> q = QInsideLimits(chain);
+	double p[3] = {0,0,0}, v[3] = {0,0,0};
+	ASSERT_EQ(K5_OK,k5_chain_tool_point(chain,tool,&q[0],p,v))<<k5_last_error();
+	double dTold = 0.0;
+	int nGiven = 0;
+	ASSERT_EQ(K5_OK,k5_chain_tool_offset(chain,&dTold,&nGiven));
+	EXPECT_EQ(1,nGiven)<<"handing over a tool tells the chain its offset";
+	EXPECT_DOUBLE_EQ(dFromTool,dTold);
+
+	size_t nWithTool = 0;
+	int nStatus = -1;
+	ASSERT_EQ(K5_OK,k5_solve_location(chain,tool,&oSettings,p,v,NULL,0,&nWithTool,&nStatus))<<k5_last_error();
+	ASSERT_GT(nWithTool,(size_t)0);
+
+	//the same again on a chain that never saw the tool, told the one number the geometry needs
+	k5_chain plain = OpenChain();
+	size_t nWithOffset = 1;
+	EXPECT_EQ(K5_ERROR_ARGUMENT
+		,k5_solve_location(plain,NULL,&oSettings,p,v,NULL,0,&nWithOffset,&nStatus))
+		<<"a chain that was told nothing is not solved on a guess";
+	EXPECT_NE(std::string::npos,std::string(k5_last_error()).find("k5_chain_set_tool_offset"))<<k5_last_error();
+	ASSERT_EQ(K5_OK,k5_chain_set_tool_offset(plain,dFromTool));
+	ASSERT_EQ(K5_OK,k5_solve_location(plain,NULL,&oSettings,p,v,NULL,0,&nWithOffset,&nStatus))<<k5_last_error();
+	EXPECT_EQ(nWithTool,nWithOffset)<<"the offset is all the five axes depend on";
+	EXPECT_EQ(K5_SOLVED,nStatus);
+
+	//and a whole path is no different
+	k5_chain third = OpenChain();
+	k5_path path = (k5_path)0x1;
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_postprocess_locations(third,NULL,&oSettings,p,v,1,&path));
+	EXPECT_TRUE(path==NULL);
+	ASSERT_EQ(K5_OK,k5_chain_set_tool_offset(third,dFromTool));
+	ASSERT_EQ(K5_OK,k5_postprocess_locations(third,NULL,&oSettings,p,v,1,&path))<<k5_last_error();
+	k5_path_free(path);
+
+	k5_chain_free(third);
+	k5_chain_free(plain);
+	k5_tool_free(tool);
 	k5_chain_free(chain);
 }
