@@ -60,6 +60,8 @@ CR3Box CMillingToolToroidal::GetCuttingPartBoundingBox() const
  * radius of the bottom edge, is reported as met although the real cutter would clear it by at most
  * that radius. A collision check that errs this way refuses a pose it could have allowed, which is
  * the safe direction; the cut test above is exact, and that is what takes material off.
+ *
+ * @todo The exact test, a box against the quarter torus of the corner (KnownBugs #71).
  */
 bool CMillingToolToroidal::CauseCollision(const CR3Box &box, const CTransformation trToBoxFrame, const CTransformation trToToolFrame) const
 {

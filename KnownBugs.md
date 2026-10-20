@@ -143,6 +143,12 @@ the postprocessor, not to predict a surface; these are findings about the postpr
 |---|---|---|---|---|
 | 70 | `CLDataPostprocessor.cpp` `Process`, `5CPostprocessor.cpp` `SolveSingularOrientation` | The singular-section solver hands back one solution set per location it can use: it starts at the first location it can solve, stops at the last, and returns nothing at all when it can solve none of them. `Process` counted every location it solved in `m_nTotalProblemsCount` but pushed one record per returned set, so the records and the `CSimulationData` could be shorter than the number of locations solved, with nothing saying which locations had gone. Latent, and not reachable through `Process` as it stands: it only collects locations that have just been solved and found ambiguous, so the ends of a collection are solvable and the two counts work out by accident. Fixed 2026-10-06 by padding instead of relying on that accident: a location of the section the solver dropped gets an empty set and a `SOLVE_STATUS_SINGULAR_UNSOLVED` record, so `m_vLocations.size() == m_nTotalProblemsCount == CSimulationData::GetSize()` holds by construction - which is what the C ABI promises its callers. Tests: `SolvedLocationTests.cpp`, the invariant on all 11 models along a meridian over the pole, and the contract of the solver itself (handed a section with unreachable ends it returns fewer sets than it got inputs). | verified | **fixed** |
 
+## Open while the spindle nose is being built (2026-10-20)
+
+| # | Where | Defect | Check | Status |
+|---|---|---|---|---|
+| 71 | `MillingTool/MillingToolToroidal.cpp` `CauseCollision` | The collision test of a toroidal cutter is the cylinder that encloses it, not the cutter: a box that fits under the rounded bottom edge, within the corner radius of it, is reported as met although the real cutter would clear it. Conservative, so it refuses a pose it could have allowed rather than the other way round, and the cut test (`IsInOZCuttingSpace`) is exact. To do: the exact test, a box against a quarter torus, and the test case that shows the difference - a box just under the corner, which the cylinder reports and the torus does not. | observed | open |
+
 ## Fixed earlier (for the record)
 
 | Where | Defect | Commit |
