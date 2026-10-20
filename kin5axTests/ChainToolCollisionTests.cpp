@@ -77,7 +77,7 @@ std::string CollisionLog(double dZ, double dRadial)
 		ADD_FAILURE()<<"exception: "<<e.Message();
 		return std::string();
 	}
-	EXPECT_TRUE(oChain.IsToolMountDeclared())<<"the document declares a tool holder";
+	EXPECT_TRUE(oChain.HasDefaultToolHolder())<<"the document declares a tool holder";
 	CMillingToolBall oTool = Assembly();
 	oChain.SetToolAssembly(oTool);
 	std::string sLog;

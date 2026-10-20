@@ -80,7 +80,7 @@ public:
 	CTransformation GetToolPointToToolMountTransformation() const;
 	//true when the chain file declares a tool mount (the tool_holder of its TOOL segment): only then does the
 	//length of a tool assembly move the tool point away from the terminal
-	bool IsToolMountDeclared() const;
+	bool HasDefaultToolHolder() const;
 	//the tool holder of the machine, from the chain file; declaring one declares the tool mount
 	const CToolHolder & GetDefaultToolHolder() const;
 	void SetDefaultToolHolder(const CToolHolder &oHolder);

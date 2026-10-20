@@ -148,10 +148,19 @@ bool CMillingTool::IsInOZNonCuttingSpace(const CR3Point &p) const
 		&& p.GetZ()>=m_dCuttingHeight-dEPSILON && p.GetZ()<=dToolLength+dEPSILON
 		&& dSq<=m_dRzSquare+dEPSILON)
 		return true;
-	if(m_oHolder.HasBody()
-		&& p.GetZ()>=dToolLength-dEPSILON && p.GetZ()<=GetAssemblyLength()+dEPSILON
-		&& dSq<=m_oHolder.GetRadius()*m_oHolder.GetRadius()+dEPSILON)
-		return true;
+	//the holder sits on top of the tool, which sticks out of it, and is up to three cylinders given
+	//from the spindle nose downwards: the first of them is the one against the spindle
+	const std::vector<CToolHolderSection> &vSections = m_oHolder.GetSections();
+	const double dHolderTop = dToolLength+m_oHolder.GetLength();
+	for(size_t i=0;i<vSections.size();i++){
+		const double dR = vSections[i].GetRadius();
+		if(dR<=0.0)
+			continue;
+		const double dTop = dHolderTop-m_oHolder.GetSectionTop(i);
+		if(p.GetZ()>=dTop-vSections[i].GetLength()-dEPSILON && p.GetZ()<=dTop+dEPSILON
+			&& dSq<=dR*dR+dEPSILON)
+			return true;
+	}
 	return false;
 }
 
@@ -187,10 +196,13 @@ bool CMillingTool::CauseNonCuttingCollision(const CR3Box &box, const CTransforma
 	//the shank above the cutting part
 	if(CylinderMeetsBox(box,m_dCuttingHeight,m_dNonCuttingLength,m_dRz,trToBoxFrame,trToToolFrame))
 		return true;
-	//the holder above the tool
-	if(m_oHolder.HasBody()
-		&& CylinderMeetsBox(box,GetToolLength(),m_oHolder.GetLength(),m_oHolder.GetRadius(),trToBoxFrame,trToToolFrame))
-		return true;
+	//the holder above the tool, cylinder by cylinder
+	const std::vector<CToolHolderSection> &vSections = m_oHolder.GetSections();
+	const double dHolderTop = GetToolLength()+m_oHolder.GetLength();
+	for(size_t i=0;i<vSections.size();i++)
+		if(CylinderMeetsBox(box,dHolderTop-m_oHolder.GetSectionTop(i)-vSections[i].GetLength()
+			,vSections[i].GetLength(),vSections[i].GetRadius(),trToBoxFrame,trToToolFrame))
+			return true;
 	return false;
 }
 

@@ -198,7 +198,7 @@ void CMillingToolPropertiesDialog::SetActiveDocument(CKin5axChainEditorPlusDoc *
 			m_dNonCuttingLength = m_pOldTool->m_dNonCuttingLength;
 			//a tool without a holder of its own takes the one the chain file declares
 			CToolHolder oHolder = m_pOldTool->m_oHolder;
-			if(!oHolder.HasBody() && m_pDoc->m_oChain.IsToolMountDeclared())
+			if(!oHolder.HasBody() && m_pDoc->m_oChain.HasDefaultToolHolder())
 				oHolder = m_pDoc->m_oChain.GetDefaultToolHolder();
 			m_dHolderLength = oHolder.GetLength();
 			m_dHolderRadius = oHolder.GetRadius();

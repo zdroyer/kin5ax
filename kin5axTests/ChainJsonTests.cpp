@@ -294,7 +294,7 @@ TEST(ChainJsonToolHolder, IsReadAndWritten)
 {
 	CChain oChain;
 	ASSERT_EQ(std::string(),JsonError(WithToolHolder(),&oChain));
-	EXPECT_TRUE(oChain.IsToolMountDeclared());
+	EXPECT_TRUE(oChain.HasDefaultToolHolder());
 	EXPECT_DOUBLE_EQ(0.05,oChain.GetDefaultToolHolder().GetLength());
 	EXPECT_DOUBLE_EQ(0.03,oChain.GetDefaultToolHolder().GetRadius());
 
@@ -306,7 +306,7 @@ TEST(ChainJsonToolHolder, IsReadAndWritten)
 
 	CChain oPlain;
 	ASSERT_EQ(std::string(),JsonError(Template(),&oPlain));
-	EXPECT_FALSE(oPlain.IsToolMountDeclared());
+	EXPECT_FALSE(oPlain.HasDefaultToolHolder());
 	EXPECT_EQ(std::string::npos,CChainJsonWriter::ToJson(oPlain).find("tool_holder"))<<"not written when absent";
 }
 
@@ -353,6 +353,88 @@ TEST(ChainJsonTerminals, ATerminalWithNoNameSaysWhatItIs)
 	CChainSegment oTable(CHAIN_SEGMENT_TABLE,CR3Vector(1.0,0.0,0.0),0.0,CR3Vector(0.0));
 	EXPECT_EQ("Spindle nose",oSpindle.GetName());
 	EXPECT_EQ("Table",oTable.GetName());
+}
+
+//---- the tool holder of the spindle nose: a designation and its cylinders
+
+static std::string WithHolder(const std::string &sHolder)
+{
+	return Replaced(Template(),"\"name\": \"tool\",","\"name\": \"tool\",\n      \"tool_holder\": "+sHolder+",");
+}
+
+TEST(ChainJsonToolHolder, ADesignationAndItsCylindersSurviveTheFile)
+{
+	CChain oChain;
+	ASSERT_EQ(std::string(),JsonError(WithHolder(
+		"{ \"model\": \"BT40 ER32\", \"sections\": ["
+		"{ \"length\": 0.065, \"radius\": 0.0445 },"
+		"{ \"length\": 0.025, \"radius\": 0.027 },"
+		"{ \"length\": 0.035, \"radius\": 0.025 } ] }"),&oChain));
+	ASSERT_TRUE(oChain.HasDefaultToolHolder());
+	const CToolHolder &oHolder = oChain.GetDefaultToolHolder();
+	EXPECT_EQ(std::string("BT40 ER32"),oHolder.GetModel());
+	ASSERT_EQ(size_t(3),oHolder.GetSections().size());
+	EXPECT_DOUBLE_EQ(0.125,oHolder.GetLength());
+
+	CChain oReloaded;
+	ASSERT_EQ(std::string(),JsonError(CChainJsonWriter::ToJson(oChain),&oReloaded));
+	EXPECT_TRUE(oReloaded.GetDefaultToolHolder()==oHolder)<<"written and read again";
+}
+
+TEST(ChainJsonToolHolder, NoHolderIsAHolderWithNothingInIt)
+{
+	//the tool clamped straight into the spindle: a designation and no cylinder
+	CChain oChain;
+	ASSERT_EQ(std::string(),JsonError(WithHolder("{ \"model\": \"NO_HOLDER\" }"),&oChain));
+	ASSERT_TRUE(oChain.HasDefaultToolHolder());
+	EXPECT_EQ(std::string("NO_HOLDER"),oChain.GetDefaultToolHolder().GetModel());
+	EXPECT_TRUE(oChain.GetDefaultToolHolder().IsNoHolder());
+	EXPECT_FALSE(oChain.GetDefaultToolHolder().HasBody());
+	EXPECT_NE(std::string::npos,CChainJsonWriter::ToJson(oChain).find("NO_HOLDER"));
+}
+
+TEST(ChainJsonToolHolder, OneCylinderIsStillALengthAndARadius)
+{
+	CChain oChain;
+	ASSERT_EQ(std::string(),JsonError(WithHolder("{ \"length\": 0.05, \"radius\": 0.03 }"),&oChain));
+	ASSERT_EQ(size_t(1),oChain.GetDefaultToolHolder().GetSections().size());
+	const std::string sJson = CChainJsonWriter::ToJson(oChain);
+	EXPECT_NE(std::string::npos,sJson.find("\"length\""));
+	EXPECT_EQ(std::string::npos,sJson.find("\"sections\""));
+}
+
+TEST(ChainJsonToolHolder, SectionsAndALengthTogetherAreRefused)
+{
+	const std::string sError = JsonError(WithHolder(
+		"{ \"length\": 0.05, \"radius\": 0.03, \"sections\": [ { \"length\": 0.06, \"radius\": 0.04 } ] }"));
+	EXPECT_ERROR_CONTAINS(sError,"not both");
+}
+
+TEST(ChainJsonToolHolder, MoreSectionsThanAHolderHasAreRefused)
+{
+	const std::string sError = JsonError(WithHolder("{ \"sections\": ["
+		"{ \"length\": 0.02, \"radius\": 0.04 },"
+		"{ \"length\": 0.02, \"radius\": 0.03 },"
+		"{ \"length\": 0.02, \"radius\": 0.02 },"
+		"{ \"length\": 0.02, \"radius\": 0.01 } ] }"));
+	EXPECT_ERROR_CONTAINS(sError,"at most");
+}
+
+TEST(ChainJsonToolHolder, ASectionIsNamedByItsPlaceInTheArray)
+{
+	const std::string sError = JsonError(WithHolder("{ \"sections\": ["
+		"{ \"length\": 0.065, \"radius\": 0.0445 },"
+		"{ \"length\": 0.025 } ] }"));
+	EXPECT_ERROR_CONTAINS(sError,"radius");
+	EXPECT_ERROR_CONTAINS(sError,"tool_holder.sections[1]");
+}
+
+TEST(ChainJsonToolHolder, OnlyTheSpindleNoseCarriesOne)
+{
+	const std::string sError = JsonError(Replaced(Template(),"\"name\": \"holder\",",
+		"\"name\": \"holder\",\n      \"tool_holder\": { \"model\": \"NO_HOLDER\" },"));
+	EXPECT_ERROR_CONTAINS(sError,"tool_holder");
+	EXPECT_ERROR_CONTAINS(sError,"workpiece_branch.table");
 }
 
 //---- the unit: required, exact, and kept

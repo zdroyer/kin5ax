@@ -85,13 +85,30 @@
     },
     "tool_holder": {
       "type": "object",
-      "required": ["length", "radius"],
       "additionalProperties": false,
-      "description": "The holder between the tool mount and the tool: a cylinder along the OZ of the mount. Its presence makes the terminal the tool mount, so that the tool point hangs the length of holder and tool below it. A radius of zero is a holder without a body: a distance only.",
+      "description": "The holder that hangs from the nose of the tool spindle, with the tool sticking out of it: up to three cylinders along the OZ of the nose, given from the nose downwards. A radius of zero is a cylinder without a body, a distance only. Give either sections or a single length and radius, not both. A holder with no cylinder at all is the tool clamped straight into the spindle, whose designation is NO_HOLDER.",
       "properties": {
+        "model": { "type": "string",
+                   "description": "The designation on the holder, free text: BT40 ER32, HSK63A SF12, or NO_HOLDER for none. The library never reads it; it is carried so that a host can match it against the holders it has of its own." },
         "length": { "type": "number", "minimum": 0 },
-        "radius": { "type": "number", "minimum": 0 }
-      }
+        "radius": { "type": "number", "minimum": 0 },
+        "sections": {
+          "type": "array", "minItems": 1, "maxItems": 3,
+          "description": "The cylinders of the holder, from the nose downwards: the taper, whatever it narrows to, the nose the tool comes out of.",
+          "items": {
+            "type": "object",
+            "required": ["length", "radius"],
+            "additionalProperties": false,
+            "properties": {
+              "length": { "type": "number", "minimum": 0 },
+              "radius": { "type": "number", "minimum": 0 }
+            }
+          }
+        }
+      },
+      "dependentRequired": { "length": ["radius"], "radius": ["length"] },
+      "not": { "allOf": [ { "required": ["sections"] },
+                          { "anyOf": [ { "required": ["length"] }, { "required": ["radius"] } ] } ] }
     },
     "vector3": {
       "type": "array", "minItems": 3, "maxItems": 3,

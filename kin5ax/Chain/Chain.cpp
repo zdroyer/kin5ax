@@ -367,7 +367,7 @@ CTransformation CChain::GetToolPointToToolMountTransformation() const
 	return CTransformation(CTranslation(0.0,0.0,m_dToolMountToToolPoint));
 }
 
-bool CChain::IsToolMountDeclared() const
+bool CChain::HasDefaultToolHolder() const
 {
 	return !m_vToolPart.empty() && m_vToolPart.back().IsToolHolderDeclared();
 }
@@ -387,7 +387,7 @@ void CChain::SetDefaultToolHolder(const CToolHolder &oHolder)
 
 void CChain::SetToolAssembly(const CMillingTool &oTool)
 {
-	m_dToolMountToToolPoint = IsToolMountDeclared() ? oTool.GetMountToToolPointDistance() : 0.0;
+	m_dToolMountToToolPoint = HasDefaultToolHolder() ? oTool.GetMountToToolPointDistance() : 0.0;
 }
 
 CR3AnchoredVector CChain::GetActualToolPositionAndOrientation() const

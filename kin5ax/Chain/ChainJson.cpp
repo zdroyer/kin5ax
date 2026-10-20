@@ -183,10 +183,35 @@ CChainSegment ReadTerminal(const CContext &ctx, const tJson &j, const std::strin
 	ReadCommon(ctx,j,sPath,oSegment);
 	tJson::const_iterator itHolder = j.find("tool_holder");
 	if(itHolder != j.end()){
-		std::string sHolder = sPath+".tool_holder";
-		ctx.CheckObject(*itHolder,sHolder,{"length","radius"},{});
-		oSegment.SetToolHolder(CToolHolder(ctx.Number(ctx.Member(*itHolder,"length",sHolder),sHolder+".length")
-			,ctx.Number(ctx.Member(*itHolder,"radius",sHolder),sHolder+".radius")));
+		const std::string sHolder = sPath+".tool_holder";
+		//length and radius are the one cylinder this object carried before holders had a shape;
+		//sections give it several, and model is the designation a host matches its own against.
+		//A holder with no cylinder at all is NO_HOLDER: the tool is clamped into the spindle.
+		ctx.CheckObject(*itHolder,sHolder,{},{"length","radius","model","sections"});
+		std::vector<CToolHolderSection> vSections;
+		tJson::const_iterator itSections = itHolder->find("sections");
+		if(itSections != itHolder->end()){
+			if(!itSections->is_array())
+				ctx.Fail(sHolder+".sections","an array of sections is expected");
+			if(itSections->size()>nTOOL_HOLDER_SECTIONS_MAX)
+				ctx.Fail(sHolder+".sections","a tool holder is made of at most "
+					+size_to_string(nTOOL_HOLDER_SECTIONS_MAX)+" sections");
+			for(size_t i=0;i<itSections->size();i++){
+				const std::string sOne = sHolder+".sections["+size_to_string(i)+"]";
+				ctx.CheckObject((*itSections)[i],sOne,{"length","radius"},{});
+				vSections.push_back(CToolHolderSection(
+					ctx.Number(ctx.Member((*itSections)[i],"length",sOne),sOne+".length")
+					,ctx.Number(ctx.Member((*itSections)[i],"radius",sOne),sOne+".radius")));
+			}
+		}
+		const bool bOneCylinder = itHolder->contains("length") || itHolder->contains("radius");
+		if(bOneCylinder && !vSections.empty())
+			ctx.Fail(sHolder,"a tool holder has sections or a length and a radius, not both");
+		if(bOneCylinder)
+			vSections.push_back(CToolHolderSection(
+				ctx.Number(ctx.Member(*itHolder,"length",sHolder),sHolder+".length")
+				,ctx.Number(ctx.Member(*itHolder,"radius",sHolder),sHolder+".radius")));
+		oSegment.SetToolHolder(CToolHolder(ctx.OptionalString(*itHolder,"model",sHolder),vSections));
 	}
 	return oSegment;
 }
@@ -274,8 +299,24 @@ tJson TerminalToJson(const CChainSegment &oSegment)
 	CommonToJson(oSegment,j);
 	if(oSegment.IsToolHolderDeclared()){
 		tJson holder;
-		holder["length"] = oSegment.GetToolHolder().GetLength();
-		holder["radius"] = oSegment.GetToolHolder().GetRadius();
+		const CToolHolder &oHolder = oSegment.GetToolHolder();
+		if(!oHolder.GetModel().empty())
+			holder["model"] = oHolder.GetModel();
+		const std::vector<CToolHolderSection> &vSections = oHolder.GetSections();
+		if(vSections.size()==1){
+			//one cylinder keeps the shape this object always had
+			holder["length"] = vSections[0].GetLength();
+			holder["radius"] = vSections[0].GetRadius();
+		} else if(!vSections.empty()){
+			tJson sections = tJson::array();
+			for(size_t i=0;i<vSections.size();i++){
+				tJson one;
+				one["length"] = vSections[i].GetLength();
+				one["radius"] = vSections[i].GetRadius();
+				sections.push_back(one);
+			}
+			holder["sections"] = sections;
+		}
 		j["tool_holder"] = holder;
 	}
 	BoxesToJson(oSegment,j);
