@@ -38,7 +38,11 @@ takes and the tool that goes in it - which is
 Every segment is a constant transformation (a translation, then a rotation about an axis by an
 angle) followed by its joint motion: a translation along the local Z for a `PRISMATIC_LINK`, a
 rotation about the local Z for a `REVOLUTE_LINK`. A segment carries an offset, a default value,
-optional minimum/maximum limits and any number of collision boxes. The material holder part is
+optional minimum/maximum limits and any number of collision solids. A solid is a box, a piece of
+a cylinder - one axis of the frame, two ends along it, a radius and a wedge - or a piece of a
+sphere, so that a swivel head, a fork cheek, a rotary table and a round arm end need not be boxed
+into something they are not; `3DGeometry/Solid.h` says how exact each pair of kinds is tested,
+and KnownBugs #72 what is left. The material holder part is
 applied inverted, so the whole machine is one product of transformations from the workpiece
 frame to the tool frame — the re-indexed chain (6) of the paper.
 
@@ -134,7 +138,7 @@ does not occur; it is logged when it does.
 
 | format | direction | reader / writer | notes |
 |---|---|---|---|
-| `.kc.json` | in, out | `CChainJsonReader`, `CChainJsonWriter` | JSON, schema `kc.schema.json` (draft 2020-12); terminals are members of their branch, joints are `"rotary"` or `"linear"`, a branch may have no joint; model name, machine, author and date are document members; the reader checks the schema rules itself and names the member at fault by path, e.g. `tool_branch.links[1].rotation.axis` |
+| `.kc.json` | in, out | `CChainJsonReader`, `CChainJsonWriter` | JSON, schema `kc.schema.json` (draft 2020-12); terminals are members of their branch, joints are `"rotary"` or `"linear"`, a branch may have no joint; a segment carries `boxes`, `solids` (a box, a `cylinder` or a `sphere` per entry) or both; model name, machine, author and date are document members; the reader checks the schema rules itself and names the member at fault by path, e.g. `tool_branch.links[1].rotation.axis` |
 | `.fcm` | in, out | `CChainFcmReader`, `CChainFcmWriter` | FreeCAD 1.2 CAM machine definition; see below |
 | CL data | in | `CCutterLocationData` | APT-like text, one `GOTO/x,y,z,i,j,k` per line; `MSYS/` recognised; other lines reported and skipped; locale independent, CRLF tolerant; inf, nan and out-of-range numbers are errors of their line |
 | G-code | out | `CSimulationData::ExportToGCode` | one `N.. G1 X.. Y.. Z.. A.. B..` block per location; the caller maps joints to axis letters; degrees or radians; no feed rates, tool changes or rollover handling |
@@ -196,7 +200,7 @@ the tool axis points along +Z at home.
 
 | area | classes |
 |---|---|
-| geometry (`3DGeometry/`) | `CR3Point`, `CR3Vector`, `CR3AnchoredVector` (position + axis), `CM4x4`, `CTransformation`, `CTranslation`, `CRotation`, `CScale`, `CR3Box` (collision boxes: exact box/box, box/segment, box/sphere, box/cylinder tests) |
+| geometry (`3DGeometry/`) | `CR3Point`, `CR3Vector`, `CR3AnchoredVector` (position + axis), `CM4x4`, `CTransformation`, `CTranslation`, `CRotation`, `CScale`, `CR3Box` (exact box/box, box/segment, box/sphere, box/cylinder tests); `CR3CylinderSegment`, `CR3SphereSegment` and `CSolid`, one solid of a chain segment with the pairwise test of all three kinds |
 | machine (`Chain/`) | `CChain` (two segment vectors, forward kinematics, limits, collisions with a `CCollisionReport` of which solids met, XML out), `CChainSegment`, `CChainParameter` (value, unit, type single/any/none), `CChainConfiguration` (the five joint values, distance, equivalents), `CChainXmlReader`, `CChainJsonReader`/`Writer`, `CChainFcmReader`/`Writer`, `CChainFileReader` |
 | tool (`MillingTool/`) | `CMillingTool`, `CMillingToolBall`, `CMillingToolCylinder`: the cutting part (the cut volume of the simulation and a collision solid), the non-cutting shank and the holder (`CToolHolder`), the lengths they add up to and the distance from the nose of the spindle to the programmed point; `CToolDescription` and `CToolAssembly`, the holder with its tool as a chain file describes it |
 | solver (`Postprocessor/`) | `COrientationPostprocessor` (the angles), `CPositionPostprocessor` (the shifts), `C5CPostprocessor` (signs, limits, collisions, singular sections), `CSolveReport` and `SOLVE_STATUS` |
