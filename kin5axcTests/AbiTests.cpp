@@ -1266,3 +1266,130 @@ TEST(Abi, TheOffsetComesFromTheToolOrFromTheHostAndNeverFromNowhere)
 	k5_tool_free(tool);
 	k5_chain_free(chain);
 }
+
+//A chain whose table carries one of each kind of solid, written here so that the test does not wait
+//for a shipped model to grow a cylinder.
+static std::string ChainWithEveryKindOfSolid()
+{
+	return R"KC({
+  "format": "kin5ax-chain",
+  "version": 2,
+  "unit": "m",
+  "name": "solids",
+  "tool_branch": {
+    "links": [
+      { "type": "linear", "name": "X", "translation": [0, 0, 0],
+        "rotation": { "axis": [0, 0, 1], "angle_deg": 0 } },
+      { "type": "linear", "name": "Y", "translation": [0, 0, 0],
+        "rotation": { "axis": [1, 0, 0], "angle_deg": -90 } },
+      { "type": "linear", "name": "Z", "translation": [0, 0, 0],
+        "rotation": { "axis": [0, 1, 0], "angle_deg": 90 } }
+    ],
+    "tool_spindle_nose": {
+      "name": "Spindle nose",
+      "translation": [0, 0, 0],
+      "rotation": { "axis": [0, 0, 1], "angle_deg": 0 }
+    }
+  },
+  "workpiece_branch": {
+    "links": [
+      { "type": "rotary", "name": "A", "translation": [0, 0, 0],
+        "rotation": { "axis": [0, 1, 0], "angle_deg": 90 } },
+      { "type": "rotary", "name": "C", "translation": [0, 0, 0],
+        "rotation": { "axis": [0, 1, 0], "angle_deg": -90 } }
+    ],
+    "table": {
+      "name": "Table",
+      "translation": [0, 0, 0],
+      "rotation": { "axis": [0, 0, 1], "angle_deg": 0 },
+      "solids": [
+        { "type": "box", "min": [-0.2, -0.2, -0.05], "max": [0.2, 0.2, 0] },
+        { "type": "cylinder", "axis": "z", "axis_point": [0.05, 0.02, 0],
+          "base": -0.3, "top": -0.05, "radius": 0.12,
+          "min_angle_deg": 20, "max_angle_deg": 110 },
+        { "type": "sphere", "centre": [0, 0, -0.35], "radius": 0.09,
+          "axis": "z", "min": -0.02, "max": 0.09 }
+      ]
+    }
+  }
+}
+)KC";
+}
+
+TEST(Abi, TheSolidsOfASegmentComeOverWholeAndNotOnlyAsBoxes)
+{
+	const std::string sPath = TempPath("kin5axcTests_solids.kc.json");
+	{
+		FILE *pFile = fopen(sPath.c_str(),"wt");
+		ASSERT_TRUE(pFile!=NULL)<<"cannot write "<<sPath;
+		const std::string sText = ChainWithEveryKindOfSolid();
+		fwrite(sText.c_str(),1,sText.size(),pFile);
+		fclose(pFile);
+	}
+	k5_chain chain = NULL;
+	ASSERT_EQ(K5_OK,k5_chain_open(sPath.c_str(),&chain))<<k5_last_error();
+
+	size_t nSegments = 0;
+	ASSERT_EQ(K5_OK,k5_chain_frames(chain,K5_PART_TABLE,NULL,0,&nSegments))<<k5_last_error();
+	const size_t nTable = nSegments-1;			//the terminal is the last segment of the branch
+	size_t nSolids = 0;
+	ASSERT_EQ(K5_OK,k5_chain_segment_solid_count(chain,K5_PART_TABLE,nTable,&nSolids))<<k5_last_error();
+	ASSERT_EQ((size_t)3,nSolids);
+
+	k5_solid oBox;
+	ASSERT_EQ(K5_OK,k5_chain_segment_solid(chain,K5_PART_TABLE,nTable,0,&oBox))<<k5_last_error();
+	EXPECT_EQ(K5_SOLID_BOX,oBox.type);
+	EXPECT_DOUBLE_EQ(-0.2,oBox.min[0]);
+	EXPECT_DOUBLE_EQ(0.0,oBox.max[2]);
+	EXPECT_DOUBLE_EQ(0.0,oBox.radius)<<"a box has no radius, and reads zero rather than rubbish";
+
+	k5_solid oCylinder;
+	ASSERT_EQ(K5_OK,k5_chain_segment_solid(chain,K5_PART_TABLE,nTable,1,&oCylinder))<<k5_last_error();
+	EXPECT_EQ(K5_SOLID_CYLINDER,oCylinder.type);
+	EXPECT_EQ(K5_AXIS_Z,oCylinder.axis);
+	EXPECT_DOUBLE_EQ(0.05,oCylinder.point[0]);
+	EXPECT_DOUBLE_EQ(0.02,oCylinder.point[1]);
+	EXPECT_DOUBLE_EQ(-0.3,oCylinder.base);
+	EXPECT_DOUBLE_EQ(-0.05,oCylinder.top);
+	EXPECT_DOUBLE_EQ(0.12,oCylinder.radius);
+	EXPECT_DOUBLE_EQ(20.0,oCylinder.min_angle_deg);
+	EXPECT_DOUBLE_EQ(110.0,oCylinder.max_angle_deg);
+
+	k5_solid oSphere;
+	ASSERT_EQ(K5_OK,k5_chain_segment_solid(chain,K5_PART_TABLE,nTable,2,&oSphere))<<k5_last_error();
+	EXPECT_EQ(K5_SOLID_SPHERE,oSphere.type);
+	EXPECT_EQ(K5_AXIS_Z,oSphere.axis);
+	EXPECT_DOUBLE_EQ(-0.35,oSphere.point[2])<<"the centre";
+	EXPECT_DOUBLE_EQ(0.09,oSphere.radius);
+	EXPECT_DOUBLE_EQ(-0.02,oSphere.cut_min);
+	EXPECT_DOUBLE_EQ(0.09,oSphere.cut_max);
+
+	//and the boxes call still answers, with the box that holds each solid
+	size_t nBoxes = 0;
+	std::vector<double> v(6*3,0.0);
+	ASSERT_EQ(K5_OK,k5_chain_segment_boxes(chain,K5_PART_TABLE,nTable,&v[0],v.size(),&nBoxes))
+		<<k5_last_error();
+	EXPECT_EQ((size_t)3,nBoxes);
+	EXPECT_DOUBLE_EQ(-0.2,v[0])<<"the box solid is its own box";
+	//the wedge of the cylinder reaches +Y fully (90 degrees is inside 20..110) and its radius in Y
+	EXPECT_NEAR(0.02+0.12,v[6+4],1E-12);
+	EXPECT_NEAR(-0.3,v[6+2],1E-12)<<"and down to its base";
+	//the sphere is as wide as its widest circle, which is the equator here
+	EXPECT_NEAR(0.09,v[12+3],1E-12);
+
+	//what is not there is said rather than guessed
+	k5_solid oAny;
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_segment_solid(chain,K5_PART_TABLE,nTable,3,&oAny));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_segment_solid(chain,K5_PART_TABLE,nSegments,0,&oAny));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_segment_solid(chain,42,nTable,0,&oAny));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_segment_solid(NULL,K5_PART_TABLE,nTable,0,&oAny));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_segment_solid_count(chain,K5_PART_TABLE,nSegments,&nSolids));
+	EXPECT_EQ(K5_ERROR_ARGUMENT,k5_chain_segment_solid_count(NULL,K5_PART_TABLE,nTable,&nSolids));
+
+	//a segment that carries nothing says none
+	ASSERT_EQ(K5_OK,k5_chain_segment_solid_count(chain,K5_PART_SPINDLE,0,&nSolids));
+	EXPECT_EQ((size_t)0,nSolids);
+
+	k5_chain_free(chain);
+	remove(sPath.c_str());
+}

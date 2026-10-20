@@ -83,6 +83,21 @@ typedef enum k5_collision_kind {
 	K5_COLLIDING_TOOL_SHANK		/* its shank or its holder, which may touch nothing at all: "is in" */
 } k5_collision_kind;
 
+/* What kind of solid a segment carries. A box is what a machine file has always had; the other two
+ * are there because a swivel head, a fork cheek, a rotary table and a round arm end are not boxes. */
+typedef enum k5_solid_type {
+	K5_SOLID_BOX = 0,
+	K5_SOLID_CYLINDER,			/* a piece of a cylinder: an axis, two ends, a radius, a wedge */
+	K5_SOLID_SPHERE			/* a piece of a sphere: a centre, a radius, two cuts */
+} k5_solid_type;
+
+/* One axis of a frame: which one a cylinder runs along, or which one a sphere is cut across. */
+typedef enum k5_axis {
+	K5_AXIS_X = 0,
+	K5_AXIS_Y,
+	K5_AXIS_Z
+} k5_axis;
+
 typedef enum k5_link_type {
 	K5_LINK_PRISMATIC = 0,			/* slides along its own Z */
 	K5_LINK_REVOLUTE				/* turns about its own Z */
@@ -220,13 +235,46 @@ K5_API k5_status k5_chain_first_rotary_axis(k5_chain chain, int part, size_t *ou
 K5_API k5_status k5_chain_frames(k5_chain chain, int part, double *out, size_t capacity_in_doubles,
 	size_t *count_out);
 
-/* The collision boxes of the segment of that index in that branch - the segments being those of
- * k5_chain_frames, the terminal included - in the first of the two frames k5_chain_frames gives for
- * the segment: 6 doubles per box, the minimum corner x y z then the maximum corner x y z. A segment
- * may have no box at all; the models shipped with the library carry boxes on their terminals only.
- * out may be null to ask for the count only; count_out gets the number of boxes either way. */
+/* The collision solids of the segment of that index in that branch - the segments being those of
+ * k5_chain_frames, the terminal included - each as the box that holds it, in the first of the two
+ * frames k5_chain_frames gives for the segment: 6 doubles per box, the minimum corner x y z then
+ * the maximum corner x y z. For a box that box is the solid itself; for a piece of a cylinder or of
+ * a sphere it is the box around the piece, and k5_chain_segment_solid gives the shape. A segment
+ * may have no solid at all; the models shipped with the library carry solids on their terminals
+ * only. out may be null to ask for the count only; count_out gets the number either way. */
 K5_API k5_status k5_chain_segment_boxes(k5_chain chain, int part, size_t index, double *out,
 	size_t capacity_in_doubles, size_t *count_out);
+
+typedef struct k5_solid {
+	int type;					/* k5_solid_type; the fields of the other kinds read as zero */
+	double min[3];				/* BOX: the minimum corner */
+	double max[3];				/* BOX: the maximum corner */
+	int axis;					/* k5_axis. CYLINDER: the axis it runs along. SPHERE: of its cuts */
+	double point[3];			/* CYLINDER: a point of the axis, of which only the two coordinates
+								 * across the axis matter. SPHERE: the centre */
+	double radius;				/* CYLINDER and SPHERE */
+	double base;				/* CYLINDER: the lower end, as a coordinate along the axis */
+	double top;				/* CYLINDER: the upper end */
+	double min_angle_deg;		/* CYLINDER: the wedge, measured about the axis from the first axis
+								 * across it towards the second; 0 and 360 are the whole turn */
+	double max_angle_deg;
+	double cut_min;			/* SPHERE: the two cuts, along the axis and measured FROM THE CENTRE;
+								 * -radius and radius are the whole sphere */
+	double cut_max;
+} k5_solid;
+
+/* How many solids that segment of that branch carries - the segments being those of
+ * k5_chain_frames, the terminal included - and the solid of that index among them. The solids are
+ * given in the first of the two frames k5_chain_frames gives for the segment, the same frame
+ * k5_chain_segment_boxes uses, and a segment may carry none at all.
+ *
+ * k5_chain_segment_boxes hands over the box that holds each of these solids, which is the solid
+ * itself for a box. A host that only needs something to draw and to pick can stay with it; one that
+ * wants the shapes reads them here. */
+K5_API k5_status k5_chain_segment_solid_count(k5_chain chain, int part, size_t index, size_t *out);
+K5_API k5_status k5_chain_segment_solid(k5_chain chain, int part, size_t index, size_t solid,
+	k5_solid *out);
+
 
 /* Puts the chain into a set of joint values (K5_AXES of them, in the order of k5_chain_link) and
  * nothing more: what k5_chain_frames and k5_chain_link answer afterwards is for that configuration.

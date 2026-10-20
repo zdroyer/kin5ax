@@ -425,6 +425,68 @@ k5_status k5_chain_set_configuration(k5_chain chain, const double *q)
 	K5_END(K5_ERROR_CHAIN)
 }
 
+//the three kinds of solid, both ways
+static int ToCSolidType(SOLID_TYPE nType)
+{
+	switch(nType){
+	case SOLID_CYLINDER:	return K5_SOLID_CYLINDER;
+	case SOLID_SPHERE:		return K5_SOLID_SPHERE;
+	default:				return K5_SOLID_BOX;
+	}
+}
+
+static int ToCAxis(R3_AXIS nAxis)
+{
+	switch(nAxis){
+	case R3_AXIS_X:	return K5_AXIS_X;
+	case R3_AXIS_Y:	return K5_AXIS_Y;
+	default:		return K5_AXIS_Z;
+	}
+}
+
+static void ToTriple(const CR3Point &p, double *out)
+{
+	out[0] = p.GetX();
+	out[1] = p.GetY();
+	out[2] = p.GetZ();
+}
+
+//A solid of a segment into the flat structure of the interface. Every field is written, so a host
+//reads zeros where a kind says nothing rather than whatever was in its memory.
+static void ToCSolid(const CSolid &oSolid, k5_solid *out)
+{
+	memset(out,0,sizeof(k5_solid));
+	out->type = ToCSolidType(oSolid.GetType());
+	switch(oSolid.GetType()){
+	case SOLID_CYLINDER:
+		{
+			const CR3CylinderSegment &oC = oSolid.GetCylinder();
+			out->axis = ToCAxis(oC.GetAxis());
+			ToTriple(oC.GetAxisPoint(),out->point);
+			out->radius = oC.GetRadius();
+			out->base = oC.GetBase();
+			out->top = oC.GetTop();
+			out->min_angle_deg = oC.GetMinAngleDegrees();
+			out->max_angle_deg = oC.GetMaxAngleDegrees();
+		}
+		break;
+	case SOLID_SPHERE:
+		{
+			const CR3SphereSegment &oS = oSolid.GetSphere();
+			out->axis = ToCAxis(oS.GetAxis());
+			ToTriple(oS.GetCentre(),out->point);
+			out->radius = oS.GetRadius();
+			out->cut_min = oS.GetMin();
+			out->cut_max = oS.GetMax();
+		}
+		break;
+	default:
+		ToTriple(oSolid.GetBox().GetMinPoint(),out->min);
+		ToTriple(oSolid.GetBox().GetMaxPoint(),out->max);
+		break;
+	}
+}
+
 //the pairs of a report into the k5_collision of the host
 static void ToCCollision(const CCollidingPair &oPair, k5_collision *out)
 {
@@ -436,6 +498,34 @@ static void ToCCollision(const CCollidingPair &oPair, k5_collision *out)
 	default:					out->kind = K5_COLLIDING_PARTS; break;
 	}
 	out->locations = oPair.m_nCount;
+}
+
+k5_status k5_chain_segment_solid_count(k5_chain chain, int part, size_t index, size_t *out)
+{
+	K5_BEGIN
+	K5_NEED(chain && out,"k5_chain_segment_solid_count needs a chain and somewhere to put the count")
+	CHAIN_PART nPart = CHAIN_PART_SPINDLE;
+	K5_NEED(FromCPart(part,nPart),"part is neither K5_PART_SPINDLE nor K5_PART_TABLE")
+	const std::vector<CChainSegment> &vPart = chain->m_oChain.GetPart(nPart);
+	K5_NEED(index<vPart.size(),"there is no segment of that index in that branch of the chain")
+	*out = vPart[index].GetPartVector().size();
+	return K5_OK;
+	K5_END(K5_ERROR_CHAIN)
+}
+
+k5_status k5_chain_segment_solid(k5_chain chain, int part, size_t index, size_t solid, k5_solid *out)
+{
+	K5_BEGIN
+	K5_NEED(chain && out,"k5_chain_segment_solid needs a chain and somewhere to put the solid")
+	CHAIN_PART nPart = CHAIN_PART_SPINDLE;
+	K5_NEED(FromCPart(part,nPart),"part is neither K5_PART_SPINDLE nor K5_PART_TABLE")
+	const std::vector<CChainSegment> &vPart = chain->m_oChain.GetPart(nPart);
+	K5_NEED(index<vPart.size(),"there is no segment of that index in that branch of the chain")
+	const std::vector<CSolid> &vSolids = vPart[index].GetPartVector();
+	K5_NEED(solid<vSolids.size(),"there is no solid of that index on that segment")
+	ToCSolid(vSolids[solid],out);
+	return K5_OK;
+	K5_END(K5_ERROR_CHAIN)
 }
 
 k5_status k5_chain_solid_name(k5_chain chain, int part, size_t segment, size_t box,
