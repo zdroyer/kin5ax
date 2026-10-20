@@ -9,6 +9,7 @@
 
 #include "millingtoolball.h"
 #include "millingtoolcylinder.h"
+#include "MillingToolToroidal.h"
 #include ".\millingtoolpropertiesdialog.h"
 
 
@@ -27,32 +28,99 @@ CMillingToolPropertiesDialog::CMillingToolPropertiesDialog(CWnd* pParent /*=NULL
 	,m_dHolderLength(0.0)
 	,m_dHolderRadius(0.0)
 	,m_nToolShapeIndex(0)
+	,m_nHolderIndex(0)
 	,m_pOldTool(0)
 	,m_pDoc(0)
 {
 
 }
 
-//The shape the combo box stands for, and the R that shape uses (a flat end mill has none).
+//The shape the combo box stands for, and what R means for it: the ball of a ball nose tool, the
+//rounding of the bottom edge of a toroidal one, nothing at all for a flat end mill.
 MILLING_TOOL_TYPE CMillingToolPropertiesDialog::ToolType() const
 {
-	return (m_nToolShapeIndex==0) ? MILLING_TOOL_BALL : MILLING_TOOL_CYLINDER;
+	switch(m_nToolShapeIndex){
+	case 1:		return MILLING_TOOL_CYLINDER;
+	case 2:		return MILLING_TOOL_TORUS;
+	default:	return MILLING_TOOL_BALL;
+	}
 }
 
 std::string CMillingToolPropertiesDialog::ToolDimensionProblem() const
 {
-	if(m_nToolShapeIndex!=0 && m_nToolShapeIndex!=1)
+	if(m_nToolShapeIndex<0 || m_nToolShapeIndex>2)
 		return "";		//no shape to build: the dimensions are nobody's business yet
-	double dR = (ToolType()==MILLING_TOOL_BALL) ? m_dR : 0.0;
+	double dR = (ToolType()==MILLING_TOOL_CYLINDER) ? 0.0 : m_dR;
 	return CMillingTool::DimensionProblem(ToolType(),m_dRz,dR,m_dCuttingPartEnd
 		,m_dReferencePointHeight,m_dNonCuttingLength);
+}
+
+CToolHolder CMillingToolPropertiesDialog::HolderFromDialog() const
+{
+	if(m_nHolderIndex<=0)
+		return CToolHolder(m_dHolderLength,m_dHolderRadius);	//the two fields, as one cylinder
+	const CToolHolder oCatalogue = ToolHolderFromCatalogue((size_t)(m_nHolderIndex-1));
+	//the catalogue is in metres and the dialog in the unit of the chain, so the sections are scaled
+	const double dFactor = m_pDoc ? 1000.0/m_pDoc->m_oChain.GetUnitInMillimetres() : 1.0;
+	if(dFactor==1.0)
+		return oCatalogue;
+	std::vector<CToolHolderSection> vSections = oCatalogue.GetSections();
+	for(size_t i=0;i<vSections.size();i++){
+		vSections[i].SetLength(vSections[i].GetLength()*dFactor);
+		vSections[i].SetRadius(vSections[i].GetRadius()*dFactor);
+	}
+	return CToolHolder(oCatalogue.GetModel(),vSections);
+}
+
+void CMillingToolPropertiesDialog::FillTheLists()
+{
+	m_comboShape.ResetContent();
+	m_comboShape.AddString("ball nose");		//the order of ToolType
+	m_comboShape.AddString("flat end");
+	m_comboShape.AddString("toroidal");
+	m_comboShape.SetCurSel(m_nToolShapeIndex);
+	m_comboHolder.ResetContent();
+	m_comboHolder.AddString("(the sizes below)");
+	for(size_t i=0;i<ToolHolderCatalogueSize();i++)
+		m_comboHolder.AddString(ToolHolderFromCatalogue(i).GetModel().c_str());
+	m_comboHolder.SetCurSel(m_nHolderIndex);
+	EnableHolderFields();
+}
+
+void CMillingToolPropertiesDialog::EnableHolderFields()
+{
+	const BOOL bCustom = (m_nHolderIndex<=0) ? TRUE : FALSE;
+	m_editHolderLength.EnableWindow(bCustom);
+	m_editHolderRadius.EnableWindow(bCustom);
+}
+
+BOOL CMillingToolPropertiesDialog::OnInitDialog()
+{
+	CDialog::OnInitDialog();
+	FillTheLists();
+	UpdateMillingTool();
+	m_wndMillingToolPreview.Invalidate(TRUE);
+	return TRUE;
+}
+
+void CMillingToolPropertiesDialog::OnCbnSelchangeComboToolHolder()
+{
+	UpdateData(TRUE);
+	//the picked holder is what the two fields now say, so that the numbers of the drawing can be read
+	const CToolHolder oHolder = HolderFromDialog();
+	m_dHolderLength = oHolder.GetLength();
+	m_dHolderRadius = oHolder.GetRadius();
+	EnableHolderFields();
+	UpdateData(FALSE);
+	UpdateMillingTool();
+	m_wndMillingToolPreview.Invalidate(TRUE);
 }
 
 void CMillingToolPropertiesDialog::UpdateMillingTool()
 {
 	assert(m_pDoc);
 	//the programmed point follows the shape of the tool: the centre of the ball, or the tip (KnownBugs #66)
-	m_dReferencePointHeight = (m_nToolShapeIndex==0) ? fabs(m_dR) : 0.0;
+	m_dReferencePointHeight = (ToolType()==MILLING_TOOL_BALL) ? fabs(m_dR) : 0.0;
 	//the fields are read on every keystroke, so a half typed dimension is normal and the tools refuse
 	//dimensions that are not a tool (KnownBugs #50): the document keeps the tool it has until the fields
 	//make one again, and Apply says what is wrong with them
@@ -65,7 +133,7 @@ void CMillingToolPropertiesDialog::UpdateMillingTool()
 	if(m_pDoc->m_pMillingTool != m_pOldTool)
 		delete m_pDoc->m_pMillingTool;
 	
-	CToolHolder oHolder(m_dHolderLength,m_dHolderRadius);
+	const CToolHolder oHolder = HolderFromDialog();
 	switch(m_nToolShapeIndex){
 		//ball
 		case 0:
@@ -75,6 +143,11 @@ void CMillingToolPropertiesDialog::UpdateMillingTool()
 		//cylinder
 		case 1:
 			m_pDoc->m_pMillingTool = new CMillingToolCylinder(m_dRz,m_dR
+				,m_dCuttingPartEnd,m_dReferencePointHeight,m_dNonCuttingLength,oHolder);
+		break;
+		//toroidal: R is the radius the bottom edge is rounded by
+		case 2:
+			m_pDoc->m_pMillingTool = new CMillingToolToroidal(m_dRz,m_dR
 				,m_dCuttingPartEnd,m_dReferencePointHeight,m_dNonCuttingLength,oHolder);
 		break;
 		default:
@@ -108,9 +181,14 @@ void CMillingToolPropertiesDialog::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_HOLDER_LENGTH, m_dHolderLength);
 	DDX_Text(pDX, IDC_EDIT_HOLDER_RADIUS, m_dHolderRadius);
 	DDX_CBIndex(pDX, IDC_COMBO_SHAPE, m_nToolShapeIndex);
+	DDX_CBIndex(pDX, IDC_COMBO_TOOL_HOLDER, m_nHolderIndex);
 	DDX_Control(pDX, IDC_EDIT_CUTTING_PART_HEIGHT, m_editCuttingPartHeight);
 	DDX_Control(pDX, IDC_EDIT_H, m_editH);
 	DDX_Control(pDX, IDC_EDIT_R, m_editR);
+	DDX_Control(pDX, IDC_COMBO_SHAPE, m_comboShape);
+	DDX_Control(pDX, IDC_COMBO_TOOL_HOLDER, m_comboHolder);
+	DDX_Control(pDX, IDC_EDIT_HOLDER_LENGTH, m_editHolderLength);
+	DDX_Control(pDX, IDC_EDIT_HOLDER_RADIUS, m_editHolderRadius);
 }
 
 
@@ -123,6 +201,7 @@ BEGIN_MESSAGE_MAP(CMillingToolPropertiesDialog, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_APPLY, OnBnClickedButtonApply)
 	ON_BN_CLICKED(IDCANCEL, OnBnClickedCancel)
 	ON_CBN_SELCHANGE(IDC_COMBO_SHAPE, OnCbnSelchangeComboShape)
+	ON_CBN_SELCHANGE(IDC_COMBO_TOOL_HOLDER, OnCbnSelchangeComboToolHolder)
 END_MESSAGE_MAP()
 
 
@@ -202,6 +281,12 @@ void CMillingToolPropertiesDialog::SetActiveDocument(CKin5axChainEditorPlusDoc *
 				oHolder = m_pDoc->m_oChain.GetDefaultToolHolder();
 			m_dHolderLength = oHolder.GetLength();
 			m_dHolderRadius = oHolder.GetRadius();
+			//a holder the catalogue knows by name is shown as that entry, the rest as its sizes
+			m_nHolderIndex = 0;
+			for(size_t i=0;i<ToolHolderCatalogueSize();i++)
+				if(!oHolder.GetModel().empty()
+					&& oHolder.GetModel()==ToolHolderFromCatalogue(i).GetModel())
+					m_nHolderIndex = (int)i+1;
 		}
 	}
 
@@ -228,16 +313,22 @@ void CMillingToolPropertiesDialog::OnCbnSelchangeComboShape()
 {
 	UpdateData(TRUE);
 	switch(m_nToolShapeIndex){
-		//ball
+		//ball: the programmed point is the centre of the ball
 		case 0:
 			m_editH.EnableWindow(FALSE);
 			m_editR.EnableWindow(TRUE);
 			m_dReferencePointHeight = m_dR;
 		break;
-		//cylinder
+		//cylinder: no R, and the tip is the programmed point
 		case 1:
 			m_editH.EnableWindow(FALSE);
 			m_editR.EnableWindow(FALSE);
+			m_dReferencePointHeight = 0.0;
+		break;
+		//toroidal: R rounds the bottom edge, and the tip is still the programmed point
+		case 2:
+			m_editH.EnableWindow(FALSE);
+			m_editR.EnableWindow(TRUE);
 			m_dReferencePointHeight = 0.0;
 		break;
 		default:

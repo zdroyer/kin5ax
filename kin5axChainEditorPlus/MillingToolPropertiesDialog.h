@@ -49,6 +49,12 @@ public:
 	double m_dHolderLength;
 	double m_dHolderRadius;
 	int m_nToolShapeIndex;
+	//The holder the list stands for: 0 is the one cylinder the two fields above describe, and the
+	//rest is the catalogue of the library, whose first entry is NO_HOLDER - a tool clamped straight
+	//into the spindle, which is a holder in the data with no body.
+	int m_nHolderIndex;
+	//what that index means, in the unit of the chain: the catalogue is in metres
+	CToolHolder HolderFromDialog() const;
 
 	CMillingTool *m_pOldTool;
 
@@ -71,6 +77,17 @@ public:
 	afx_msg void OnBnClickedCancel();
 	virtual INT_PTR DoModal();
 	afx_msg void OnCbnSelchangeComboShape();
+	afx_msg void OnCbnSelchangeComboToolHolder();
+	virtual BOOL OnInitDialog();
 	CEdit m_editH;
 	CEdit m_editR;
+	CComboBox m_comboShape;
+	CComboBox m_comboHolder;
+	CEdit m_editHolderLength;
+	CEdit m_editHolderRadius;
+protected:
+	//the shapes and the holders of the two lists: their order is this, not the alphabet's
+	void FillTheLists();
+	//a catalogue holder is shown but not edited; the custom one is the other way round
+	void EnableHolderFields();
 };
