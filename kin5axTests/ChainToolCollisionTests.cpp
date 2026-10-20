@@ -1,5 +1,5 @@
 // CChain::DetectCollisions with a whole tool assembly: the cutting part, the shank and the holder all meet the
-// boxes of the machine, each at its own height below the tool mount.
+// boxes of the machine, each at its own height below the nose of the spindle.
 #include "stdafx.h"
 #include "gtest/gtest.h"
 #include "TestData.h"
@@ -15,12 +15,12 @@ const double dCUTTING = 0.064;
 const double dSHANK = 0.030;
 const double dHOLDER_LENGTH = 0.050;
 const double dHOLDER_RADIUS = 0.030;
-//below the tool mount: the holder from 0 to -0.05, the shank to -0.08, the cutting part to -0.144
+//below the nose: the holder from 0 to -0.05, the shank to -0.08, the cutting part to -0.144
 const double dHOLDER_Z = -0.5*dHOLDER_LENGTH;
 const double dSHANK_Z = -(dHOLDER_LENGTH+0.5*dSHANK);
 const double dCUTTING_Z = -(dHOLDER_LENGTH+dSHANK+0.5*dCUTTING);
 
-//A chain of two straight branches: the tool mount, the workpiece frame and the base are the same frame, and
+//A chain of two straight branches: the spindle nose, the workpiece frame and the base are the same frame, and
 //the tool hangs below it. The box of the workpiece holder is the only box of the machine.
 std::string ChainWithABoxAt(double dZ, double dRadial)
 {
@@ -29,7 +29,7 @@ std::string ChainWithABoxAt(double dZ, double dRadial)
   "format": "kin5ax-chain",
   "version": 2,
   "unit": "m",
-  "name": "a box under the tool mount",
+  "name": "a box under the spindle nose",
   "tool_branch": {
     "links": [
       { "type": "linear", "name": "Z", "translation": [0, 0, 0], "rotation": { "axis": [0, 0, 1], "angle_deg": 0 } }
@@ -103,7 +103,7 @@ TEST(ChainToolCollision, TheLogNamesTheHolderAndTheShank)
 
 TEST(ChainToolCollision, ClearOfTheAssemblyNothingCollides)
 {
-	EXPECT_TRUE(CollisionLog(0.05,0.0).empty())<<"above the tool mount";
+	EXPECT_TRUE(CollisionLog(0.05,0.0).empty())<<"above the nose of the spindle";
 	EXPECT_TRUE(CollisionLog(dCUTTING_Z-dCUTTING,0.0).empty())<<"below the tip";
 	EXPECT_TRUE(CollisionLog(dSHANK_Z,2.0*dHOLDER_RADIUS).empty())<<"beside the whole assembly";
 	EXPECT_TRUE(CollisionLog(dSHANK_Z,1.5*dRADIUS).empty())<<"beside the shank, where only the holder is wider";
@@ -112,12 +112,12 @@ TEST(ChainToolCollision, ClearOfTheAssemblyNothingCollides)
 TEST(ChainToolCollision, WithoutAnAssemblyNothingIsAHolderOrAShank)
 {
 	//the same chain with a tool that brings neither a shank nor a holder: it hangs only its own cutting length
-	//below the mount, so its cutting part occupies the space the holder would have (KnownBugs #68)
+	//below the nose, so its cutting part occupies the space the holder would have (KnownBugs #68)
 	CChain oChain = CChainJsonReader::Parse(ChainWithABoxAt(dHOLDER_Z,0.0),"text");
 	CMillingToolBall oBare(dRADIUS,dRADIUS,dCUTTING,dRADIUS);
 	oChain.SetToolOffsetFromTool(oBare);
 	EXPECT_DOUBLE_EQ(dCUTTING-dRADIUS,oChain.GetToolOffset());
 	std::string sLog;
-	EXPECT_TRUE(oChain.HasCollision(oBare,sLog))<<"the cutting part reaches the box under the mount";
+	EXPECT_TRUE(oChain.HasCollision(oBare,sLog))<<"the cutting part reaches the box under the nose";
 	EXPECT_EQ(std::string::npos,sLog.find("holder or shank"))<<sLog;
 }

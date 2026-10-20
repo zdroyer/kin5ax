@@ -116,10 +116,10 @@ void CChain::CheckStructure() const
 	if(m_vMaterialHolderPart.empty())
 		MY_THROW(CGeneratorException,"the material holder part has no segment");
 	if(m_vToolPart.back().GetType()!=CHAIN_SEGMENT_TOOL_SPINDLE_NOSE)
-		MY_THROW(CGeneratorException,"the last segment of the tool part must be the TOOL segment, '"
+		MY_THROW(CGeneratorException,"the last segment of the tool part must be the TOOL_SPINDLE_NOSE segment, '"
 			+m_vToolPart.back().GetName()+"' is a "+m_vToolPart.back().GetTypeName());
 	if(m_vMaterialHolderPart.back().GetType()!=CHAIN_SEGMENT_TABLE)
-		MY_THROW(CGeneratorException,"the last segment of the material holder part must be the MATERIAL_HOLDER segment, '"
+		MY_THROW(CGeneratorException,"the last segment of the material holder part must be the TABLE segment, '"
 			+m_vMaterialHolderPart.back().GetName()+"' is a "+m_vMaterialHolderPart.back().GetTypeName());
 	const std::vector<CChainSegment> *pvParts[2] = {&m_vToolPart,&m_vMaterialHolderPart};
 	for(size_t p=0;p<2;p++){
@@ -243,7 +243,7 @@ void CChain::GetTranslationAxesAndOffset(
 			m4x4F = m4x4F * m_vToolPart[i].GetParametrizedTransformation(oConfig[k].GetValue());
 		}		
 	}
-	m4x4F = m4x4F * m_vToolPart.back().GetConstantTransformation() * GetToolMountToToolPointTransformation();
+	m4x4F = m4x4F * m_vToolPart.back().GetConstantTransformation() * GetSpindleNoseToToolPointTransformation();
 	r3pP1 = m4x4F * CR3Point(0.0);
 
 }
@@ -345,7 +345,7 @@ CTransformation CChain::GetActualToToolTransformation() const
 			m_vToolPart[i].GetParametrizedTransformation(
 				m_vToolPart[i].m_dActualParameterValue);
 	}
-	return m4x4Result * GetToolMountToToolPointTransformation();
+	return m4x4Result * GetSpindleNoseToToolPointTransformation();
 }
 
 double CChain::GetToolOffset() const
@@ -376,12 +376,12 @@ void CChain::SetToolOffset(double dOffset)
 	m_bToolOffsetGiven = true;
 }
 
-CTransformation CChain::GetToolMountToToolPointTransformation() const
+CTransformation CChain::GetSpindleNoseToToolPointTransformation() const
 {
 	return CTransformation(CTranslation(0.0,0.0,-m_dToolOffset));
 }
 
-CTransformation CChain::GetToolPointToToolMountTransformation() const
+CTransformation CChain::GetToolPointToSpindleNoseTransformation() const
 {
 	return CTransformation(CTranslation(0.0,0.0,m_dToolOffset));
 }
@@ -446,7 +446,7 @@ const CToolHolder & CChain::GetDefaultToolHolder() const
 void CChain::SetDefaultToolHolder(const CToolHolder &oHolder)
 {
 	if(m_vToolPart.empty())
-		MY_THROW(CGeneratorException,"the chain has no TOOL segment to clamp a tool holder to");
+		MY_THROW(CGeneratorException,"the chain has no TOOL_SPINDLE_NOSE segment to clamp a tool holder to");
 	m_vToolPart.back().SetToolHolder(oHolder);
 }
 
@@ -454,7 +454,7 @@ void CChain::SetToolOffsetFromTool(const CMillingTool &oTool)
 {
 	//whatever is in the spindle: the holder, the tool sticking out of it, and the reference point
 	//somewhere on that tool. The nose is the nose whether the file names a holder or not.
-	SetToolOffset(oTool.GetMountToToolPointDistance());
+	SetToolOffset(oTool.GetToolOffset());
 }
 
 CR3AnchoredVector CChain::GetActualToolPositionAndOrientation() const
@@ -977,7 +977,7 @@ void CChain::DetectCollisions(CMillingTool *pMillingTool)
 		for(size_t k=0; k<m_vToolPart.size();k++){
 			const std::vector<CR3Box> &boxes2 = m_vToolPart[k].GetPartVector();
 			if(boxes2.empty() && m_vToolPart[k].GetType()!=CHAIN_SEGMENT_TOOL_SPINDLE_NOSE)
-				continue;	//a TOOL segment without boxes still carries the milling tool (KnownBugs #38)
+				continue;	//a nose segment without boxes still carries the milling tool (KnownBugs #38)
 			CTransformation tr = trToI;
 			CTransformation trInv = trToIInv;
 			for(size_t l = 0; l<k; l++){
@@ -998,9 +998,9 @@ void CChain::DetectCollisions(CMillingTool *pMillingTool)
 				}
 			}
 			if(m_vToolPart[k].GetType()==CHAIN_SEGMENT_TOOL_SPINDLE_NOSE){
-				//the solids of the tool are measured from the tool point, which hangs below the mount
-				CTransformation trTool = tr * GetToolMountToToolPointTransformation();
-				CTransformation trToolInv = GetToolPointToToolMountTransformation() * trInv;
+				//the solids of the tool are measured from the tool point, which hangs below the nose
+				CTransformation trTool = tr * GetSpindleNoseToToolPointTransformation();
+				CTransformation trToolInv = GetToolPointToSpindleNoseTransformation() * trInv;
 				for(size_t j=0; j<boxes.size();j++){
 					if(pMillingTool && pMillingTool->CauseCollision(boxes[j],trTool,trToolInv)){
 						m_vMaterialHolderPart[i].SetPartCollision(j);
@@ -1029,7 +1029,7 @@ void CChain::DetectCollisions(CMillingTool *pMillingTool)
 		for(size_t k=i+1; k<m_vToolPart.size();k++){
 			const std::vector<CR3Box> &boxes2 = m_vToolPart[k].GetPartVector();
 			if(boxes2.empty() && m_vToolPart[k].GetType()!=CHAIN_SEGMENT_TOOL_SPINDLE_NOSE)
-				continue;	//a TOOL segment without boxes still carries the milling tool (KnownBugs #38)
+				continue;	//a nose segment without boxes still carries the milling tool (KnownBugs #38)
 			CTransformation tr = trVariable;
 			CTransformation trInv = trVariableInv;
 			for(size_t l = i+1;l<k;l++){
@@ -1050,8 +1050,8 @@ void CChain::DetectCollisions(CMillingTool *pMillingTool)
 				}
 			}
 			if(m_vToolPart[k].GetType()==CHAIN_SEGMENT_TOOL_SPINDLE_NOSE){
-				CTransformation trTool = tr * GetToolMountToToolPointTransformation();
-				CTransformation trToolInv = GetToolPointToToolMountTransformation() * trInv;
+				CTransformation trTool = tr * GetSpindleNoseToToolPointTransformation();
+				CTransformation trToolInv = GetToolPointToSpindleNoseTransformation() * trInv;
 				for(size_t j=0; j<boxes.size();j++){
 					if(pMillingTool && pMillingTool->CauseCollision(boxes[j],trTool,trToolInv)){
 						m_vToolPart[i].SetPartCollision(j);

@@ -44,7 +44,7 @@ add_executable(kin5axTests
   ToolDescriptionTests.cpp
   WorkpieceHolderTests.cpp
   ToolHolderTests.cpp
-  ToolMountTests.cpp
+  SpindleNoseTests.cpp
 )
 target_include_directories(kin5axTests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(kin5axTests PRIVATE kin5ax::kin5ax GTest::gtest)

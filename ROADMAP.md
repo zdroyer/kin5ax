@@ -78,7 +78,7 @@ checkout, and the addon now ships a built `kin5axc` for Windows and Linux in tha
 ### 3. Done: the machine on the screen
 
 `kin5axcam/machine.py`, `simulation.py`, `machine_gui.py` of the addon, 2026-10-13. A part per segment with the
-boxes of the file and an arm to the next, the tool mount and the material as parts, the job's tool
+boxes of the file and an arm to the next, the spindle nose and the material as parts, the job's tool
 and model and stock in them, the trajectory in properties, a player with slider, play, step and the
 report. Two calls were added to the ABI for it: `k5_chain_segment_boxes` and
 `k5_chain_set_configuration`. 2026-10-14: which solids met is reported as well - a

@@ -844,11 +844,11 @@ k5_status k5_tool_assembly_length(k5_tool tool, double *out)
 	K5_END(K5_ERROR_ARGUMENT)
 }
 
-k5_status k5_tool_mount_to_point_distance(k5_tool tool, double *out)
+k5_status k5_tool_offset(k5_tool tool, double *out)
 {
 	K5_BEGIN
-	K5_NEED(tool && tool->m_pTool && out,"k5_tool_mount_to_point_distance needs a tool and somewhere to put the distance")
-	*out = tool->m_pTool->GetMountToToolPointDistance();
+	K5_NEED(tool && tool->m_pTool && out,"k5_tool_offset needs a tool and somewhere to put the offset")
+	*out = tool->m_pTool->GetToolOffset();
 	return K5_OK;
 	K5_END(K5_ERROR_ARGUMENT)
 }

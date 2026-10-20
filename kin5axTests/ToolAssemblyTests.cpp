@@ -86,7 +86,7 @@ TEST(ToolAssembly, MakesTheSolidsOfTheToolInItsHolder)
 	EXPECT_EQ(MILLING_TOOL_BALL,pTool->m_type);
 	EXPECT_DOUBLE_EQ(0.060,pTool->GetToolLength());
 	EXPECT_DOUBLE_EQ(0.175,pTool->GetAssemblyLength())<<"the same length the assembly says";
-	EXPECT_DOUBLE_EQ(oAssembly.GetToolOffset(),pTool->GetMountToToolPointDistance());
+	EXPECT_DOUBLE_EQ(oAssembly.GetToolOffset(),pTool->GetToolOffset());
 }
 
 TEST(ToolAssembly, DimensionsThatAreNotAToolAreTheAssemblysProblem)

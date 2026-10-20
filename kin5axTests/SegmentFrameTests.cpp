@@ -43,9 +43,9 @@ TEST_P(SegmentFrameChain, TheLastFrameOfAPartIsItsTerminal)
 		ASSERT_EQ(oChain.m_vToolPart.size(),vTool.size());
 		ASSERT_EQ(oChain.m_vMaterialHolderPart.size(),vMaterial.size());
 
-		//the tool mount, plus the hanging tool, is the transformation to the tool point
+		//the nose of the spindle, plus the hanging tool, is the transformation to the programmed point
 		ExpectSameTransformation(oChain.GetActualToToolTransformation()
-			,vTool.back().m_trOutput * oChain.GetToolMountToToolPointTransformation()
+			,vTool.back().m_trOutput * oChain.GetSpindleNoseToToolPointTransformation()
 			,"the tool point of sample "+std::to_string(s));
 		//and the inverse walk of the material holder part undoes the last frame of it
 		ExpectSameTransformation(CTransformation(1.0)
@@ -156,8 +156,8 @@ TEST(SegmentFrame, TheFramesOfAChainBuiltByHand)
 	EXPECT_NEAR(0.3,pJoint.GetZ(),1E-12)<<"the boxes of the link sit where its constant translation put it";
 	CR3Point pOut = v[0].m_trOutput * CR3Point(0.0,0.0,0.0);
 	EXPECT_NEAR(0.35,pOut.GetZ(),1E-12)<<"and the joint slid 0.05 further";
-	CR3Point pMount = v[1].m_trOutput * CR3Point(0.0,0.0,0.0);
-	EXPECT_NEAR(0.55,pMount.GetZ(),1E-12)<<"the tool mount, 0.2 above the link";
-	EXPECT_NEAR(0.0,pMount.GetX(),1E-12);
-	EXPECT_NEAR(0.0,pMount.GetY(),1E-12);
+	CR3Point pNose = v[1].m_trOutput * CR3Point(0.0,0.0,0.0);
+	EXPECT_NEAR(0.55,pNose.GetZ(),1E-12)<<"the nose of the spindle, 0.2 above the link";
+	EXPECT_NEAR(0.0,pNose.GetX(),1E-12);
+	EXPECT_NEAR(0.0,pNose.GetY(),1E-12);
 }

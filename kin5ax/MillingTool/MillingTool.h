@@ -46,8 +46,8 @@ inline int is_point_in_ANCP(CUT_TYPE type)
 //  the holder          GetToolLength() .. GetAssemblyLength()    the same, radius of CToolHolder
 //The tool is placed by its reference point (the programmed point of the CL data), which lies on the axis
 //m_dReferencePointZ above the tip; DefaultZeroPointZ is where that point lies for the shape of the tool.
-//The whole assembly hangs GetMountToToolPointDistance() below the tool mount of the machine, which is the
-//origin of the TOOL terminal of the kinematic chain.
+//The whole assembly hangs GetToolOffset() below the nose of the tool spindle, which is the
+//origin of the TOOL_SPINDLE_NOSE terminal of the kinematic chain.
 class CMillingTool
 {
 public:
@@ -61,7 +61,7 @@ public:
 
 	double m_dCuttingHeight;	//length of the cutting part from the tip, along the axis
 	double m_dNonCuttingLength;	//the shank between the cutting part and the holder
-	CToolHolder m_oHolder;		//between the tool and the tool mount of the machine
+	CToolHolder m_oHolder;		//between the tool and the nose of the tool spindle
 	
 /*
 	double m_dSideNotCuttingBegin;
@@ -123,11 +123,12 @@ public:
 
 	//the tool without its holder: the cutting part and the shank
 	double GetToolLength() const;
-	//from the tip to the tool mount: the tool and its holder
+	//from the tip to the nose of the spindle: the tool and its holder
 	double GetAssemblyLength() const;
-	//From the tool mount down to the reference point, along the axis: the assembly length less the height of the
-	//reference point above the tip. This is what CChain puts between the TOOL terminal and the tool point.
-	double GetMountToToolPointDistance() const;
+	//From the nose of the spindle down to the reference point, along the axis: the assembly length less the
+	//height of that point above the tip. This is the tool offset: what CChain puts between the nose of the
+	//spindle and the programmed point.
+	double GetToolOffset() const;
 	//Where the programmed point of this shape of tool lies above the tip: the tip itself for a flat end mill,
 	//the centre of the ball for a ball nose tool. The caller decides whether to use it (m_dReferencePointZ).
 	virtual double DefaultZeroPointZ() const = 0;

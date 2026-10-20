@@ -154,7 +154,7 @@ void CMillingToolPropertiesDialog::UpdateMillingTool()
 			m_editH.EnableWindow(TRUE);
 	}
 	if(m_pDoc->m_pMillingTool){
-		//the tool point hangs the length of the assembly below the tool mount of the machine
+		//the programmed point hangs the tool offset below the nose of the spindle
 		m_dH = m_pDoc->m_pMillingTool->GetAssemblyLength();
 		m_pDoc->m_oChain.SetToolOffsetFromTool(*m_pDoc->m_pMillingTool);
 	}

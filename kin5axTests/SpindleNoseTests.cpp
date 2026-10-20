@@ -1,5 +1,6 @@
-// The tool mount: with a holder declared, the tool point hangs below the TOOL terminal by the length of the
-// assembly, and the solver solves for that point. Without a holder the chain behaves as it always did.
+// The nose of the tool spindle: the terminal of the tool branch, and the tool offset that hangs the
+// programmed point below it. The offset is given to the chain, never derived from the file, and the
+// solver solves for that point.
 #include "stdafx.h"
 #include "gtest/gtest.h"
 #include "TestData.h"
@@ -30,7 +31,7 @@ const double dASSEMBLY_DISTANCE = dCUTTING+dSHANK+dHOLDER_LENGTH-dRADIUS;
 //Every chain hangs the tool below its spindle nose, whether or not the file names a holder. Until
 //2026-10-20 a file that named none was read as having its tool point at the terminal, so the same
 //element meant two different places and the hosts disagreed about which (KnownBugs #68).
-TEST(ToolMount, EveryChainHangsTheToolBelowItsSpindleNose)
+TEST(SpindleNose, EveryChainHangsTheToolBelowItsSpindleNose)
 {
 	ASSERT_GE(GetChainFiles().size(),(size_t)1);
 	CChain oChain = LoadChain(GetChainFiles()[0]);
@@ -49,7 +50,7 @@ TEST(ToolMount, EveryChainHangsTheToolBelowItsSpindleNose)
 
 //The offset is a measurement of what is in the spindle, so nothing invents one: a chain says
 //whether it was told, and the solver refuses to work on a chain that was not.
-TEST(ToolMount, AChainIsNotToldTheOffsetUntilSomebodyTellsIt)
+TEST(SpindleNose, AChainIsNotToldTheOffsetUntilSomebodyTellsIt)
 {
 	CChain oChain;
 	EXPECT_FALSE(oChain.IsToolOffsetGiven());
@@ -64,7 +65,7 @@ TEST(ToolMount, AChainIsNotToldTheOffsetUntilSomebodyTellsIt)
 
 //The rule with teeth: a chain that was never told how far the tool reaches refuses to solve, and
 //says what to tell it. Solving for the nose itself would put the tool through the part.
-TEST(ToolMount, TheSolverRefusesAChainThatWasNotToldTheOffset)
+TEST(SpindleNose, TheSolverRefusesAChainThatWasNotToldTheOffset)
 {
 	ASSERT_GE(GetChainFiles().size(),(size_t)1);
 	CChain oChain = LoadChain(GetChainFiles()[0]);
@@ -91,7 +92,7 @@ TEST(ToolMount, TheSolverRefusesAChainThatWasNotToldTheOffset)
 		,(CMillingTool*)NULL,sLog,oReport));
 }
 
-TEST(ToolMount, TheToolPointMovesDownTheToolAxis)
+TEST(SpindleNose, TheToolPointMovesDownTheToolAxis)
 {
 	ASSERT_GE(GetChainFiles().size(),(size_t)1);
 	CChain oChain = LoadChain(GetChainFiles()[0]);
@@ -99,27 +100,27 @@ TEST(ToolMount, TheToolPointMovesDownTheToolAxis)
 	for(int s=0;s<20;s++){
 		oChain.SetParameters(RandomJointValues(oChain,oGenerator));
 		oChain.SetToolOffset(0.0);
-		CR3AnchoredVector cvMount = oChain.GetActualToolPositionAndOrientation();
+		CR3AnchoredVector cvNose = oChain.GetActualToolPositionAndOrientation();
 		oChain.SetToolOffset(dASSEMBLY_DISTANCE);
 		CR3AnchoredVector cvTool = oChain.GetActualToolPositionAndOrientation();
-		//the axis points from the tip towards the spindle, so the tool point is below the mount
-		CR3Point pExpected = cvMount.m_p - (cvMount.m_v.GetUnitVector()*dASSEMBLY_DISTANCE);
+		//the axis points from the tip towards the spindle, so the programmed point is below the nose
+		CR3Point pExpected = cvNose.m_p - (cvNose.m_v.GetUnitVector()*dASSEMBLY_DISTANCE);
 		EXPECT_NEAR(0.0,d_E(pExpected,cvTool.m_p),1E-12)<<"sample "<<s;
-		EXPECT_NEAR(0.0,(cvMount.m_v-cvTool.m_v).GetLength(),1E-12)<<"the axis is unchanged";
+		EXPECT_NEAR(0.0,(cvNose.m_v-cvTool.m_v).GetLength(),1E-12)<<"the axis is unchanged";
 	}
 }
 
-class ToolMountChain : public ::testing::TestWithParam<std::string> {};
+class SpindleNoseChain : public ::testing::TestWithParam<std::string> {};
 
-struct ToolMountChainName
+struct SpindleNoseChainName
 {
 	std::string operator()(const ::testing::TestParamInfo<std::string> &oInfo) const
 	{ return GetTestName(oInfo.param); }
 };
 
-//the solver must solve for the tool point, not for the mount: the joints that put the tool point on a target
+//the solver must solve for the programmed point, not for the nose: the joints that put that point on a target
 //are the joints the forward kinematics gives back for that target
-TEST_P(ToolMountChain, TheSolverSolvesForTheToolPoint)
+TEST_P(SpindleNoseChain, TheSolverSolvesForTheToolPoint)
 {
 	CChain oChain = LoadChain(GetParam());
 	ASSERT_TRUE(oChain.Is5CChain());
@@ -152,12 +153,12 @@ TEST_P(ToolMountChain, TheSolverSolvesForTheToolPoint)
 		}
 		(void)bFound;
 	}
-	EXPECT_GT(nSolved,(size_t)10)<<"too few solved targets to judge the mount offset";
+	EXPECT_GT(nSolved,(size_t)10)<<"too few solved targets to judge the tool offset";
 	RecordProperty("solved",(int)nSolved);
 }
 
 //and the whole round trip, forward and back, stays exact with an assembly
-TEST_P(ToolMountChain, TheRoundTripIsExactWithAnAssembly)
+TEST_P(SpindleNoseChain, TheRoundTripIsExactWithAnAssembly)
 {
 	CChain oChain = LoadChain(GetParam());
 	ASSERT_TRUE(oChain.Is5CChain());
@@ -171,4 +172,4 @@ TEST_P(ToolMountChain, TheRoundTripIsExactWithAnAssembly)
 	RecordProperty("no_solution",(int)oResult.m_nNoSolution);
 }
 
-INSTANTIATE_TEST_CASE_P(AllChains, ToolMountChain, ::testing::ValuesIn(GetChainFiles()), ToolMountChainName());
+INSTANTIATE_TEST_CASE_P(AllChains, SpindleNoseChain, ::testing::ValuesIn(GetChainFiles()), SpindleNoseChainName());

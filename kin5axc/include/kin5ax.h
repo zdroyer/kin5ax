@@ -90,7 +90,7 @@ typedef enum k5_link_type {
 
 /* Which branch of the kinematic chain, counted from the machine base outwards. */
 typedef enum k5_chain_part {
-	K5_PART_SPINDLE = 0,				/* ends at the tool mount */
+	K5_PART_SPINDLE = 0,				/* ends at the nose of the tool spindle */
 	K5_PART_TABLE			/* ends at the frame of the material */
 } k5_chain_part;
 
@@ -209,7 +209,7 @@ K5_API k5_status k5_chain_first_rotary_axis(k5_chain chain, int part, size_t *ou
 /* The frames of the segments of one branch at the joint values the chain stands at, in the frame of the
  * machine base: 32 doubles per segment, two 4x4 matrices. First the frame the collision boxes of the
  * segment are given in and whose Z is the axis of its joint, then the frame after the joint motion,
- * which is the frame the next segment sits in. The last frame of the tool branch is the tool mount, of
+ * which is the frame the next segment sits in. The last frame of the tool branch is the spindle nose, of
  * the material branch the frame of the material.
  *
  * Each matrix is the layout OpenGL and glTF use, so it can be handed to either as it is: the three
@@ -267,7 +267,7 @@ K5_API k5_status k5_chain_tool_point(k5_chain chain, k5_tool tool, const double 
  *   r                  the radius of the ball of a ball nose tool (ignored by a flat end mill)
  *   cutting_height     how far the cutting part reaches up from the tip
  *   shank_length       the part above it that must cut nothing and meet nothing
- *   holder_length      the holder between the tool and the tool mount of the machine
+ *   holder_length      the holder between the tool and the nose of the tool spindle
  *   holder_radius      its radius; without one the holder keeps its length but has no body
  * The programmed point follows the shape: the centre of the ball, or the tip of a flat end mill.
  * Dimensions that do not make a tool are refused with K5_ERROR_ARGUMENT and a message that says why. */
@@ -275,15 +275,16 @@ K5_API k5_status k5_tool_create(int shape, double rz, double r, double cutting_h
 	double shank_length, double holder_length, double holder_radius, k5_tool *out);
 K5_API void k5_tool_free(k5_tool tool);
 
-/* From the tip of the tool to the tool mount of the machine: the cutting part, the shank and the holder. */
+/* From the tip of the tool to the nose of the tool spindle: the cutting part, the shank and the holder. */
 K5_API k5_status k5_tool_assembly_length(k5_tool tool, double *out);
-/* How far below the tool mount the programmed point hangs, which is what the solver solves for. */
-K5_API k5_status k5_tool_mount_to_point_distance(k5_tool tool, double *out);
+/* How far below the nose of the spindle the programmed point hangs: the tool offset of this
+ * assembly, and what the solver solves for. */
+K5_API k5_status k5_tool_offset(k5_tool tool, double *out);
 
 /* ---------------------------------------------------------------- the offset, said out loud */
 
 /* How far below the nose of the tool spindle the programmed point of the tool hangs, in the unit of
- * the chain file: the tool assembly measured from the mount down to the point a cutter location
+ * the chain file: the tool assembly measured from the nose down to the point a cutter location
  * programs. Nothing about it is ever assumed - a chain that was never told refuses to solve, and
  * says so - and a host tells it one of two ways:
  *   with a k5_tool, the whole assembly, which is the only way to check collisions: every call that

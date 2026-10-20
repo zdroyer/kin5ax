@@ -243,7 +243,7 @@ TEST(Abi, TheFramesOfTheSegments)
 	EXPECT_EQ(K5_ERROR_BUFFER_TOO_SMALL,k5_chain_frames(chain,K5_PART_SPINDLE,&v[0],v.size()-1,&nSegments));
 	ASSERT_EQ(K5_OK,k5_chain_frames(chain,K5_PART_SPINDLE,&v[0],v.size(),&nSegments))<<k5_last_error();
 
-	//the second frame of the last segment is the tool mount, in the layout OpenGL uses: three unit basis
+	//the second frame of the last segment is the spindle nose, in the layout OpenGL uses: three unit basis
 	//vectors, the origin of the frame at 12..14 and 0,0,0,1 in the fourth column
 	const double *m = &v[(nSegments-1)*32+16];
 	for(int nBasis=0;nBasis<3;nBasis++){
@@ -256,8 +256,8 @@ TEST(Abi, TheFramesOfTheSegments)
 	EXPECT_NEAR(0.0,m[7],1E-12);
 	EXPECT_NEAR(0.0,m[11],1E-12);
 	EXPECT_NEAR(1.0,m[15],1E-12);
-	//the tool mount of this machine sits above the base, so the origin of that frame is not the origin
-	EXPECT_GT(fabs(m[12])+fabs(m[13])+fabs(m[14]),1E-6)<<"the tool mount is somewhere";
+	//the nose of this machine sits above the base, so the origin of that frame is not the origin
+	EXPECT_GT(fabs(m[12])+fabs(m[13])+fabs(m[14]),1E-6)<<"the nose of the spindle is somewhere";
 
 	//and the frame the boxes of that segment live in differs from it only by the motion of its joint,
 	//which is zero here: a chain just read stands at zero
@@ -798,19 +798,19 @@ TEST(Abi, ATool)
 {
 	k5_tool tool = CreateTool();
 	ASSERT_TRUE(tool!=NULL);
-	double dAssembly = 0.0, dMount = 0.0;
+	double dAssembly = 0.0, dOffset = 0.0;
 	ASSERT_EQ(K5_OK,k5_tool_assembly_length(tool,&dAssembly));
-	ASSERT_EQ(K5_OK,k5_tool_mount_to_point_distance(tool,&dMount));
+	ASSERT_EQ(K5_OK,k5_tool_offset(tool,&dOffset));
 	EXPECT_NEAR(0.064+0.030+0.050,dAssembly,1E-12);
-	EXPECT_NEAR(dAssembly-0.016,dMount,1E-12)<<"the ball centre is the programmed point";
+	EXPECT_NEAR(dAssembly-0.016,dOffset,1E-12)<<"the ball centre is the programmed point";
 	k5_tool_free(tool);
 
-	//a flat end mill is programmed at its tip, so the whole assembly hangs below the mount
+	//a flat end mill is programmed at its tip, so the whole assembly hangs below the nose
 	k5_tool oFlat = NULL;
 	ASSERT_EQ(K5_OK,k5_tool_create(K5_TOOL_FLAT_END,0.008,0.0,0.040,0.0,0.050,0.030,&oFlat));
 	ASSERT_EQ(K5_OK,k5_tool_assembly_length(oFlat,&dAssembly));
-	ASSERT_EQ(K5_OK,k5_tool_mount_to_point_distance(oFlat,&dMount));
-	EXPECT_NEAR(dAssembly,dMount,1E-12);
+	ASSERT_EQ(K5_OK,k5_tool_offset(oFlat,&dOffset));
+	EXPECT_NEAR(dAssembly,dOffset,1E-12);
 	k5_tool_free(oFlat);
 
 	//dimensions that do not make a tool come back as an argument error that says what is wrong
@@ -1222,7 +1222,7 @@ TEST(Abi, TheOffsetComesFromTheToolOrFromTheHostAndNeverFromNowhere)
 	oSettings.check_collisions = 0;				//the subject is the offset, not the boxes
 
 	double dFromTool = 0.0;
-	ASSERT_EQ(K5_OK,k5_tool_mount_to_point_distance(tool,&dFromTool))<<k5_last_error();
+	ASSERT_EQ(K5_OK,k5_tool_offset(tool,&dFromTool))<<k5_last_error();
 	EXPECT_GT(dFromTool,0.0);
 
 	//the machine standing somewhere, and the location the tool of that assembly ends up at

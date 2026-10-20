@@ -34,8 +34,8 @@ bool ParseChainUnit(const std::string &sName, CHAIN_UNIT &unit);
 double ChainUnitInMillimetres(CHAIN_UNIT unit);
 
 enum CHAIN_PART{
-	CHAIN_PART_SPINDLE,			//ends with the TOOL segment, whose origin is the tool mount
-	CHAIN_PART_TABLE	//ends with the MATERIAL_HOLDER segment, whose origin is the material frame
+	CHAIN_PART_SPINDLE,			//ends with the TOOL_SPINDLE_NOSE segment, whose origin is the nose of the spindle
+	CHAIN_PART_TABLE	//ends with the TABLE segment, whose origin is the frame of the material
 };
 
 //One segment of the chain at the actual parameter values, in the frame of the machine base. The walk the
@@ -48,7 +48,7 @@ struct CSegmentFrame
 	//the joint turns about or slides along
 	CTransformation m_trJoint;
 	//after the joint motion as well: the input frame of the next segment. For the last segment of the
-	//tool part this is the tool mount - the tool point hangs GetToolOffset below it
+	//tool part this is the nose of the spindle - the programmed point hangs GetToolOffset below it
 	//along its Z - and for the last of the material holder part it is the frame of the material.
 	CTransformation m_trOutput;
 };
@@ -90,12 +90,12 @@ public:
 	/// Takes the offset from a tool and its holder: what the assembly adds up to, less the reference point.
 	void SetToolOffsetFromTool(const CMillingTool &oTool);
 	/// From the frame of the spindle nose to the frame of the programmed point, and back.
-	CTransformation GetToolMountToToolPointTransformation() const;
-	CTransformation GetToolPointToToolMountTransformation() const;
+	CTransformation GetSpindleNoseToToolPointTransformation() const;
+	CTransformation GetToolPointToSpindleNoseTransformation() const;
 	/// @}
 	/// Whether the file names a tool holder for the spindle: a default to offer, nothing more.
 	bool HasDefaultToolHolder() const;
-	//the tool holder of the machine, from the chain file; declaring one declares the tool mount
+	//the tool holder of the machine, from the chain file: what hangs from the nose of the spindle
 	const CToolHolder & GetDefaultToolHolder() const;
 	void SetDefaultToolHolder(const CToolHolder &oHolder);
 	/**
@@ -129,8 +129,8 @@ public:
 	//than one. The host that draws a machine needs the same names to show what met.
 	std::string GetSolidName(CHAIN_PART part, size_t nSegment, size_t nBox) const;
 	CChain(void);
-	//the tool part ends with the only TOOL segment, the material holder part with the only
-	//MATERIAL_HOLDER segment, no part is empty, no limit is above its maximum: else CGeneratorException
+	//the tool part ends with the only TOOL_SPINDLE_NOSE segment, the material holder part with
+	//the only TABLE segment, no part is empty, no limit is above its maximum: else CGeneratorException
 	void CheckStructure() const;
 	~CChain(void);
 	CR3Box GetBoundingBox() const;
@@ -208,7 +208,7 @@ public:
 	std::vector<CChainSegment> & GetPart(CHAIN_PART part);
 	const std::vector<CChainSegment> & GetPart(CHAIN_PART part) const;
 	//One frame per segment of the part, in the order the segments are stored, at the actual parameter
-	//values. GetActualFrames(CHAIN_PART_SPINDLE).back().m_trOutput is the tool mount, and
+	//values. GetActualFrames(CHAIN_PART_SPINDLE).back().m_trOutput is the nose of the spindle, and
 	//GetActualFrames(CHAIN_PART_TABLE).back().m_trOutput the frame of the material.
 	std::vector<CSegmentFrame> GetActualFrames(CHAIN_PART part) const;
 	//the frame of one segment; throws CArgsMyException when the index is past the end of the part

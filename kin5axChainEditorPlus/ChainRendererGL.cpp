@@ -77,7 +77,7 @@ void CChainRendererGL::Render(const CChain &oChain
 		CChainSegmentRendererGL::Render(oChain.m_vToolPart[i],oChain.m_nActivePart==CHAIN_PART_SPINDLE && i==oChain.m_nActiveSegmentIndex);
 	}
 	if(pTool && oConfiguration.m_bShowTool){
-		//the frame after the segments is the tool mount; the tool hangs below it
+		//the frame after the segments is the nose of the spindle; the tool hangs below it
 		glTranslated(0.0,0.0,-oChain.GetToolOffset());
 		CMillingToolRendererGL::Render(*pTool);
 	}

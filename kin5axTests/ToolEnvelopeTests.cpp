@@ -61,20 +61,20 @@ TEST(ToolAssembly, LengthsAddUp)
 	CMillingToolBall oBall(dRADIUS,dRADIUS,dCUTTING,dRADIUS,dSHANK,Holder());
 	EXPECT_DOUBLE_EQ(dCUTTING+dSHANK,oBall.GetToolLength());
 	EXPECT_DOUBLE_EQ(dCUTTING+dSHANK+dHOLDER_LENGTH,oBall.GetAssemblyLength());
-	EXPECT_DOUBLE_EQ(dCUTTING+dSHANK+dHOLDER_LENGTH-dRADIUS,oBall.GetMountToToolPointDistance())
+	EXPECT_DOUBLE_EQ(dCUTTING+dSHANK+dHOLDER_LENGTH-dRADIUS,oBall.GetToolOffset())
 		<<"the ball centre is the programmed point, one ball radius above the tip";
 	EXPECT_DOUBLE_EQ(dRADIUS,oBall.DefaultZeroPointZ())<<"a ball nose tool is programmed at the centre of its ball";
 	EXPECT_TRUE(oBall.HasNonCuttingPart());
 
 	CMillingToolCylinder oFlat(dRADIUS,0.0,dCUTTING,0.0,dSHANK,Holder());
 	EXPECT_DOUBLE_EQ(0.0,oFlat.DefaultZeroPointZ())<<"a flat end mill is programmed at its tip";
-	EXPECT_DOUBLE_EQ(dCUTTING+dSHANK+dHOLDER_LENGTH,oFlat.GetMountToToolPointDistance());
+	EXPECT_DOUBLE_EQ(dCUTTING+dSHANK+dHOLDER_LENGTH,oFlat.GetToolOffset());
 
 	//the tool of the application before the holder existed: no shank, no holder, nothing changes
 	CMillingToolBall oBare(dRADIUS,dRADIUS,dCUTTING,dRADIUS);
 	EXPECT_DOUBLE_EQ(dCUTTING,oBare.GetToolLength());
 	EXPECT_DOUBLE_EQ(dCUTTING,oBare.GetAssemblyLength());
-	EXPECT_DOUBLE_EQ(dCUTTING-dRADIUS,oBare.GetMountToToolPointDistance());
+	EXPECT_DOUBLE_EQ(dCUTTING-dRADIUS,oBare.GetToolOffset());
 	EXPECT_FALSE(oBare.HasNonCuttingPart());
 	EXPECT_TRUE(oBare.GetNonCuttingPartBoundingBox().IsEmpty())<<"no solid, no box";
 }
@@ -87,14 +87,14 @@ TEST(ToolAssembly, TheNonCuttingEnvelopeIsTheShankAndTheHolder)
 	EXPECT_TRUE(oTool.IsInOZNonCuttingSpace(CR3Point(0.0,0.0,dCUTTING+0.5*dSHANK)));
 	EXPECT_TRUE(oTool.IsInOZNonCuttingSpace(CR3Point(0.9*dRADIUS,0.0,dCUTTING+0.5*dSHANK)));
 	EXPECT_FALSE(oTool.IsInOZNonCuttingSpace(CR3Point(1.1*dRADIUS,0.0,dCUTTING+0.5*dSHANK)))<<"beside the shank";
-	//the holder: wider, from the end of the tool up to the mount
+	//the holder: wider, from the end of the tool up to the nose
 	EXPECT_TRUE(oTool.IsInOZNonCuttingSpace(CR3Point(0.0,0.0,dTool+0.5*dHOLDER_LENGTH)));
 	EXPECT_TRUE(oTool.IsInOZNonCuttingSpace(CR3Point(0.0,0.9*dHOLDER_RADIUS,dTool+0.5*dHOLDER_LENGTH)));
 	EXPECT_FALSE(oTool.IsInOZNonCuttingSpace(CR3Point(0.0,1.1*dHOLDER_RADIUS,dTool+0.5*dHOLDER_LENGTH)))<<"beside the holder";
-	//neither below the cutting part nor above the mount
+	//neither below the cutting part nor above the nose
 	EXPECT_FALSE(oTool.IsInOZNonCuttingSpace(CR3Point(0.0,0.0,0.5*dCUTTING)))<<"the cutting part is not part of it";
 	EXPECT_FALSE(oTool.IsInOZNonCuttingSpace(CR3Point(0.0,0.0,-0.01)))<<"below the tip";
-	EXPECT_FALSE(oTool.IsInOZNonCuttingSpace(CR3Point(0.0,0.0,dTool+dHOLDER_LENGTH+0.01)))<<"above the mount";
+	EXPECT_FALSE(oTool.IsInOZNonCuttingSpace(CR3Point(0.0,0.0,dTool+dHOLDER_LENGTH+0.01)))<<"above the nose";
 	//the cutting part and the non-cutting envelope do not overlap
 	for(int i=1;i<10;i++){
 		CR3Point p(0.0,0.0,0.1*i*dCUTTING);
@@ -158,7 +158,7 @@ TEST_P(ToolAssemblyCollisionTest, TheShankAndTheHolderCollide)
 	EXPECT_TRUE(NonCuttingCollides(oTool,BoxAt(dTool+0.5*dHOLDER_LENGTH,0.9*dHOLDER_RADIUS)))<<"the side of the holder";
 	EXPECT_FALSE(NonCuttingCollides(oTool,BoxAt(dCUTTING+0.5*dSHANK,1.5*dRADIUS)))<<"beside the shank, inside the holder radius";
 	EXPECT_FALSE(NonCuttingCollides(oTool,BoxAt(0.5*dCUTTING,0.0)))<<"the cutting part is not the business of this test";
-	EXPECT_FALSE(NonCuttingCollides(oTool,BoxAt(dTool+dHOLDER_LENGTH+0.1*dHOLDER_LENGTH,0.0)))<<"above the mount";
+	EXPECT_FALSE(NonCuttingCollides(oTool,BoxAt(dTool+dHOLDER_LENGTH+0.1*dHOLDER_LENGTH,0.0)))<<"above the nose";
 	//the cutting part keeps its own test
 	EXPECT_TRUE(CuttingCollides(oTool,BoxAt(0.5*dCUTTING,0.0)));
 	EXPECT_FALSE(CuttingCollides(oTool,BoxAt(dTool+0.5*dHOLDER_LENGTH,0.0)))<<"the holder is not the cutting part";
@@ -170,7 +170,7 @@ TEST_P(ToolAssemblyCollisionTest, WithoutAShankAndAHolderNothingCollides)
 	EXPECT_FALSE(NonCuttingCollides(oTool,BoxAt(0.5*dCUTTING,0.0)));
 	EXPECT_FALSE(NonCuttingCollides(oTool,BoxAt(dCUTTING+0.01,0.0)));
 	EXPECT_FALSE(NonCuttingCollides(oTool,BoxAt(dCUTTING+1.0,0.0)));
-	//a holder with a length but no radius keeps the tool away from the mount and has no body
+	//a holder with a length but no radius keeps the tool away from the nose and has no body
 	CMillingToolBall oNoBody(dRADIUS,dRADIUS,dCUTTING,GetParam(),0.0,CToolHolder(dHOLDER_LENGTH,0.0));
 	EXPECT_DOUBLE_EQ(dCUTTING+dHOLDER_LENGTH,oNoBody.GetAssemblyLength());
 	EXPECT_FALSE(oNoBody.HasNonCuttingPart());

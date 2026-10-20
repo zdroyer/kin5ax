@@ -506,7 +506,7 @@ void CMainFrame::OnSimulationSimple()
 		+double_to_string(oSetup.m_dBoxHeight)+" in voxels of "+double_to_string(oSetup.m_dVoxelSize)+".\n"
 		+"The tool path is in "+sFilePath+"."
 		+"\nTool assembly "+double_to_string(pDoc->m_pMillingTool->GetAssemblyLength())+" long, its point "
-		+double_to_string(pDoc->m_oChain.GetToolOffset())+" below the tool mount."
+		+double_to_string(pDoc->m_oChain.GetToolOffset())+" below the nose of the spindle."
 		+"\n\nThe simulation starts when you close this message.";
 	MessageBox(sReport.c_str(),"Simple simulation");
 	if(nSolved==0)

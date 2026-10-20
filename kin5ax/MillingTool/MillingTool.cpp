@@ -137,7 +137,7 @@ double CMillingTool::GetAssemblyLength() const
 	return GetToolLength() + m_oHolder.GetLength();
 }
 
-double CMillingTool::GetMountToToolPointDistance() const
+double CMillingTool::GetToolOffset() const
 {
 	return GetAssemblyLength() - m_dReferencePointZ;
 }

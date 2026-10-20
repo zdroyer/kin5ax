@@ -82,9 +82,10 @@ public:
 	double m_dParameterValueMaximum;
 	bool m_bParameterIsConstrained;
 
-	//The tool holder of a TOOL segment, from the chain file. Declaring it makes the segment the tool mount:
-	//the tool point then hangs the length of the assembly below the origin of the segment, see
-	//CChain::GetToolOffset. No other type of segment may carry one.
+	//The tool holder of a TOOL_SPINDLE_NOSE segment, from the chain file: what the spindle of this
+	//machine usually takes, hanging from the nose, as a default to offer. It places nothing - what
+	//hangs the tool below the nose is the offset a caller gives, see CChain::GetToolOffset. No
+	//other type of segment may carry one.
 	const CToolHolder & GetToolHolder() const { return m_oToolHolder; }
 	/**
 	 * The tool the machine usually holds, from the chain file, on a TOOL_SPINDLE_NOSE segment and
