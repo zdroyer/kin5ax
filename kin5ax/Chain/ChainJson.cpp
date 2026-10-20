@@ -496,9 +496,10 @@ CChain CChainJsonReader::Parse(const std::string &sJson, const std::string &sWhe
 	if(version.is_number_integer() && version.get<int>()==1)
 		//version 1 called the terminals tool and workpiece_holder, and meant something else by the
 		//first of them: its origin was the tool point in a file that named no holder
-		ctx.Fail("version","this is version 1 of the format, which named the terminals differently "
-			"and placed the tool one of them. Convert the file with tools/kc2json, or write the "
-			"terminals as tool_spindle_nose and table and say version 2");
+		ctx.Fail("version","this is version 1 of the format, which named the terminals tool and "
+			"workpiece_holder and derived the programmed point of the tool from the file. Convert "
+			"it with 'kc2json --force <file>', or rename the terminals to tool_spindle_nose and "
+			"table yourself and say version 2");
 	if(!version.is_number_integer() || version.get<int>()!=nVERSION)
 		ctx.Fail("version","unsupported version, expected "+size_to_string(nVERSION));
 

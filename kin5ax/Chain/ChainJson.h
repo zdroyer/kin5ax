@@ -6,8 +6,8 @@
 //This header is free of any JSON library: nlohmann/json is included by ChainJson.cpp alone.
 //
 //The JSON form is not a transcription of the XML one:
-//  - the tool and the workpiece holder are members of their branch ("tool", "workpiece_holder"),
-//    not entries of the segment list, and carry no type and no limits;
+//  - the terminals are members of their branch ("tool_spindle_nose", "table"), not entries of the
+//    segment list, and carry no type and no limits;
 //  - a joint is "rotary" or "linear" (REVOLUTE_LINK / PRISMATIC_LINK of the model);
 //  - a branch may have no joint at all ("links": []);
 //  - the material holder part of the model is the workpiece branch of the file.
