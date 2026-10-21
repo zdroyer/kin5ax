@@ -877,16 +877,16 @@ void CKinematicChainPropertiesDialog::OnBnClickedBtnTerminalProperties()
 {
 	if(!m_pDoc || !m_pActiveSegment)
 		return;
-	//the catalogues of the library are in metres and this chain is in its own unit
-	const double dUnit = m_pDoc->m_oChain.GetUnitInMillimetres();
+	//the fields of both dialogs are millimetres, or inches for a chain in inches
+	const CHAIN_UNIT nUnit = m_pDoc->m_oChain.GetUnit();
 	bool bChanged = false;
 	if(m_pActiveSegment->GetType()==CHAIN_SEGMENT_TOOL_SPINDLE_NOSE){
 		CSpindleNoseDialog dlg;
-		dlg.SetTerminal(m_pActiveSegment,dUnit);
+		dlg.SetTerminal(m_pActiveSegment,nUnit);
 		bChanged = (dlg.DoModal()==IDOK);
 	} else if(m_pActiveSegment->GetType()==CHAIN_SEGMENT_TABLE){
 		CTableDialog dlg;
-		dlg.SetTerminal(m_pActiveSegment,dUnit);
+		dlg.SetTerminal(m_pActiveSegment,nUnit);
 		bChanged = (dlg.DoModal()==IDOK);
 	}
 	if(!bChanged)
@@ -896,6 +896,10 @@ void CKinematicChainPropertiesDialog::OnBnClickedBtnTerminalProperties()
 	UpdateData(FALSE);
 	//the tool of a run is the one the spindle nose names, so it follows the dialog
 	m_pDoc->UpdateToolFromChain();
+	//and a workpiece holder puts its own solids on the table: the list shows them
+	m_vSolids = m_pActiveSegment->GetPartVector();
+	m_nActivePart = m_vSolids.empty() ? -1 : 0;
+	UpdateSegmentPartsList();
 	m_pDoc->SetModifiedFlag();
 	m_pDoc->UpdateAllViews(NULL);
 }

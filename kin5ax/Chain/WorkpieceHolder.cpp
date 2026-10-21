@@ -32,12 +32,10 @@ const CCatalogueEntry vCATALOGUE[] = {
 	//model             where the part sits      turned about      angle  body  the box of the body
 	{szNO_HOLDER,       0.00, 0.00, 0.000,       0.0,0.0,1.0,      0.0,   false, 0,0,0, 0,0,0},
 	{"CUSTOM_HOLDER",   0.00, 0.00, 0.000,       0.0,0.0,1.0,      0.0,   false, 0,0,0, 0,0,0},
-	//a 125 mm machine vice, jaws opening along X: the part sits on the jaw tops
-	{"X_VICE",          0.00, 0.00, 0.080,       0.0,0.0,1.0,      0.0,   true,
-		-0.150,-0.075, 0.000,   0.150, 0.075, 0.080},
-	//the same vice turned a quarter turn: the jaws open along Y
-	{"Y_VICE",          0.00, 0.00, 0.080,       0.0,0.0,1.0,     90.0,   true,
-		-0.075,-0.150, 0.000,   0.075, 0.150, 0.080},
+	//the two vices are built from their opening and their jaw length, below: a vice is two jaws
+	//and the gap between them, not one block
+	{"X_VICE",          0.00, 0.00, 0.000,       0.0,0.0,1.0,      0.0,   false, 0,0,0, 0,0,0},
+	{"Y_VICE",          0.00, 0.00, 0.000,       0.0,0.0,1.0,      0.0,   false, 0,0,0, 0,0,0},
 	//a 200 mm three-jaw chuck standing on the table, the part on its face
 	{"THREE_JAW_CHUCK", 0.00, 0.00, 0.100,       0.0,0.0,1.0,      0.0,   true,
 		-0.100,-0.100, 0.000,   0.100, 0.100, 0.100},
@@ -54,8 +52,17 @@ const CCatalogueEntry vCATALOGUE[] = {
 
 const size_t nCATALOGUE = sizeof(vCATALOGUE)/sizeof(vCATALOGUE[0]);
 
+//what a 125 mm machine vice opens to and how long its jaws are: the defaults of the catalogue
+const double dDEFAULT_VICE_OPENING = 0.100;
+const double dDEFAULT_VICE_JAW_LENGTH = 0.125;
+
 CWorkpieceHolder FromEntry(const CCatalogueEntry &oEntry)
 {
+	const std::string sModel(oEntry.szModel);
+	if(sModel=="X_VICE")
+		return MakeVice(sModel,R3_AXIS_X,dDEFAULT_VICE_OPENING,dDEFAULT_VICE_JAW_LENGTH);
+	if(sModel=="Y_VICE")
+		return MakeVice(sModel,R3_AXIS_Y,dDEFAULT_VICE_OPENING,dDEFAULT_VICE_JAW_LENGTH);
 	CWorkpieceHolder oHolder(oEntry.szModel
 		,CR3Vector(oEntry.dX,oEntry.dY,oEntry.dZ)
 		,CR3Vector(oEntry.dAxisX,oEntry.dAxisY,oEntry.dAxisZ)
@@ -129,6 +136,62 @@ bool CWorkpieceHolder::operator==(const CWorkpieceHolder &o) const
 			|| !(m_vBoxes[i].GetMaxPoint()==o.m_vBoxes[i].GetMaxPoint()))
 			return false;
 	return true;
+}
+
+CWorkpieceHolder MakeVice(const std::string &sModel, R3_AXIS nOpeningAxis, double dOpening
+	,double dJawLength, double dJawThickness, double dJawHeight)
+{
+	const double dHalfOpening = 0.5*fabs(dOpening);
+	const double dHalfLength = 0.5*fabs(dJawLength);
+	const double dThickness = fabs(dJawThickness);
+	const double dHeight = fabs(dJawHeight);
+	//across the opening and along it: the jaws are as long as the one, as thick as the other
+	R3_AXIS nAlong = R3_AXIS_X, nUp = R3_AXIS_Z;
+	R3CrossAxes(R3_AXIS_Z,nAlong,nUp);			//the two axes of the table, whichever opens
+	const R3_AXIS nLength = (nOpeningAxis==R3_AXIS_X) ? R3_AXIS_Y : R3_AXIS_X;
+	std::vector<CR3Box> vBoxes;
+	for(int nSide=0;nSide<2;nSide++){
+		const double dNear = nSide ? dHalfOpening : -dHalfOpening-dThickness;
+		const double dFar = nSide ? dHalfOpening+dThickness : -dHalfOpening;
+		double dMin[3] = {0.0,0.0,0.0}, dMax[3] = {0.0,0.0,0.0};
+		dMin[nOpeningAxis] = dNear;
+		dMax[nOpeningAxis] = dFar;
+		dMin[nLength] = -dHalfLength;
+		dMax[nLength] = dHalfLength;
+		dMin[R3_AXIS_Z] = 0.0;
+		dMax[R3_AXIS_Z] = dHeight;
+		vBoxes.push_back(CR3Box(CR3Point(dMin[0],dMin[1],dMin[2])
+			,CR3Point(dMax[0],dMax[1],dMax[2])));
+	}
+	//the part sits on the jaw tops, in the middle of the opening
+	CWorkpieceHolder oHolder(sModel,CR3Vector(0.0,0.0,dHeight),CR3Vector(0.0,0.0,1.0),0.0);
+	oHolder.SetBoxes(vBoxes);
+	return oHolder;
+}
+
+bool ViceParameters(const CWorkpieceHolder &oHolder, R3_AXIS &nOpeningAxis, double &dOpening
+	,double &dJawLength)
+{
+	if(oHolder.GetBoxes().size()!=2)
+		return false;
+	const CR3Point p1Min = oHolder.GetBoxes()[0].GetMinPoint();
+	const CR3Point p1Max = oHolder.GetBoxes()[0].GetMaxPoint();
+	const CR3Point p2Min = oHolder.GetBoxes()[1].GetMinPoint();
+	const CR3Point p2Max = oHolder.GetBoxes()[1].GetMaxPoint();
+	//the axis the two boxes are apart along is the one they open along
+	for(int i=0;i<2;i++){
+		const R3_AXIS nAxis = (R3_AXIS)i;
+		const double dGap = R3AxisComponent(p2Min,nAxis)-R3AxisComponent(p1Max,nAxis);
+		if(dGap<=dEPSILON)
+			continue;
+		const R3_AXIS nLength = (nAxis==R3_AXIS_X) ? R3_AXIS_Y : R3_AXIS_X;
+		nOpeningAxis = nAxis;
+		dOpening = dGap;
+		dJawLength = R3AxisComponent(p1Max,nLength)-R3AxisComponent(p1Min,nLength);
+		return true;
+	}
+	(void)p2Max;
+	return false;
 }
 
 size_t WorkpieceHolderCatalogueSize()

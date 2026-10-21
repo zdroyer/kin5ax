@@ -74,18 +74,57 @@ TEST(WorkpieceHolderCatalogue, EveryRealHolderHoldsThePartOffTheTableAndHasASoli
 	}
 }
 
-TEST(WorkpieceHolderCatalogue, HasTheVicesOfBothDirectionsAndTheyDifferByTheirTurn)
+TEST(WorkpieceHolderCatalogue, HasTheVicesOfBothDirectionsAndTheyAreTwoJawsAndAGap)
 {
 	CWorkpieceHolder oX, oY;
 	ASSERT_TRUE(WorkpieceHolderByModel("X_VICE",oX));
 	ASSERT_TRUE(WorkpieceHolderByModel("Y_VICE",oY));
+	ASSERT_EQ((size_t)2,oX.GetBoxes().size())<<"a vice is two jaws, and a tool can come between them";
+	ASSERT_EQ((size_t)2,oY.GetBoxes().size());
 	EXPECT_DOUBLE_EQ(oX.GetTranslation().GetZ(),oY.GetTranslation().GetZ())
 		<<"the same vice holds the part at the same height either way round";
-	EXPECT_NE(oX.GetRotationAngleDegrees(),oY.GetRotationAngleDegrees())
-		<<"what tells them apart is which way the jaws open";
-	//the body follows the turn: the X vice is long across X, the Y vice long across Y
-	EXPECT_GT(oX.GetBoxes()[0].GetMaxPoint().GetX(),oX.GetBoxes()[0].GetMaxPoint().GetY());
-	EXPECT_GT(oY.GetBoxes()[0].GetMaxPoint().GetY(),oY.GetBoxes()[0].GetMaxPoint().GetX());
+	EXPECT_DOUBLE_EQ(0.0,oX.GetRotationAngleDegrees())<<"the jaws say which way it opens, not a turn";
+	EXPECT_DOUBLE_EQ(0.0,oY.GetRotationAngleDegrees());
+
+	//what the two numbers of a vice are, read back off its jaws
+	R3_AXIS nAxis = R3_AXIS_Z;
+	double dOpening = 0.0, dJawLength = 0.0;
+	ASSERT_TRUE(ViceParameters(oX,nAxis,dOpening,dJawLength));
+	EXPECT_EQ(R3_AXIS_X,nAxis);
+	EXPECT_DOUBLE_EQ(0.100,dOpening)<<"a 125 mm vice opened 100 mm";
+	EXPECT_DOUBLE_EQ(0.125,dJawLength);
+	ASSERT_TRUE(ViceParameters(oY,nAxis,dOpening,dJawLength));
+	EXPECT_EQ(R3_AXIS_Y,nAxis);
+	EXPECT_DOUBLE_EQ(0.100,dOpening);
+
+	//the part sits on the jaw tops, in the middle of the opening
+	EXPECT_DOUBLE_EQ(dVICE_JAW_HEIGHT,oX.GetTranslation().GetZ());
+	EXPECT_DOUBLE_EQ(dVICE_JAW_HEIGHT,oX.GetBoxes()[0].GetMaxPoint().GetZ());
+	EXPECT_DOUBLE_EQ(0.0,oX.GetBoxes()[0].GetMinPoint().GetZ())<<"and stands on the table";
+	EXPECT_DOUBLE_EQ(-0.05,oX.GetBoxes()[0].GetMaxPoint().GetX())<<"the near face of the first jaw";
+	EXPECT_DOUBLE_EQ(0.05,oX.GetBoxes()[1].GetMinPoint().GetX());
+}
+
+TEST(WorkpieceHolderCatalogue, AViceIsBuiltFromItsOpeningAndItsJawLength)
+{
+	const CWorkpieceHolder oWide = MakeVice("X_VICE",R3_AXIS_X,0.200,0.160);
+	R3_AXIS nAxis = R3_AXIS_Z;
+	double dOpening = 0.0, dJawLength = 0.0;
+	ASSERT_TRUE(ViceParameters(oWide,nAxis,dOpening,dJawLength));
+	EXPECT_EQ(R3_AXIS_X,nAxis);
+	EXPECT_DOUBLE_EQ(0.200,dOpening)<<"what was asked for comes back";
+	EXPECT_DOUBLE_EQ(0.160,dJawLength);
+	//a jaw is as thick and as tall as the catalogue says, which nobody is asked for
+	const CR3Point pMin = oWide.GetBoxes()[0].GetMinPoint();
+	const CR3Point pMax = oWide.GetBoxes()[0].GetMaxPoint();
+	EXPECT_DOUBLE_EQ(dVICE_JAW_THICKNESS,pMax.GetX()-pMin.GetX());
+	EXPECT_DOUBLE_EQ(dVICE_JAW_HEIGHT,pMax.GetZ()-pMin.GetZ());
+
+	//and anything that is not two jaws is not a vice
+	CWorkpieceHolder oPlate;
+	ASSERT_TRUE(WorkpieceHolderByModel("FIXTURE_PLATE",oPlate));
+	EXPECT_FALSE(ViceParameters(oPlate,nAxis,dOpening,dJawLength));
+	EXPECT_FALSE(ViceParameters(CWorkpieceHolder(),nAxis,dOpening,dJawLength));
 }
 
 TEST(WorkpieceHolderCatalogue, ATombstoneHoldsThePartOnItsFace)

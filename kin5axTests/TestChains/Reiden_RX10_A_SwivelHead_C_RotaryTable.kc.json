@@ -36,7 +36,7 @@
       }
     ],
     "tool_spindle_nose": {
-      "name": "Spindle nose",
+      "name": "Tool spindle",
       "translation": [0.302, 0.0, 0.0],
       "rotation": {
         "axis": [0.0, -1.0, 0.0],

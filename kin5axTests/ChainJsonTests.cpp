@@ -351,7 +351,7 @@ TEST(ChainJsonTerminals, ATerminalWithNoNameSaysWhatItIs)
 {
 	CChainSegment oSpindle(CHAIN_SEGMENT_TOOL_SPINDLE_NOSE,CR3Vector(1.0,0.0,0.0),0.0,CR3Vector(0.0));
 	CChainSegment oTable(CHAIN_SEGMENT_TABLE,CR3Vector(1.0,0.0,0.0),0.0,CR3Vector(0.0));
-	EXPECT_EQ("Spindle nose",oSpindle.GetName());
+	EXPECT_EQ("Tool spindle",oSpindle.GetName());
 	EXPECT_EQ("Table",oTable.GetName());
 }
 

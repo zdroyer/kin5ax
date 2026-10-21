@@ -1,4 +1,5 @@
-// SpindleNoseDialog.cpp : the terminal of the tool branch, its holder and its default tool
+// SpindleNoseDialog.cpp : the default tool assembly of a machine - the holder hanging from the tool
+// spindle and the tool in it, measured in millimetres or in inches
 //
 
 #include "stdafx.h"
@@ -11,21 +12,25 @@ namespace {
 
 //the shapes of the list, in its own order: the first entry is no tool at all
 const int nSHAPE_NONE = 0;
+const int nSHAPE_BALL = 1;
+const int nSHAPE_CYLINDER = 2;
+const int nSHAPE_TOROIDAL = 3;
+
 MILLING_TOOL_TYPE ShapeOfIndex(int nIndex)
 {
 	switch(nIndex){
-	case 2:		return MILLING_TOOL_CYLINDER;
-	case 3:		return MILLING_TOOL_TORUS;
-	default:	return MILLING_TOOL_BALL;
+	case nSHAPE_CYLINDER:	return MILLING_TOOL_CYLINDER;
+	case nSHAPE_TOROIDAL:	return MILLING_TOOL_TORUS;
+	default:				return MILLING_TOOL_BALL;
 	}
 }
 
 int IndexOfShape(MILLING_TOOL_TYPE nType)
 {
 	switch(nType){
-	case MILLING_TOOL_CYLINDER:	return 2;
-	case MILLING_TOOL_TORUS:	return 3;
-	default:					return 1;
+	case MILLING_TOOL_CYLINDER:	return nSHAPE_CYLINDER;
+	case MILLING_TOOL_TORUS:	return nSHAPE_TOROIDAL;
+	default:					return nSHAPE_BALL;
 	}
 }
 
@@ -42,7 +47,8 @@ CSpindleNoseDialog::CSpindleNoseDialog(CWnd *pParent /*=NULL*/)
 	,m_nReferenceIndex(TOOL_REFERENCE_TIP)
 	,m_dReferenceHeight(0.0)
 	,m_pSegment(0)
-	,m_dUnitInMillimetres(1000.0)
+	,m_nUnit(CHAIN_UNIT_M)
+	,m_dShown(1000.0)
 {
 	for(size_t i=0;i<nTOOL_HOLDER_SECTIONS_MAX;i++){
 		m_dSectionLength[i] = 0.0;
@@ -54,11 +60,19 @@ CSpindleNoseDialog::~CSpindleNoseDialog()
 {
 }
 
-void CSpindleNoseDialog::SetTerminal(CChainSegment *pSegment, double dUnitInMillimetres)
+void CSpindleNoseDialog::SetTerminal(CChainSegment *pSegment, CHAIN_UNIT nUnit)
 {
 	m_pSegment = pSegment;
-	m_dUnitInMillimetres = dUnitInMillimetres;
+	m_nUnit = nUnit;
+	//a chain in inches is shown in inches; everything else in millimetres, which is what a holder
+	//and a tool are measured in whether the file says metres or millimetres
+	m_dShown = (nUnit==CHAIN_UNIT_IN) ? 1.0 : ChainUnitInMillimetres(nUnit);
 	DialogFromTerminal();
+}
+
+const char * CSpindleNoseDialog::ShownUnitName() const
+{
+	return (m_nUnit==CHAIN_UNIT_IN) ? "in" : "mm";
 }
 
 void CSpindleNoseDialog::DoDataExchange(CDataExchange *pDX)
@@ -85,7 +99,6 @@ void CSpindleNoseDialog::DoDataExchange(CDataExchange *pDX)
 	DDX_Control(pDX, IDC_COMBO_NOSE_HOLDER, m_comboHolder);
 	DDX_Control(pDX, IDC_COMBO_TOOL_SHAPE, m_comboShape);
 	DDX_Control(pDX, IDC_COMBO_TOOL_REFERENCE, m_comboReference);
-	DDX_Control(pDX, IDC_EDIT_TOOL_REFERENCE_HEIGHT, m_editReferenceHeight);
 	DDX_Control(pDX, IDC_PICTURE_TOOL_PREVIEW, m_wndPreview);
 }
 
@@ -112,7 +125,7 @@ BOOL CSpindleNoseDialog::OnInitDialog()
 	CDialog::OnInitDialog();
 	//the lists in their own order, which is what the indices above mean
 	m_comboHolder.ResetContent();
-	m_comboHolder.AddString("(the cylinders below)");
+	m_comboHolder.AddString("Custom - user defined");
 	for(size_t i=0;i<ToolHolderCatalogueSize();i++)
 		m_comboHolder.AddString(ToolHolderFromCatalogue(i).GetModel().c_str());
 	m_comboHolder.SetCurSel(m_nHolderIndex);
@@ -130,18 +143,26 @@ BOOL CSpindleNoseDialog::OnInitDialog()
 	m_comboReference.AddString(ToolReferencePointName(TOOL_REFERENCE_CUSTOM));
 	m_comboReference.SetCurSel(m_nReferenceIndex);
 
+	//every length field says what it is measured in
+	const int nUnits[] = {IDC_STATIC_UNIT_S1,IDC_STATIC_UNIT_S2,IDC_STATIC_UNIT_S3
+		,IDC_STATIC_UNIT_RADIUS,IDC_STATIC_UNIT_CORNER,IDC_STATIC_UNIT_CUTTING
+		,IDC_STATIC_UNIT_LENGTH,IDC_STATIC_UNIT_REFERENCE,IDC_STATIC_UNIT_ASSEMBLY
+		,IDC_STATIC_UNIT_OFFSET};
+	for(int i=0;i<10;i++)
+		SetDlgItemText(nUnits[i],ShownUnitName());
+
 	EnableFields();
 	UpdateTheSums();
 	return TRUE;
 }
 
-//the holder of the dialog: the cylinders as typed, or the catalogue entry scaled into the unit of
-//the chain, because the catalogue is in metres
+//the holder of the dialog, in the unit of the chain: the cylinders as typed, or the catalogue entry
+//scaled out of metres, which is what the catalogue is in
 CToolHolder CSpindleNoseDialog::HolderFromDialog() const
 {
 	if(m_nHolderIndex>0){
 		const CToolHolder oCatalogue = ToolHolderFromCatalogue((size_t)(m_nHolderIndex-1));
-		const double dFactor = 1000.0/m_dUnitInMillimetres;
+		const double dFactor = 1000.0/ChainUnitInMillimetres(m_nUnit);
 		if(dFactor==1.0)
 			return oCatalogue;
 		std::vector<CToolHolderSection> vScaled = oCatalogue.GetSections();
@@ -153,7 +174,8 @@ CToolHolder CSpindleNoseDialog::HolderFromDialog() const
 	}
 	std::vector<CToolHolderSection> vSections;
 	for(size_t i=0;i<nTOOL_HOLDER_SECTIONS_MAX;i++)
-		vSections.push_back(CToolHolderSection(m_dSectionLength[i],m_dSectionRadius[i]));
+		vSections.push_back(CToolHolderSection(ToChain(m_dSectionLength[i])
+			,ToChain(m_dSectionRadius[i])));
 	CToolHolder oHolder(szNO_HOLDER,vSections);
 	if(!oHolder.GetSections().empty() && m_pSegment)
 		oHolder.SetModel(m_pSegment->GetToolHolder().GetModel());	//whatever the file called it
@@ -166,12 +188,12 @@ CToolDescription CSpindleNoseDialog::ToolFromDialog() const
 	if(m_nShapeIndex==nSHAPE_NONE)
 		return oTool;							//nothing in this spindle, which is NO_TOOL
 	oTool.m_nType = ShapeOfIndex(m_nShapeIndex);
-	oTool.m_dRadius = m_dRadius;
-	oTool.m_dCornerRadius = m_dCornerRadius;
-	oTool.m_dCuttingHeight = m_dCuttingHeight;
-	oTool.m_dLength = m_dToolLength;
+	oTool.m_dRadius = ToChain(m_dRadius);
+	oTool.m_dCornerRadius = ToChain(m_dCornerRadius);
+	oTool.m_dCuttingHeight = ToChain(m_dCuttingHeight);
+	oTool.m_dLength = ToChain(m_dToolLength);
 	oTool.m_nReference = (TOOL_REFERENCE_POINT)m_nReferenceIndex;
-	oTool.m_dReferenceHeight = m_dReferenceHeight;
+	oTool.m_dReferenceHeight = ToChain(m_dReferenceHeight);
 	oTool.SetGiven(true);
 	return oTool;
 }
@@ -189,17 +211,27 @@ void CSpindleNoseDialog::DialogFromTerminal()
 			m_nHolderIndex = (int)i+1;
 	for(size_t i=0;i<nTOOL_HOLDER_SECTIONS_MAX;i++){
 		const bool bHas = i<oHolder.GetSections().size();
-		m_dSectionLength[i] = bHas ? oHolder.GetSections()[i].GetLength() : 0.0;
-		m_dSectionRadius[i] = bHas ? oHolder.GetSections()[i].GetRadius() : 0.0;
+		m_dSectionLength[i] = bHas ? FromChain(oHolder.GetSections()[i].GetLength()) : 0.0;
+		m_dSectionRadius[i] = bHas ? FromChain(oHolder.GetSections()[i].GetRadius()) : 0.0;
 	}
 	const CToolDescription &oTool = m_pSegment->GetTool();
 	m_nShapeIndex = oTool.IsGiven() ? IndexOfShape(oTool.m_nType) : nSHAPE_NONE;
-	m_dRadius = oTool.m_dRadius;
-	m_dCornerRadius = oTool.m_dCornerRadius;
-	m_dCuttingHeight = oTool.m_dCuttingHeight;
-	m_dToolLength = oTool.m_dLength;
+	m_dRadius = FromChain(oTool.m_dRadius);
+	m_dCornerRadius = FromChain(oTool.m_dCornerRadius);
+	m_dCuttingHeight = FromChain(oTool.m_dCuttingHeight);
+	m_dToolLength = FromChain(oTool.m_dLength);
 	m_nReferenceIndex = (int)oTool.m_nReference;
-	m_dReferenceHeight = oTool.m_dReferenceHeight;
+	m_dReferenceHeight = FromChain(oTool.m_dReferenceHeight);
+}
+
+void CSpindleNoseDialog::SyncCornerRadius()
+{
+	//the ball of a ball nose tool is the tool: a corner radius of its own would be a different
+	//shape. A flat end mill has none at all. Only a toroidal one is asked for it.
+	if(m_nShapeIndex==nSHAPE_BALL)
+		m_dCornerRadius = m_dRadius;
+	else if(m_nShapeIndex==nSHAPE_CYLINDER)
+		m_dCornerRadius = 0.0;
 }
 
 void CSpindleNoseDialog::EnableFields()
@@ -208,27 +240,46 @@ void CSpindleNoseDialog::EnableFields()
 	const BOOL bCustom = (m_nHolderIndex<=0) ? TRUE : FALSE;
 	const int nSectionFields[] = {IDC_EDIT_SECTION1_LENGTH,IDC_EDIT_SECTION1_RADIUS
 		,IDC_EDIT_SECTION2_LENGTH,IDC_EDIT_SECTION2_RADIUS
-		,IDC_EDIT_SECTION3_LENGTH,IDC_EDIT_SECTION3_RADIUS};
-	for(int i=0;i<6;i++)
+		,IDC_EDIT_SECTION3_LENGTH,IDC_EDIT_SECTION3_RADIUS
+		,IDC_STATIC_SEC_LEN,IDC_STATIC_SEC_RAD,IDC_STATIC_SEC1,IDC_STATIC_SEC2,IDC_STATIC_SEC3
+		,IDC_STATIC_UNIT_S1,IDC_STATIC_UNIT_S2,IDC_STATIC_UNIT_S3};
+	for(int i=0;i<14;i++)
 		if(GetDlgItem(nSectionFields[i]))
 			GetDlgItem(nSectionFields[i])->EnableWindow(bCustom);
 
+	//with nothing in the spindle there is nothing to measure about a tool
 	const BOOL bTool = (m_nShapeIndex==nSHAPE_NONE) ? FALSE : TRUE;
-	const int nToolFields[] = {IDC_EDIT_TOOL_RZ,IDC_EDIT_TOOL_R,IDC_EDIT_TOOL_CUTTING_HEIGHT
-		,IDC_EDIT_TOOL_LENGTH};
-	for(int i=0;i<4;i++)
+	const int nToolFields[] = {IDC_EDIT_TOOL_RZ,IDC_STATIC_LBL_RADIUS,IDC_STATIC_UNIT_RADIUS
+		,IDC_EDIT_TOOL_CUTTING_HEIGHT,IDC_STATIC_LBL_CUTTING,IDC_STATIC_UNIT_CUTTING
+		,IDC_EDIT_TOOL_LENGTH,IDC_STATIC_LBL_LENGTH,IDC_STATIC_UNIT_LENGTH
+		,IDC_STATIC_LBL_PROGRAMMED};
+	for(int i=0;i<10;i++)
 		if(GetDlgItem(nToolFields[i]))
 			GetDlgItem(nToolFields[i])->EnableWindow(bTool);
 	m_comboReference.EnableWindow(bTool);
-	//a height above the tip is only asked for when the reference point is given that way
-	m_editReferenceHeight.EnableWindow(bTool && m_nReferenceIndex==TOOL_REFERENCE_CUSTOM);
+
+	//the corner radius belongs to a toroidal tool alone: a ball nose one has the whole radius for a
+	//ball and a flat end mill has no corner at all, so neither is asked
+	const BOOL bCorner = (m_nShapeIndex==nSHAPE_TOROIDAL) ? TRUE : FALSE;
+	const int nCornerFields[] = {IDC_EDIT_TOOL_R,IDC_STATIC_LBL_CORNER,IDC_STATIC_UNIT_CORNER};
+	for(int i=0;i<3;i++)
+		if(GetDlgItem(nCornerFields[i]))
+			GetDlgItem(nCornerFields[i])->EnableWindow(bCorner);
+
+	//and a height above the tip is only asked for when the point is given that way
+	const BOOL bHeight = (bTool && m_nReferenceIndex==TOOL_REFERENCE_CUSTOM) ? TRUE : FALSE;
+	const int nHeightFields[] = {IDC_EDIT_TOOL_REFERENCE_HEIGHT,IDC_STATIC_UNIT_REFERENCE};
+	for(int i=0;i<2;i++)
+		if(GetDlgItem(nHeightFields[i]))
+			GetDlgItem(nHeightFields[i])->EnableWindow(bHeight);
 }
 
 void CSpindleNoseDialog::UpdateTheSums()
 {
+	SyncCornerRadius();
 	const CToolAssembly oAssembly(HolderFromDialog(),ToolFromDialog());
-	m_sAssemblyLength = double_to_string(oAssembly.GetLength()).c_str();
-	m_sToolOffset = double_to_string(oAssembly.GetToolOffset()).c_str();
+	m_sAssemblyLength = double_to_string(FromChain(oAssembly.GetLength())).c_str();
+	m_sToolOffset = double_to_string(FromChain(oAssembly.GetToolOffset())).c_str();
 	const std::string sProblem = oAssembly.Problem();
 	m_sProblem = sProblem.empty() ? CString("") : CString(sProblem.c_str());
 	UpdateData(FALSE);
@@ -247,8 +298,8 @@ void CSpindleNoseDialog::OnCbnSelchangeComboNoseHolder()
 	const CToolHolder oHolder = HolderFromDialog();
 	for(size_t i=0;i<nTOOL_HOLDER_SECTIONS_MAX;i++){
 		const bool bHas = i<oHolder.GetSections().size();
-		m_dSectionLength[i] = bHas ? oHolder.GetSections()[i].GetLength() : 0.0;
-		m_dSectionRadius[i] = bHas ? oHolder.GetSections()[i].GetRadius() : 0.0;
+		m_dSectionLength[i] = bHas ? FromChain(oHolder.GetSections()[i].GetLength()) : 0.0;
+		m_dSectionRadius[i] = bHas ? FromChain(oHolder.GetSections()[i].GetRadius()) : 0.0;
 	}
 	EnableFields();
 	UpdateTheSums();
@@ -257,9 +308,13 @@ void CSpindleNoseDialog::OnCbnSelchangeComboNoseHolder()
 void CSpindleNoseDialog::OnCbnSelchangeComboToolShape()
 {
 	UpdateData(TRUE);
-	//the ball of a ball nose tool is its corner radius, and the centre of it is a place to program
-	if(m_nShapeIndex!=nSHAPE_NONE && ShapeOfIndex(m_nShapeIndex)!=MILLING_TOOL_BALL
-		&& m_nReferenceIndex==TOOL_REFERENCE_BALL_CENTRE)
+	//the ball of a ball nose tool is its radius, and a flat end mill has no corner: a shape that
+	//was just picked says so itself rather than leaving a number nobody can make sense of
+	SyncCornerRadius();
+	if(m_nShapeIndex==nSHAPE_TOROIDAL && m_dCornerRadius<=0.0)
+		m_dCornerRadius = 0.25*m_dRadius;		//a corner to start from, which is a usual one
+	//the centre of a ball is a place on a ball nose tool and nowhere else
+	if(m_nShapeIndex!=nSHAPE_BALL && m_nReferenceIndex==TOOL_REFERENCE_BALL_CENTRE)
 		m_nReferenceIndex = TOOL_REFERENCE_TIP;
 	m_comboReference.SetCurSel(m_nReferenceIndex);
 	EnableFields();
@@ -276,14 +331,15 @@ void CSpindleNoseDialog::OnCbnSelchangeComboToolReference()
 void CSpindleNoseDialog::OnEnChangeAnyDimension()
 {
 	UpdateData(TRUE);
-	//the fields are read on every keystroke, so a half typed dimension is normal: the sums and the
-	//complaint follow, and nothing is written to the chain until OK
+	//the fields are read on every keystroke, so a half typed dimension is normal: the sums, the
+	//picture and the complaint follow, and nothing is written to the chain until OK
 	UpdateTheSums();
 }
 
 void CSpindleNoseDialog::OnBnClickedOk()
 {
 	UpdateData(TRUE);
+	SyncCornerRadius();
 	const CToolAssembly oAssembly(HolderFromDialog(),ToolFromDialog());
 	const std::string sProblem = oAssembly.Problem();
 	if(sProblem.size()){

@@ -139,6 +139,33 @@
 #define IDC_CHECK_WHOLE_SPHERE          1200
 #define IDC_STATIC_SOLID_PROBLEM        1201
 #define IDC_STATIC_ABOUT_LIBRARY        1202
+#define IDC_STATIC_SEC_LEN              1203
+#define IDC_STATIC_SEC_RAD              1204
+#define IDC_STATIC_SEC1                 1205
+#define IDC_STATIC_SEC2                 1206
+#define IDC_STATIC_SEC3                 1207
+#define IDC_STATIC_UNIT_S1              1208
+#define IDC_STATIC_UNIT_S2              1209
+#define IDC_STATIC_UNIT_S3              1210
+#define IDC_STATIC_LBL_RADIUS           1211
+#define IDC_STATIC_UNIT_RADIUS          1212
+#define IDC_STATIC_LBL_CORNER           1213
+#define IDC_STATIC_UNIT_CORNER          1214
+#define IDC_STATIC_LBL_CUTTING          1215
+#define IDC_STATIC_UNIT_CUTTING         1216
+#define IDC_STATIC_LBL_LENGTH           1217
+#define IDC_STATIC_UNIT_LENGTH          1218
+#define IDC_STATIC_LBL_PROGRAMMED       1219
+#define IDC_STATIC_UNIT_REFERENCE       1220
+#define IDC_STATIC_UNIT_ASSEMBLY        1221
+#define IDC_STATIC_UNIT_OFFSET          1222
+#define IDC_STATIC_LBL_OPENING          1223
+#define IDC_EDIT_VICE_OPENING           1224
+#define IDC_STATIC_UNIT_OPENING         1225
+#define IDC_STATIC_LBL_JAW              1226
+#define IDC_EDIT_VICE_JAW_LENGTH        1227
+#define IDC_STATIC_UNIT_JAW             1228
+#define IDC_STATIC_UNIT_TR              1229
 #define IDC_BUTTON_APPLY                1049
 #define IDC_RADIO_CALCULATION_ORDER_1   1050
 #define IDC_RADIO_CALCULATION_ORDER_2   1051
@@ -293,7 +320,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        149
 #define _APS_NEXT_COMMAND_VALUE         32856
-#define _APS_NEXT_CONTROL_VALUE         1203
+#define _APS_NEXT_CONTROL_VALUE         1230
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif

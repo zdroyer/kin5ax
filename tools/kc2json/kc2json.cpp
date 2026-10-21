@@ -91,7 +91,7 @@ std::string UpgradedFromVersion1(const std::string &sJson, const std::string &sW
 		//the name is free text and is kept, unless it is the one version 1 wrote by default: a
 		//terminal called "Tool holder" is the nose the holder hangs from, which is not the same thing
 		static const char *szOldName[2] = {"Tool holder","Material holder"};
-		static const char *szNewName[2] = {"Spindle nose","Table"};
+		static const char *szNewName[2] = {"Tool spindle","Table"};
 		tJson &terminal = branch[szNew[i]];
 		if(terminal.is_object() && terminal.contains("name") && terminal["name"].is_string()
 			&& terminal["name"].get<std::string>()==szOldName[i])

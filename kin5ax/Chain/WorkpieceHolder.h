@@ -3,6 +3,7 @@
 #include "R3Vector.h"
 #include "R3Box.h"
 #include "Transformation.h"
+#include "../3DGeometry/R3Axis.h"
 
 #include <string>
 #include <vector>
@@ -82,6 +83,36 @@ protected:
  * substitute for measuring what is on the machine. Lengths are METRES.
  * @{
  */
+/**
+ * @name A vice, by the two sizes a workshop reads off it
+ *
+ * A machine vice is two jaws facing each other, and the two numbers that matter to a tool coming
+ * down between them are how far apart they are and how long they are. The jaws stand on the table,
+ * the part sits on top of them, and the frame of the holder is the middle of the opening at that
+ * height.
+ *
+ *     seen from above, an X vice           and from the side
+ *       +---+           +---+                +---+   +---+
+ *       |   |           |   |                |   |   |   |   jaw height
+ *       |   |<- opening>|   | jaw length     +---+   +---+
+ *       +---+           +---+                the table
+ * @{
+ */
+/// The thickness of a jaw and how tall it stands, which nobody measures when choosing a vice.
+const double dVICE_JAW_THICKNESS = 0.040;	///< metres
+const double dVICE_JAW_HEIGHT = 0.080;
+/// The vice whose jaws face each other along that axis of the table.
+CWorkpieceHolder MakeVice(const std::string &sModel, R3_AXIS nOpeningAxis, double dOpening
+	,double dJawLength, double dJawThickness = dVICE_JAW_THICKNESS
+	,double dJawHeight = dVICE_JAW_HEIGHT);
+/**
+ * The opening and the jaw length of a holder that is two jaws; false when it is anything else, and
+ * then the two numbers are left alone. The way back from the solids to what was typed.
+ */
+bool ViceParameters(const CWorkpieceHolder &oHolder, R3_AXIS &nOpeningAxis, double &dOpening
+	,double &dJawLength);
+/// @}
+
 size_t WorkpieceHolderCatalogueSize();
 /// The holder at that place in the catalogue; an empty one when the index is past the end.
 CWorkpieceHolder WorkpieceHolderFromCatalogue(size_t nIndex);

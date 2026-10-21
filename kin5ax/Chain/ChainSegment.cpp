@@ -238,7 +238,7 @@ std::string CChainSegment::GetName() const
 		return m_sName;
 	if(IsRegularJoint())
 		return m_sName;
-	return (m_type == CHAIN_SEGMENT_TABLE) ? "Table" : "Spindle nose";
+	return (m_type == CHAIN_SEGMENT_TABLE) ? "Table" : "Tool spindle";
 }
 
 void CChainSegment::SetPartVector(std::vector<CSolid> vNewParts)

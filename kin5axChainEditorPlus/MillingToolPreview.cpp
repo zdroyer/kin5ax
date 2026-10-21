@@ -36,10 +36,16 @@ void CMillingToolPreview::SetMillingTool(CMillingTool *pMillingTool)
 
 void CMillingToolPreview::OnPaint()
 {
-	CPaintDC dc(this); 
+	CPaintDC dc(this);
+	//a static window has no background brush of its own, so nothing is erased for us: whatever was
+	//drawn last time would show through the next drawing, and a tool that became nothing would
+	//leave its own picture behind
+	CRect rt;
+	GetClientRect(rt);
+	dc.FillSolidRect(rt,::GetSysColor(COLOR_WINDOW));
 	if(m_pMillingTool)
 		CMillingToolRendererGDI::Render(dc,*m_pMillingTool);
 	else
-		dc.TextOut(0,0,"No tool defined");
+		dc.TextOut(4,4,"No tool defined");
 
 }
