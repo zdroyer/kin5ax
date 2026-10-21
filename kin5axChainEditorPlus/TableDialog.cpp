@@ -334,8 +334,9 @@ void CTableDialog::OnBnClickedOk()
 	}
 	const CWorkpieceHolder oHolder = HolderFromDialog();
 	R3_AXIS nAxis = R3_AXIS_X;
-	if(IsVice(nAxis) && oHolder.GetBoxes().size()!=2){
-		AfxMessageBox("A vice is two jaws: give it an opening and a jaw length greater than zero.");
+	if(IsVice(nAxis) && (oHolder.GetBoxes().size()!=2 || m_dJawLength<=0.0 || m_dOpening<0.0)){
+		AfxMessageBox("A vice is two jaws with a gap between them: the jaw length has to be more "
+			"than zero and the opening cannot be negative.");
 		return;
 	}
 	if(m_pSegment){
