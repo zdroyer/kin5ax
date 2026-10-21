@@ -159,9 +159,12 @@ protected:
  * @name The catalogue
  *
  * The holders a five-axis machine usually carries, to be picked from a list rather than measured.
- * The first of them is @ref szNO_HOLDER, the tool clamped straight into the spindle. The dimensions
- * of the others are the usual ones for each taper and are near enough for a collision check; they
- * are no substitute for measuring the holder on the machine.
+ * The first of them is @ref szNO_HOLDER, the tool clamped straight into the spindle. Then come the
+ * bare tapers of the three standards a 7/24 spindle takes - BT (JIS B 6339), CAT (ASME B5.50) and
+ * SK (DIN 69871), in sizes 30, 40 and 50 - which are the flange against the spindle nose and the
+ * body below it; then the chucks, each a taper with something named on the end of it. The
+ * dimensions are the usual ones for each taper and are near enough for a collision check; they are
+ * no substitute for measuring the holder on the machine.
  *
  * Lengths are METRES, which is the unit of every model shipped with this library. A host whose chain
  * is in another unit scales them.

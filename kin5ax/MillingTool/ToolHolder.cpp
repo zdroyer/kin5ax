@@ -23,6 +23,20 @@ struct CCatalogueEntry
 const CCatalogueEntry vCATALOGUE[] = {
 	//model              taper/flange        middle              nose
 	{"NO_HOLDER",        0.000, 0.0000,      0.000, 0.000,       0.000, 0.000},
+	//The bare tapers, by their standards: the flange that sits against the nose of the spindle and
+	//the body below it, with nothing said about what the body ends in. The flange diameters are
+	//those of JIS B 6339 (BT), ASME B5.50 (CAT) and DIN 69871 (SK); the body is the usual envelope
+	//of a chuck of that size, to be replaced by a measured one when it matters.
+	{"BT30",             0.020, 0.0230,      0.050, 0.016,       0.000, 0.000},
+	{"BT40",             0.020, 0.0315,      0.050, 0.021,       0.000, 0.000},
+	{"BT50",             0.025, 0.0500,      0.060, 0.032,       0.000, 0.000},
+	{"CAT30",            0.020, 0.0230,      0.050, 0.016,       0.000, 0.000},
+	{"CAT40",            0.020, 0.0318,      0.050, 0.021,       0.000, 0.000},
+	{"CAT50",            0.025, 0.0488,      0.060, 0.032,       0.000, 0.000},
+	{"SK30",             0.020, 0.0250,      0.050, 0.016,       0.000, 0.000},
+	{"SK40",             0.020, 0.0318,      0.050, 0.021,       0.000, 0.000},
+	{"SK50",             0.025, 0.0488,      0.060, 0.032,       0.000, 0.000},
+	//and the chucks, each a taper with something named on the end of it
 	{"BT30 ER20",        0.048, 0.0315,      0.020, 0.021,       0.030, 0.017},
 	{"BT40 ER16",        0.065, 0.0445,      0.025, 0.021,       0.060, 0.014},
 	{"BT40 ER32",        0.065, 0.0445,      0.025, 0.027,       0.035, 0.025},

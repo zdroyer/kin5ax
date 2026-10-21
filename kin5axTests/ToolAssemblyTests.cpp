@@ -103,11 +103,12 @@ TEST(ToolAssembly, AChainGivesTheAssemblyItsFileDescribes)
 {
 	CChain oChain = LoadChain(GetChainFiles()[0]);
 	const CToolAssembly oFromFile = oChain.GetDefaultToolAssembly();
-	//every shipped machine names a holder and none of them describes a tool yet
+	//every shipped machine names a holder and a 12 mm end mill
 	EXPECT_TRUE(oChain.HasDefaultToolHolder());
-	EXPECT_FALSE(oChain.HasDefaultTool());
+	EXPECT_TRUE(oChain.HasDefaultTool());
 	EXPECT_FALSE(oFromFile.IsEmpty())<<"the holder of the file is in it";
-	EXPECT_DOUBLE_EQ(oChain.GetDefaultToolHolder().GetLength(),oFromFile.GetLength());
+	EXPECT_DOUBLE_EQ(oChain.GetDefaultToolHolder().GetLength()+oChain.GetDefaultTool().m_dLength
+		,oFromFile.GetLength())<<"the holder, and what sticks out of it";
 
 	//a chain that describes neither gives an empty assembly
 	CChain oPlain;
