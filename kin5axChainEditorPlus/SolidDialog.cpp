@@ -217,7 +217,10 @@ void CSolidDialog::UpdateWindowAndSolid()
 	const CSolid oSolid = GetSolid();
 	const std::string sProblem = oSolid.Problem();
 	m_sProblem = sProblem.empty() ? CString("") : CString(sProblem.c_str());
-	UpdateData(FALSE);
+	//the caller sets this dialog up before it is shown - the solid has to be in the segment for the
+	//3D view to draw it while it is measured - and there are no controls to write to until then
+	if(GetSafeHwnd())
+		UpdateData(FALSE);
 	//a half typed solid is normal, and the segment keeps whatever the fields make of it: the view
 	//then shows nothing for an empty one, which is the honest picture
 	if(m_pSolid)
