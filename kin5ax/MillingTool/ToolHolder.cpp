@@ -47,6 +47,9 @@ const CCatalogueEntry vCATALOGUE[] = {
 	{"HSK40A ER16",      0.040, 0.0250,      0.020, 0.019,       0.050, 0.014},
 	{"HSK63A ER32",      0.050, 0.0400,      0.025, 0.027,       0.040, 0.025},
 	{"HSK63A SF12",      0.050, 0.0400,      0.030, 0.021,       0.060, 0.012},
+	//A desktop machine holds its tools in the nose of the spindle itself: what hangs below that
+	//nose is the collet nut, and every collet in it has the same outside. ER11 to DIN 6499.
+	{"PocketNC V2 ER11", 0.013, 0.0095,      0.008, 0.0070,      0.000, 0.000},
 };
 
 const size_t nCATALOGUE = sizeof(vCATALOGUE)/sizeof(vCATALOGUE[0]);
