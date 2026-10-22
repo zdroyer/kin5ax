@@ -10,6 +10,7 @@ namespace kin5ax { extern CR3Vector r3vOZ; }
 C3DViewManipulator::C3DViewManipulator(void)
 :m_m4x4InvertedInitialViewTransformation(1.0)
 {
+	//a sensible ball until the view is given its first size
 	SetSphereRadius(200);
 	m_dZoomBase=1.1;
 	m_dZoomBaseInv=1.0/m_dZoomBase;
@@ -32,11 +33,6 @@ CPoint C3DViewManipulator::InnerCoordinates(const CPoint &point)
 {
 	return CPoint(point.x-(m_windowSize.cx/2), (m_windowSize.cy/2)-point.y);
 }
-CPoint C3DViewManipulator::WindowCoordinates(const CR3Vector &r3vV)
-{
-	return CPoint((int)r3vV.GetX()+(m_windowSize.cx/2),
-					(m_windowSize.cy/2)-(int)r3vV.GetY());
-}
 
 
 void C3DViewManipulator::OnLButtonDown(UINT nFlags, const CPoint &point)
@@ -52,6 +48,8 @@ void C3DViewManipulator::OnRButtonDown(UINT nFlags, const CPoint &point)
 		return;
 	m_lastRBD = point;
 	CalculateRadialVector(m_r3vFirst,point);
+	//the handle is drawn where the ball is held, from the moment it is taken hold of
+	m_r3vSecond = m_r3vFirst;
 	m_bRBD=true;
 
 }
@@ -71,8 +69,9 @@ void C3DViewManipulator::OnSize(UINT nType, int cx, int cy)
 		//m_windowSize.SetSize(cx,cy);
 		m_windowSize = CSize(cx,cy);
 	}
-	else 
+	else
 		return;
+	SetSphereRadiusFromWindow();
 	UpdateProjectionMatrix();
 }
 void C3DViewManipulator::UpdateProjectionMatrix()
@@ -133,6 +132,15 @@ void C3DViewManipulator::SetSphereRadius(int nPixelCount)
 	m_nRadiusSquare = m_nRadius*m_nRadius;
 }
 
+void C3DViewManipulator::SetSphereRadiusFromWindow()
+{
+	//the circle spans nine tenths of the shorter side, so its radius is 45 per cent of it; the
+	//rotation reads that same radius, and so a drag from the middle of the view out to the circle
+	//is a quarter of a turn whatever the size of the window
+	const int nShorter = (m_windowSize.cx<m_windowSize.cy) ? m_windowSize.cx : m_windowSize.cy;
+	SetSphereRadius((9*nShorter)/20);
+}
+
 void C3DViewManipulator::CalculateRadialVector(CR3Vector & r3vV, const CPoint & point)
 {
 	CPoint p = InnerCoordinates(point);
@@ -187,30 +195,67 @@ bool C3DViewManipulator::RotateGLScene(const CR3Vector & r3vFirst, const CR3Vect
 	return true;
 }
 
-void C3DViewManipulator::Paint(CDC & dc)
+//A ring of line segments about a point of the view, in the pixel coordinates set up below.
+static void DrawCircle(double dRadius, double dX=0.0, double dY=0.0)
 {
-	static CPen pen(PS_DASH,1,RGB(255,255,255));
-	if(m_bRBD){
-		int x0=m_windowSize.cx/2;
-		int y0=m_windowSize.cy/2;
-		CPen * oldPen = dc.SelectObject(&pen); 
-		dc.Arc(x0-m_nRadius,y0-m_nRadius,x0+m_nRadius,y0+m_nRadius,x0-m_nRadius,y0-m_nRadius,x0-m_nRadius,y0-m_nRadius);
-		CPoint p=WindowCoordinates(m_r3vSecond);
-		int n=3;		
-		dc.Ellipse(p.x-n,p.y-n,p.x+n,p.y+n);
-		dc.SelectObject(oldPen);
-		}
-	if(m_bLBD){
-		int x0=m_windowSize.cx/2;
-		int y0=m_windowSize.cy/2;
-		CPen * oldPen = dc.SelectObject(&pen); 
-		dc.MoveTo(x0-m_nRadius,y0);
-		dc.LineTo(x0+m_nRadius,y0);
-		dc.MoveTo(x0,y0-m_nRadius);
-		dc.LineTo(x0,y0+m_nRadius);
-		
-		dc.SelectObject(oldPen);
+	static const double d2Pi = 4.0*acos(0.0);
+	const int nSides = 72;
+	glBegin(GL_LINE_LOOP);
+	for(int i=0;i<nSides;i++){
+		const double dA = d2Pi*(double)i/(double)nSides;
+		glVertex2d(dX+dRadius*cos(dA),dY+dRadius*sin(dA));
 	}
+	glEnd();
+}
+
+void C3DViewManipulator::DrawIndicators()
+{
+	if(!m_bLBD && !m_bRBD)
+		return;
+
+	//the indicators belong to the picture rather than over it: OpenGL draws them into the back
+	//buffer before it is swapped. Drawn with GDI onto the window, as they once were, they lived
+	//only until the next frame was swapped over them, which is the flash one sees instead
+	glPushAttrib(GL_ENABLE_BIT|GL_CURRENT_BIT|GL_LINE_BIT);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_LIGHTING);
+	glColor3d(1.0,1.0,1.0);
+	glLineWidth(1.0f);
+
+	//pixels, the origin in the middle of the view and OY upwards: what InnerCoordinates and the
+	//radial vector of the trackball are already in
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	glOrtho(-0.5*(double)m_windowSize.cx,0.5*(double)m_windowSize.cx,
+			-0.5*(double)m_windowSize.cy,0.5*(double)m_windowSize.cy,-1.0,1.0);
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+
+	const double dR = (double)m_nRadius;
+	glEnable(GL_LINE_STIPPLE);
+	glLineStipple(1,(GLushort)0x3333);
+	if(m_bRBD)
+		DrawCircle(dR);
+	if(m_bLBD){
+		glBegin(GL_LINES);
+		glVertex2d(-dR,0.0);
+		glVertex2d(dR,0.0);
+		glVertex2d(0.0,-dR);
+		glVertex2d(0.0,dR);
+		glEnd();
+	}
+	glDisable(GL_LINE_STIPPLE);
+	//and where the ball is held now
+	if(m_bRBD)
+		DrawCircle(3.0,m_r3vSecond.GetX(),m_r3vSecond.GetY());
+
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+	glPopAttrib();
 }
 
 bool C3DViewManipulator::IsInAction()const

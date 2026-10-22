@@ -78,8 +78,10 @@ void CKin5axChainEditorPlusView::OnDraw(CDC* pDC)
 	glMatrixMode(GL_MODELVIEW);
 	pDoc->Render3D(m_o3DViewManipulator.IsInAction(),r3vMaterialObserver,dPixelSize);
 
+	//the circle and the cross of the manipulator go into the same buffer as the scene, before it
+	//is swapped, so that they stay on the screen for as long as the mouse is held down
+	m_o3DViewManipulator.DrawIndicators();
 	SwapBuffers(*pDC);
-	m_o3DViewManipulator.Paint(*pDC);
 }
 
 

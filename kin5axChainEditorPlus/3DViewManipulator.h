@@ -13,9 +13,10 @@ protected:
 	CR3Vector m_r3vSecond;
 	CPoint m_lastLBD,m_lastRBD;
 	CSize m_windowSize;
-	unsigned m_nRadius, m_nRadiusSquare ;
+	//the trackball: the radius drawn on the screen and the radius a drag is turned into a rotation
+	//with are one and the same, so that the ball answers the mouse where it is seen
+	int m_nRadius, m_nRadiusSquare;
 	CPoint InnerCoordinates(const CPoint &point);
-	CPoint WindowCoordinates(const CR3Vector &r3vV);
 	int m_nZoomPower;
 	double m_dZoomBase, m_dZoomBaseInv;
 	double m_dTranslationCoefficient;
@@ -36,9 +37,12 @@ public:
 	void OnRButtonUp(UINT nFlags, const CPoint &point);
 	void OnSize(UINT nType, int cx, int cy);
 	bool OnMouseMove(UINT nFlags, const CPoint &point);
-	void Paint(CDC & dc);
+	/// The circle of the trackball, or the cross of the panning, into the back buffer.
+	void DrawIndicators();
 	bool IsInAction()const;
 protected:
+	//the ball fills nine tenths of the shorter side of the view
+	void SetSphereRadiusFromWindow();
 	void SetSphereRadius(int nPixelCount);
 	void CalculateRadialVector(CR3Vector & r3vV, const CPoint & point);
 	void UpdateState(UINT nFlags, const CPoint & point);
