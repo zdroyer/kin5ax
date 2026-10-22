@@ -542,6 +542,7 @@ void CKinematicChainPropertiesDialog::OnCbnSelchangeComboUnit()
 	if(m_pDoc->m_oChain.GetUnit()==(CHAIN_UNIT)n)
 		return;
 	m_pDoc->m_oChain.SetUnit((CHAIN_UNIT)n);
+	m_pDoc->UpdateViewUnitFromChain();		//the frames of the view are drawn in it too
 	m_pDoc->SetModifiedFlag(TRUE);
 	m_pDoc->UpdateAllViews(NULL);
 }

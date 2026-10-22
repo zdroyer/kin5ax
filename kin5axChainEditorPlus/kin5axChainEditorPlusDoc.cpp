@@ -45,6 +45,15 @@ CKin5axChainEditorPlusDoc::CKin5axChainEditorPlusDoc()
 {
 	//the tool comes from the machine file; an empty chain names none, so there is none yet
 	UpdateToolFromChain();
+	UpdateViewUnitFromChain();
+}
+
+void CKin5axChainEditorPlusDoc::UpdateViewUnitFromChain()
+{
+	//1 for a chain in metres, 1000 for one in millimetres, 39.37 for one in inches: an .fcm file
+	//is always millimetres, so this is not a corner case
+	const double dInMillimetres = m_oChain.GetUnitInMillimetres();
+	oConfiguration.m_dUnit = (dInMillimetres>0.0) ? 1000.0/dInMillimetres : 1.0;
 }
 
 void CKin5axChainEditorPlusDoc::UpdateToolFromChain()
@@ -131,6 +140,7 @@ BOOL CKin5axChainEditorPlusDoc::OnOpenDocument(LPCTSTR lpszPathName)
 		}
 		//the machine brings its own holder and its own tool: that assembly is what is in the spindle
 		UpdateToolFromChain();
+		UpdateViewUnitFromChain();		//and the view draws its frames in the unit of this file
 	} catch (CGeneratorException &e){
 		AfxMessageBox(e.Message().c_str());
 		return FALSE;

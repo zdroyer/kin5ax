@@ -70,6 +70,11 @@ public:
 	//Rebuilds it from the chain, and tells the chain the offset of that assembly. To be called
 	//whenever the spindle nose may have changed: a file opened, a terminal edited.
 	void UpdateToolFromChain();
+	//The 3D view draws its grid, its frames and its joint markers in a unit of its own, and that
+	//unit is a metre: a chain in millimetres would be a thousand times bigger than the frames
+	//drawn on it, and the frames would disappear inside the solids. This says how many of the
+	//chain's own units make a metre, and is to be called whenever that unit may have changed.
+	void UpdateViewUnitFromChain();
 	CSimulationData m_oSimulationData;
 };
 
