@@ -32,3 +32,4 @@ ctest-*.log
 # Python: the FreeCAD addon in kin5axcam/
 __pycache__/
 *.py[cod]
+_linkcheck/
